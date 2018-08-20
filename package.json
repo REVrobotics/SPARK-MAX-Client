@@ -1,0 +1,40 @@
+{
+  "name": "usb-client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@blueprintjs/core": "^3.3.0",
+    "@blueprintjs/select": "^3.1.0",
+    "echarts": "^4.1.0",
+    "echarts-for-react": "^2.0.14",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-redux": "^5.0.7",
+    "react-scripts-ts": "2.17.0",
+    "redux": "^4.0.0"
+  },
+  "scripts": {
+    "react": "react-scripts-ts start",
+    "desktop": "npm run build-desktop && electron build/electron.js",
+    "start": "concurrently \"npm run react\" \"npm run desktop\"",
+    "prebuild": "electron-rebuild",
+    "build": "react-scripts-ts build",
+    "build-desktop": "tsc -p tsconfig.electron.json",
+    "postinstall": "npm rebuild --runtime=electron --target=2.0.7 --disturl=https://atom.io/download/atom-shell",
+    "test": "react-scripts-ts test --env=jsdom",
+    "eject": "react-scripts-ts eject"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.1",
+    "@types/node": "^10.7.1",
+    "@types/react": "^16.4.11",
+    "@types/react-dom": "^16.0.7",
+    "@types/react-redux": "^6.0.6",
+    "concurrently": "^3.6.1",
+    "electron": "^2.0.7",
+    "electron-builder": "^20.28.1",
+    "electron-debug": "^2.0.0",
+    "electron-rebuild": "^1.8.2",
+    "typescript": "^3.0.1"
+  }
+}

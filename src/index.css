@@ -1,0 +1,161 @@
+#main-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#status-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 7px 5px 7px;
+    background-color: orange;
+    color: #ffffff;
+}
+
+#status-bar-status {
+    height: 100%;
+    width: 75%;
+}
+
+#status-bar-button {
+    height: 100%;
+    width: 25%;
+}
+
+#firmware-console {
+    width: 100%;
+    height: 300px;
+    background-color: #cfcfcf;
+    padding: 10px;
+    border: 1px solid orange;
+    font-family: Consolas, sans-serif;
+}
+
+#firmware-console > p {
+    margin: 0;
+}
+
+#firmware-bar {
+    margin-top: 10px;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#help-troubleshoot > h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#help-troubleshoot > ol {
+    padding-left: 20px;
+    margin-top: 0;
+}
+
+.bp3-tabs {
+    padding: 0 10px 0 10px;
+}
+
+.bp3-tab:focus, .bp3-button:focus, .bp3-control-indicator:focus {
+    outline: none;
+}
+
+.bp3-tab:hover {
+    color: orange !important;
+}
+
+.bp3-tab-indicator-wrapper .bp3-tab-indicator {
+    background-color: orange;
+}
+
+.bp3-tab[aria-selected=true] {
+    color: orange;
+}
+
+.bp3-active {
+    background-color: orange !important;
+}
+
+input:checked ~ .bp3-control-indicator {
+    background-color: orange !important;
+}
+
+.bp3-numeric-input > .bp3-input-group > input {
+    max-width: 100%;
+}
+
+.bp3-numeric-input > .bp3-input-group{
+    width: calc(100% - 30px);
+}
+
+.bp3-numeric-input > .bp3-input-group .bp3-fixed {
+    width: 30px;
+}
+
+.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target {
+    width: 100%;
+}
+
+.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target > div > button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bp3-form-group {
+    padding: 0 10px 0 10px;
+}
+
+.bp3-dialog-body {
+    background-color: #cfcfcf;
+    font-family: Consolas, sans-serif;
+    margin: 10px;
+    padding: 8px;
+}
+
+.bp3-dialog-body > p {
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.form-group-three-quarters {
+    width: 75%;
+}
+
+.form-group-half {
+    width: 50%;
+}
+
+.form-group-quarter {
+    width: 25%;
+}
+
+.form-group-two-fifths {
+    width: 40%;
+}
+
+.form-group-fifth {
+    width: 20%;
+}
+
+.inline {
+    flex-direction: row;
+}
+
+.echart-container {
+    width: 100%;
+}
+
+.rev-btn {
+    color: #ffffff !important;
+    background: #e48d00 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
+}
