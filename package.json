@@ -5,13 +5,18 @@
   "dependencies": {
     "@blueprintjs/core": "^3.3.0",
     "@blueprintjs/select": "^3.1.0",
+    "@types/serialport": "^6.0.4",
+    "better-queue": "^3.8.10",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.14",
+    "protobufjs": "^6.8.8",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-redux": "^5.0.7",
     "react-scripts-ts": "2.17.0",
-    "redux": "^4.0.0"
+    "redux": "^4.0.0",
+    "serialport": "^6.2.2",
+    "zeromq": "^4.6.0"
   },
   "scripts": {
     "react": "react-scripts-ts start",
@@ -30,6 +35,7 @@
     "@types/react": "^16.4.11",
     "@types/react-dom": "^16.0.7",
     "@types/react-redux": "^6.0.6",
+    "@types/zeromq": "^4.6.1",
     "concurrently": "^3.6.1",
     "electron": "^2.0.7",
     "electron-builder": "^20.28.1",

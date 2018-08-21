@@ -1,5 +1,11 @@
 import {ActionCreator} from "redux";
-import {IUpdateConnectionStatus, SET_CONNECTION_STATUS} from "./types";
+import {
+  ISetConnectedDevice,
+  ISetIsConnecting, ISetParameters,
+  IUpdateConnectionStatus, SET_CONNECTED_DEVICE,
+  SET_CONNECTING,
+  SET_CONNECTION_STATUS, SET_PARAMETERS
+} from "./types";
 
 export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
   payload: {
@@ -7,4 +13,25 @@ export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (i
     isConnected
   },
   type: SET_CONNECTION_STATUS
+});
+
+export const setIsConnecting: ActionCreator<ISetIsConnecting> = (isConnecting: boolean) => ({
+  payload: {
+    isConnecting
+  },
+  type: SET_CONNECTING
+});
+
+export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (connectedDevice: string) => ({
+  payload: {
+    connectedDevice
+  },
+  type: SET_CONNECTED_DEVICE
+});
+
+export const setParameters: ActionCreator<ISetParameters> = (parameters: number[]) => ({
+  payload: {
+    parameters
+  },
+  type: SET_PARAMETERS
 });

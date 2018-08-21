@@ -10,6 +10,7 @@
     }
   },
   "include": [
-    "public/electron.ts"
+    "public/electron.ts",
+    "public/main/**/*/"
   ]
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -18,7 +18,10 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../index.html"));
   } else {
     mainWindow.loadURL("http://localhost:3000/");
+    require("electron-debug")({showDevTools: true, enabled: true});
   }
+
+  require("./main/sparkusb");
 
   mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.show();
@@ -30,6 +33,10 @@ function createWindow() {
   mainWindow.setMenu(null);
 
   mainWindow.on("closed", () => {
+    setTimeout(() => {
+      ipcMain.emit("kill-server");
+    }, 250);
+
     (mainWindow as any) = null;
   });
 }
