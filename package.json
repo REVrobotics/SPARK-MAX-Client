@@ -1,22 +1,22 @@
 {
-  "name": "usb-client",
+  "name": "spark-max-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^3.3.0",
-    "@blueprintjs/select": "^3.1.0",
-    "@types/serialport": "^6.0.4",
+    "@blueprintjs/core": "^3.7.0",
+    "@blueprintjs/select": "^3.2.1",
+    "@types/serialport": "^7.0.0",
     "better-queue": "^3.8.10",
-    "echarts": "^4.1.0",
-    "echarts-for-react": "^2.0.14",
+    "echarts": "^4.2.0-rc.2",
+    "echarts-for-react": "^2.0.15-beta.0",
     "protobufjs": "^6.8.8",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2",
-    "react-redux": "^5.0.7",
-    "react-scripts-ts": "2.17.0",
-    "redux": "^4.0.0",
-    "serialport": "^6.2.2",
-    "zeromq": "^4.6.0"
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "react-redux": "^5.1.0",
+    "react-scripts-ts": "3.1.0",
+    "redux": "^4.0.1",
+    "serialport": "^7.0.2",
+    "zeromq": "^5.1.0"
   },
   "scripts": {
     "react": "react-scripts-ts start",
@@ -30,17 +30,17 @@
     "eject": "react-scripts-ts eject"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.1",
-    "@types/node": "^10.7.1",
-    "@types/react": "^16.4.11",
-    "@types/react-dom": "^16.0.7",
-    "@types/react-redux": "^6.0.6",
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.1",
+    "@types/react": "^16.4.18",
+    "@types/react-dom": "^16.0.9",
+    "@types/react-redux": "^6.0.9",
     "@types/zeromq": "^4.6.1",
-    "concurrently": "^3.6.1",
-    "electron": "^2.0.7",
-    "electron-builder": "^20.28.1",
+    "concurrently": "^4.0.1",
+    "electron": "^3.0.6",
+    "electron-builder": "^20.29.0",
     "electron-debug": "^2.0.0",
     "electron-rebuild": "^1.8.2",
-    "typescript": "^3.0.1"
+    "typescript": "^3.1.4"
   }
 }
