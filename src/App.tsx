@@ -10,6 +10,7 @@ import FirmwareTab from "./containers/FirmwareTab";
 import HelpTab from "./containers/HelpTab";
 import PIDTunerTab from "./containers/PIDTunerTab";
 import RunTab from "./containers/RunTab";
+import SettingsTab from "./containers/Settings";
 import SparkManager from "./managers/SparkManager";
 import {setConnectedDevice, setIsConnecting, updateConnectionStatus} from "./store/actions";
 import {ApplicationActions, ISetConnectedDevice, ISetIsConnecting, IUpdateConnectionStatus} from "./store/types";
@@ -59,6 +60,7 @@ class App extends React.Component<IProps> {
           <Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />
           <Tab id="main-tab-firmware" title="Firmware" panel={<FirmwareTab/>} />
           <Tab id="main-tab-help" title="Help" panel={<HelpTab logs={[]}/>} />
+          <Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />
         </Tabs>
       </div>
     );

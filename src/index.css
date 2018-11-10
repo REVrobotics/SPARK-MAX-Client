@@ -159,3 +159,21 @@ input:checked ~ .bp3-control-indicator {
     color: #ffffff !important;
     background: #e48d00 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
+
+.form-group-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+}
+
+.form-group-row-left {
+    float: left;
+    display: flex;
+    flex-direction: row;
+}
+
+.form-group-row-right {
+    float: right;
+}

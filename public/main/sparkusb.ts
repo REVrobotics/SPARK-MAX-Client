@@ -2,7 +2,6 @@ import {ChildProcess, execFile} from "child_process";
 import {BrowserWindow, dialog, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import * as SerialPort from "serialport";
 import SparkServer from "./sparkusb-server";
 
 const isWin: boolean = process.platform === "win32";
@@ -45,22 +44,7 @@ ipcMain.on("connect", (event: any, device: string) => {
       event.sender.send("connect-response", err, response);
     }
     if (connCheckID === null) {
-      connCheckID = global.setInterval(() => {
-        SerialPort.list().then((ports) => {
-          let found = false;
-          for (const port of ports) {
-            if (port.comName === device) {
-              found = true;
-            }
-          }
-          if (!found) {
-            console.log("Disconnection on " + device + ".");
-            event.sender.send("disconnection", device);
-            clearInterval(connCheckID);
-            connCheckID = null;
-          }
-        });
-      }, 1000);
+      // TODO - Connection stuff.
     }
   });
 });
@@ -134,7 +118,7 @@ ipcMain.on("save-config", (event: any, device: string) => {
 });
 
 ipcMain.on("request-firmware", (event: any) => {
-  dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+  dialog.showOpenDialog(BrowserWindow.getFocusedWindow() as BrowserWindow, {
     filters: [{name: "Firmware Files (*.bin)", extensions: ["bin"]}],
     properties: ["openFile"],
     title: "Firmware Loading"
