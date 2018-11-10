@@ -22,6 +22,7 @@ function createWindow() {
   }
 
   require("./main/sparkusb");
+  require("./main/config");
 
   mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.show();

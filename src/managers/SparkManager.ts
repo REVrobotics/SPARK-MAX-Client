@@ -3,13 +3,13 @@ const ipcRenderer = (window as any).require("electron").ipcRenderer;
 class SparkManager {
 
   public static getInstance(): SparkManager {
-    if (typeof SparkManager.instance === "undefined") {
-      SparkManager.instance = new SparkManager();
+    if (typeof SparkManager._instance === "undefined") {
+      SparkManager._instance = new SparkManager();
     }
-    return SparkManager.instance;
+    return SparkManager._instance;
   }
 
-  private static instance: SparkManager;
+  private static _instance: SparkManager;
 
   private constructor() {}
 

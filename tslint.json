@@ -8,6 +8,7 @@
     ]
   },
   "rules": {
-    "no-console": false
+    "no-console": false,
+    "variable-name": ["allow-leading-underscore"]
   }
 }
