@@ -40,6 +40,19 @@ class ConfigManager {
     });
   }
 
+  public getAll(): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      ipcRenderer.send("config-get-all-response", (event: any, error: any, response: number) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("config-get-all");
+    });
+  }
+
   public set(path: string, value: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       ipcRenderer.once("config-set-response", (event: any, error: any, response: any) => {
@@ -50,6 +63,19 @@ class ConfigManager {
         }
       });
       ipcRenderer.send("config-set", path, value);
+    });
+  }
+
+  public setAll(value: any): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      ipcRenderer.once("config-set-all-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("config-set-all", value);
     });
   }
 

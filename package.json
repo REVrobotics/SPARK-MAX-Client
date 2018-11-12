@@ -1,5 +1,6 @@
 {
   "name": "spark-max-client",
+  "productName": "SPARK MAX Client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
