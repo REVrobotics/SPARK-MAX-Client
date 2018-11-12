@@ -1,0 +1,698 @@
+syntax = "proto3";
+
+package sparkmax;
+
+/*
+* Motor type enum, these values match the SPARK firmware
+*/
+enum motorType {
+    Brushed = 0;
+    Brushless = 1;
+}
+
+/*
+* Sensor type enum, these values match the SPARK firmware
+*/
+enum sensorType {
+    NoSensor = 0;
+    HallSensor = 1;
+    Encoder = 2;
+    Sensorless = 3;
+}
+
+/*
+* Control type enum, these values match the SPARK firmware
+*/
+enum ctrlType {
+    DutyCycle = 0;
+    Velocity = 1;
+    Voltage = 2;
+}
+
+/*
+* Idle mode type enum, these values match the SPARK firmware
+*/
+enum idleMode {
+    Coast = 0;
+    Brake = 1;
+}
+
+/*
+* Input mode type enum, these values match the SPARK firmware
+*/
+enum inputMode {
+    PWM = 0;
+    CAN = 1;
+}
+
+/*
+* Faults type enum, these valInvalidIDues match the SPARK firmware
+*/
+enum faults {
+    Brownout = 0;
+    Overcurrent = 1;
+    Overvoltage = 2;
+    MotorFault = 3;
+    SensorFault = 4;
+    Stall = 5;
+    EEPROMCRC = 6;
+    CANTX = 7;
+    CANRX = 8;
+    HasReset = 9;
+    DRVFault = 10;
+    SoftLimitFwd = 12;
+    SoftLimitRev = 13;
+    HardLimitFwd = 14;
+    HardLimitRev = 15;
+}
+
+/*
+* Parameter type enum, these values match the SPARK firmware
+* and are sent as a response in GetParameter() requests
+*/
+enum paramType {
+    int32 = 0;
+    uint32 = 1;
+    float32 = 2;
+    bool = 3;
+}
+
+/*
+* Parameter Status returned from get/set parameter
+*/
+enum paramStatus {
+    paramOK = 0;
+    InvalidID = 1;
+    MismatchType = 2;
+    AccessMode = 3;
+    Invalid = 4;
+    NotImplementedDeprecated = 5;
+}
+
+/*
+* Follower ID for pre-defined CAN protocols
+*/
+enum definedFollowerID {
+    FollowerDisabled = 0;
+    FollowerCustom = 0x19;
+    FollowerSparkMax = 0x1A;
+    FollowerPhoenix = 0x1B;
+}
+
+/*
+* Follower sign mode
+*/
+enum followerSignMode {
+    FollowerNoSign = 0;
+    FollowerTwosComp = 1;
+    FollowerSignMag = 2;
+}
+
+/*
+* Parameter ID for set/get parameter fields
+* these values match the SPARK firmware
+* @omit THIS ENUM IS AUTO GENERATED FROM SPREADSHEET
+*/
+enum configParam {
+    /*
+    * CAN ID
+    * @default 0
+    * @type uint
+    */
+    kCanID = 0;
+
+    /*
+    * Input mode, this parameter is read only and the input mode is detected by t
+    * he firmware automatically, results are %Input Mode%
+    * @default 0
+    * @type Input Mode
+    */
+    kInputMode = 1;
+
+    /*
+    * Motor Type, options are %Motor Type%
+    * @default BRUSHED
+    * @type Motor Type
+    */
+    kMotorType = 2;
+
+    /*
+    * Electrical degree of offset from the backemf crossing to commutation for se
+    * nsorless modes. This is currently not implemented
+    * @default 0
+    * @type float32
+    * @unit Degrees
+    */
+    kCommAdvance = 3;
+
+    /*
+    * Sensor Type, options are %Sensor Type%
+    * @default HALL_SENSOR
+    * @type Sensor Type
+    */
+    kSensorType = 4;
+
+    /*
+    * Control Type, this is a read only parameter of the currently active control
+    *  type. Options are %Ctrl Type%
+    * @default CTRL_DUTY_CYCLE
+    * @type Ctrl Type
+    */
+    kCtrlType = 5;
+
+    /*
+    * State of the half bridge when the motor controller commands zero output or 
+    * is disabled. Options are %Idle Mode%
+    * @default IDLE_COAST
+    * @type Idle Mode
+    */
+    kIdleMode = 6;
+
+    /*
+    * Percent of the input which results in zero output
+    * @default 0.05
+    * @type float32
+    * @unit Percent
+    */
+    kInputDeadband = 7;
+
+    /*
+    * Read only parameter showing the 32-bit firmware version. The first byte is 
+    * the major build, the second byte is in the minor build, the last two bytes
+    *  are the build
+    * @default 0
+    * @type Firmware
+    */
+    kFirmwareVer = 8;
+
+    /*
+    * Electrical offset of the hall sensor compared to the motor phases in degree
+    * s. Typically this is either 0, 60, 120
+    * @default 0
+    * @type int
+    * @unit Degrees
+    */
+    kHallOffset = 9;
+
+    /*
+    * Number of pole pairs for the brushless motor. This is the number of poles/2
+    *  and can be determined by either counting the number of magents or countin
+    * g the number of windings and dividing by 3. This is an important term for 
+    * speed regulation to properly calculate the speed
+    * @default 1
+    * @type uint
+    */
+    kPolePairs = 10;
+
+    /*
+    * If the half bridge detects this current limit, it will disable the motor dr
+    * iver for a fixed amount of time set by kCurrentChopCycles. This is a low
+    * sophistication 'current control'
+    * @default 0
+    * @type float32
+    * @unit Amps
+    */
+    kCurrentChop = 11;
+
+    /*
+    * Number of PWM Cycles for the h-bridge to be off in the case that the current
+    * limit is set. Min = 1, multiples of PWM period (50us)
+    * @default 0
+    * @type uint
+    * @unit
+    */
+    kCurrentChopCycles = 12;
+
+    /*
+    * Perportional gain constant for gain slot 0. In cascaded control modes this 
+    * is the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kP_0 = 13;
+
+    /*
+    * Integral gain constant for gain slot 0. In cascaded control modes this is t
+    * he inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kI_0 = 14;
+
+    /*
+    * Derivative gain constant for gain slot 0. In cascaded control modes this is
+    *  the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kD_0 = 15;
+
+    /*
+    * Feed Forward gain constant for gain slot 0. In cascaded control modes this 
+    * is the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kF_0 = 16;
+
+    /*
+    * Integrator zone constant for gain slot 0. The PIDF loop integrator will onl
+    * y accumulate while the setpoint is within IZone of the target. In cascaded
+    *  control modes this is the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kIZone_0 = 17;
+
+    /*
+    * PIDF derivative filter constant for gain slot 0. In cascaded control modes 
+    * this is the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kDFilter_0 = 18;
+
+    /*
+    * Max output constant for gain slot 0. This is the max output of the controll
+    * er as well as the max integrator value. In cascaded control modes this is 
+    * the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kOutputMin_0 = 19;
+
+    /*
+    * Min output constant for gain slot 0. This is the min output of the controll
+    * er as well as the min integrator value. In cascaded control modes this is 
+    * the inner loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kOutputMax_0 = 20;
+
+    /*
+    * Perportional gain constant for gain slot 1. In cascaded control modes this 
+    * is the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kP_1 = 21;
+
+    /*
+    * Integral gain constant for gain slot 1. In cascaded control modes this is t
+    * he inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kI_1 = 22;
+
+    /*
+    * Derivative gain constant for gain slot 1. In cascaded control modes this is
+    *  the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kD_1 = 23;
+
+    /*
+    * Feed Forward gain constant for gain slot 1. In cascaded control modes this 
+    * is the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kF_1 = 24;
+
+    /*
+    * Integrator zone constant for gain slot 1. The PIDF loop integrator will onl
+    * y accumulate while the setpoint is within IZone of the target. In cascaded
+    *  control modes this is the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kIZone_1 = 25;
+
+    /*
+    * PIDF derivative filter constant for gain slot 1. In cascaded control modes 
+    * this is the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kDFilter_1 = 26;
+
+    /*
+    * Max output constant for gain slot 1. This is the max output of the controll
+    * er as well as the max integrator value. In cascaded control modes this is 
+    * the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kOutputMin_1 = 27;
+
+    /*
+    * Min output constant for gain slot 1. This is the min output of the controll
+    * er as well as the min integrator value. In cascaded control modes this is 
+    * the inner loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kOutputMax_1 = 28;
+
+    /*
+    * Perportional gain constant for gain slot 3. In cascaded control modes this 
+    * is the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kP_2 = 29;
+
+    /*
+    * Integral gain constant for gain slot 3. In cascaded control modes this is t
+    * he outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kI_2 = 30;
+
+    /*
+    * Derivative gain constant for gain slot 3. In cascaded control modes this is
+    *  the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kD_2 = 31;
+
+    /*
+    * Feed Forward gain constant for gain slot 3. In cascaded control modes this 
+    * is the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kF_2 = 32;
+
+    /*
+    * Integrator zone constant for gain slot 3. The PIDF loop integrator will onl
+    * y accumulate while the setpoint is within IZone of the target. In cascaded
+    *  control modes this is the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kIZone_2 = 33;
+
+    /*
+    * PIDF derivative filter constant for gain slot 3. In cascaded control modes 
+    * this is the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kDFilter_2 = 34;
+
+    /*
+    * Max output constant for gain slot 3. This is the max output of the controll
+    * er as well as the max integrator value. In cascaded control modes this is 
+    * the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kOutputMin_2 = 35;
+
+    /*
+    * Min output constant for gain slot 3. This is the min output of the controll
+    * er as well as the min integrator value. In cascaded control modes this is 
+    * the outer loop gain slot 0.
+    * @default 0
+    * @type float32
+    */
+    kOutputMax_2 = 36;
+
+    /*
+    * Perportional gain constant for gain slot 4. In cascaded control modes this 
+    * is the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kP_3 = 37;
+
+    /*
+    * Integral gain constant for gain slot 4. In cascaded control modes this is t
+    * he outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kI_3 = 38;
+
+    /*
+    * Derivative gain constant for gain slot 4. In cascaded control modes this is
+    *  the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kD_3 = 39;
+
+    /*
+    * Feed Forward gain constant for gain slot 4. In cascaded control modes this 
+    * is the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kF_3 = 40;
+
+    /*
+    * Integrator zone constant for gain slot 4. The PIDF loop integrator will onl
+    * y accumulate while the setpoint is within IZone of the target. In cascaded
+    *  control modes this is the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kIZone_3 = 41;
+
+    /*
+    * PIDF derivative filter constant for gain slot 4. In cascaded control modes 
+    * this is the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kDFilter_3 = 42;
+
+    /*
+    * Max output constant for gain slot 4. This is the max output of the controll
+    * er as well as the max integrator value. In cascaded control modes this is 
+    * the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kOutputMin_3 = 43;
+
+    /*
+    * Min output constant for gain slot 4. This is the min output of the controll
+    * er as well as the min integrator value. In cascaded control modes this is 
+    * the outer loop gain slot 1.
+    * @default 0
+    * @type float32
+    */
+    kOutputMax_3 = 44;
+
+    /*
+    * Reserved
+    * @default 0
+    * @type uint
+    */
+    kReserved = 45;
+
+    /*
+    * Simple scalar for all units in all closed loop control modes to scale units
+    *  to native. Use this to scale the output to things like gear ratios or uni
+    * t conversions
+    * @default 1
+    * @type float32
+    */
+    kOutputRatio = 46;
+
+    /*
+    * Low 32-bits of unique 96-bit serial number
+    * @default 0
+    * @type uint
+    */
+    kSerialNumberLow = 47;
+
+    /*
+    * Middle 32-bits of unique 96-bit serial number
+    * @default 0
+    * @type uint
+    */
+    kSerialNumberMid = 48;
+
+    /*
+    * High 32-bits of unique 96-bit serial number
+    * @default 0
+    * @type uint
+    */
+    kSerialNumberHigh = 49;
+
+    /*
+    * Limit switch polarity. Default is Normally Open (1), and can be set to Norm
+    * ally Closed (0)
+    * @default 1
+    * @type bool
+    */
+    kLimitSwitchFwdPolarity = 50;
+
+    /*
+    * Limit switch polarity. Default is Normally Open (1), and can be set to Norm
+    * ally Closed (0)
+    * @default 1
+    * @type bool
+    */
+    kLimitSwitchRevPolarity = 51;
+
+    /*
+    * Limit switch enable, disabled by default
+    * @default 0
+    * @type bool
+    */
+    kHardLimitFwdEn = 52;
+
+    /*sparkusb
+    * Limit switch enable, disabled by default
+    * @default 0
+    * @type bool
+    */
+    kHardLimitRevEn = 53;
+
+    /*
+    * Soft limit enable, disabled by default
+    * @default 0
+    * @type bool
+    */
+    kSoftLimitFwdEn = 54;
+
+    /*
+    * Soft limit enable, disabled by default
+    * @default 0
+    * @type bool
+    */
+    kSoftLimitRevEn = 55;
+
+    /*
+    * Voltage ramp rate active for all control modes in V/s, a value of 0 disable
+    * s this feature
+    * @default 0
+    * @type float32
+    * @unit V/s
+    */
+    kRampRate = 56;
+
+    /*
+    * CAN EXTID of the message with data to follow
+    * @default 0
+    * @type uint
+    */
+    kFollowerID = 57;
+
+    /*
+    * Special configuration register for setting up to follow on a repeating mess
+    * age (follower mode). CFG[0] to CFG[3] where CFG[0] is the motor output sta
+    * rt bit (LSB), CFG[1] is the motor output stop bit (MSB). CFG[0] - CFG[1] d
+    * etermines edieness. CFG[2] bits determine sign mode and inverted, CFG[3] s
+    * ets a preconfigured controller (0x1A = REV, 0x1B = Talon/Victor style as o
+    * f 2018 season)
+    * @default 0
+    * @type uint
+    */
+    kFollowerConfig = 58;
+}
+
+//Type lookup for above, lists what type the controller expects for each parameter
+enum configParamTypes {
+    option allow_alias = true;
+    kDefault_t = 0;
+    //Below is auto generated
+    kCanID_t = 1;
+    kInputMode_t = 1;
+    kMotorType_t = 1;
+    kCommAdvance_t = 2;
+    kSensorType_t = 1;
+    kCtrlType_t = 1;
+    kIdleMode_t = 1;
+    kInputDeadband_t = 2;
+    kFirmwareVer_t = 1;
+    kHallOffset_t = 0;
+    kPolePairs_t = 1;
+    kCurrentChop_t = 2;
+    kCurrentChopCycles_t = 1;
+    kP_0_t = 2;
+    kI_0_t = 2;
+    kD_0_t = 2;
+    kF_0_t = 2;
+    kIZone_0_t = 2;
+    kDFilter_0_t = 2;
+    kOutputMin_0_t = 2;
+    kOutputMax_0_t = 2;
+    kP_1_t = 2;
+    kI_1_t = 2;
+    kD_1_t = 2;
+    kF_1_t = 2;
+    kIZone_1_t = 2;
+    kDFilter_1_t = 2;
+    kOutputMin_1_t = 2;
+    kOutputMax_1_t = 2;
+    kP_2_t = 2;
+    kI_2_t = 2;
+    kD_2_t = 2;
+    kF_2_t = 2;
+    kIZone_2_t = 2;
+    kDFilter_2_t = 2;
+    kOutputMin_2_t = 2;
+    kOutputMax_2_t = 2;
+    kP_3_t = 2;
+    kI_3_t = 2;
+    kD_3_t = 2;
+    kF_3_t = 2;
+    kIZone_3_t = 2;
+    kDFilter_3_t = 2;
+    kOutputMin_3_t = 2;
+    kOutputMax_3_t = 2;
+    kReserved_t = 1;
+    kOutputRatio_t = 2;
+    kSerialNumberLow_t = 1;
+    kSerialNumberMid_t = 1;
+    kSerialNumberHigh_t = 1;
+    kLimitSwitchFwdPolarity_t = 3;
+    kLimitSwitchRevPolarity_t = 3;
+    kHardLimitFwdEn_t = 3;
+    kHardLimitRevEn_t = 3;
+    kSoftLimitFwdEn_t = 3;
+    kSoftLimitRevEn_t = 3;
+    kRampRate_t = 2;
+    kFollowerID_t = 1;
+    kFollowerConfig_t = 1;
+}
+
+//Bit definitions for DRV STAT0
+enum DRVStat0_Bits {
+    VDS_LC_Bit = 0;
+    VDS_HC_Bit = 1;
+    VDS_LB_Bit = 2;
+    VDS_HB_Bit = 3;
+    VDS_LA_Bit = 4;
+    VDS_HA_Bit = 5;
+    OTSD_Bit = 6;
+    UVLO_Bit = 7;
+    GDF_Bit = 8;
+    VDS_OCP_Bit = 9;
+    FAULT_Bit = 10;
+}
+
+//Bit definitions for DRV STAT1
+enum DRVStat1_Bits {
+    VGS_LC_Bit = 0;
+    VGS_HC_Bit = 1;
+    VGS_LB_Bit = 2;
+    VGS_HB_Bit = 3;
+    VGS_LA_Bit = 4;
+    VGS_HA_Bit = 5;   
+    CPUV_Bit = 6;
+    OTW_Bit = 7;
+    SC_OC_Bit = 8;
+    SB_OC_Bit = 9;
+    SA_OC_Bit = 10;
+}

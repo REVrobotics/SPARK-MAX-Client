@@ -1,0 +1,485 @@
+syntax = "proto3";
+
+package sparkmax;
+
+import "SPARK-MAX-Types.proto";
+
+/* Interface functions for service sparkmax.
+* All command requests are serialized into a 
+* RequestWire type before transmission, and
+* Deserializezd to a ResponseWire on recipt
+*/
+service sparkMaxServer {
+    /*
+    * Connect to the requested serial port. If no port
+    * is provided, connect to the default port, which is 
+    * the first port found with a SPARK device.
+    */
+    rpc Connect(connectRequest) returns (connectResponse) {}
+
+    /*
+    * Disconnect the serial port
+    */
+    rpc Disconnect(disconnectRequest) returns (disconnectResponse) {}
+
+    /*
+    * Ping the SPARK to verify connection to the hardware and to
+    * this server.
+    */
+    rpc Ping(pingRequest) returns (pingResponse){}
+
+    /*
+    * List the serial port information for all connected
+    * SPARK devices.
+    */
+    rpc List(listRequest) returns (listResponse) {}
+
+    /*
+    * Update the firmware of the device
+    */
+    rpc Firmware(firmwareRequest) returns (firmwareResponse) {}
+
+    /*
+    * Send a Heartbeat to the SPARK device (similar to how the roboRIO
+    * heartbeat to the device over CAN). This message can be simplified
+    * if driving the motor by calling Setpoint({Enable: true})
+    */
+    //rpc Heartbeat(heartbeatRequest) returns (rootResponse) {}
+
+    /*
+    * Change the SPARK address. Currently done through SetParameter()
+    */
+    //rpc Address(addressRequest) returns (addressResponse) {}
+
+    /*
+    * Set a device parameter. The parameter should be configParam type
+    * the value is a string in both the request and response.
+    */
+    rpc SetParameter(setParameterRequest) returns (parameterResponse) {}
+
+    /*
+    * Get a device parameter. The parameter should be configParam type
+    * the value returned is a string in both the request and response.
+    * The requested value type is also passed to help decode. The type
+    * is of type paramType
+    */
+    rpc GetParameter(getParameterRequest) returns (parameterResponse) {}
+
+    /*
+    * Make all configuration changes permanent for the next time the 
+    * device powers on. Note: This writes any values that have changed
+    * and can only be called when the device is not enabled. Since this
+    * method writes directly to FLASH, avoid calling frequently, as each
+    * flash location can be written to a total of 10,000 times in its lifetime.
+    * Flash wear leveling is being implemented and should be in the release
+    * before kickoff
+    */
+    rpc BurnFlash(burnRequest) returns (burnResponse) {}
+
+    /*
+    * Return a list of all available parameters with their name, number, and type
+    */
+    //rpc ListParameters(parameterListRequest) returns (parameterListResponse) {}
+
+    /*
+    * Send a setpoint command. The value should be native units depending
+    * on the curernt control mode (+/- 1.0 for duty cycle control)
+    * Setting Enable = true will also send a heartbeat allowing the controller
+    * drive the motor.
+    */
+    rpc Setpoint(setpointRequest) returns (setpointResponse) {}
+
+    /*
+    * Set controller to follow another controller.
+    */
+    rpc Follow(followerRequest) returns (rootResponse) {}
+
+    /*
+    * Get the status of the DRV8320 device.
+    */
+    rpc DRVStatus(DRVStatusRequest) returns (DRVStatusResponse) {}
+}
+
+/*
+* Data format to send over 0mq containing one request
+*/
+message RequestWire {
+    oneof req {
+        listRequest             list = 12;
+        firmwareRequest         firmware = 13;
+        heartbeatRequest        heartbeat = 14;
+        addressRequest          address = 15;
+        setParameterRequest     setParameter = 16;
+        getParameterRequest     getParameter = 17;
+        setpointRequest         setpoint = 18;
+        connectRequest          connect = 19;
+        disconnectRequest       disconnect = 20;
+        pingRequest             ping = 21;
+        followerRequest         follower = 22;
+        burnRequest             burn = 23;
+        parameterListRequest    parameterList = 24;
+        DRVStatusRequest        drvStatus = 25;
+    }
+}
+
+/*
+* Data format to recieve over 0mq containting one response
+*/
+message ResponseWire {
+    oneof resp {
+        rootResponse            root = 11;
+        listResponse            list = 12;
+        firmwareResponse        firmware = 13;
+        addressResponse         address = 14;
+        parameterResponse       parameter = 15;
+        parameterListResponse   parameterlist = 16;
+        setpointResponse        setpoint = 17;
+        connectResponse         connect = 18;
+        disconnectResponse      disconnect = 19;
+        pingResponse            ping = 20;
+        burnResponse            burn = 21;
+        DRVStatusResponse       drvStatus = 25;
+    }
+}
+
+/*
+* Request format for connect()
+*/
+message connectRequest {
+    string device = 1;
+}
+
+/*
+* Response format for connect() 
+*/
+message connectResponse {
+    bool connected = 1;
+}
+
+/*
+* Request format for disconnect()
+*/
+message disconnectRequest {
+    string device = 1;
+}
+
+/*
+* Response format for disconnect()
+*/
+message disconnectResponse {
+    bool connected = 1;
+}
+
+/*
+* Response format for ping()
+*/
+message pingRequest {
+    string device = 1;
+}
+
+/*
+* Response format for ping()
+*/
+message pingResponse {
+    rootResponse root = 1;
+    bool connected = 2;
+}
+
+/*
+* Burn command
+*/
+message burnRequest {
+    rootCommand root = 1;
+    bool verify = 2;
+}
+
+
+message burnResponse {    
+    rootResponse root = 1;
+    bool verify = 2;
+}
+
+message commandLineRequest {
+    string stdin = 1;
+}
+
+message commandLineResponse {
+    string stderr = 1;
+    string stdout = 2;
+}
+
+/*
+* All RPC services implement this request
+* keepalive and help are not implemented
+*/
+message rootCommand {
+    string device = 1;
+    bool keepalive = 2;
+    bool help = 3;
+}
+
+/*
+* All RPC services implement this response
+* helpString not implemented
+*/
+message rootResponse {
+    string helpString = 1;
+    string error = 2;
+}
+
+/*
+* Request format for list() command
+*/
+message listRequest {
+    rootCommand root = 1;
+    bool all = 2; 
+}
+
+/*
+* Response format for list() command
+*/
+message listResponse {
+    repeated string deviceList = 1;
+    repeated string deviceDetails = 2;
+    rootResponse root = 3;
+}
+
+/*
+* Request format for firmware() command
+*/
+message firmwareRequest {
+    rootCommand root = 1;
+    string filename = 2;
+}
+
+/*
+* Response format for list() command
+*/
+message firmwareResponse {
+    string version = 1;
+    rootResponse root = 3;
+}
+
+/*
+* Request format for heartbeat() command
+*/
+message heartbeatRequest {
+    rootCommand root = 1;
+    bool enable = 2;
+}
+
+/*
+* Request format for address() command
+*/
+message addressRequest {
+    rootCommand root = 1;
+    uint32 address = 2;
+}
+
+/*
+* Response format for address() command
+*/
+message addressResponse {
+    uint32 currentAddress = 1;
+    uint32 previousAddress = 2;
+    rootResponse root = 3;
+}
+
+/*
+* Request type for Set Parameter()
+*/
+message setParameterRequest { 
+    rootCommand root = 1;
+    configParam parameter = 2;
+    string value = 3;
+}
+
+/*
+* Request type for Get Parameter()
+*/
+message getParameterRequest { 
+    rootCommand root = 1;
+    configParam parameter = 2;
+}
+
+/*
+* Response type for Set/Get Parameter()
+*/
+message parameterResponse {
+    string value = 1;
+    paramType type = 2;
+    paramStatus status = 3;
+    rootResponse root = 4;
+}
+
+message parameterListRequest { 
+    rootCommand root = 1;  
+}
+
+message parameterListResponse {
+    repeated string parameter = 1;
+    repeated paramType type = 2;
+    rootResponse root = 3;
+}
+
+/*
+* Request format for Setpoint() command
+*/
+message setpointRequest {
+    rootCommand root = 1;  
+    float setpoint = 2;
+    bool enable = 3;
+}
+
+/*
+* Response format for Setpoint() command
+* isRunning is not implemented yet
+*/
+message setpointResponse {
+    float setpoint = 1;
+    bool isRunning = 2;
+    rootResponse root = 3;
+}
+
+message followerRequest {
+    rootCommand root = 1;
+    uint32 followerid = 2;
+    uint32 followerconfig = 3;
+}
+
+/*
+* Request for status from the DRV8320
+*/
+message DRVStatusRequest {
+    rootCommand root = 1;
+}
+
+/*
+* DRV Status Response
+*/
+message DRVStatusResponse {
+    DRVStat0 stat0 = 1;
+    DRVStat1 stat1 = 2;
+    rootResponse root = 3;
+}
+
+/*
+* DRV8320 Stat0 register
+*/
+message DRVStat0 {
+    /*
+    * Indicates VDS overcurrent fault on the C low-side MOSFET
+    */
+    bool VDS_LC = 1;
+
+    /*
+    * Indicates VDS overcurrent fault on the C high-side MOSFET
+    */
+    bool VDS_HC = 2;
+    
+    /*
+    * Indicates VDS overcurrent fault on the B low-side MOSFET
+    */
+    bool VDS_LB = 3;
+    
+    /*
+    * Indicates VDS overcurrent fault on the B high-side MOSFET
+    */
+    bool VDS_HB = 4;
+    
+    /*
+    * Indicates VDS overcurrent fault on the A low-side MOSFET
+    */
+    bool VDS_LA = 5;
+    
+    /*
+    * Indicates VDS overcurrent fault on the A high-side MOSFET
+    */
+    bool VDS_HA = 6;
+    
+    /*
+    * Indicates overtemperature shutdown
+    */
+    bool OTSD = 7;
+    
+    /*
+    * Indicates undervoltage lockout fault condition
+    */
+    bool UVLO = 8;
+    
+    /*
+    * Indicates gate drive fault condition
+    */
+    bool GDF = 9;
+    
+    /*
+    * Indicates VDS monitor overcurrent fault condition
+    */
+    bool VDS_OCP = 10;
+    
+    /*
+    * Logic OR of FAULT status registers. Mirrors nFAULT pin.
+    */
+    bool FAULT = 11;
+}
+
+/*
+* DRV8320 Stat1 register
+*/
+message DRVStat1 {
+    
+    /*
+    * Indicates gate drive fault on the C low-side MOSFET
+    */
+    bool VGS_LC = 1;
+    
+    /*
+    * Indicates gate drive fault on the C high-side MOSFET
+    */
+    bool VGS_HC = 2;
+    
+    /*
+    * Indicates gate drive fault on the B low-side MOSFET
+    */
+    bool VGS_LB = 3;
+    
+    /*
+    * Indicates gate drive fault on the B high-side MOSFET
+    */
+    bool VGS_HB = 4;
+    
+    /*
+    * Indicates gate drive fault on the A low-side MOSFET
+    */
+    bool VGS_LA = 5;
+    
+    /*
+    * Indicates gate drive fault on the A high-side MOSFET
+    */
+    bool VGS_HA = 6;  
+    
+    /*
+    * Indicates charge pump undervoltage fault condition
+    */  
+    bool CPUV = 7;
+    
+    /*
+    * Indicates overtemperature warning
+    */
+    bool OTW = 8;
+    
+    /*
+    * Always 0 for DRV8320
+    */
+    bool SC_OC = 9;
+    
+    /*
+    * Always 0 for DRV8320
+    */
+    bool SB_OC = 10;
+    
+    /*
+    * Always 0 for DRV8320
+    */
+    bool SA_OC = 11;
+}

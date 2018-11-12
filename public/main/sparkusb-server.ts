@@ -6,7 +6,8 @@ import {socket, Socket} from "zeromq";
 // tslint:disable
 const queue = require("better-queue");
 
-const protoBufs = path.join(__dirname, "../protobuf/commands.proto");
+const PROTO_BUFFERS_TYPES = path.join(__dirname, "../protobuf/SPARK-MAX-Types.proto");
+const PROTO_BUFFERS_COMMANDS = path.join(__dirname, "../protobuf/SPARK-MAX-Commands.proto");
 
 class SparkServer {
   private readonly host: string;
@@ -22,9 +23,11 @@ class SparkServer {
     this.socket.connect(`tcp://${this.host}:${this.port}`);
     this.cmdQueue = new queue((input: any, cb: Function) => {
       if (input.id === "init") {
-        load(protoBufs).then((root: Root) => {
-          this.root = root;
-          cb(null, null);
+        load(PROTO_BUFFERS_TYPES).then((root: Root) => {
+          load(PROTO_BUFFERS_COMMANDS).then((root: Root) => {
+            this.root = root;
+            cb(null, null);
+          });
         });
       } else {
         const wire = this.root.lookupType("sparkusb.RequestWire");

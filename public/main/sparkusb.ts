@@ -13,7 +13,7 @@ let connCheckID: any = null;
 let setpoint: number = 0;
 
 ipcMain.on("start-server", (event: any) => {
-  const relPath = "../../bin/sparkusb" + (isWin ? ".exe" : "");
+  const relPath = "../../bin/sparkmax" + (isWin ? ".exe" : "");
   const exePath = path.join(__dirname, relPath);
   if (fs.existsSync(exePath)) {
     try {
