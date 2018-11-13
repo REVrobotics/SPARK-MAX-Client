@@ -42,7 +42,7 @@ class HelpTab extends React.Component<IProps, IState> {
           <ol>
             <li>Try restarting the program.</li>
             <li>After restarting the program, unplug the usb from the computer and plug it in again.</li>
-            <li>Contact <a href="mailto:greg@revrobotics.com">greg@revrobotics.com</a></li>
+            <li>Contact <a href="mailto:support@revrobotics.com">support@revrobotics.com</a></li>
           </ol>
         </div>
         <div className="form">

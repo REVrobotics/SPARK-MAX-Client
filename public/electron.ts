@@ -21,7 +21,7 @@ function createWindow() {
     require("electron-debug")({showDevTools: true, enabled: true});
   }
 
-  require("./main/sparkusb");
+  require("./main/sparkmax");
   require("./main/config");
 
   mainWindow.webContents.on("did-finish-load", () => {

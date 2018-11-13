@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "SPARK MAX Client",
-  "version": "0.1.0",
+  "version": "0.6.4",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^3.8.0",
@@ -41,5 +41,29 @@
     "electron-debug": "^2.0.0",
     "electron-rebuild": "^1.8.2",
     "typescript": "^3.1.6"
-  }
+  },
+  "build": {
+    "appId": "org.revrobotics.tng.client.0.6.4",
+    "productName": "SPARK MAX Client",
+    "copyright": "2018 REV Robotics LLC",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "sparkmax/libzmq-v120-mt-4_0_4.dll",
+        "to": "..",
+        "filter": ["*.dll"]
+      }
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build/resources"
+    },
+    "win": {
+      "target": "NSIS"
+    }
+  },
+  "homepage": "./"
 }

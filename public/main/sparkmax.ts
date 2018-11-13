@@ -2,7 +2,7 @@ import {ChildProcess, execFile} from "child_process";
 import {BrowserWindow, dialog, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import SparkServer from "./sparkusb-server";
+import SparkServer from "./sparkmax-server";
 
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);

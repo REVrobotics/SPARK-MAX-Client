@@ -30,7 +30,7 @@ class SparkServer {
           });
         });
       } else {
-        const wire = this.root.lookupType("sparkusb.RequestWire");
+        const wire = this.root.lookupType("sparkmax.RequestWire");
         let wireMsg: any = wire.create({req: input.id});
         wireMsg[input.id] = input.msg;
         const wireBuff = wire.encode(wireMsg).finish();
@@ -52,7 +52,7 @@ class SparkServer {
     this.cmdQueue.push({id: "init"});
   }
 
-  private sendCommand(lookupType: any, msg: string, cb?: Function) {
+  private sendCommand(lookupType: any, responseType: any, msg: string, cb?: Function) {
     /*Queue the attached request
     * Priority:
     *   - Connect (also flush queue)
@@ -78,31 +78,31 @@ class SparkServer {
     req.msg = msg;
 
     this.cmdQueue.push(req, (error: any, result: any) => {
-      const cmd = this.root.lookupType("sparkusb.ResponseWire");
+      const cmd = this.root.lookupType("sparkmax.ResponseWire");
       const msg: any = cmd.decode(result);
       if (typeof cb !== "undefined") {
-        cb(error, msg[lookupType]);
+        cb(error, msg[responseType]);
       }
     });
   }
 
   public connect(controlCommand: any, cb?: Function) {
     controlCommand.ctrl = 1;
-    this.sendCommand("control", controlCommand, cb);
+    this.sendCommand("connect", "connect", controlCommand, cb);
   }
 
   public disconnect(controlCommand: any, cb?: Function) {
     controlCommand.ctrl = 2;
-    this.sendCommand("control", controlCommand, cb);
+    this.sendCommand("disconnect", "disconnect", controlCommand, cb);
   }
 
   public list(listCommand: any, cb?: Function) {
     listCommand.ctrl = 1;
-    this.sendCommand("list", listCommand, cb);
+    this.sendCommand("list", "list", listCommand, cb);
   }
 
   public getParameter(paramCommand: any, cb: Function) {
-    this.sendCommand("parameter", paramCommand, (error: any, result: any) => {
+    this.sendCommand("getParameter", "parameter", paramCommand, (error: any, result: any) => {
       result.value = Number(result.value);
       cb(error, result);
     });
@@ -110,16 +110,18 @@ class SparkServer {
 
   public setParameter(paramCommand: any, cb?: Function) {
     paramCommand.value += "";
-    this.sendCommand("parameter", paramCommand, cb);
+    this.sendCommand("setParameter", "parameter", paramCommand, cb);
   }
 
   public setpoint(setpointCommand: any, cb?: Function) {
     setpointCommand.enable = true;
-    this.sendCommand("setpoint", setpointCommand, cb);
+    setpointCommand.setpoint = setpointCommand.setpoint / 1024;
+    this.sendCommand("setpoint", "setpoint", setpointCommand, cb);
   }
 
-  public burnFlash(rootCommand: any, cb: Function) {
-    cb(null, null);
+  public burnFlash(burnCommand: any, cb?: Function) {
+    burnCommand.verify = true;
+    this.sendCommand("burn", "burn", burnCommand, cb);
   }
 
   public heartbeat(heartbeatRequest: any, cb: Function) {
