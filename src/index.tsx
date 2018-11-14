@@ -9,7 +9,7 @@ import reducer from "./store/reducer";
 
 const applicationStore = createStore(reducer);
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
-const headless = true;
+const headless = false;
 
 if (headless) {
   ReactDOM.render(
