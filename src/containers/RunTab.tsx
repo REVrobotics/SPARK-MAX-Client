@@ -45,6 +45,16 @@ class RunTab extends React.Component<IProps, IState> {
     this.stop = this.stop.bind(this);
 
     this.updateGraph = this.updateGraph.bind(this);
+
+    this.listenForEmergencyStop = this.listenForEmergencyStop.bind(this);
+  }
+
+  public componentDidMount() {
+    window.addEventListener("keydown", this.listenForEmergencyStop);
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener("keydown", this.listenForEmergencyStop);
   }
 
   public render() {
@@ -139,6 +149,15 @@ class RunTab extends React.Component<IProps, IState> {
       // setSetpoint(value * 1024);
     } else {
       // setSetpoint(value * 1023);
+    }
+  }
+
+  private listenForEmergencyStop(event: any) {
+    if (this.state.running) {
+      if (event.key === "Space" || event.key === "Enter") {
+        console.log("Emergency stop was pressed.");
+        this.setState({running: false});
+      }
     }
   }
 }

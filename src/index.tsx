@@ -20,6 +20,7 @@ if (headless) {
   );
   registerServiceWorker();
 } else {
+  // TODO - Add looking for config 'port' number.
   ipcRenderer.on("start-server-response", (event: any, error: any) => {
     ReactDOM.render(
       <Provider store={applicationStore}>

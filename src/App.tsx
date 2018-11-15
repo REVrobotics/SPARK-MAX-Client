@@ -10,7 +10,7 @@ import FirmwareTab from "./containers/FirmwareTab";
 import HelpTab from "./containers/HelpTab";
 import PIDTunerTab from "./containers/PIDTunerTab";
 import RunTab from "./containers/RunTab";
-import SettingsTab from "./containers/Settings";
+import SettingsTab from "./containers/SettingsTab";
 import SparkManager from "./managers/SparkManager";
 import {setConnectedDevice, setIsConnecting, updateConnectionStatus} from "./store/actions";
 import {ApplicationActions, ISetConnectedDevice, ISetIsConnecting, IUpdateConnectionStatus} from "./store/types";
