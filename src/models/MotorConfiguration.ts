@@ -1,31 +1,51 @@
-export default class MotorConfiguration {
-  private readonly motorID: number;
-  private readonly motorName: string;
-  private readonly motorType: number;
+export default class MotorConfiguration implements ISerializable {
+  private _name: string;
+  private _canID: number;
+  private _type: number;
 
-  constructor(motorID: number, motorName: string, motorType: number) {
-    this.motorID = motorID;
-    this.motorName = motorName;
-    this.motorType = motorType;
+  constructor(motorName: string, motorID: number, motorType: number) {
+    this._name = motorName;
+    this._canID = motorID;
+    this._type = motorType;
   }
 
-  get id(): number {
-    return this.motorID;
+  public toJSON(): object {
+    return {};
   }
 
+  public fromJSON(json: any): MotorConfiguration {
+    const config: MotorConfiguration = new MotorConfiguration(json.name, json.canID, json.type);
+    return config;
+  }
+  
   get name(): string {
-    return this.motorName;
+    return this._name;
+  }
+
+  set name(value: string) {
+    this._name = value;
+  }
+
+  get canID(): number {
+    return this._canID;
+  }
+
+  set canID(value: number) {
+    this._canID = value;
   }
 
   get type(): number {
-    return this.motorType;
+    return this._type;
   }
 
+  set type(value: number) {
+    this._type = value;
+  }
 }
 
-export const REV_BRUSHLESS = new MotorConfiguration(1, "REV Brushless", 1);
-export const CIM = new MotorConfiguration(2, "CIM", 0);
-export const MINI_CIM = new MotorConfiguration(3, "Mini Cim", 0);
-export const PRO = new MotorConfiguration(4, "775 Pro/Redline", 0);
-export const BAG = new MotorConfiguration(5, "Bag", 0);
-export const REV_HD_HEX = new MotorConfiguration(6, "REV HD Hex", 0);
+export const REV_BRUSHLESS = new MotorConfiguration("REV Brushless", 1, 1);
+export const CIM = new MotorConfiguration("CIM", 2, 0);
+export const MINI_CIM = new MotorConfiguration("Mini Cim", 3, 0);
+export const PRO = new MotorConfiguration("775 Pro/Redline", 4, 0);
+export const BAG = new MotorConfiguration("Bag", 5, 0);
+export const REV_HD_HEX = new MotorConfiguration("REV HD Hex", 6, 0);
