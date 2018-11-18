@@ -11,7 +11,7 @@ const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
   return (
     <MenuItem
       active={itemProps.modifiers.active}
-      key={motor.id}
+      key={motor.name}
       onClick={itemProps.handleClick}
       text={motor.name}
     />

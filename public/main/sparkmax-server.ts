@@ -23,7 +23,7 @@ class SparkServer {
     this.socket.connect(`tcp://${this.host}:${this.port}`);
     this.cmdQueue = new queue((input: any, cb: Function) => {
       if (input.id === "init") {
-        load(PROTO_BUFFERS_TYPES).then((root: Root) => {
+        load(PROTO_BUFFERS_TYPES).then(() => {
           load(PROTO_BUFFERS_COMMANDS).then((root: Root) => {
             this.root = root;
             cb(null, null);
