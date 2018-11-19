@@ -1,15 +1,17 @@
 import {Reducer} from "redux";
+import {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {
   ApplicationActions,
   IApplicationState,
   SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_PARAMETERS
+  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS
 } from "./types";
 
 export const initialState: IApplicationState = {
   connectedDevice: "",
   connectionStatus: "NOT CONNECTED",
+  currentConfig: REV_BRUSHLESS,
   isConnected: false,
   isConnecting: false,
   parameters: []
@@ -25,6 +27,8 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
       return {...state, connectedDevice: action.payload.connectedDevice};
     case SET_PARAMETERS:
       return {...state, parameters: action.payload.parameters};
+    case SET_MOTOR_CONFIG:
+      return {...state, currentConfig: action.payload.config};
     default:
       return state;
   }

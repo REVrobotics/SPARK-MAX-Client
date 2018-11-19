@@ -1,3 +1,5 @@
+import MotorConfiguration from "../models/MotorConfiguration";
+
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 
 class SparkManager {
@@ -87,6 +89,20 @@ class SparkManager {
     ipcRenderer.on("disconnection", () => f());
   }
 
+  public getConfigFromParams(): Promise<MotorConfiguration> {
+    return new Promise<MotorConfiguration>((resolve, reject) => {
+      this.getAllParameters().then((values: any[]) => {
+        const config: MotorConfiguration = new MotorConfiguration("REV Brushless", 1);
+        config.canID = values[0];
+        config.inputMode = values[1];
+        config.type = values[2];
+        // TODO - Add more conversions...
+      }).catch((error: any) => {
+        reject(error);
+      });
+    });
+  }
+
   public getAllParameters(): Promise<number[]> {
     return Promise.all([
       this.getCanID(),
@@ -96,7 +112,9 @@ class SparkManager {
       this.getSensorType(),
       this.getControlType(),
       this.getIdleMode(),
-      this.getDeadband()]);
+      this.getDeadband()
+      // TODO - Add more parameters...
+    ]);
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!

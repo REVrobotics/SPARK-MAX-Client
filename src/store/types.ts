@@ -1,4 +1,5 @@
 import {Action} from "redux";
+import MotorConfiguration from "../models/MotorConfiguration";
 
 export const SET_CONNECTION_STATUS = "SET_CONNECTED";
 export type SET_CONNECTION_STATUS = typeof SET_CONNECTION_STATUS;
@@ -12,12 +13,16 @@ export type SET_CONNECTED_DEVICE = typeof SET_CONNECTED_DEVICE;
 export const SET_PARAMETERS = "SET_PARAMETERS";
 export type SET_PARAMETERS = typeof SET_PARAMETERS;
 
+export const SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG";
+export type SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG";
+
 export interface IApplicationState {
   isConnected: boolean,
   connectionStatus: string,
   isConnecting: boolean,
   connectedDevice: string,
-  parameters: number[]
+  parameters: number[],
+  currentConfig: MotorConfiguration
 }
 
 export interface IUpdateConnectionStatus extends Action {
@@ -49,4 +54,12 @@ export interface ISetParameters extends Action {
   }
 }
 
-export type ApplicationActions = IUpdateConnectionStatus | ISetIsConnecting | ISetConnectedDevice | ISetParameters;
+export interface ISetMotorConfig extends Action {
+  type: SET_MOTOR_CONFIG,
+  payload: {
+    config: MotorConfiguration
+  }
+}
+
+export type ApplicationActions = IUpdateConnectionStatus | ISetIsConnecting | ISetConnectedDevice | ISetParameters
+  | ISetMotorConfig;

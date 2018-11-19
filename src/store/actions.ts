@@ -1,10 +1,11 @@
 import {ActionCreator} from "redux";
+import MotorConfiguration from "../models/MotorConfiguration";
 import {
   ISetConnectedDevice,
-  ISetIsConnecting, ISetParameters,
+  ISetIsConnecting, ISetMotorConfig, ISetParameters,
   IUpdateConnectionStatus, SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_PARAMETERS
+  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS
 } from "./types";
 
 export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
@@ -34,4 +35,11 @@ export const setParameters: ActionCreator<ISetParameters> = (parameters: number[
     parameters
   },
   type: SET_PARAMETERS
+});
+
+export const setMotorConfig: ActionCreator<ISetMotorConfig> = (config: MotorConfiguration) => ({
+  payload: {
+    config
+  },
+  type: SET_MOTOR_CONFIG
 });
