@@ -2,11 +2,13 @@ import {Alert, Button, FormGroup, NumericInput, Slider, Switch} from "@blueprint
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
+import SparkManager from "../managers/SparkManager";
 import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 
 interface IProps {
-  connected: boolean
+  connected: boolean,
+  motorConfig: MotorConfiguration
 }
 
 interface IState {
@@ -25,6 +27,7 @@ interface IState {
   outputRampLimitEnabled: boolean,
   positionProfile: number,
   positionSetpoint: number,
+  savingConfig: boolean,
   slaveMode: boolean,
   updateRequested: boolean,
   velocityProfile: number,
@@ -51,6 +54,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
       outputRampLimitEnabled: false,
       positionProfile: 0,
       positionSetpoint: 0,
+      savingConfig: false,
       slaveMode: false,
       updateRequested: false,
       velocityProfile: 1,
@@ -80,7 +84,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
       activeMotorType, isCoastMode, currentLimitEnabled, currentLimit, canID, deadband, updateRequested,
       currentProfile, currentSetpoint, positionProfile, positionSetpoint, velocityProfile, velocitySetpoint,
       outputRampLimitEnabled, outputRampLimit, inputRampLimitEnabled, inputRampLimit,
-      slaveMode, masterID
+      slaveMode, masterID, savingConfig
     } = this.state;
     return (
       <div>
@@ -210,14 +214,15 @@ class AdvancedTab extends React.Component<IProps, IState> {
           </FormGroup>
         </div>
         <div className="form">
-          <Button className="rev-btn" disabled={!connected} onClick={this.openConfirmModal}>Update Configuration</Button>
+          <Button className="rev-btn" disabled={!connected} loading={savingConfig} onClick={this.openConfirmModal}>Update Configuration</Button>
         </div>
       </div>
     );
   }
 
   public changeCanID(id: number) {
-    this.setState({canID: id});
+    this.props.motorConfig.canID = id;
+    this.forceUpdate();
   }
 
   public changeMotorType(motorType: MotorConfiguration) {
@@ -229,15 +234,19 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeIdleMode() {
-    this.setState({isCoastMode: !this.state.isCoastMode});
+    const prevMode: number = this.props.motorConfig.idleMode;
+    this.props.motorConfig.idleMode = prevMode === 0 ? 1 : 0;
+    this.forceUpdate();
   }
 
   public changeCurrentLimit(value: number) {
-    this.setState({currentLimit: value});
+    this.props.motorConfig.currentLimit = value;
+    this.forceUpdate();
   }
 
   public changeDeadband(value: number) {
-    this.setState({deadband: value});
+    this.props.motorConfig.inputDeadband = value;
+    this.forceUpdate();
   }
 
   public openConfirmModal() {
@@ -277,7 +286,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeMasterID(value: number) {
-    this.setState({masterID: value});
+    this.props.motorConfig.followerID = value;
+    this.forceUpdate();
   }
 
   public changeOutputLimitEnabled() {
@@ -297,13 +307,27 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public updateConfiguration() {
-    // TODO - !!!!
+    this.setState({savingConfig: true});
+    SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
+      console.log(res);
+      SparkManager.burnFlash().then((flashRes: any) => {
+        console.log(flashRes);
+        this.setState({savingConfig: false});
+      }).catch((error: any) => {
+        this.setState({savingConfig: false});
+        console.log(error);
+      });
+    }).catch((error: any) => {
+      console.log(error);
+      this.setState({savingConfig: false});
+    });
   }
 }
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: state.isConnected,
+    motorConfig: state.currentConfig
   };
 }
 

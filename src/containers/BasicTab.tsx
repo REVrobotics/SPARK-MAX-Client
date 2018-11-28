@@ -2,19 +2,18 @@ import {Alert, Button, FormGroup, NumericInput, Radio, RadioGroup, Switch} from 
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
+import SparkManager from "../managers/SparkManager";
 import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 
 interface IProps {
-  connected: boolean
+  connected: boolean,
+  motorConfig: MotorConfiguration
 }
 
 interface IState {
   updateRequested: boolean,
   savingConfig: boolean,
-  canID: number,
-  currentLimit: number,
-  isCoastMode: boolean,
   activeMotorType: MotorConfiguration
 }
 
@@ -23,8 +22,6 @@ class BasicTab extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       activeMotorType: REV_BRUSHLESS,
-      canID: 0,currentLimit: 40,
-      isCoastMode: false,
       savingConfig: false,
       updateRequested: false
     };
@@ -35,11 +32,17 @@ class BasicTab extends React.Component<IProps, IState> {
     this.changeCanID = this.changeCanID.bind(this);
     this.changeIdleMode = this.changeIdleMode.bind(this);
     this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
+
+    this.updateConfiguration = this.updateConfiguration.bind(this);
   }
 
   public render() {
-    const {connected} = this.props;
-    const {activeMotorType, canID, currentLimit, isCoastMode, savingConfig, updateRequested} = this.state;
+    const {connected, motorConfig} = this.props;
+    const {activeMotorType, savingConfig, updateRequested} = this.state;
+
+    const canID = motorConfig.canID;
+    const isCoastMode = motorConfig.idleMode === 0;
+    const currentLimit = motorConfig.currentLimit;
     return (
       <div>
         <Alert
@@ -49,6 +52,7 @@ class BasicTab extends React.Component<IProps, IState> {
           intent="success"
           onCancel={this.closeConfirmModal}
           onClose={this.closeConfirmModal}
+          onConfirm={this.updateConfiguration}
         >
           Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
         </Alert>
@@ -132,7 +136,8 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeCanID(id: number) {
-    this.setState({canID: id});
+    this.props.motorConfig.canID = id;
+    this.forceUpdate();
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
@@ -140,18 +145,38 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeIdleMode() {
-    this.setState({isCoastMode: !this.state.isCoastMode});
+    const prevMode: number = this.props.motorConfig.idleMode;
+    this.props.motorConfig.idleMode = prevMode === 0 ? 1 : 0;
+    this.forceUpdate();
   }
 
   public changeCurrentLimit(value: any) {
-    this.setState({currentLimit: parseInt(value.currentTarget.value, 10)});
+    this.props.motorConfig.currentLimit = parseInt(value.currentTarget.value, 10);
+    this.forceUpdate();
   }
 
+  private updateConfiguration() {
+    this.setState({savingConfig: true});
+    SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
+      console.log(res);
+      SparkManager.burnFlash().then((flashRes: any) => {
+        console.log(flashRes);
+        this.setState({savingConfig: false});
+      }).catch((error: any) => {
+        this.setState({savingConfig: false});
+        console.log(error);
+      });
+    }).catch((error: any) => {
+      console.log(error);
+      this.setState({savingConfig: false});
+    });
+  }
 }
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: state.isConnected,
+    motorConfig: state.currentConfig
   };
 }
 

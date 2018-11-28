@@ -9,7 +9,7 @@ export default class MotorConfiguration implements ISerializable {
   private _commutationAdvance: number;
   private _sensorType: string;
   private readonly _controlType: string;
-  private _idleMode: string;
+  private _idleMode: number;
   private _inputDeadband: number;
   private _firmwareVersion: string;
   private _hallOffset: number;
@@ -94,11 +94,11 @@ export default class MotorConfiguration implements ISerializable {
     return this._controlType;
   }
 
-  get idleMode(): string {
+  get idleMode(): number {
     return this._idleMode;
   }
 
-  set idleMode(value: string) {
+  set idleMode(value: number) {
     this._idleMode = value;
   }
 

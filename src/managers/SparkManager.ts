@@ -103,18 +103,23 @@ class SparkManager {
     });
   }
 
+  public setParamsFromConfig(config: MotorConfiguration): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      // TODO - Need to think of how to efficiently do this...
+      this.setParameter(0, config.canID).then(() => {
+        resolve();
+      }).catch(() => {
+        reject();
+      });
+    });
+  }
+
   public getAllParameters(): Promise<number[]> {
-    return Promise.all([
-      this.getCanID(),
-      this.getInputType(),
-      this.getMotorType(),
-      this.getCommutationAdvance(),
-      this.getSensorType(),
-      this.getControlType(),
-      this.getIdleMode(),
-      this.getDeadband()
-      // TODO - Add more parameters...
-    ]);
+    const promises: Array<Promise<any>> = [];
+    for (let i = 0; i < 54; i++) {
+      promises.push(this.getParameter(i));
+    }
+    return Promise.all(promises);
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
@@ -133,68 +138,17 @@ class SparkManager {
     ipcRenderer.send("disable-heartbeat");
   }
 
-  public getCanID(): Promise<number> {
-    return this.getParameter(0);
-  }
-
-  public getInputType(): Promise<number> {
-    return this.getParameter(1);
-  }
-
-  public getMotorType(): Promise<number> {
-    return this.getParameter(2);
-  }
-
-  public getCommutationAdvance(): Promise<number> {
-    return this.getParameter(3);
-  }
-
-  public getSensorType(): Promise<number> {
-    return this.getParameter(4);
-  }
-
-  public getControlType(): Promise<number> {
-    return this.getParameter(5);
-  }
-
-  public getIdleMode(): Promise<number> {
-    return this.getParameter(6);
-  }
-
-  public getDeadband(): Promise<number> {
-    return this.getParameter(7);
-  }
-
-  public setCanID(value: number): Promise<any> {
-    return this.setParameter(0, value);
-  }
-
-  public setInputType(value: number): Promise<any> {
-    return this.setParameter(1, value);
-  }
-
-  public setMotorType(value: number): Promise<any> {
-    return this.setParameter(2, value);
-  }
-
-  public setCommutationAdvance(value: number): Promise<any> {
-    return this.setParameter(3, value);
-  }
-
-  public setSensorType(value: number): Promise<any> {
-    return this.setParameter(4, value);
-  }
-
-  public setControlType(value: number): Promise<any> {
-    return this.setParameter(5, value);
-  }
-
-  public setIdleMode(value: number): Promise<any> {
-    return this.setParameter(6, value);
-  }
-
-  public setDeadband(value: number): Promise<any> {
-    return this.setParameter(7, value);
+  public burnFlash(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      ipcRenderer.once("burn-flash-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(error);
+        }
+      });
+      ipcRenderer.send("burn-flash");
+    });
   }
 
   private getParameter(id: number): Promise<number> {

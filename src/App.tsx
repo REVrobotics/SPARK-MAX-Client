@@ -12,13 +12,18 @@ import PIDTunerTab from "./containers/PIDTunerTab";
 import RunTab from "./containers/RunTab";
 import SettingsTab from "./containers/SettingsTab";
 import SparkManager from "./managers/SparkManager";
-import {setConnectedDevice, setIsConnecting, updateConnectionStatus} from "./store/actions";
-import {ApplicationActions, ISetConnectedDevice, ISetIsConnecting, IUpdateConnectionStatus} from "./store/types";
+import MotorConfiguration from "./models/MotorConfiguration";
+import {setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "./store/actions";
+import {
+  ApplicationActions, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  IUpdateConnectionStatus
+} from "./store/types";
 
 interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
-  setConnectedDevice: (device: string) => ISetConnectedDevice
+  setConnectedDevice: (device: string) => ISetConnectedDevice,
+  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig
 }
 
 class App extends React.Component<IProps> {
@@ -33,8 +38,8 @@ class App extends React.Component<IProps> {
       this.props.updateConnectionStatus(true, "CONNECTED");
       this.props.setIsConnecting(false);
       this.props.setConnectedDevice(device);
-      SparkManager.getAllParameters().then((values: number[]) => {
-        console.log(values);
+      SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+        this.props.setCurrentConfig(config);
       });
       console.log(device);
     }).catch((error: any) => {
@@ -70,6 +75,7 @@ class App extends React.Component<IProps> {
 export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status))
   };

@@ -84,6 +84,12 @@ ipcMain.on("list-device", (event: any) => {
   });
 });
 
+ipcMain.on("burn-flash", (event: any) => {
+  server.burnFlash({}, (err: any, response: any) => {
+    event.sender.send("burn-flash-response", err, response);
+  });
+});
+
 ipcMain.on("enable-heartbeat", (event: any, interval: number) => {
   if (heartbeatID === null) {
     console.log("Enabling heartbeat for every " + interval + "ms");
