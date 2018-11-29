@@ -8,7 +8,7 @@ export default class MotorConfiguration implements ISerializable {
   private _type: number;
   private _commutationAdvance: number;
   private _sensorType: string;
-  private readonly _controlType: string;
+  private _controlType: string;
   private _idleMode: number;
   private _inputDeadband: number;
   private _firmwareVersion: string;
@@ -31,6 +31,7 @@ export default class MotorConfiguration implements ISerializable {
   constructor(motorName: string, motorType: number) {
     this._name = motorName;
     this._type = motorType;
+    this._controlProfiles = [];
   }
 
   public toJSON(): object {
@@ -92,6 +93,10 @@ export default class MotorConfiguration implements ISerializable {
 
   get controlType(): string {
     return this._controlType;
+  }
+
+  set controlType(value: string) {
+    this._controlType = value;
   }
 
   get idleMode(): number {
