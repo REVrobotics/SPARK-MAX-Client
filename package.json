@@ -1,8 +1,10 @@
 {
   "name": "spark-max-client",
   "productName": "SPARK MAX Client",
-  "version": "0.8.2",
+  "version": "0.8.7",
   "private": true,
+  "author": "REV Robotics LLC",
+  "description": "SPARK MAX Motor Controller Client",
   "main": "build/electron.js",
   "dependencies": {
     "@blueprintjs/core": "^3.10.0",
@@ -54,11 +56,8 @@
     ],
     "extraFiles": [
       {
-        "from": "bin/libzmq-v120-mt-4_0_4.dll",
-        "to": "..",
-        "filter": [
-          "*.dll"
-        ]
+        "from": "bin/",
+        "to": "."
       }
     ],
     "directories": {

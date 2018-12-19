@@ -16,7 +16,7 @@ function createWindow() {
   });
 
   if (isProd) {
-    mainWindow.loadFile(path.join(__dirname, "../index.html"));
+    mainWindow.loadFile(path.join(__dirname, "./index.html"));
   } else {
     mainWindow.loadURL("http://localhost:3000/");
     require("electron-debug")({showDevTools: true, enabled: true});

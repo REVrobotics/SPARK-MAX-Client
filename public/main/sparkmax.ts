@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
+const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -13,23 +14,29 @@ let connCheckID: any = null;
 let setpoint: number = 0;
 let currentDevice: string = "";
 
+const dllFolder = isProd ? "../../../../" : "../../bin/";
+
 ipcMain.on("start-server", (event: any, port: any) => {
   if (!port) {
     port = 8001;
   }
-  const relPath = "../../bin/sparkmax" + (isWin ? ".exe" : "");
+  const relPath = dllFolder + "sparkmax" + (isWin ? ".exe" : "");
   const exePath = path.join(__dirname, relPath);
   if (fs.existsSync(exePath)) {
     try {
       usbProc = execFile(exePath, ["-r", "-p", port], (error: any, stdout: any) => {
+        console.log("Successfully started the SPARK server.");
         event.sender.send("start-server-response", error);
       });
+      console.log("Successfully started the SPARK server.");
       event.sender.send("start-server-response");
     } catch (e) {
+      console.log("There was an error starting the SPARK server. " + e);
       event.sender.send("start-server-response", e);
     }
   } else {
-    event.sender.send("start-server-response", "The sparkusb executable was not found for your operating system. (" + exePath + ")");
+    console.log("The SPARK server executable was not found for your operating system. (" + exePath + ")");
+    event.sender.send("start-server-response", "The SPARK server executable was not found for your operating system. (" + exePath + ")");
   }
 });
 
