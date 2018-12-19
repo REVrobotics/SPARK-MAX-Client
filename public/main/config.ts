@@ -5,13 +5,19 @@ import * as path from "path";
 const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
 const configPath = path.join(appDataPath, "config.json");
 
-fs.access(configPath, fs.constants.F_OK, (error: any) => {
-  if (error) {
-    fs.writeFile(configPath, "{}", (writeErr: any) => {
-      if (writeErr) {
-        console.log("Error creating configuration file.");
+fs.mkdir(appDataPath, {recursive: true}, (dirError: any) => {
+  if (!dirError) {
+    fs.access(configPath, fs.constants.F_OK, (error: any) => {
+      if (error) {
+        fs.writeFile(configPath, "{}", (writeErr: any) => {
+          if (writeErr) {
+            console.log("Error creating configuration file: " + writeErr);
+          }
+        });
       }
     });
+  } else {
+    console.log("Error creating directory: " + dirError);
   }
 });
 

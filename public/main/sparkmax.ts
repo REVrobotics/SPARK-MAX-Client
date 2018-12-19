@@ -11,6 +11,7 @@ let usbProc: ChildProcess | null = null;
 let heartbeatID: any = null;
 let connCheckID: any = null;
 let setpoint: number = 0;
+let currentDevice: string = "";
 
 ipcMain.on("start-server", (event: any, port: any) => {
   if (!port) {
@@ -44,10 +45,24 @@ ipcMain.on("connect", (event: any, device: string) => {
     if (err) {
       event.sender.send("connect-response", err, response);
     } else {
+      currentDevice = device;
+      if (connCheckID === null) {
+        connCheckID = global.setInterval(() => {
+          server.ping({device: currentDevice}, (pingErr: any, pingResponse: any) => {
+            if (pingErr) {
+              console.error(err);
+            } else {
+              if (!pingResponse.connected) {
+                global.clearInterval(connCheckID);
+                server.disconnect({device: currentDevice, keepalive: true}, (disconnectErr: any, disconnectResponse: any) => {
+                  event.sender.send("disconnect-response", err, response);
+                });
+              }
+            }
+          });
+        }, 2000);
+      }
       event.sender.send("connect-response", err, response);
-    }
-    if (connCheckID === null) {
-      // TODO - Connection stuff.
     }
   });
 });
@@ -56,7 +71,7 @@ ipcMain.on("disconnect", (event: any, device: string) => {
   console.log("Disconnecting on " + device + "...");
   server.disconnect({device, keepalive: true}, (err: any, response: any) => {
     if (connCheckID !== null) {
-      clearInterval(connCheckID);
+      global.clearInterval(connCheckID);
       connCheckID = null;
     }
     event.sender.send("disconnect-response", err, response);
@@ -72,9 +87,12 @@ ipcMain.on("set-param", (event: any, parameter: number, value: any) => {
 });
 
 ipcMain.on("get-param", (event: any, parameter: any) => {
+  console.log(parameter + " - GETTING");
   server.getParameter({parameter}, (err: any, response: string) => {
-    console.log(parameter, response);
-    event.sender.send("get-param-" + parameter + "-response", err, response);
+    setTimeout(() => {
+      console.log(parameter, response);
+      event.sender.send("get-param-" + parameter + "-response", err, response);
+    });
   });
 });
 

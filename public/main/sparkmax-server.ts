@@ -127,6 +127,10 @@ class SparkServer {
   public heartbeat(heartbeatRequest: any, cb: Function) {
     cb(null, null);
   }
+
+  public ping(pingCommand: any, cb: Function) {
+    this.sendCommand("ping", "ping", pingCommand, cb);
+  }
 }
 
 export default SparkServer;

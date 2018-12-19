@@ -36,6 +36,10 @@ class BasicTab extends React.Component<IProps, IState> {
     this.updateConfiguration = this.updateConfiguration.bind(this);
   }
 
+  public componentDidMount(): void {
+    console.log(this.props.motorConfig);
+  }
+
   public render() {
     const {connected, motorConfig} = this.props;
     const {activeMotorType, savingConfig, updateRequested} = this.state;
@@ -166,6 +170,7 @@ class BasicTab extends React.Component<IProps, IState> {
         this.setState({savingConfig: false});
         console.log(error);
       });
+      this.setState({savingConfig: false});
     }).catch((error: any) => {
       console.log(error);
       this.setState({savingConfig: false});

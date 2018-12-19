@@ -1,4 +1,5 @@
 import MotorConfiguration from "../models/MotorConfiguration";
+import PIDFProfile from "../models/PIDFProfile";
 
 const MAX_PARAMETERS: number = 58;
 
@@ -95,6 +96,10 @@ class SparkManager {
     return new Promise<MotorConfiguration>((resolve, reject) => {
       this.getAllParameters().then((values: any[]) => {
         const config: MotorConfiguration = new MotorConfiguration("REV Brushless", 1);
+        config.controlProfiles.push(new PIDFProfile());
+        config.controlProfiles.push(new PIDFProfile());
+        config.controlProfiles.push(new PIDFProfile());
+        config.controlProfiles.push(new PIDFProfile());
         config.canID = values[0];
         config.inputMode = values[1];
         config.type = values[2];
@@ -150,6 +155,7 @@ class SparkManager {
         config.rampRate = values[56];
         config.followerID = values[57];
         config.followerConfig = values[58];
+        resolve(config);
       }).catch((error: any) => {
         reject(error);
       });
@@ -158,7 +164,6 @@ class SparkManager {
 
   public setParamsFromConfig(config: MotorConfiguration): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      // TODO - Need to think of how to efficiently do this...
       const promises: Array<Promise<any>> = [];
       promises.push(this.setParameter(0, config.canID));
       promises.push(this.setParameter(1, config.inputMode));
@@ -173,39 +178,40 @@ class SparkManager {
       promises.push(this.setParameter(10, config.polePairs));
       promises.push(this.setParameter(11, config.currentChop));
       promises.push(this.setParameter(12, config.currentLimit));
-      // TODO - Do undefined checking.
-      promises.push(this.setParameter(13, config.controlProfiles[0].p));
-      promises.push(this.setParameter(14, config.controlProfiles[0].i));
-      promises.push(this.setParameter(15, config.controlProfiles[0].d));
-      promises.push(this.setParameter(16, config.controlProfiles[0].f));
-      promises.push(this.setParameter(17, config.controlProfiles[0].iZone));
-      promises.push(this.setParameter(18, config.controlProfiles[0].dFilter));
-      promises.push(this.setParameter(19, config.controlProfiles[0].minOutput));
-      promises.push(this.setParameter(20, config.controlProfiles[0].maxOutput));
-      promises.push(this.setParameter(21, config.controlProfiles[1].p));
-      promises.push(this.setParameter(22, config.controlProfiles[1].i));
-      promises.push(this.setParameter(23, config.controlProfiles[1].d));
-      promises.push(this.setParameter(24, config.controlProfiles[1].f));
-      promises.push(this.setParameter(25, config.controlProfiles[1].iZone));
-      promises.push(this.setParameter(26, config.controlProfiles[1].dFilter));
-      promises.push(this.setParameter(27, config.controlProfiles[1].minOutput));
-      promises.push(this.setParameter(28, config.controlProfiles[1].maxOutput));
-      promises.push(this.setParameter(29, config.controlProfiles[2].p));
-      promises.push(this.setParameter(30, config.controlProfiles[2].i));
-      promises.push(this.setParameter(31, config.controlProfiles[2].d));
-      promises.push(this.setParameter(32, config.controlProfiles[2].f));
-      promises.push(this.setParameter(33, config.controlProfiles[2].iZone));
-      promises.push(this.setParameter(34, config.controlProfiles[2].dFilter));
-      promises.push(this.setParameter(35, config.controlProfiles[2].minOutput));
-      promises.push(this.setParameter(36, config.controlProfiles[2].maxOutput));
-      promises.push(this.setParameter(37, config.controlProfiles[3].p));
-      promises.push(this.setParameter(38, config.controlProfiles[3].i));
-      promises.push(this.setParameter(39, config.controlProfiles[3].d));
-      promises.push(this.setParameter(40, config.controlProfiles[3].f));
-      promises.push(this.setParameter(41, config.controlProfiles[3].iZone));
-      promises.push(this.setParameter(42, config.controlProfiles[3].dFilter));
-      promises.push(this.setParameter(43, config.controlProfiles[3].minOutput));
-      promises.push(this.setParameter(44, config.controlProfiles[3].maxOutput));
+      if (typeof config.controlProfiles !== "undefined" && config.controlProfiles.length > 3) {
+        promises.push(this.setParameter(13, config.controlProfiles[0].p));
+        promises.push(this.setParameter(14, config.controlProfiles[0].i));
+        promises.push(this.setParameter(15, config.controlProfiles[0].d));
+        promises.push(this.setParameter(16, config.controlProfiles[0].f));
+        promises.push(this.setParameter(17, config.controlProfiles[0].iZone));
+        promises.push(this.setParameter(18, config.controlProfiles[0].dFilter));
+        promises.push(this.setParameter(19, config.controlProfiles[0].minOutput));
+        promises.push(this.setParameter(20, config.controlProfiles[0].maxOutput));
+        promises.push(this.setParameter(21, config.controlProfiles[1].p));
+        promises.push(this.setParameter(22, config.controlProfiles[1].i));
+        promises.push(this.setParameter(23, config.controlProfiles[1].d));
+        promises.push(this.setParameter(24, config.controlProfiles[1].f));
+        promises.push(this.setParameter(25, config.controlProfiles[1].iZone));
+        promises.push(this.setParameter(26, config.controlProfiles[1].dFilter));
+        promises.push(this.setParameter(27, config.controlProfiles[1].minOutput));
+        promises.push(this.setParameter(28, config.controlProfiles[1].maxOutput));
+        promises.push(this.setParameter(29, config.controlProfiles[2].p));
+        promises.push(this.setParameter(30, config.controlProfiles[2].i));
+        promises.push(this.setParameter(31, config.controlProfiles[2].d));
+        promises.push(this.setParameter(32, config.controlProfiles[2].f));
+        promises.push(this.setParameter(33, config.controlProfiles[2].iZone));
+        promises.push(this.setParameter(34, config.controlProfiles[2].dFilter));
+        promises.push(this.setParameter(35, config.controlProfiles[2].minOutput));
+        promises.push(this.setParameter(36, config.controlProfiles[2].maxOutput));
+        promises.push(this.setParameter(37, config.controlProfiles[3].p));
+        promises.push(this.setParameter(38, config.controlProfiles[3].i));
+        promises.push(this.setParameter(39, config.controlProfiles[3].d));
+        promises.push(this.setParameter(40, config.controlProfiles[3].f));
+        promises.push(this.setParameter(41, config.controlProfiles[3].iZone));
+        promises.push(this.setParameter(42, config.controlProfiles[3].dFilter));
+        promises.push(this.setParameter(43, config.controlProfiles[3].minOutput));
+        promises.push(this.setParameter(44, config.controlProfiles[3].maxOutput));
+      }
       promises.push(this.setParameter(46, config.outputRatio));
       promises.push(this.setParameter(50, config.limitSwitchForwardPolarity));
       promises.push(this.setParameter(51, config.limitSwitchReversePolarity));
@@ -224,12 +230,12 @@ class SparkManager {
     });
   }
 
-  public getAllParameters(): Promise<number[]> {
-    const promises: Array<Promise<any>> = [];
+  public async getAllParameters(): Promise<any> {
+    const values: any[] = [];
     for (let i = 0; i < MAX_PARAMETERS + 1; i++) {
-      promises.push(this.getParameter(i));
+      values.push(await this.getParameter(i));
     }
-    return Promise.all(promises);
+    return values;
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
@@ -261,7 +267,7 @@ class SparkManager {
     });
   }
 
-  private getParameter(id: number): Promise<number> {
+  public getParameter(id: number): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("get-param-" + id + "-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -280,10 +286,10 @@ class SparkManager {
         if (error) {
           reject(error);
         } else {
-          resolve();
+          resolve(response);
         }
       });
-      ipcRenderer.send("set-param", id);
+      ipcRenderer.send("set-param", id, value);
     });
   }
 }

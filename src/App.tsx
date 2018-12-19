@@ -40,12 +40,11 @@ class App extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
+        console.log(config);
       });
-      console.log(device);
     }).catch((error: any) => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
       this.props.setIsConnecting(false);
-      console.log(error);
     });
     SparkManager.onDisconnect(() => {
       this.props.updateConnectionStatus(false, "DISCONNECTED");

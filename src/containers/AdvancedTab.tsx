@@ -13,16 +13,11 @@ interface IProps {
 
 interface IState {
   activeMotorType: MotorConfiguration,
-  canID: number,
-  currentLimit: number,
+  inputRampLimit: number,
   currentLimitEnabled: boolean,
   currentProfile: number,
   currentSetpoint: number,
-  deadband: number,
-  inputRampLimit: number,
   inputRampLimitEnabled: boolean,
-  isCoastMode: boolean,
-  masterID: number,
   outputRampLimit: number,
   outputRampLimitEnabled: boolean,
   positionProfile: number,
@@ -31,7 +26,7 @@ interface IState {
   slaveMode: boolean,
   updateRequested: boolean,
   velocityProfile: number,
-  velocitySetpoint: number
+  velocitySetpoint: number,
 }
 
 class AdvancedTab extends React.Component<IProps, IState> {
@@ -40,24 +35,19 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     this.state = {
       activeMotorType: REV_BRUSHLESS,
-      canID: -1,
-      currentLimit: 40.0,
       currentLimitEnabled: false,
-      currentProfile: 1,
+      currentProfile: 0,
       currentSetpoint: 0,
-      deadband: 0.0,
-      inputRampLimit: 0.0,
+      inputRampLimit: 0,
       inputRampLimitEnabled: false,
-      isCoastMode: false,
-      masterID: -1,
-      outputRampLimit: 0.0,
+      outputRampLimit: 0,
       outputRampLimitEnabled: false,
       positionProfile: 0,
       positionSetpoint: 0,
       savingConfig: false,
       slaveMode: false,
       updateRequested: false,
-      velocityProfile: 1,
+      velocityProfile: 0,
       velocitySetpoint: 0
     };
 
@@ -78,14 +68,20 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.changeInputLimitRate = this.changeInputLimitRate.bind(this);
   }
 
+  public componentDidMount(): void {
+    console.log(this.props.motorConfig);
+  }
+
   public render() {
-    const {connected} = this.props;
-    const {
-      activeMotorType, isCoastMode, currentLimitEnabled, currentLimit, canID, deadband, updateRequested,
-      currentProfile, currentSetpoint, positionProfile, positionSetpoint, velocityProfile, velocitySetpoint,
-      outputRampLimitEnabled, outputRampLimit, inputRampLimitEnabled, inputRampLimit,
-      slaveMode, masterID, savingConfig
-    } = this.state;
+    const {connected, motorConfig} = this.props;
+    const {activeMotorType, currentProfile, currentSetpoint, currentLimitEnabled, inputRampLimit, inputRampLimitEnabled,
+      outputRampLimit, outputRampLimitEnabled, positionProfile, positionSetpoint, savingConfig, slaveMode,
+      updateRequested, velocityProfile, velocitySetpoint} = this.state;
+    const canID = motorConfig.canID;
+    const isCoastMode = motorConfig.idleMode === 0;
+    const currentLimit = motorConfig.currentLimit;
+    const deadband = motorConfig.inputDeadband;
+    const masterID = motorConfig.followerID;
     return (
       <div>
         <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
