@@ -87,10 +87,8 @@ ipcMain.on("set-param", (event: any, parameter: number, value: any) => {
 });
 
 ipcMain.on("get-param", (event: any, parameter: any) => {
-  console.log(parameter + " - GETTING");
   server.getParameter({parameter}, (err: any, response: string) => {
     setTimeout(() => {
-      console.log(parameter, response);
       event.sender.send("get-param-" + parameter + "-response", err, response);
     });
   });

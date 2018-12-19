@@ -54,6 +54,7 @@ class ConnectionStatusBar extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
+        console.log(config);
       });
     }).catch(() => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
