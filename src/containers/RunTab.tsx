@@ -1,8 +1,9 @@
-import {Button, FormGroup, Radio, RadioGroup, Slider} from "@blueprintjs/core";
+import {Button, FormGroup, NumericInput, Radio, RadioGroup, Slider} from "@blueprintjs/core";
 import ReactCharts from "echarts-for-react";
 import * as React from "react";
 import {connect} from "react-redux";
 import {IApplicationState} from "../store/types";
+import SparkManager from "../managers/SparkManager";
 
 interface IProps {
   connected: boolean
@@ -43,6 +44,7 @@ class RunTab extends React.Component<IProps, IState> {
 
     this.run = this.run.bind(this);
     this.stop = this.stop.bind(this);
+    this.receiveHeartbeat = this.receiveHeartbeat.bind(this);
 
     this.updateGraph = this.updateGraph.bind(this);
 
@@ -68,6 +70,38 @@ class RunTab extends React.Component<IProps, IState> {
           lazyUpdate={true}
           className="echart-container"
         />
+        <div className="form pid">
+          <FormGroup
+            label="PID Profile"
+            className="form-group-fifth"
+          >
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+          </FormGroup>
+          <FormGroup
+            label="P"
+            className="form-group-fifth"
+          >
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+          </FormGroup>
+          <FormGroup
+            label="I"
+            className="form-group-fifth"
+          >
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+          </FormGroup>
+          <FormGroup
+            label="D"
+            className="form-group-fifth"
+          >
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+          </FormGroup>
+          <FormGroup
+            label="F"
+            className="form-group-fifth"
+          >
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+          </FormGroup>
+        </div>
         <div className="form">
           <FormGroup
             labelFor="run-mode"
@@ -84,7 +118,6 @@ class RunTab extends React.Component<IProps, IState> {
               <Radio label="Position" value={"Position"}/>
             </RadioGroup>
           </FormGroup>
-          <FormGroup className="form-group-quarter"/>
           <FormGroup
             label="Motor Output"
             className="form-group-half"
@@ -94,7 +127,12 @@ class RunTab extends React.Component<IProps, IState> {
           <FormGroup
             className="form-group-quarter"
           >
-            <Button className="rev-btn" disabled={!connected} onClick={running ? this.stop : this.run}>{running ? "Stop" : "Run"}</Button>
+            <Button className="rev-btn" fill={true} disabled={!connected} onClick={running ? this.stop : this.run}>{running ? "Stop" : "Run"}</Button>
+          </FormGroup>
+          <FormGroup
+            className="form-group-quarter"
+          >
+            <Button className="rev-btn" fill={true} disabled={!connected}>Update PID</Button>
           </FormGroup>
         </div>
       </div>
@@ -108,12 +146,16 @@ class RunTab extends React.Component<IProps, IState> {
 
   public run() {
     this.setState({running: true});
-    // enableHeartbeat(20);
+    SparkManager.enableHeartbeat(20, this.receiveHeartbeat);
   }
 
   public stop() {
     this.setState({running: false});
-    // disableHeartbeat();
+    SparkManager.disableHeartbeat(this.receiveHeartbeat);
+  }
+
+  public receiveHeartbeat(setpoint: number) {
+    // TODO - Eventually graph all of this.
   }
 
   public changeMode(value: any) {
@@ -146,15 +188,15 @@ class RunTab extends React.Component<IProps, IState> {
     }
     this.setState({output: value});
     if (value < 0) {
-      // setSetpoint(value * 1024);
+      SparkManager.setSetpoint(value * 1024);
     } else {
-      // setSetpoint(value * 1023);
+      SparkManager.setSetpoint(value * 1023);
     }
   }
 
   private listenForEmergencyStop(event: any) {
     if (this.state.running) {
-      if (event.key === "Spacebar" || event.key === "Enter") {
+      if (event.key === " " || event.key === "Enter") {
         console.log("Emergency stop was pressed.");
         this.setState({running: false});
       }

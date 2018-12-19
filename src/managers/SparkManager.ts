@@ -238,13 +238,24 @@ class SparkManager {
     ipcRenderer.send("set-setpoint", setpoint);
   }
 
-  public enableHeartbeat(interval: number) {
+  public enableHeartbeat(interval: number, listener?: (setpoint: number) => void) {
+    if (typeof listener !== "undefined") {
+      ipcRenderer.on("enable-heartbeat-response", (event: any, error: any, response: any) => {
+        console.log(error, response);
+        if (!error) {
+          console.log(response);
+          listener(response.setpoint);
+        }
+      });
+    }
     ipcRenderer.send("enable-heartbeat", interval);
   }
 
-  public disableHeartbeat() {
+  public disableHeartbeat(listener?: (setpoint: number) => void) {
     ipcRenderer.once("disable-heartbeat-response", (event: any, error: any, response: any) => {
-      console.log(error, response);
+      if (typeof listener !== "undefined") {
+        ipcRenderer.removeListener("enable-heartbeat-response", listener);
+      }
     });
     ipcRenderer.send("disable-heartbeat");
   }

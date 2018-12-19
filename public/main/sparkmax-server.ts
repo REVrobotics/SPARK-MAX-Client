@@ -114,7 +114,6 @@ class SparkServer {
   }
 
   public setpoint(setpointCommand: any, cb?: Function) {
-    setpointCommand.enable = true;
     setpointCommand.setpoint = setpointCommand.setpoint / 1024;
     this.sendCommand("setpoint", "setpoint", setpointCommand, cb);
   }

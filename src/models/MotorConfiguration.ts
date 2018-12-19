@@ -35,7 +35,22 @@ export default class MotorConfiguration implements ISerializable {
   }
 
   public toJSON(): object {
-    return {};
+    return {
+      name: this.name,
+      can_id: this.canID,
+      input_mode: this.inputMode,
+      type: this.type,
+      comm_advance: this.commutationAdvance,
+      sensor_type: this.sensorType,
+      control_type: this.controlType,
+      idle_mode: this.idleMode,
+      input_deadband: this.inputDeadband,
+      firmware_version: this.firmwareVersion,
+      hall_offset: this.hallOffset,
+      pole_pairs: this.polePairs,
+      current_chop: this.currentChop,
+      current_limit: this.currentLimit
+    };
   }
 
   public fromJSON(json: any): MotorConfiguration {

@@ -153,6 +153,7 @@ input:checked ~ .bp3-control-indicator {
 
 .echart-container {
     width: 100%;
+    height: 275px !important;
 }
 
 .rev-btn {
@@ -176,4 +177,8 @@ input:checked ~ .bp3-control-indicator {
 
 .form-group-row-right {
     float: right;
+}
+
+.pid {
+    margin-top: -25px;
 }

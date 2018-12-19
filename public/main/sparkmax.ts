@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
-const isProd = true;
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -117,10 +117,9 @@ ipcMain.on("enable-heartbeat", (event: any, interval: number) => {
   if (heartbeatID === null) {
     console.log("Enabling heartbeat for every " + interval + "ms");
     heartbeatID = global.setInterval(() => {
-      server.heartbeat({enable: true}, (err: any, response: any) => {
+      server.setpoint({enable: true, setpoint}, (err: any, response: any) => {
         event.sender.send("enable-heartbeat-response", err, response);
       });
-      server.setpoint({setpoint});
     }, interval);
   }
 });
@@ -128,8 +127,8 @@ ipcMain.on("enable-heartbeat", (event: any, interval: number) => {
 ipcMain.on("disable-heartbeat", (event: any) => {
   if (heartbeatID !== -1) {
     console.log("Disabling heartbeat");
-    clearInterval(heartbeatID);
-    server.heartbeat({enable: false}, (err: any, response: any) => {
+    global.clearInterval(heartbeatID);
+    server.setpoint({enable: false, setpoint: 0.0}, (err: any, response: any) => {
       heartbeatID = null;
       event.sender.send("disable-heartbeat-response", err, response);
     });
