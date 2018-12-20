@@ -162,8 +162,21 @@ class SparkManager {
     });
   }
 
+  public async setControlProfile(profileNumber: number, profile: PIDFProfile): Promise<any> {
+    const values: any[] = [];
+    const startParam: number = 13 + (profileNumber * 8);
+    values.push(await this.setParameter(startParam, profile.p));
+    values.push(await this.setParameter(startParam + 1, profile.i));
+    values.push(await this.setParameter(startParam + 2, profile.d));
+    values.push(await this.setParameter(startParam + 3, profile.f));
+    values.push(await this.setParameter(startParam + 4, profile.iZone));
+    values.push(await this.setParameter(startParam + 5, profile.dFilter));
+    values.push(await this.setParameter(startParam + 6, profile.minOutput));
+    values.push(await this.setParameter(startParam + 7, profile.maxOutput));
+    return values;
+  }
+
   public async setParamsFromConfig(config: MotorConfiguration): Promise<any> {
-    console.log(config);
     const values: any[] = [];
     values.push(await this.setParameter(0, config.canID));
     values.push(await this.setParameter(1, config.inputMode));
@@ -238,20 +251,14 @@ class SparkManager {
     ipcRenderer.send("set-setpoint", setpoint);
   }
 
-  public enableHeartbeat(interval: number, listener?: (setpoint: number) => void) {
+  public enableHeartbeat(interval: number, listener?: (event: any, error: any, response: any) => void) {
     if (typeof listener !== "undefined") {
-      ipcRenderer.on("enable-heartbeat-response", (event: any, error: any, response: any) => {
-        console.log(error, response);
-        if (!error) {
-          console.log(response);
-          listener(response.setpoint);
-        }
-      });
+      ipcRenderer.on("enable-heartbeat-response", listener);
     }
     ipcRenderer.send("enable-heartbeat", interval);
   }
 
-  public disableHeartbeat(listener?: (setpoint: number) => void) {
+  public disableHeartbeat(listener?: (event: any, error: any, response: any) => void) {
     ipcRenderer.once("disable-heartbeat-response", (event: any, error: any, response: any) => {
       if (typeof listener !== "undefined") {
         ipcRenderer.removeListener("enable-heartbeat-response", listener);

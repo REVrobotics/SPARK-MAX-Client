@@ -1,24 +1,39 @@
 import {Button, FormGroup, NumericInput, Radio, RadioGroup, Slider} from "@blueprintjs/core";
-import ReactCharts from "echarts-for-react";
+import ReactEcharts from "echarts-for-react";
+import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
 import {IApplicationState} from "../store/types";
 import SparkManager from "../managers/SparkManager";
+import MotorConfiguration from "../models/MotorConfiguration";
+import PIDFProfile from "../models/PIDFProfile";
 
 interface IProps {
-  connected: boolean
+  connected: boolean,
+  motorConfig: MotorConfiguration
 }
 
 interface IState {
   mode: string,
   option: any,
   output: number,
-  running: boolean
+  running: boolean,
+  currentProfile: number,
+  pStr: string,
+  iStr: string,
+  dStr: string,
+  fStr: string,
+  updatingProfile: boolean
 }
 
 class RunTab extends React.Component<IProps, IState> {
+  private _ticks: number;
+
   constructor(props: IProps) {
     super(props);
+
+    this._ticks = 0;
+
     this.state = {
       mode: "Percent",
       option: {
@@ -28,7 +43,8 @@ class RunTab extends React.Component<IProps, IState> {
         }],
         xAxis: {
           name: "Time",
-          type: 'category'
+          type: 'category',
+          data: []
         },
         yAxis: {
           name: "Percent",
@@ -36,7 +52,13 @@ class RunTab extends React.Component<IProps, IState> {
         }
       },
       output: 0,
-      running: false
+      running: false,
+      currentProfile: 0,
+      pStr: "0.0",
+      iStr: "0.0",
+      dStr: "0.0",
+      fStr: "0.0",
+      updatingProfile: false
     };
 
     this.changeMode = this.changeMode.bind(this);
@@ -46,12 +68,21 @@ class RunTab extends React.Component<IProps, IState> {
     this.stop = this.stop.bind(this);
     this.receiveHeartbeat = this.receiveHeartbeat.bind(this);
 
+    this.updateProfile = this.updateProfile.bind(this);
     this.updateGraph = this.updateGraph.bind(this);
+
+    this.modifyProfile = this.modifyProfile.bind(this);
+    this.modifyP = this.modifyP.bind(this);
+    this.modifyI = this.modifyI.bind(this);
+    this.modifyD = this.modifyD.bind(this);
+    this.modifyF = this.modifyF.bind(this);
+    this.sanitizeValue = this.sanitizeValue.bind(this);
 
     this.listenForEmergencyStop = this.listenForEmergencyStop.bind(this);
   }
 
   public componentDidMount() {
+    this.modifyProfile(0);
     window.addEventListener("keydown", this.listenForEmergencyStop);
   }
 
@@ -61,10 +92,16 @@ class RunTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected} = this.props;
-    const {option, mode, output, running} = this.state;
+    const {currentProfile, option, mode, output, running, pStr, iStr, dStr, fStr, updatingProfile} = this.state;
+
+    const p = pStr;
+    const i = iStr;
+    const d = dStr;
+    const f = fStr;
+
     return (
       <div>
-        <ReactCharts
+        <ReactEcharts
           option={option}
           notMerge={true}
           lazyUpdate={true}
@@ -75,31 +112,31 @@ class RunTab extends React.Component<IProps, IState> {
             label="PID Profile"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={currentProfile} min={0} max={3} onValueChange={this.modifyProfile}/>
           </FormGroup>
           <FormGroup
             label="P"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={p} min={0} step={0.001} max={3} onValueChange={this.modifyP} onBlur={this.sanitizeValue}/>
           </FormGroup>
           <FormGroup
             label="I"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={i} min={0} step={0.001} max={3} onValueChange={this.modifyI} onBlur={this.sanitizeValue}/>
           </FormGroup>
           <FormGroup
             label="D"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={d} min={0} step={0.001} max={3} onValueChange={this.modifyD} onBlur={this.sanitizeValue}/>
           </FormGroup>
           <FormGroup
             label="F"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={0} min={0} max={3}/>
+            <NumericInput id="pid-profile" disabled={!this.props.connected} value={f} min={0} step={0.001} max={3} onValueChange={this.modifyF} onBlur={this.sanitizeValue}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -132,33 +169,116 @@ class RunTab extends React.Component<IProps, IState> {
           <FormGroup
             className="form-group-quarter"
           >
-            <Button className="rev-btn" fill={true} disabled={!connected}>Update PID</Button>
+            <Button className="rev-btn" fill={true} disabled={!connected} loading={updatingProfile} onClick={this.updateProfile}>Update PID</Button>
           </FormGroup>
         </div>
       </div>
     );
   }
 
-  public updateGraph(event: any, error: any, response: any) {
+  private updateProfile() {
+    this.setState({updatingProfile: true});
+    const profile: PIDFProfile = new PIDFProfile();
+    profile.p = parseFloat(this.state.pStr);
+    profile.i = parseFloat(this.state.iStr);
+    profile.d = parseFloat(this.state.dStr);
+    profile.f = parseFloat(this.state.fStr);
+    this.props.motorConfig.controlProfiles[this.state.currentProfile] = profile;
+    this.forceUpdate();
+    SparkManager.setControlProfile(this.state.currentProfile, profile).then(() => {
+      this.setState({updatingProfile: false});
+    }).catch((error: any) => {
+      console.log(error);
+      this.setState({updatingProfile: false});
+    });
+  }
+
+  private updateGraph(event: any, error: any, response: any) {
     // this.state.option.series.data.push(0.1);
     this.forceUpdate();
   }
 
-  public run() {
+  private modifyProfile(value: number) {
+    if (value > 3) {
+      value = 4;
+    }
+    if (value < 0) {
+      value = 0;
+    }
+    this.setState({
+      currentProfile: value,
+      pStr: this.props.motorConfig.controlProfiles[value].p + "",
+      iStr: this.props.motorConfig.controlProfiles[value].i + "",
+      dStr: this.props.motorConfig.controlProfiles[value].d + "",
+      fStr: this.props.motorConfig.controlProfiles[value].f + ""
+    });
+  }
+
+  private modifyP(value: number, valueStr: string) {
+    this.setState({pStr: valueStr});
+  }
+
+  private modifyI(value: number, valueStr: string) {
+    this.setState({iStr: valueStr});
+  }
+
+  private modifyD(value: number, valueStr: string) {
+    this.setState({dStr: valueStr});
+  }
+
+  private modifyF(value: number, valueStr: string) {
+    this.setState({fStr: valueStr});
+  }
+
+  private sanitizeValue(event: any) {
+    const decimalValue: number = parseFloat(event.target.value);
+    if (decimalValue !== 0) {
+      event.target.value = decimalValue;
+    }
+  }
+
+  private run() {
     this.setState({running: true});
     SparkManager.enableHeartbeat(20, this.receiveHeartbeat);
   }
 
-  public stop() {
+  private stop() {
     this.setState({running: false});
     SparkManager.disableHeartbeat(this.receiveHeartbeat);
   }
 
-  public receiveHeartbeat(setpoint: number) {
+  private receiveHeartbeat(event: any, error: any, response: any) {
     // TODO - Eventually graph all of this.
+    if (this._ticks > 50) {
+      this._ticks = 0;
+      this.setState({
+        option: {
+          series: [{
+            data: [...this.state.option.series[0].data, this.state.output],
+            type: 'line'
+          }],
+          xAxis: {
+            name: "Time",
+            type: 'category',
+            data: [...this.state.option.xAxis.data, (this.state.option.xAxis.data.length + 1) + ""]
+          },
+          yAxis: {
+            name: "Percent",
+            type: 'value'
+          }
+        }
+      });
+      const prevLength = this.state.option.xAxis.data.length;
+      this.state.option.series[0].data.push(this.state.output);
+      this.state.option.xAxis.data.push(prevLength + 1);
+      this.forceUpdate();
+      console.log(this.state.option);
+    } else {
+      this._ticks++;
+    }
   }
 
-  public changeMode(value: any) {
+  private changeMode(value: any) {
     this.setState({
       mode: value.currentTarget.value,
       option: {
@@ -168,7 +288,8 @@ class RunTab extends React.Component<IProps, IState> {
         }],
         xAxis: {
           name: "Time",
-          type: 'category'
+          type: 'category',
+          data: []
         },
         yAxis: {
           name: value.currentTarget.value,
@@ -178,7 +299,7 @@ class RunTab extends React.Component<IProps, IState> {
     });
   }
 
-  public changeOutput(value: number) {
+  private changeOutput(value: number) {
     if (Math.abs(this.state.output - value) > 0.1) {
       if (this.state.output - value < 0) {
         value = this.state.output + 0.1;
@@ -206,7 +327,8 @@ class RunTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: state.isConnected,
+    motorConfig: state.currentConfig
   };
 }
 
