@@ -182,7 +182,23 @@ message pingRequest {
 */
 message pingResponse {
     rootResponse root = 1;
+
+    //Returns true if the application is connected to the controller
+    //This will be false while updating. After an update is complete,
+    //Connect() will need to be called again
     bool connected = 2;
+
+    //Returns true if the application is in the process of updating a SPARK MAX
+    //wait for this flag to go false to determine if it is done updating
+    bool isUpdating = 3;
+
+    //If isUpdating = true, this will return a status message for the state
+    //of the process the update is on
+    string updateStageMessage = 4;
+
+    //If isUpdating = true, this will return a percentage value of how far
+    //along on the particular update stage the firmware update is
+    float updateStagePercent = 5;
 }
 
 /*
@@ -194,7 +210,7 @@ message burnRequest {
 }
 
 
-message burnResponse {    
+message burnResponse {
     rootResponse root = 1;
     bool verify = 2;
 }
@@ -232,7 +248,7 @@ message rootResponse {
 */
 message listRequest {
     rootCommand root = 1;
-    bool all = 2; 
+    bool all = 2;
 }
 
 /*
@@ -257,7 +273,17 @@ message firmwareRequest {
 */
 message firmwareResponse {
     string version = 1;
+
+    //Return true if the firmware was updated, false otherwise
+    //Returns false when polling the firmware version
+    bool updateStarted = 2;
+
     rootResponse root = 3;
+    uint32 major = 4;
+    uint32 minor = 5;
+    uint32 build = 6;
+    bool isDebug = 7;
+    string hardwareVersion = 8;
 }
 
 /*
@@ -288,7 +314,7 @@ message addressResponse {
 /*
 * Request type for Set Parameter()
 */
-message setParameterRequest { 
+message setParameterRequest {
     rootCommand root = 1;
     configParam parameter = 2;
     string value = 3;
@@ -297,7 +323,7 @@ message setParameterRequest {
 /*
 * Request type for Get Parameter()
 */
-message getParameterRequest { 
+message getParameterRequest {
     rootCommand root = 1;
     configParam parameter = 2;
 }
@@ -312,8 +338,8 @@ message parameterResponse {
     rootResponse root = 4;
 }
 
-message parameterListRequest { 
-    rootCommand root = 1;  
+message parameterListRequest {
+    rootCommand root = 1;
 }
 
 message parameterListResponse {
@@ -326,7 +352,7 @@ message parameterListResponse {
 * Request format for Setpoint() command
 */
 message setpointRequest {
-    rootCommand root = 1;  
+    rootCommand root = 1;
     float setpoint = 2;
     bool enable = 3;
 }
@@ -376,47 +402,47 @@ message DRVStat0 {
     * Indicates VDS overcurrent fault on the C high-side MOSFET
     */
     bool VDS_HC = 2;
-    
+
     /*
     * Indicates VDS overcurrent fault on the B low-side MOSFET
     */
     bool VDS_LB = 3;
-    
+
     /*
     * Indicates VDS overcurrent fault on the B high-side MOSFET
     */
     bool VDS_HB = 4;
-    
+
     /*
     * Indicates VDS overcurrent fault on the A low-side MOSFET
     */
     bool VDS_LA = 5;
-    
+
     /*
     * Indicates VDS overcurrent fault on the A high-side MOSFET
     */
     bool VDS_HA = 6;
-    
+
     /*
     * Indicates overtemperature shutdown
     */
     bool OTSD = 7;
-    
+
     /*
     * Indicates undervoltage lockout fault condition
     */
     bool UVLO = 8;
-    
+
     /*
     * Indicates gate drive fault condition
     */
     bool GDF = 9;
-    
+
     /*
     * Indicates VDS monitor overcurrent fault condition
     */
     bool VDS_OCP = 10;
-    
+
     /*
     * Logic OR of FAULT status registers. Mirrors nFAULT pin.
     */
@@ -427,57 +453,57 @@ message DRVStat0 {
 * DRV8320 Stat1 register
 */
 message DRVStat1 {
-    
+
     /*
     * Indicates gate drive fault on the C low-side MOSFET
     */
     bool VGS_LC = 1;
-    
+
     /*
     * Indicates gate drive fault on the C high-side MOSFET
     */
     bool VGS_HC = 2;
-    
+
     /*
     * Indicates gate drive fault on the B low-side MOSFET
     */
     bool VGS_LB = 3;
-    
+
     /*
     * Indicates gate drive fault on the B high-side MOSFET
     */
     bool VGS_HB = 4;
-    
+
     /*
     * Indicates gate drive fault on the A low-side MOSFET
     */
     bool VGS_LA = 5;
-    
+
     /*
     * Indicates gate drive fault on the A high-side MOSFET
     */
-    bool VGS_HA = 6;  
-    
+    bool VGS_HA = 6;
+
     /*
     * Indicates charge pump undervoltage fault condition
-    */  
+    */
     bool CPUV = 7;
-    
+
     /*
     * Indicates overtemperature warning
     */
     bool OTW = 8;
-    
+
     /*
     * Always 0 for DRV8320
     */
     bool SC_OC = 9;
-    
+
     /*
     * Always 0 for DRV8320
     */
     bool SB_OC = 10;
-    
+
     /*
     * Always 0 for DRV8320
     */

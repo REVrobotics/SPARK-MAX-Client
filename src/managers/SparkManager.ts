@@ -75,6 +75,41 @@ class SparkManager {
     });
   }
 
+  public requestFirmware(): Promise<any[]> {
+    return new Promise<any[]>((resolve, reject) => {
+      ipcRenderer.once("request-firmware-response", (event: any, paths: any[]) => {
+        resolve(paths);
+      });
+      ipcRenderer.send("request-firmware");
+    });
+  }
+
+  public getFirmware(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.once("get-firmware-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("get-firmware");
+    });
+  }
+
+  public loadFirmware(filename: string): Promise<any> {
+    return new Promise<any[]>((resolve, reject) => {
+      ipcRenderer.once("load-firmware-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("load-firmware", filename);
+    });
+  }
+
   public saveConfig(device: string): Promise<any> {
     return new Promise((resolve, reject) => {
       ipcRenderer.once("save-config-response", (event: any, error: any, response: any) => {

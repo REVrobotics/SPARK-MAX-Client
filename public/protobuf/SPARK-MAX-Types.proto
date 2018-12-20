@@ -27,6 +27,7 @@ enum ctrlType {
     DutyCycle = 0;
     Velocity = 1;
     Voltage = 2;
+    Position = 3;
 }
 
 /*
@@ -60,6 +61,7 @@ enum faults {
     CANRX = 8;
     HasReset = 9;
     DRVFault = 10;
+    OtherFault = 11;
     SoftLimitFwd = 12;
     SoftLimitRev = 13;
     HardLimitFwd = 14;
@@ -161,7 +163,7 @@ enum configParam {
     kCtrlType = 5;
 
     /*
-    * State of the half bridge when the motor controller commands zero output or 
+    * State of the half bridge when the motor controller commands zero output or
     * is disabled. Options are %Idle Mode%
     * @default IDLE_COAST
     * @type Idle Mode
@@ -177,7 +179,7 @@ enum configParam {
     kInputDeadband = 7;
 
     /*
-    * Read only parameter showing the 32-bit firmware version. The first byte is 
+    * Read only parameter showing the 32-bit firmware version. The first byte is
     * the major build, the second byte is in the minor build, the last two bytes
     *  are the build
     * @default 0
@@ -197,7 +199,7 @@ enum configParam {
     /*
     * Number of pole pairs for the brushless motor. This is the number of poles/2
     *  and can be determined by either counting the number of magents or countin
-    * g the number of windings and dividing by 3. This is an important term for 
+    * g the number of windings and dividing by 3. This is an important term for
     * speed regulation to properly calculate the speed
     * @default 1
     * @type uint
@@ -224,7 +226,7 @@ enum configParam {
     kCurrentChopCycles = 12;
 
     /*
-    * Perportional gain constant for gain slot 0. In cascaded control modes this 
+    * Perportional gain constant for gain slot 0. In cascaded control modes this
     * is the inner loop gain slot 0.
     * @default 0
     * @type float32
@@ -248,7 +250,7 @@ enum configParam {
     kD_0 = 15;
 
     /*
-    * Feed Forward gain constant for gain slot 0. In cascaded control modes this 
+    * Feed Forward gain constant for gain slot 0. In cascaded control modes this
     * is the inner loop gain slot 0.
     * @default 0
     * @type float32
@@ -265,7 +267,7 @@ enum configParam {
     kIZone_0 = 17;
 
     /*
-    * PIDF derivative filter constant for gain slot 0. In cascaded control modes 
+    * PIDF derivative filter constant for gain slot 0. In cascaded control modes
     * this is the inner loop gain slot 0.
     * @default 0
     * @type float32
@@ -274,7 +276,7 @@ enum configParam {
 
     /*
     * Max output constant for gain slot 0. This is the max output of the controll
-    * er as well as the max integrator value. In cascaded control modes this is 
+    * er as well as the max integrator value. In cascaded control modes this is
     * the inner loop gain slot 0.
     * @default 0
     * @type float32
@@ -283,7 +285,7 @@ enum configParam {
 
     /*
     * Min output constant for gain slot 0. This is the min output of the controll
-    * er as well as the min integrator value. In cascaded control modes this is 
+    * er as well as the min integrator value. In cascaded control modes this is
     * the inner loop gain slot 0.
     * @default 0
     * @type float32
@@ -291,7 +293,7 @@ enum configParam {
     kOutputMax_0 = 20;
 
     /*
-    * Perportional gain constant for gain slot 1. In cascaded control modes this 
+    * Perportional gain constant for gain slot 1. In cascaded control modes this
     * is the inner loop gain slot 1.
     * @default 0
     * @type float32
@@ -315,7 +317,7 @@ enum configParam {
     kD_1 = 23;
 
     /*
-    * Feed Forward gain constant for gain slot 1. In cascaded control modes this 
+    * Feed Forward gain constant for gain slot 1. In cascaded control modes this
     * is the inner loop gain slot 1.
     * @default 0
     * @type float32
@@ -332,7 +334,7 @@ enum configParam {
     kIZone_1 = 25;
 
     /*
-    * PIDF derivative filter constant for gain slot 1. In cascaded control modes 
+    * PIDF derivative filter constant for gain slot 1. In cascaded control modes
     * this is the inner loop gain slot 1.
     * @default 0
     * @type float32
@@ -341,7 +343,7 @@ enum configParam {
 
     /*
     * Max output constant for gain slot 1. This is the max output of the controll
-    * er as well as the max integrator value. In cascaded control modes this is 
+    * er as well as the max integrator value. In cascaded control modes this is
     * the inner loop gain slot 1.
     * @default 0
     * @type float32
@@ -350,7 +352,7 @@ enum configParam {
 
     /*
     * Min output constant for gain slot 1. This is the min output of the controll
-    * er as well as the min integrator value. In cascaded control modes this is 
+    * er as well as the min integrator value. In cascaded control modes this is
     * the inner loop gain slot 1.
     * @default 0
     * @type float32
@@ -358,7 +360,7 @@ enum configParam {
     kOutputMax_1 = 28;
 
     /*
-    * Perportional gain constant for gain slot 3. In cascaded control modes this 
+    * Perportional gain constant for gain slot 3. In cascaded control modes this
     * is the outer loop gain slot 0.
     * @default 0
     * @type float32
@@ -382,7 +384,7 @@ enum configParam {
     kD_2 = 31;
 
     /*
-    * Feed Forward gain constant for gain slot 3. In cascaded control modes this 
+    * Feed Forward gain constant for gain slot 3. In cascaded control modes this
     * is the outer loop gain slot 0.
     * @default 0
     * @type float32
@@ -399,7 +401,7 @@ enum configParam {
     kIZone_2 = 33;
 
     /*
-    * PIDF derivative filter constant for gain slot 3. In cascaded control modes 
+    * PIDF derivative filter constant for gain slot 3. In cascaded control modes
     * this is the outer loop gain slot 0.
     * @default 0
     * @type float32
@@ -408,7 +410,7 @@ enum configParam {
 
     /*
     * Max output constant for gain slot 3. This is the max output of the controll
-    * er as well as the max integrator value. In cascaded control modes this is 
+    * er as well as the max integrator value. In cascaded control modes this is
     * the outer loop gain slot 0.
     * @default 0
     * @type float32
@@ -417,7 +419,7 @@ enum configParam {
 
     /*
     * Min output constant for gain slot 3. This is the min output of the controll
-    * er as well as the min integrator value. In cascaded control modes this is 
+    * er as well as the min integrator value. In cascaded control modes this is
     * the outer loop gain slot 0.
     * @default 0
     * @type float32
@@ -425,7 +427,7 @@ enum configParam {
     kOutputMax_2 = 36;
 
     /*
-    * Perportional gain constant for gain slot 4. In cascaded control modes this 
+    * Perportional gain constant for gain slot 4. In cascaded control modes this
     * is the outer loop gain slot 1.
     * @default 0
     * @type float32
@@ -449,7 +451,7 @@ enum configParam {
     kD_3 = 39;
 
     /*
-    * Feed Forward gain constant for gain slot 4. In cascaded control modes this 
+    * Feed Forward gain constant for gain slot 4. In cascaded control modes this
     * is the outer loop gain slot 1.
     * @default 0
     * @type float32
@@ -466,7 +468,7 @@ enum configParam {
     kIZone_3 = 41;
 
     /*
-    * PIDF derivative filter constant for gain slot 4. In cascaded control modes 
+    * PIDF derivative filter constant for gain slot 4. In cascaded control modes
     * this is the outer loop gain slot 1.
     * @default 0
     * @type float32
@@ -475,7 +477,7 @@ enum configParam {
 
     /*
     * Max output constant for gain slot 4. This is the max output of the controll
-    * er as well as the max integrator value. In cascaded control modes this is 
+    * er as well as the max integrator value. In cascaded control modes this is
     * the outer loop gain slot 1.
     * @default 0
     * @type float32
@@ -484,7 +486,7 @@ enum configParam {
 
     /*
     * Min output constant for gain slot 4. This is the min output of the controll
-    * er as well as the min integrator value. In cascaded control modes this is 
+    * er as well as the min integrator value. In cascaded control modes this is
     * the outer loop gain slot 1.
     * @default 0
     * @type float32
@@ -599,6 +601,125 @@ enum configParam {
     * @type uint
     */
     kFollowerConfig = 58;
+
+    /*
+    * Smart Current Limit at stall, or any value less than kSmartCurrentConfig RPM
+    * @default 80
+    * @type uint
+    * @unit A
+    */
+    kSmartCurrentStallLimit = 59;
+
+    /*
+    * Smart current limit at free speed
+    * @default 0
+    * @type uint
+    * @unit A
+    */
+    kSmartCurrentFreeLimit = 60;
+    /*
+    * Smart current limit RPM value to start linear reduction of current limit. S
+    * et this > free speed to disable.
+    * @default 10000 (disabled)
+    * @type uint
+    */
+    kSmartCurrentConfig = 61;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    * @unit ms
+    */
+    kSmartCurrentReserved = 62;
+
+    /*
+    * Kv in RPM/V
+    * @default 480
+    * @type uint
+    * @unit RPM/V
+    */
+    kMotorKv = 63;
+
+    /*
+    * Motor ph-ph resistance
+    * @default 35000
+    * @type uint
+    * @unit uohm
+    */
+    kMotorR = 64;
+
+    /*
+    * Motor ph-ph inductance
+    * @default 3800
+    * @type uint
+    * @unit nH
+    */
+    kMotorL = 65;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    */
+    kMotorRsvd1 = 66;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    */
+    kMotorRsvd2 = 67;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    */
+    kMotorRsvd3 = 68;
+
+    /*
+    * Number of encoder counts in a single revolution, counting every edge on the
+    *  A and B lines of a quadrature encoder. (Note: This is different than the
+    * CPR spec of the encoder which is 'Cycles per revolution'. This value is 4
+    * * CPR.
+    * @default 4096
+    * @type uint
+    */
+    kEncoderCountsPerRev = 69;
+
+    /*
+    * Number of samples to average for velocity data based on quadrature encoder
+    * input. This value can be between 1 and 64.
+    * @default 64
+    * @type uint
+    */
+    kEncoderAverageDepth = 70;
+
+    /*
+    * Delta time value for encoder velocity measurement in 500us increments. The
+    * velocity calculation will take delta the current sample, and the sample
+    * x * 500us behind, and divide by this the sample delta time. Can be any numb
+    * er between 1 and 255
+    * @default 200
+    * @type uint
+    * @unit per 500us
+    */
+    kEncoderSampleDelta = 71;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    */
+    kEncoderRsvd0 = 72;
+
+    /*
+    *
+    * @default 0
+    * @type uint
+    */
+    kEncoderRsvd1 = 73;
 }
 
 //Type lookup for above, lists what type the controller expects for each parameter
@@ -665,6 +786,21 @@ enum configParamTypes {
     kRampRate_t = 2;
     kFollowerID_t = 1;
     kFollowerConfig_t = 1;
+    kSmartCurrentStallLimit_t = 1;
+    kSmartCurrentFreeLimit_t = 1;
+    kSmartCurrentConfig_t = 1;
+    kSmartCurrentReserved_t = 1;
+    kMotorKv_t = 1;
+    kMotorR_t = 1;
+    kMotorL_t = 1;
+    kMotorRsvd1_t = 1;
+    kMotorRsvd2_t = 1;
+    kMotorRsvd3_t = 1;
+    kEncoderCountsPerRev_t = 1;
+    kEncoderAverageDepth_t = 1;
+    kEncoderSampleDelta_t = 1;
+    kEncoderRsvd0_t = 1;
+    kEncoderRsvd1_t = 1;
 }
 
 //Bit definitions for DRV STAT0
@@ -689,7 +825,7 @@ enum DRVStat1_Bits {
     VGS_LB_Bit = 2;
     VGS_HB_Bit = 3;
     VGS_LA_Bit = 4;
-    VGS_HA_Bit = 5;   
+    VGS_HA_Bit = 5;
     CPUV_Bit = 6;
     OTW_Bit = 7;
     SC_OC_Bit = 8;

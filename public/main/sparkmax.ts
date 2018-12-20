@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
-const isProd = false;
+const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -55,7 +55,7 @@ ipcMain.on("connect", (event: any, device: string) => {
       currentDevice = device;
       if (connCheckID === null) {
         connCheckID = global.setInterval(() => {
-          server.ping({device: currentDevice}, (pingErr: any, pingResponse: any) => {
+          server.ping({}, (pingErr: any, pingResponse: any) => {
             if (pingErr) {
               console.error(err);
             } else {
@@ -67,7 +67,7 @@ ipcMain.on("connect", (event: any, device: string) => {
               }
             }
           });
-        }, 2000);
+        }, 500);
       }
       event.sender.send("connect-response", err, response);
     }
@@ -148,14 +148,30 @@ ipcMain.on("save-config", (event: any, device: string) => {
   });
 });
 
+ipcMain.on("load-firmware", (event: any, filename: string) => {
+  if (!fs.existsSync(filename)) {
+    event.sender.send("load-firmware-response", "Error loading firmware. Firmware file was not found on the file system.", undefined);
+  } else {
+    console.log("Loading firmware...");
+    server.loadFirmware({filename}, (error: any, response: any) => {
+      console.log("Firmware command has exited. Sending response");
+      event.sender.send("load-firmware-response", error, response);
+    });
+  }
+});
+
 ipcMain.on("request-firmware", (event: any) => {
   dialog.showOpenDialog(BrowserWindow.getFocusedWindow() as BrowserWindow, {
-    filters: [{name: "Firmware Files (*.bin)", extensions: ["bin"]}],
+    filters: [{name: "Firmware Files (*.dfu)", extensions: ["dfu"]}],
     properties: ["openFile"],
     title: "Firmware Loading"
   }, (filePaths) => {
-    if (filePaths && filePaths[0]) {
-      event.sender.send("request-firmware-response", filePaths[0]);
-    }
+    event.sender.send("request-firmware-response", filePaths);
+  });
+});
+
+ipcMain.on("get-firmware", (event: any) => {
+  server.loadFirmware({}, (error: any, response: any) => {
+    event.sender.send("get-firmware-response", error, response);
   });
 });

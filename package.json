@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "SPARK MAX Client",
-  "version": "0.8.7",
+  "version": "0.9.1",
   "private": true,
   "author": "REV Robotics LLC",
   "description": "SPARK MAX Motor Controller Client",
@@ -47,7 +47,7 @@
     "typescript": "^3.2.2"
   },
   "build": {
-    "appId": "org.revrobotics.sparkmax.client.0.8.2",
+    "appId": "org.revrobotics.sparkmax.client.0.9.1",
     "productName": "SPARK MAX Client",
     "copyright": "2018 REV Robotics LLC",
     "files": [
@@ -62,7 +62,7 @@
     ],
     "directories": {
       "output": "dist",
-      "buildResources": "build/resources"
+      "buildResources": "res"
     },
     "win": {
       "target": "NSIS"

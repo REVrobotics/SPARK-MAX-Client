@@ -82,7 +82,9 @@ class RunTab extends React.Component<IProps, IState> {
   }
 
   public componentDidMount() {
-    this.modifyProfile(0);
+    if (this.props.connected) {
+      this.modifyProfile(0);
+    }
     window.addEventListener("keydown", this.listenForEmergencyStop);
   }
 
@@ -207,10 +209,10 @@ class RunTab extends React.Component<IProps, IState> {
     }
     this.setState({
       currentProfile: value,
-      pStr: this.props.motorConfig.controlProfiles[value].p + "",
-      iStr: this.props.motorConfig.controlProfiles[value].i + "",
-      dStr: this.props.motorConfig.controlProfiles[value].d + "",
-      fStr: this.props.motorConfig.controlProfiles[value].f + ""
+      pStr: this.props.motorConfig.controlProfiles[value].p + "" || 0.0 + "",
+      iStr: this.props.motorConfig.controlProfiles[value].i + "" || 0.0 + "",
+      dStr: this.props.motorConfig.controlProfiles[value].d + "" || 0.0 + "",
+      fStr: this.props.motorConfig.controlProfiles[value].f + "" || 0.0 + ""
     });
   }
 
@@ -268,11 +270,6 @@ class RunTab extends React.Component<IProps, IState> {
           }
         }
       });
-      const prevLength = this.state.option.xAxis.data.length;
-      this.state.option.series[0].data.push(this.state.output);
-      this.state.option.xAxis.data.push(prevLength + 1);
-      this.forceUpdate();
-      console.log(this.state.option);
     } else {
       this._ticks++;
     }
