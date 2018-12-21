@@ -17,9 +17,9 @@ interface IState {
   currentLimitEnabled: boolean,
   currentProfile: number,
   currentSetpoint: number,
-  inputRampLimitEnabled: boolean,
+  currentChopEnabled: boolean,
   outputRampLimit: number,
-  outputRampLimitEnabled: boolean,
+  rampRateEnabled: boolean,
   positionProfile: number,
   positionSetpoint: number,
   savingConfig: boolean,
@@ -39,9 +39,9 @@ class AdvancedTab extends React.Component<IProps, IState> {
       currentProfile: 0,
       currentSetpoint: 0,
       inputRampLimit: 0,
-      inputRampLimitEnabled: false,
+      currentChopEnabled: false,
       outputRampLimit: 0,
-      outputRampLimitEnabled: false,
+      rampRateEnabled: false,
       positionProfile: 0,
       positionSetpoint: 0,
       savingConfig: false,
@@ -64,8 +64,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.changeMasterID = this.changeMasterID.bind(this);
     this.changeOutputLimitEnabled = this.changeOutputLimitEnabled.bind(this);
     this.changeOutputLimitRate = this.changeOutputLimitRate.bind(this);
-    this.changeInputLimitEnabled = this.changeInputLimitEnabled.bind(this);
-    this.changeInputLimitRate = this.changeInputLimitRate.bind(this);
+    this.changeCurrentChopEnabled = this.changeCurrentChopEnabled.bind(this);
+    this.changeCurrentChop = this.changeCurrentChop.bind(this);
   }
 
   public componentDidMount(): void {
@@ -74,8 +74,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected, motorConfig} = this.props;
-    const {activeMotorType, currentProfile, currentSetpoint, currentLimitEnabled, inputRampLimit, inputRampLimitEnabled,
-      outputRampLimit, outputRampLimitEnabled, positionProfile, positionSetpoint, savingConfig, slaveMode,
+    const {activeMotorType, currentProfile, currentSetpoint, currentLimitEnabled, inputRampLimit, currentChopEnabled,
+      outputRampLimit, rampRateEnabled, positionProfile, positionSetpoint, savingConfig, slaveMode,
       updateRequested, velocityProfile, velocitySetpoint} = this.state;
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
@@ -165,6 +165,36 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <NumericInput id="advanced-position-setpoint" disabled={!connected} value={positionSetpoint} onValueChange={this.changePositionSetpoint} min={1} max={1024}/>
           </FormGroup>
           <FormGroup
+            label="Current Chop"
+            labelFor="advanced-input-limit"
+            className="form-group-quarter"
+          >
+            <Switch checked={currentChopEnabled} disabled={!connected} label={currentChopEnabled ? "Enabled" : "Disabled"} onChange={this.changeCurrentChopEnabled} />
+          </FormGroup>
+          <FormGroup
+            label="Current Value"
+            labelFor="advanced-input-rate"
+            className="form-group-quarter"
+          >
+            <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!currentChopEnabled} onValueChange={this.changeCurrentChop} min={0} max={1024}/>
+          </FormGroup>
+        </div>
+        <div className="form">
+          <FormGroup
+            label="Ramp Rate"
+            labelFor="advanced-output-limit"
+            className="form-group-quarter"
+          >
+            <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeOutputLimitEnabled} />
+          </FormGroup>
+          <FormGroup
+            label="Rate (V/s)"
+            labelFor="advanced-output-rate"
+            className="form-group-quarter"
+          >
+            <NumericInput id="advanced-output-rate" value={outputRampLimit} disabled={!rampRateEnabled} onValueChange={this.changeOutputLimitRate} min={0} max={1024}/>
+          </FormGroup>
+          <FormGroup
             label="Slave Mode"
             labelFor="advanced-is-slave"
             className="form-group-quarter"
@@ -177,36 +207,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
             className="form-group-quarter"
           >
             <NumericInput id="advanced-master-id" value={masterID} disabled={!slaveMode} onValueChange={this.changeMasterID} min={0} max={24}/>
-          </FormGroup>
-        </div>
-        <div className="form">
-          <FormGroup
-            label="Output Ramp Limit"
-            labelFor="advanced-output-limit"
-            className="form-group-quarter"
-          >
-            <Switch checked={outputRampLimitEnabled} disabled={!connected} label={outputRampLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeOutputLimitEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Ramp Rate Limit"
-            labelFor="advanced-output-rate"
-            className="form-group-quarter"
-          >
-            <NumericInput id="advanced-output-rate" value={outputRampLimit} disabled={!outputRampLimitEnabled} onValueChange={this.changeOutputLimitRate} min={0} max={1024}/>
-          </FormGroup>
-          <FormGroup
-            label="Input Ramp Limit"
-            labelFor="advanced-input-limit"
-            className="form-group-quarter"
-          >
-            <Switch checked={inputRampLimitEnabled} disabled={!connected} label={inputRampLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeInputLimitEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Ramp Rate Limit"
-            labelFor="advanced-input-rate"
-            className="form-group-quarter"
-          >
-            <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!inputRampLimitEnabled} onValueChange={this.changeInputLimitRate} min={0} max={1024}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -226,7 +226,12 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeCurrentLimitEnabled() {
-    this.setState({currentLimitEnabled: !this.state.currentLimitEnabled});
+    const newEnabled: boolean = !this.state.currentLimitEnabled;
+    if (!newEnabled) {
+      this.props.motorConfig.currentLimit = 0;
+      this.forceUpdate();
+    }
+    this.setState({currentLimitEnabled: newEnabled});
   }
 
   public changeIdleMode() {
@@ -287,19 +292,29 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeOutputLimitEnabled() {
-    this.setState({outputRampLimitEnabled: !this.state.outputRampLimitEnabled});
+    const newEnabled: boolean = !this.state.rampRateEnabled;
+    if (!newEnabled) {
+      this.props.motorConfig.rampRate = 0;
+    }
+    this.setState({rampRateEnabled: newEnabled});
   }
 
   public changeOutputLimitRate(value: number) {
     this.setState({outputRampLimit: value});
   }
 
-  public changeInputLimitEnabled() {
-    this.setState({inputRampLimitEnabled: !this.state.inputRampLimitEnabled});
+  public changeCurrentChopEnabled() {
+    const newEnabled: boolean = !this.state.currentChopEnabled;
+    if (!newEnabled) {
+      this.props.motorConfig.currentChop = 0;
+      this.forceUpdate();
+    }
+    this.setState({currentChopEnabled: newEnabled});
   }
 
-  public changeInputLimitRate(value: number) {
-    this.setState({inputRampLimit: value});
+  public changeCurrentChop(value: number) {
+    this.props.motorConfig.currentChop = value;
+    this.forceUpdate();
   }
 
   public updateConfiguration() {
