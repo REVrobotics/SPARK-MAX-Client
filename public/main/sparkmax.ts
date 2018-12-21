@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
-const isProd = true;
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -55,19 +55,19 @@ ipcMain.on("connect", (event: any, device: string) => {
       currentDevice = device;
       if (connCheckID === null) {
         connCheckID = global.setInterval(() => {
-          server.ping({}, (pingErr: any, pingResponse: any) => {
+          server.ping({device: currentDevice}, (pingErr: any, pingResponse: any) => {
             if (pingErr) {
               console.error(err);
             } else {
               if (!pingResponse.connected) {
                 global.clearInterval(connCheckID);
                 server.disconnect({device: currentDevice, keepalive: true}, (disconnectErr: any, disconnectResponse: any) => {
-                  event.sender.send("disconnect-response", err, response);
+                  event.sender.send("disconnect-response", disconnectErr, disconnectResponse);
                 });
               }
             }
           });
-        }, 500);
+        }, 1000);
       }
       event.sender.send("connect-response", err, response);
     }
@@ -152,10 +152,18 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
   if (!fs.existsSync(filename)) {
     event.sender.send("load-firmware-response", "Error loading firmware. Firmware file was not found on the file system.", undefined);
   } else {
-    console.log("Loading firmware...");
-    server.loadFirmware({filename}, (error: any, response: any) => {
-      console.log("Firmware command has exited. Sending response");
-      event.sender.send("load-firmware-response", error, response);
+    global.setInterval(() => {
+      server.firmware({}, (error: any, response: any) => {
+        console.log(error, response.updateStarted);
+        if (response.updateStarted && response.updateStarted === true) {
+          console.log("Disconnecting on " + currentDevice);
+          server.disconnect({device: currentDevice});
+        }
+      });
+    }, 1000);
+    console.log("Starting firmware update...");
+    server.firmware({filename}, (error: any, response: any) => {
+      console.log(error, response);
     });
   }
 });
@@ -166,12 +174,14 @@ ipcMain.on("request-firmware", (event: any) => {
     properties: ["openFile"],
     title: "Firmware Loading"
   }, (filePaths) => {
-    event.sender.send("request-firmware-response", filePaths);
+    if (filePaths && filePaths.length > 0) {
+      event.sender.send("request-firmware-response", filePaths);
+    }
   });
 });
 
 ipcMain.on("get-firmware", (event: any) => {
-  server.loadFirmware({}, (error: any, response: any) => {
+  server.firmware({}, (error: any, response: any) => {
     event.sender.send("get-firmware-response", error, response);
   });
 });

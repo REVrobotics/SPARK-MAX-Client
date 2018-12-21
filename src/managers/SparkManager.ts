@@ -273,6 +273,10 @@ class SparkManager {
     return values;
   }
 
+  public async setControlMode(mode: number): Promise<any> {
+    return await this.setParameter(5, mode);
+  }
+
   public async getAllParameters(): Promise<any> {
     const values: any[] = [];
     for (let i = 0; i < MAX_PARAMETERS + 1; i++) {

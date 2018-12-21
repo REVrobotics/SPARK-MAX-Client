@@ -131,7 +131,7 @@ class SparkServer {
     this.sendCommand("ping", "ping", pingCommand, cb);
   }
 
-  public loadFirmware(firmwareCommand: any, cb: Function) {
+  public firmware(firmwareCommand: any, cb: Function) {
     this.sendCommand("firmware", "firmware", firmwareCommand, cb);
   }
 }

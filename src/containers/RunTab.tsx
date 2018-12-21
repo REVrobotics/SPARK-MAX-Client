@@ -102,7 +102,7 @@ class RunTab extends React.Component<IProps, IState> {
     const f = fStr;
 
     return (
-      <div>
+      <div className="graph">
         <ReactEcharts
           option={option}
           notMerge={true}
@@ -152,9 +152,9 @@ class RunTab extends React.Component<IProps, IState> {
               onChange={this.changeMode}
               disabled={!connected}
             >
-              <Radio label="Percent" value={"Percent"}/>
-              <Radio label="Velocity" value={"Velocity"}/>
-              <Radio label="Position" value={"Position"}/>
+              <Radio label="Percent" value={0}/>
+              <Radio label="Velocity" value={1}/>
+              <Radio label="Position" value={3}/>
             </RadioGroup>
           </FormGroup>
           <FormGroup
@@ -276,8 +276,17 @@ class RunTab extends React.Component<IProps, IState> {
   }
 
   private changeMode(value: any) {
+    let modeStr = "";
+    if (value.currentTarget.value === 0) {
+      modeStr = "Percent";
+    } else if (value.currentTarget.value === 1) {
+      modeStr = "Velocity";
+    } else if (value.currentTarget.value === 2) {
+      modeStr = "Position";
+    }
+    SparkManager.setControlMode(value.currentTarget.value);
     this.setState({
-      mode: value.currentTarget.value,
+      mode: modeStr,
       option: {
         series: [{
           data: [],

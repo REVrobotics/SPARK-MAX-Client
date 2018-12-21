@@ -32,6 +32,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
         outputText: [...this.state.outputText, "Connected. Loading firmware version..."]
       });
       SparkManager.getFirmware().then((response: any) => {
+        console.log(response);
         this.setState({
           outputText: [...this.state.outputText, "Current firmware version: " + response.version],
           firmwareVersion: response.version
