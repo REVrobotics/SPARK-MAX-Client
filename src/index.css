@@ -190,3 +190,7 @@ input:checked ~ .bp3-control-indicator {
 .graph {
     margin-top: -40px;
 }
+
+.advanced {
+    margin-top: -15px;
+}

@@ -57,8 +57,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.changeReversePolarity = this.changeReversePolarity.bind(this);
     this.changeSlaveMode = this.changeSlaveMode.bind(this);
     this.changeMasterID = this.changeMasterID.bind(this);
-    this.changeOutputLimitEnabled = this.changeOutputLimitEnabled.bind(this);
-    this.changeOutputLimitRate = this.changeOutputLimitRate.bind(this);
+    this.changeRampRateEnabled = this.changeRampRateEnabled.bind(this);
+    this.changeRampRate = this.changeRampRate.bind(this);
     this.changeCurrentChopEnabled = this.changeCurrentChopEnabled.bind(this);
     this.changeCurrentChop = this.changeCurrentChop.bind(this);
     this.changeOutputRatio = this.changeOutputRatio.bind(this);
@@ -71,7 +71,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
   public render() {
     const {connected, motorConfig} = this.props;
     const {activeMotorType, currentLimitEnabled, inputRampLimit, currentChopEnabled,
-      outputRampLimit, rampRateEnabled, savingConfig, slaveMode,
+      rampRateEnabled, savingConfig, slaveMode,
       updateRequested} = this.state;
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
@@ -79,13 +79,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const currentLimit = motorConfig.currentLimit;
     const deadband = motorConfig.inputDeadband;
     const outputRatio = motorConfig.outputRatio;
+    const rampRate = motorConfig.rampRate;
     const masterID = motorConfig.followerID;
     const forwardLimitEnabled = motorConfig.hardLimitSwitchForwardEnabled;
     const reverseLimitEnabled = motorConfig.hardLimitSwitchReverseEnabled;
     const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
     const reversePolarity = motorConfig.limitSwitchReversePolarity;
     return (
-      <div>
+      <div className="advanced">
         <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
           Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
         </Alert>
@@ -209,14 +210,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-output-limit"
             className="form-group-quarter"
           >
-            <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeOutputLimitEnabled} />
+            <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
           </FormGroup>
           <FormGroup
             label="Rate (V/s)"
             labelFor="advanced-output-rate"
             className="form-group-quarter"
           >
-            <NumericInput id="advanced-output-rate" value={outputRampLimit} disabled={!rampRateEnabled} onValueChange={this.changeOutputLimitRate} min={0} max={1024}/>
+            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onValueChange={this.changeRampRate} min={0} max={1024}/>
           </FormGroup>
           <FormGroup
             label="Slave Mode"
@@ -315,7 +316,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
-  public changeOutputLimitEnabled() {
+  public changeRampRateEnabled() {
     const newEnabled: boolean = !this.state.rampRateEnabled;
     if (!newEnabled) {
       this.props.motorConfig.rampRate = 0;
@@ -323,8 +324,9 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.setState({rampRateEnabled: newEnabled});
   }
 
-  public changeOutputLimitRate(value: number) {
-    this.setState({outputRampLimit: value});
+  public changeRampRate(value: number) {
+    this.props.motorConfig.rampRate = value;
+    this.forceUpdate();
   }
 
   public changeCurrentChopEnabled() {
