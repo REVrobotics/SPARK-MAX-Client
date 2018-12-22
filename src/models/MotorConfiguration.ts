@@ -7,8 +7,8 @@ export default class MotorConfiguration implements ISerializable {
   private _inputMode: number;
   private _type: number;
   private _commutationAdvance: number;
-  private _sensorType: string;
-  private _controlType: string;
+  private _sensorType: number;
+  private _controlType: number;
   private _idleMode: number;
   private _inputDeadband: number;
   private _firmwareVersion: string;
@@ -30,8 +30,30 @@ export default class MotorConfiguration implements ISerializable {
 
   constructor(motorName: string, motorType: number) {
     this._name = motorName;
+    this._canID = -1;
+    this._inputMode = 0;
+    this._commutationAdvance = 0;
+    this._sensorType = 1;
+    this._controlType = 0;
+    this._idleMode = 0;
+    this._inputDeadband = 0;
+    this._firmwareVersion = "0.0.0";
+    this._hallOffset = 0;
+    this._polePairs = 0;
+    this._currentChop = 0;
+    this._currentLimit = 0;
     this._type = motorType;
     this._controlProfiles = [];
+    this._outputRatio = 0;
+    this._limitSwitchForwardPolarity = 0;
+    this._limitSwitchReversePolarity = 0;
+    this._hardLimitSwitchForwardEnabled = false;
+    this._hardLimitSwitchReverseEnabled = false;
+    this._softLimitSwitchForwardEnabled = false;
+    this._softLimitSwitchReverseEnabled = false;
+    this._rampRate = 0;
+    this._followerID = -1;
+    this._followerConfig = "";
   }
 
   public toJSON(): object {
@@ -98,19 +120,19 @@ export default class MotorConfiguration implements ISerializable {
     this._commutationAdvance = value;
   }
 
-  get sensorType(): string {
+  get sensorType(): number {
     return this._sensorType;
   }
 
-  set sensorType(value: string) {
+  set sensorType(value: number) {
     this._sensorType = value;
   }
 
-  get controlType(): string {
+  get controlType(): number {
     return this._controlType;
   }
 
-  set controlType(value: string) {
+  set controlType(value: number) {
     this._controlType = value;
   }
 
@@ -259,9 +281,5 @@ export default class MotorConfiguration implements ISerializable {
   }
 }
 
-export const REV_BRUSHLESS = new MotorConfiguration("REV Brushless",  1);
-export const CIM = new MotorConfiguration("CIM", 0);
-export const MINI_CIM = new MotorConfiguration("Mini Cim", 0);
-export const PRO = new MotorConfiguration("775 Pro/Redline", 0);
-export const BAG = new MotorConfiguration("Bag", 0);
-export const REV_HD_HEX = new MotorConfiguration("REV HD Hex", 0);
+export const REV_BRUSHLESS = new MotorConfiguration("Brushless",  1);
+export const REV_BRUSHED = new MotorConfiguration("Brushed", 0);

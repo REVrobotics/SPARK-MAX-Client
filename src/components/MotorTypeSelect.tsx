@@ -1,11 +1,11 @@
 import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
-import MotorConfiguration, {BAG, CIM, MINI_CIM, PRO, REV_BRUSHLESS, REV_HD_HEX} from "../models/MotorConfiguration";
+import MotorConfiguration, {REV_BRUSHLESS, REV_BRUSHED} from "../models/MotorConfiguration";
 
 const MotorSelect = Select.ofType<MotorConfiguration>();
 
-const defaultItems: MotorConfiguration[] = [REV_BRUSHLESS, CIM, MINI_CIM, PRO, BAG, REV_HD_HEX];
+const defaultItems: MotorConfiguration[] = [REV_BRUSHLESS, REV_BRUSHED];
 
 const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
   return (

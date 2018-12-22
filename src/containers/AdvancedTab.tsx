@@ -5,6 +5,8 @@ import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
 import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
+import Sensor, {getFromID} from "../models/Sensor";
+import {SensorTypeSelect} from "../components/SensorTypeSelect";
 
 interface IProps {
   connected: boolean,
@@ -15,18 +17,12 @@ interface IState {
   activeMotorType: MotorConfiguration,
   inputRampLimit: number,
   currentLimitEnabled: boolean,
-  currentProfile: number,
-  currentSetpoint: number,
   currentChopEnabled: boolean,
   outputRampLimit: number,
   rampRateEnabled: boolean,
-  positionProfile: number,
-  positionSetpoint: number,
   savingConfig: boolean,
   slaveMode: boolean,
   updateRequested: boolean,
-  velocityProfile: number,
-  velocitySetpoint: number,
 }
 
 class AdvancedTab extends React.Component<IProps, IState> {
@@ -36,36 +32,36 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.state = {
       activeMotorType: REV_BRUSHLESS,
       currentLimitEnabled: false,
-      currentProfile: 0,
-      currentSetpoint: 0,
       inputRampLimit: 0,
       currentChopEnabled: false,
       outputRampLimit: 0,
       rampRateEnabled: false,
-      positionProfile: 0,
-      positionSetpoint: 0,
       savingConfig: false,
       slaveMode: false,
       updateRequested: false,
-      velocityProfile: 0,
-      velocitySetpoint: 0
     };
 
     this.openConfirmModal = this.openConfirmModal.bind(this);
     this.closeConfirmModal = this.closeConfirmModal.bind(this);
 
     this.changeMotorType = this.changeMotorType.bind(this);
+    this.changeSensorType = this.changeSensorType.bind(this);
     this.changeCanID = this.changeCanID.bind(this);
     this.changeCurrentLimitEnabled = this.changeCurrentLimitEnabled.bind(this);
     this.changeIdleMode = this.changeIdleMode.bind(this);
     this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
     this.changeDeadband = this.changeDeadband.bind(this);
+    this.changeForwardLimitEnabled = this.changeForwardLimitEnabled.bind(this);
+    this.changeReverseLimitEnabled = this.changeReverseLimitEnabled.bind(this);
+    this.changeForwardPolarity = this.changeForwardPolarity.bind(this);
+    this.changeReversePolarity = this.changeReversePolarity.bind(this);
     this.changeSlaveMode = this.changeSlaveMode.bind(this);
     this.changeMasterID = this.changeMasterID.bind(this);
     this.changeOutputLimitEnabled = this.changeOutputLimitEnabled.bind(this);
     this.changeOutputLimitRate = this.changeOutputLimitRate.bind(this);
     this.changeCurrentChopEnabled = this.changeCurrentChopEnabled.bind(this);
     this.changeCurrentChop = this.changeCurrentChop.bind(this);
+    this.changeOutputRatio = this.changeOutputRatio.bind(this);
   }
 
   public componentDidMount(): void {
@@ -74,14 +70,20 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected, motorConfig} = this.props;
-    const {activeMotorType, currentProfile, currentSetpoint, currentLimitEnabled, inputRampLimit, currentChopEnabled,
-      outputRampLimit, rampRateEnabled, positionProfile, positionSetpoint, savingConfig, slaveMode,
-      updateRequested, velocityProfile, velocitySetpoint} = this.state;
+    const {activeMotorType, currentLimitEnabled, inputRampLimit, currentChopEnabled,
+      outputRampLimit, rampRateEnabled, savingConfig, slaveMode,
+      updateRequested} = this.state;
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
+    const sensorType = motorConfig.sensorType;
     const currentLimit = motorConfig.currentLimit;
     const deadband = motorConfig.inputDeadband;
+    const outputRatio = motorConfig.outputRatio;
     const masterID = motorConfig.followerID;
+    const forwardLimitEnabled = motorConfig.hardLimitSwitchForwardEnabled;
+    const reverseLimitEnabled = motorConfig.hardLimitSwitchReverseEnabled;
+    const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
+    const reversePolarity = motorConfig.limitSwitchReversePolarity;
     return (
       <div>
         <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
@@ -139,30 +141,52 @@ class AdvancedTab extends React.Component<IProps, IState> {
         </div>
         <div className="form">
           <FormGroup
-            label="Current Profile And Setpoint"
-            labelFor="advanced-current-profile"
-            className="form-group-half inline"
+            label="Select Sensor Type"
+            labelFor="advanced-motor-type"
+            className="form-group-quarter"
           >
-            <NumericInput id="advanced-current-profile" disabled={!connected} value={currentProfile} onValueChange={this.changeCurrentProfile} min={1} max={4}/>
-            <NumericInput id="advanced-current-setpoint" disabled={!connected} value={currentSetpoint} onValueChange={this.changeCurrentSetpoint} min={1} max={1024}/>
+            <SensorTypeSelect
+              activeSensor={getFromID(sensorType)}
+              connected={connected}
+              onSensorSelect={this.changeSensorType}
+            />
           </FormGroup>
           <FormGroup
-            label="Velocity Profile And Setpoint"
-            labelFor="advanced-velocity-profile"
-            className="form-group-half inline"
+            label="Output Ratio"
+            labelFor="advanced-can-id"
+            className="form-group-quarter"
           >
-            <NumericInput id="advanced-velocity-profile" disabled={!connected} value={velocityProfile} onValueChange={this.changeVelocityProfile} min={1} max={4}/>
-            <NumericInput id="advanced-velocity-setpoint" disabled={!connected} value={velocitySetpoint} onValueChange={this.changeVelocitySetpoint} min={1} max={1024}/>
+            <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onValueChange={this.changeOutputRatio} min={0} max={24}/>
+          </FormGroup>
+          <FormGroup
+            label="Forward Limit Switch Enabled"
+            labelFor="advanced-is-slave"
+            className="form-group-quarter"
+          >
+            <Switch checked={forwardLimitEnabled} disabled={!connected} label={forwardLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitEnabled} />
+          </FormGroup>
+          <FormGroup
+            label="Reverse Limit Switch Enabled"
+            labelFor="advanced-is-slave"
+            className="form-group-quarter"
+          >
+            <Switch checked={reverseLimitEnabled} disabled={!connected} label={reverseLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitEnabled} />
           </FormGroup>
         </div>
         <div className="form">
           <FormGroup
-            label="Position Profile And Setpoint"
-            labelFor="advanced-position-profile"
-            className="form-group-half inline"
+            label="Forward Limit Switch Polarity"
+            labelFor="advanced-is-slave"
+            className="form-group-quarter"
           >
-            <NumericInput id="advanced-position-profile" disabled={!connected} value={positionProfile} onValueChange={this.changePositionProfile} min={1} max={4}/>
-            <NumericInput id="advanced-position-setpoint" disabled={!connected} value={positionSetpoint} onValueChange={this.changePositionSetpoint} min={1} max={1024}/>
+            <Switch checked={forwardPolarity === 1} disabled={!connected} label={forwardPolarity === 1 ? "Open" : "Closed"} onChange={this.changeForwardPolarity} />
+          </FormGroup>
+          <FormGroup
+            label="Reverse Limit Switch Polarity"
+            labelFor="advanced-is-slave"
+            className="form-group-quarter"
+          >
+            <Switch checked={reversePolarity === 1} disabled={!connected} label={reversePolarity === 1 ? "Open" : "Closed"} onChange={this.changeReversePolarity} />
           </FormGroup>
           <FormGroup
             label="Current Chop"
@@ -225,6 +249,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.setState({activeMotorType: motorType});
   }
 
+  public changeSensorType(sensorType: Sensor) {
+    this.props.motorConfig.sensorType = sensorType.id;
+    this.forceUpdate();
+  }
+
   public changeCurrentLimitEnabled() {
     const newEnabled: boolean = !this.state.currentLimitEnabled;
     if (!newEnabled) {
@@ -250,36 +279,31 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
+  public changeForwardLimitEnabled() {
+    this.props.motorConfig.hardLimitSwitchForwardEnabled = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
+    this.forceUpdate();
+  }
+
+  public changeReverseLimitEnabled() {
+    this.props.motorConfig.hardLimitSwitchReverseEnabled = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
+  }
+
+  public changeForwardPolarity() {
+    const prevValue = this.props.motorConfig.limitSwitchForwardPolarity;
+    this.props.motorConfig.limitSwitchForwardPolarity = prevValue === 1 ? 0 : 1;
+  }
+
+  public changeReversePolarity() {
+    const prevValue = this.props.motorConfig.limitSwitchReversePolarity;
+    this.props.motorConfig.limitSwitchReversePolarity = prevValue === 1 ? 0 : 1;
+  }
+
   public openConfirmModal() {
     this.setState({updateRequested: true});
   }
 
   public closeConfirmModal() {
     this.setState({updateRequested: false});
-  }
-
-  public changeCurrentProfile(value: number) {
-    this.setState({currentProfile: value});
-  }
-
-  public changeCurrentSetpoint(value: number) {
-    this.setState({currentSetpoint: value});
-  }
-
-  public changeVelocityProfile(value: number) {
-    this.setState({velocityProfile: value});
-  }
-
-  public changeVelocitySetpoint(value: number) {
-    this.setState({velocitySetpoint: value});
-  }
-
-  public changePositionProfile(value: number) {
-    this.setState({positionProfile: value});
-  }
-
-  public changePositionSetpoint(value: number) {
-    this.setState({positionSetpoint: value});
   }
 
   public changeSlaveMode() {
@@ -317,6 +341,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
+  public changeOutputRatio(value: number) {
+    this.props.motorConfig.outputRatio = value;
+    this.forceUpdate();
+  }
+
   public updateConfiguration() {
     this.setState({savingConfig: true});
     SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
@@ -333,6 +362,13 @@ class AdvancedTab extends React.Component<IProps, IState> {
       this.setState({savingConfig: false});
     });
   }
+
+  // private sanitizeValue(event: any) {
+  //   const decimalValue: number = parseFloat(event.target.value);
+  //   if (decimalValue !== 0) {
+  //     event.target.value = decimalValue;
+  //   }
+  // }
 }
 
 export function mapStateToProps(state: IApplicationState) {
