@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
-import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
+import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 import Sensor, {getFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
@@ -65,7 +65,9 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public componentDidMount(): void {
-    console.log(this.props.motorConfig);
+    if (this.props.connected) {
+      this.changeMotorType(this.props.motorConfig.type === 1 ? REV_BRUSHLESS : REV_BRUSHED);
+    }
   }
 
   public render() {
@@ -247,6 +249,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeMotorType(motorType: MotorConfiguration) {
+    this.props.motorConfig.type = motorType.type;
+    this.forceUpdate();
     this.setState({activeMotorType: motorType});
   }
 

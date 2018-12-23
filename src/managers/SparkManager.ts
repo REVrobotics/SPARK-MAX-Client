@@ -332,6 +332,10 @@ class SparkManager {
     });
   }
 
+  public showInfoBox(title: string, message: string) {
+    ipcRenderer.send("show-info", title, message);
+  }
+
   private setParameter(id: number, value: number | string): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("set-param-" + id + "-response", (event: any, error: any, response: any) => {

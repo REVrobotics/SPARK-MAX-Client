@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
-import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
+import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 
 interface IProps {
@@ -34,6 +34,12 @@ class BasicTab extends React.Component<IProps, IState> {
     this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
 
     this.updateConfiguration = this.updateConfiguration.bind(this);
+  }
+
+  public componentDidMount(): void {
+    if (this.props.connected) {
+      this.selectMotorType(this.props.motorConfig.type === 1 ? REV_BRUSHLESS : REV_BRUSHED);
+    }
   }
 
   public render() {
@@ -141,6 +147,8 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
+    this.props.motorConfig.type = motorType.type;
+    this.forceUpdate();
     this.setState({activeMotorType: motorType});
   }
 

@@ -17,6 +17,46 @@ import {
   ApplicationActions, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
   IUpdateConnectionStatus
 } from "./store/types";
+// import WebProvider from "./providers/WebProvider";
+
+const TEST_JSON = {
+  "firmware": [
+    {
+      "spec": "Beta",
+      "version": "0.1.99999"
+    },
+    {
+      "spec": "Recovery Update Required",
+      "version": "1.0.372"
+    },
+    {
+      "spec": "Previous",
+      "version": "1.0.373",
+      "url": "https://www.revrobotics.com/content/uw/sparkmax/firmware/sparkmax-firmwar-1.0.373.dfu",
+      "md5": "23f232a3b2df2867c2097239870980987c0fa0"
+    },
+    {
+      "spec": "Latest",
+      "version": "1.0.376",
+      "url": "https://www.revrobotics.com/content/uw/sparkmax/firmware/sparkmax-firmwar-1.0.376.dfu",
+      "md5": "23f232a3b2df2867c2097239870980987c0fa0"
+    }
+  ],
+  "GUI": [
+    {
+      "spec": "Previous",
+      "version": "0.8.1",
+      "url": "https://www.revrobotics.com/content/uw/sparkmax/gui/sparkmax-gui-0.8.1.exe",
+      "md5": "23f232a3b2df2867c2097239870980987c0fa0"
+    },
+    {
+      "spec": "Latest",
+      "version": "0.9.7",
+      "url": "https://www.revrobotics.com/content/uw/sparkmax/gui/sparkmax-gui-0.9.7.exe",
+      "md5": "23f232a3b2df2867c2097239870980987c0fa0"
+    }
+  ]
+};
 
 interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
@@ -39,11 +79,12 @@ class App extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
-        console.log(config);
+        this.checkForFirmwareUpdate();
       });
     }).catch((error: any) => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
       this.props.setIsConnecting(false);
+      // this.checkForFirmwareUpdate();
     });
     SparkManager.onDisconnect(() => {
       this.props.updateConnectionStatus(false, "DISCONNECTED");
@@ -66,6 +107,46 @@ class App extends React.Component<IProps> {
         </Tabs>
       </div>
     );
+  }
+
+  private checkForFirmwareUpdate() {
+    SparkManager.getFirmware().then((versionJSON: any) => {
+      if (versionJSON.version && versionJSON.version.length > 0) {
+        const version = versionJSON.version.substring(1, versionJSON.version.length);
+        // WebProvider.initialize("https://revrobotics.com");
+        // TODO - Get the real URL.
+        // WebProvider.get("").then((firmwareJSON: any) => {
+        const firmwareJSON: any = TEST_JSON;
+          if (firmwareJSON.firmware) {
+            for (const firmware of firmwareJSON.firmware) {
+              if (firmware.spec === "Latest") {
+                if (this.isOldFirmware(version, firmware.version)) {
+                  SparkManager.showInfoBox("SPARK MAX Firmware", `Your motor controller is using an older version of firmware. Please download the latest at https://revrobotics.com and update it in the 'Firmware' tab.`);
+                }
+              }
+            }
+          }
+        // });
+      }
+    });
+  }
+
+  private isOldFirmware(current: string, other: string): boolean {
+    const currentParts: string[] = current.split(".");
+    const otherParts: string[] = other.split(".");
+    const curMajor = parseInt(currentParts[0], 10);
+    const curMinor = parseInt(currentParts[1], 10);
+    const curBuild = parseInt(currentParts[2], 10);
+    const othMajor = parseInt(otherParts[0], 10);
+    const othMinor = parseInt(otherParts[1], 10);
+    const othBuild = parseInt(otherParts[2], 10);
+    if (curMajor < othMajor) {
+      return true;
+    } else if (curMinor < othMinor) {
+      return true;
+    } else {
+      return curBuild < othBuild;
+    }
   }
 }
 

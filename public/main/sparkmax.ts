@@ -185,3 +185,12 @@ ipcMain.on("get-firmware", (event: any) => {
     event.sender.send("get-firmware-response", error, response);
   });
 });
+
+ipcMain.on("show-info", (event: any, title: any, message: any) => {
+  dialog.showMessageBox(BrowserWindow.getFocusedWindow() as BrowserWindow, {
+    detail: message,
+    message: "",
+    title: title as string,
+    type: "info",
+  });
+});
