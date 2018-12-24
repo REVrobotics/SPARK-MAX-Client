@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "SPARK MAX Client",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "private": true,
   "author": "REV Robotics LLC",
   "description": "SPARK MAX Motor Controller Client",

@@ -72,7 +72,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
           outputText: [...this.state.outputText, "Loading firmware from " + paths[0]]
         });
         SparkManager.loadFirmware(paths[0], this.updateFirmwareStatus).then((res: any) => {
-          if (!res.updateComplete) {
+          if (res.updateComplete && !res.updateCompletedSuccessfully) {
             this.sendFirmwareError();
           } else {
             this.setState({
@@ -98,6 +98,11 @@ class FirmwareTab extends React.Component<IProps, IState> {
       this.setState({
         outputText: [...this.state.outputText, "Started firmware update process..."]
       });
+    } else if (response.isUpdating) {
+      const updatedOutput: string[] = this.state.outputText;
+      updatedOutput.pop();
+      updatedOutput.push(`(${response.updateStagePercent}) ${response.updateStageMessage}`);
+      this.setState({outputText: updatedOutput});
     }
   }
 

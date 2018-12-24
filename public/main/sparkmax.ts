@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
-const isProd = false;
+const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
