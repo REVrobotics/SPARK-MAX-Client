@@ -100,7 +100,7 @@ class App extends React.Component<IProps> {
           <Tab id="main-tab-basic" title="Basic" panel={<BasicTab/>} />
           <Tab id="main-tab-advanced" title="Advanced" panel={<AdvancedTab/>} />
           <Tab id="main-tab-run" title="Run" panel={<RunTab/>} />
-          <Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />
+          {/*<Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />*/}
           <Tab id="main-tab-firmware" title="Firmware" panel={<FirmwareTab/>} />
           <Tab id="main-tab-help" title="Help" panel={<HelpTab logs={[]}/>} />
           <Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />

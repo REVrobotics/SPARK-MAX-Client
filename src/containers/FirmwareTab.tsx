@@ -1,11 +1,15 @@
 import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState} from "../store/types";
+import {ApplicationActions, IApplicationState, ISetIsConnecting, IUpdateConnectionStatus} from "../store/types";
 import SparkManager from "../managers/SparkManager";
+import {Dispatch} from "redux";
+import {setIsConnecting, updateConnectionStatus} from "../store/actions";
 
 interface IProps {
-  connected: boolean
+  connected: boolean,
+  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
+  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus
 }
 
 interface IState {
@@ -24,6 +28,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
     };
 
     this.openFileDialog = this.openFileDialog.bind(this);
+    this.updateFirmwareStatus = this.updateFirmwareStatus.bind(this);
   }
 
   public componentDidMount(): void {
@@ -32,7 +37,6 @@ class FirmwareTab extends React.Component<IProps, IState> {
         outputText: [...this.state.outputText, "Connected. Loading firmware version..."]
       });
       SparkManager.getFirmware().then((response: any) => {
-        console.log(response);
         this.setState({
           outputText: [...this.state.outputText, "Current firmware version: " + response.version],
           firmwareVersion: response.version
@@ -52,7 +56,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
         </div>
         <div id="firmware-bar">
           <span>Current Firmware: {firmwareVersion}</span>
-          <span><Button className="rev-btn" disabled={!this.props.connected} loading={loadingFirmware} onClick={this.openFileDialog}>Load Firmware</Button></span>
+          <span><Button className="rev-btn" loading={loadingFirmware} onClick={this.openFileDialog}>Load Firmware</Button></span>
         </div>
       </div>
     );
@@ -60,27 +64,55 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
   private openFileDialog() {
     SparkManager.requestFirmware().then((paths: any[]) => {
+      this.props.setIsConnecting(true);
+      this.props.updateConnectionStatus(false, "LOADING FIRMWARE...");
       this.setState({loadingFirmware: true});
       if (paths.length > 0) {
         this.setState({
           outputText: [...this.state.outputText, "Loading firmware from " + paths[0]]
         });
-        SparkManager.loadFirmware(paths[0]).then((res: any) => {
-          this.setState({
-            outputText: [...this.state.outputText, "Successfully updated firmware."]
-          });
-          this.setState({loadingFirmware: false});
-          SparkManager.getFirmware().then((response: any) => {
-            this.setState({firmwareVersion: response.version});
-          });
+        SparkManager.loadFirmware(paths[0], this.updateFirmwareStatus).then((res: any) => {
+          if (!res.updateComplete) {
+            this.sendFirmwareError();
+          } else {
+            this.setState({
+              outputText: [...this.state.outputText, "Successfully updated firmware."]
+            });
+            this.setState({loadingFirmware: false});
+            this.props.setIsConnecting(false);
+            this.props.updateConnectionStatus(false, "CONNECTED");
+            SparkManager.getFirmware().then((response: any) => {
+              this.setState({firmwareVersion: response.version});
+            });
+          }
         }).catch(() => {
-          this.setState({
-            outputText: [...this.state.outputText, "Error loading firmware. Please disconnect the SPARK MAX controller, and try again."]
-          });
-          this.setState({loadingFirmware: false});
+          this.sendFirmwareError();
         });
       }
     });
+  }
+
+  private updateFirmwareStatus(event: any, error: any, response: any) {
+    // TODO - Firmware text...
+    if (response.updateStarted) {
+      this.setState({
+        outputText: [...this.state.outputText, "Started firmware update process..."]
+      });
+    }
+  }
+
+  private sendFirmwareError() {
+    this.setState({
+      outputText: [...this.state.outputText, "Error loading firmware. Please disconnect the SPARK MAX controller, and try again."]
+    });
+    this.setState({loadingFirmware: false});
+    if (!this.props.connected) {
+      this.props.setIsConnecting(false);
+      this.props.updateConnectionStatus(false, "DISCONNECTED");
+    } else {
+      this.props.setIsConnecting(false);
+      this.props.updateConnectionStatus(true, "CONNECTED");
+    }
   }
 }
 
@@ -90,4 +122,11 @@ export function mapStateToProps(state: IApplicationState) {
   };
 }
 
-export default connect(mapStateToProps)(FirmwareTab);
+export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+  return {
+    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
+    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status))
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(FirmwareTab);

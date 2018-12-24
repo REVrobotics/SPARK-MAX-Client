@@ -13,6 +13,7 @@ let heartbeatID: any = null;
 let connCheckID: any = null;
 let setpoint: number = 0;
 let currentDevice: string = "";
+let firmwareID: any = null;
 
 const dllFolder = isProd ? "../../../../" : "../../bin/";
 
@@ -152,19 +153,31 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
   if (!fs.existsSync(filename)) {
     event.sender.send("load-firmware-response", "Error loading firmware. Firmware file was not found on the file system.", undefined);
   } else {
-    global.setInterval(() => {
-      server.firmware({}, (error: any, response: any) => {
-        console.log(error, response.updateStarted);
-        if (response.updateStarted && response.updateStarted === true) {
-          console.log("Disconnecting on " + currentDevice);
-          server.disconnect({device: currentDevice});
-        }
+    if (firmwareID === null) {
+      firmwareID = global.setInterval(() => {
+        server.firmware({}, (error: any, response: any) => {
+          console.log(error, response, response.updateStarted);
+          if (response.updateStarted && response.updateStarted === true) {
+            console.log("Disconnecting on " + currentDevice);
+            server.disconnect({device: currentDevice});
+          }
+          if (response.isUpdating && response.updateComplete) {
+            event.sender.send("load-firmware-response", error, response);
+          } else {
+            console.log("Sending firmware finish response.");
+            event.sender.send("load-firmware-finish");
+            server.connect({device: currentDevice});
+            global.clearInterval(firmwareID);
+            firmwareID = null;
+          }
+        });
+      }, 1000);
+      console.log("Starting firmware update...");
+      server.firmware({filename}, (error: any, response: any) => {
+        console.log(error, response);
+        event.sender.send("load-firmware-response", error, response);
       });
-    }, 1000);
-    console.log("Starting firmware update...");
-    server.firmware({filename}, (error: any, response: any) => {
-      console.log(error, response);
-    });
+    }
   }
 });
 

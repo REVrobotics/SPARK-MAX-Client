@@ -97,9 +97,11 @@ class SparkManager {
     });
   }
 
-  public loadFirmware(filename: string): Promise<any> {
+  public loadFirmware(filename: string, listener: (event: any, error: any, response: any) => void): Promise<any> {
     return new Promise<any[]>((resolve, reject) => {
-      ipcRenderer.once("load-firmware-response", (event: any, error: any, response: any) => {
+      ipcRenderer.on("load-firmware-response", listener);
+      ipcRenderer.once("load-firmware-finish", (event: any, error: any, response: any) => {
+        ipcRenderer.removeListener("load-firmware-response", listener);
         if (error) {
           reject(error);
         } else {
