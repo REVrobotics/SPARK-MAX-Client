@@ -14,7 +14,10 @@ export const SET_PARAMETERS = "SET_PARAMETERS";
 export type SET_PARAMETERS = typeof SET_PARAMETERS;
 
 export const SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG";
-export type SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG";
+export type SET_MOTOR_CONFIG = typeof SET_MOTOR_CONFIG;
+
+export const ADD_LOG = "ADD_LOG";
+export type ADD_LOG = typeof ADD_LOG;
 
 export interface IApplicationState {
   isConnected: boolean,
@@ -22,7 +25,8 @@ export interface IApplicationState {
   isConnecting: boolean,
   connectedDevice: string,
   parameters: number[],
-  currentConfig: MotorConfiguration
+  currentConfig: MotorConfiguration,
+  logs: string[]
 }
 
 export interface IUpdateConnectionStatus extends Action {
@@ -61,5 +65,12 @@ export interface ISetMotorConfig extends Action {
   }
 }
 
+export interface IAddLog extends Action {
+  type: ADD_LOG,
+  payload: {
+    log: string
+  }
+}
+
 export type ApplicationActions = IUpdateConnectionStatus | ISetIsConnecting | ISetConnectedDevice | ISetParameters
-  | ISetMotorConfig;
+  | ISetMotorConfig | IAddLog;

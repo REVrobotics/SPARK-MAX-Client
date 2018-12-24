@@ -12,9 +12,9 @@ import RunTab from "./containers/RunTab";
 import SettingsTab from "./containers/SettingsTab";
 import SparkManager from "./managers/SparkManager";
 import MotorConfiguration from "./models/MotorConfiguration";
-import {setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "./store/actions";
+import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "./store/actions";
 import {
-  ApplicationActions, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  ApplicationActions, IAddLog, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
   IUpdateConnectionStatus
 } from "./store/types";
 import WebProvider from "./providers/WebProvider";
@@ -63,7 +63,8 @@ interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
   setConnectedDevice: (device: string) => ISetConnectedDevice,
-  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig
+  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
+  addLog: (log: string) => IAddLog
 }
 
 class App extends React.Component<IProps> {
@@ -85,7 +86,7 @@ class App extends React.Component<IProps> {
     }).catch((error: any) => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
       this.props.setIsConnecting(false);
-      // this.checkForFirmwareUpdate();
+      this.props.addLog(error);
     });
     SparkManager.onDisconnect(() => {
       this.props.updateConnectionStatus(false, "DISCONNECTED");
@@ -103,7 +104,7 @@ class App extends React.Component<IProps> {
           <Tab id="main-tab-run" title="Run" panel={<RunTab/>} />
           {/*<Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />*/}
           <Tab id="main-tab-firmware" title="Firmware" panel={<FirmwareTab/>} />
-          <Tab id="main-tab-help" title="Help" panel={<HelpTab logs={[]}/>} />
+          <Tab id="main-tab-help" title="Help" panel={<HelpTab/>} />
           <Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />
         </Tabs>
       </div>
@@ -127,6 +128,8 @@ class App extends React.Component<IProps> {
               }
             }
           }
+        }).catch((error: any) => {
+          this.props.addLog(error);
         });
       }
     });
@@ -156,7 +159,8 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
     setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
     setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status))
+    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    addLog: (log: string) => dispatch(addLog(log))
   };
 }
 

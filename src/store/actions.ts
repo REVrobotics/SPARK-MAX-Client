@@ -1,6 +1,8 @@
 import {ActionCreator} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
+  ADD_LOG,
+  IAddLog,
   ISetConnectedDevice,
   ISetIsConnecting, ISetMotorConfig, ISetParameters,
   IUpdateConnectionStatus, SET_CONNECTED_DEVICE,
@@ -42,4 +44,11 @@ export const setMotorConfig: ActionCreator<ISetMotorConfig> = (config: MotorConf
     config
   },
   type: SET_MOTOR_CONFIG
+});
+
+export const addLog: ActionCreator<IAddLog> = (log: string) => ({
+  payload: {
+    log
+  },
+  type: ADD_LOG
 });

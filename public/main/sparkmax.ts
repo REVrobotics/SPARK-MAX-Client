@@ -8,7 +8,7 @@ import SparkServer from "./sparkmax-server";
 const {download} = require('electron-dl');
 
 const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
-const isProd = false;
+const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -81,7 +81,7 @@ ipcMain.on("connect", (event: any, device: string) => {
 
 ipcMain.on("disconnect", (event: any, device: string) => {
   console.log("Disconnecting on " + device + "...");
-  server.disconnect({device, keepalive: true}, (err: any, response: any) => {
+  server.disconnect({device}, (err: any, response: any) => {
     if (connCheckID !== null) {
       global.clearInterval(connCheckID);
       connCheckID = null;

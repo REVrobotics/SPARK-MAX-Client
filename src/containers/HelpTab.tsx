@@ -1,5 +1,7 @@
 import {Button, Dialog} from "@blueprintjs/core";
 import * as React from "react";
+import {IApplicationState} from "../store/types";
+import {connect} from "react-redux";
 
 interface IProps {
   logs: string[]
@@ -32,8 +34,8 @@ class HelpTab extends React.Component<IProps, IState> {
           </div>
           <div className="bp3-dialog-body">
             {this.props.logs.length === 0 && <span><i>There are currently no application logs.</i></span>}
-            {this.props.logs.map(log => {
-              return <p key={log}>{log}</p>
+            {this.props.logs.map((log, index) => {
+              return <p key={index}>{log}</p>
             })}
           </div>
         </Dialog>
@@ -62,4 +64,10 @@ class HelpTab extends React.Component<IProps, IState> {
 
 }
 
-export default HelpTab;
+export function mapStateToProps(state: IApplicationState) {
+  return {
+    logs: state.logs
+  };
+}
+
+export default connect(mapStateToProps)(HelpTab);

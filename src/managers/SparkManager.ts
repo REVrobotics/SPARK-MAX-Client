@@ -22,8 +22,12 @@ class SparkManager {
     return new Promise<string>((resolve, reject) => {
       this.listDevices().then((devices: string[]) => {
         if (devices.length > 0) {
-          this.connect(devices[0]).then(() => {
-            resolve(devices[0]);
+          this.connect(devices[0]).then((response: any) => {
+            if (response.root.error) {
+              reject(response.root.error);
+            } else {
+              resolve(devices[0]);
+            }
           }).catch((error: any) => {
             reject(error);
           });
@@ -55,7 +59,7 @@ class SparkManager {
         if (error) {
           reject(error);
         } else {
-          resolve();
+          resolve(response);
         }
       });
       ipcRenderer.send("connect", device)

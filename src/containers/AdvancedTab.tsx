@@ -43,6 +43,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     this.openConfirmModal = this.openConfirmModal.bind(this);
     this.closeConfirmModal = this.closeConfirmModal.bind(this);
+    this.updateConfiguration = this.updateConfiguration.bind(this);
 
     this.changeMotorType = this.changeMotorType.bind(this);
     this.changeSensorType = this.changeSensorType.bind(this);
@@ -62,6 +63,9 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.changeCurrentChopEnabled = this.changeCurrentChopEnabled.bind(this);
     this.changeCurrentChop = this.changeCurrentChop.bind(this);
     this.changeOutputRatio = this.changeOutputRatio.bind(this);
+
+    this.sanitizeValue = this.sanitizeValue.bind(this);
+    this.provideDefault = this.provideDefault.bind(this);
   }
 
   public componentDidMount(): void {
@@ -116,7 +120,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-current-limit"
             className="form-group-fifth"
           >
-            <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
+            <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
           </FormGroup>
           <FormGroup
             label="Can ID"
@@ -159,7 +163,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-can-id"
             className="form-group-quarter"
           >
-            <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onValueChange={this.changeOutputRatio} min={0} max={24}/>
+            <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeOutputRatio} min={0} max={24}/>
           </FormGroup>
           <FormGroup
             label="Forward Limit Switch Enabled"
@@ -203,7 +207,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-input-rate"
             className="form-group-quarter"
           >
-            <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!currentChopEnabled} onValueChange={this.changeCurrentChop} min={0} max={1024}/>
+            <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentChop} min={0} max={1024}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -219,7 +223,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-output-rate"
             className="form-group-quarter"
           >
-            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onValueChange={this.changeRampRate} min={0} max={1024}/>
+            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024}/>
           </FormGroup>
           <FormGroup
             label="Slave Mode"
@@ -291,16 +295,19 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeReverseLimitEnabled() {
     this.props.motorConfig.hardLimitSwitchReverseEnabled = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
+    this.forceUpdate();
   }
 
   public changeForwardPolarity() {
     const prevValue = this.props.motorConfig.limitSwitchForwardPolarity;
     this.props.motorConfig.limitSwitchForwardPolarity = prevValue === 1 ? 0 : 1;
+    this.forceUpdate();
   }
 
   public changeReversePolarity() {
     const prevValue = this.props.motorConfig.limitSwitchReversePolarity;
     this.props.motorConfig.limitSwitchReversePolarity = prevValue === 1 ? 0 : 1;
+    this.forceUpdate();
   }
 
   public openConfirmModal() {
@@ -352,12 +359,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
-  public updateConfiguration() {
+  private updateConfiguration() {
+    console.log(this.props.motorConfig);
     this.setState({savingConfig: true});
     SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
-      console.log(res);
       SparkManager.burnFlash().then((flashRes: any) => {
-        console.log(flashRes);
         this.setState({savingConfig: false});
       }).catch((error: any) => {
         this.setState({savingConfig: false});
@@ -369,12 +375,19 @@ class AdvancedTab extends React.Component<IProps, IState> {
     });
   }
 
-  // private sanitizeValue(event: any) {
-  //   const decimalValue: number = parseFloat(event.target.value);
-  //   if (decimalValue !== 0) {
-  //     event.target.value = decimalValue;
-  //   }
-  // }
+  private sanitizeValue(event: any) {
+    const decimalValue: number = parseFloat(event.target.value);
+    if (decimalValue !== 0) {
+      event.target.value = decimalValue;
+    }
+  }
+
+  private provideDefault(event: any) {
+    const decimalValue: number = parseFloat(event.target.value);
+    if (decimalValue === 0) {
+      event.target.value = "0.0";
+    }
+  }
 }
 
 export function mapStateToProps(state: IApplicationState) {
