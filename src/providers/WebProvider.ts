@@ -27,12 +27,12 @@ class WebProvider {
    * @param host The host address.
    */
   public initialize(host: string): void {
-    this._host = "http://" + host + "/";
+    this._host = "https://" + host + "/";
     this._config = {
       baseURL: this._host,
       timeout: 5000,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "text/plain"
       }
     };
     this._axios = Axios.create(this._config);

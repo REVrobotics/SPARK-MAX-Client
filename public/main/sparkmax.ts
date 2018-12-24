@@ -1,10 +1,14 @@
 import {ChildProcess, execFile} from "child_process";
-import {BrowserWindow, dialog, ipcMain} from "electron";
+import {app, BrowserWindow, DownloadItem, dialog, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import SparkServer from "./sparkmax-server";
 
-const isProd = true;
+// Only temporary, hopefully... this is because electron-dl has no type definition file.
+const {download} = require('electron-dl');
+
+const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -156,25 +160,26 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
     if (firmwareID === null) {
       firmwareID = global.setInterval(() => {
         server.firmware({}, (error: any, response: any) => {
-          console.log(error, response, response.updateStarted);
-          if (response.updateStarted && response.updateStarted === true) {
-            console.log("Disconnecting on " + currentDevice);
-            server.disconnect({device: currentDevice});
-          }
-          if (response.isUpdating && response.updateComplete) {
+          if (response.isUpdating && !response.updateComplete) {
             event.sender.send("load-firmware-response", error, response);
           } else {
-            console.log("Sending firmware finish response.");
-            event.sender.send("load-firmware-finish");
-            server.connect({device: currentDevice});
+            setTimeout(() => {
+              server.connect({device: currentDevice}, (conError: any, conResponse: any) => {
+                console.log("Sending firmware finish response", conResponse);
+                event.sender.send("load-firmware-finish", error, response);
+              });
+            }, 3000);
             global.clearInterval(firmwareID);
             firmwareID = null;
           }
         });
-      }, 1000);
+      }, 100);
       console.log("Starting firmware update...");
       server.firmware({filename}, (error: any, response: any) => {
-        console.log(error, response);
+        if (response.updateStarted && response.updateStarted === true) {
+          console.log("Disconnecting on " + currentDevice);
+          server.disconnect({device: currentDevice});
+        }
         event.sender.send("load-firmware-response", error, response);
       });
     }
@@ -205,5 +210,23 @@ ipcMain.on("show-info", (event: any, title: any, message: any) => {
     message: "",
     title: title as string,
     type: "info",
+  });
+});
+
+ipcMain.on("download", (event: any, url: string) => {
+  const firmwareDir = path.join(appDataPath, "firmware");
+  const parsedUrl =  url.split("/");
+  const fileName = parsedUrl[parsedUrl.length - 1];
+    fs.mkdir(firmwareDir, {recursive: true}, (dirError: any) => {
+    if (fs.existsSync(path.join(firmwareDir, fileName))) {
+      console.log("File already exists. Not downloading.");
+    } else {
+      console.log(`Download started from ${url}`);
+      download(BrowserWindow.getFocusedWindow() as BrowserWindow, url, {directory: firmwareDir}).then((saved: DownloadItem) => {
+        console.log(`Download finished. Located in ${saved.getSavePath()}`);
+      }).catch((error: any) => {
+        console.error(error);
+      });
+    }
   });
 });

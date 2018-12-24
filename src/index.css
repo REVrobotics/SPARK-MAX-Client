@@ -31,6 +31,8 @@
     padding: 10px;
     border: 1px solid orange;
     font-family: Consolas, sans-serif;
+    font-size: 13px;
+    overflow: auto;
 }
 
 #firmware-console > p {

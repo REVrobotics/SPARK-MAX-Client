@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 
 // const isProd = process.env.NODE_ENV === "production";
-const isProd = true;
+const isProd = false;
 
 let mainWindow: Electron.BrowserWindow;
 
@@ -14,6 +14,8 @@ function createWindow() {
     show: false,
     width: 600
   });
+
+  require('electron-dl')();
 
   if (isProd) {
     mainWindow.loadFile(path.join(__dirname, "./index.html"));

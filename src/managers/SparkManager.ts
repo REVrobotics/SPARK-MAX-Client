@@ -75,6 +75,10 @@ class SparkManager {
     });
   }
 
+  public downloadFile(url: string) {
+    ipcRenderer.send("download", url);
+  }
+
   public requestFirmware(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
       ipcRenderer.once("request-firmware-response", (event: any, paths: any[]) => {
@@ -102,7 +106,7 @@ class SparkManager {
       ipcRenderer.on("load-firmware-response", listener);
       ipcRenderer.once("load-firmware-finish", (event: any, error: any, response: any) => {
         ipcRenderer.removeListener("load-firmware-response", listener);
-        if (error) {
+        if (error && !response.updateCompletedSuccessfully) {
           reject(error);
         } else {
           resolve(response);
