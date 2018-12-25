@@ -1,7 +1,13 @@
 # SPARK MAX Client Changelog
+All releases of the SPARK MAX Client follow [semantic versioning](https://semver.org/).
+Major builds are incompatible with older ones, minor builds are backwards-compatible, and patches could be released to current
+major/minor builds.
 
 ### v0.11.3 - 12/24/2018
-Major features:
+Major/Breaking features:
+* _None_
+
+Minor features:
 * _None_
 
 Bug Fixes:
