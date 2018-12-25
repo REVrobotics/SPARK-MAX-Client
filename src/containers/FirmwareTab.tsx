@@ -127,7 +127,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
               reject();
             }
           }).catch(() => {
-            reject();
+            resolve(false);
           });
         } else {
           reject();
