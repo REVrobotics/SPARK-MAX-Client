@@ -1,16 +1,26 @@
 import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import {ApplicationActions, IApplicationState, ISetIsConnecting, IUpdateConnectionStatus} from "../store/types";
+import {
+  ApplicationActions, IAddLog,
+  IApplicationState,
+  ISetConnectedDevice,
+  ISetIsConnecting, ISetMotorConfig,
+  IUpdateConnectionStatus
+} from "../store/types";
 import SparkManager from "../managers/SparkManager";
 import {Dispatch} from "redux";
-import {setIsConnecting, updateConnectionStatus} from "../store/actions";
+import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
 import WebProvider from "../providers/WebProvider";
+import MotorConfiguration from "../models/MotorConfiguration";
 
 interface IProps {
   connected: boolean,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
-  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus
+  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
+  setConnectedDevice: (device: string) => ISetConnectedDevice,
+  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
+  addLog: (log: string) => IAddLog
 }
 
 interface IState {
@@ -147,13 +157,23 @@ class FirmwareTab extends React.Component<IProps, IState> {
         this.sendFirmwareError();
       } else {
         this.setState({
-          outputText: [...this.state.outputText, "Successfully updated firmware."]
+          outputText: [...this.state.outputText, "Successfully updated firmware. Connecting back to controller..."]
         });
         this.setState({loadingFirmware: false});
-        this.props.setIsConnecting(false);
-        this.props.updateConnectionStatus(true, "CONNECTED");
-        SparkManager.getFirmware().then((response: any) => {
-          this.setState({firmwareVersion: response.version});
+        SparkManager.discoverAndConnect().then((device: string) => {
+          this.props.updateConnectionStatus(true, "CONNECTED");
+          this.props.setIsConnecting(false);
+          this.props.setConnectedDevice(device);
+          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+            this.props.setCurrentConfig(config);
+            SparkManager.getFirmware().then((response: any) => {
+              this.setState({firmwareVersion: response.version});
+            });
+          });
+        }).catch((error: any) => {
+          this.props.updateConnectionStatus(false, "CONNECTION FAILED");
+          this.props.setIsConnecting(false);
+          this.props.addLog(error);
         });
       }
     }).catch(() => {
@@ -184,13 +204,8 @@ class FirmwareTab extends React.Component<IProps, IState> {
       outputText: [...this.state.outputText, "Error loading firmware. Please disconnect the SPARK MAX controller, and try again."]
     });
     this.setState({loadingFirmware: false});
-    if (!this.props.connected) {
-      this.props.setIsConnecting(false);
-      this.props.updateConnectionStatus(false, "DISCONNECTED");
-    } else {
-      this.props.setIsConnecting(false);
-      this.props.updateConnectionStatus(true, "CONNECTED");
-    }
+    this.props.setIsConnecting(false);
+    this.props.updateConnectionStatus(false, "DISCONNECTED");
   }
 
   private isOldFirmware(current: string, other: string): boolean {
@@ -221,7 +236,10 @@ export function mapStateToProps(state: IApplicationState) {
 export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status))
+    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    addLog: (log: string) => dispatch(addLog(log)),
+    setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
   };
 }
 

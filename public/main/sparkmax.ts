@@ -164,10 +164,7 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
             event.sender.send("load-firmware-response", error, response);
           } else {
             setTimeout(() => {
-              server.connect({device: currentDevice}, (conError: any, conResponse: any) => {
-                console.log("Sending firmware finish response", conResponse);
-                event.sender.send("load-firmware-finish", error, response);
-              });
+              event.sender.send("load-firmware-finish", error, response);
             }, 3000);
             global.clearInterval(firmwareID);
             firmwareID = null;

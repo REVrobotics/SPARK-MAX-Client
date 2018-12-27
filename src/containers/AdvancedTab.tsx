@@ -3,9 +3,9 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
-import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
+import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS, getFromID as getMotorFromID} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
-import Sensor, {getFromID} from "../models/Sensor";
+import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
 
 interface IProps {
@@ -14,7 +14,6 @@ interface IProps {
 }
 
 interface IState {
-  activeMotorType: MotorConfiguration,
   inputRampLimit: number,
   currentLimitEnabled: boolean,
   currentChopEnabled: boolean,
@@ -30,7 +29,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
     super(props);
 
     this.state = {
-      activeMotorType: REV_BRUSHLESS,
       currentLimitEnabled: false,
       inputRampLimit: 0,
       currentChopEnabled: false,
@@ -74,11 +72,18 @@ class AdvancedTab extends React.Component<IProps, IState> {
     }
   }
 
+  public componentDidUpdate(prevProps: Readonly<IProps>): void {
+    if (prevProps.connected !== this.props.connected) {
+      this.componentDidMount();
+    }
+  }
+
   public render() {
     const {connected, motorConfig} = this.props;
-    const {activeMotorType, currentLimitEnabled, inputRampLimit, currentChopEnabled,
+    const {currentLimitEnabled, inputRampLimit, currentChopEnabled,
       rampRateEnabled, savingConfig, slaveMode,
       updateRequested} = this.state;
+    const activeMotorType = getMotorFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
     const sensorType = motorConfig.sensorType;
@@ -153,7 +158,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             className="form-group-quarter"
           >
             <SensorTypeSelect
-              activeSensor={getFromID(sensorType)}
+              activeSensor={getSensorFromID(sensorType)}
               connected={connected}
               onSensorSelect={this.changeSensorType}
             />
@@ -255,7 +260,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
   public changeMotorType(motorType: MotorConfiguration) {
     this.props.motorConfig.type = motorType.type;
     this.forceUpdate();
-    this.setState({activeMotorType: motorType});
   }
 
   public changeSensorType(sensorType: Sensor) {

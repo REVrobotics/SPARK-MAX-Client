@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
-import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
+import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 
 interface IProps {
@@ -13,15 +13,13 @@ interface IProps {
 
 interface IState {
   updateRequested: boolean,
-  savingConfig: boolean,
-  activeMotorType: MotorConfiguration
+  savingConfig: boolean
 }
 
 class BasicTab extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      activeMotorType: REV_BRUSHLESS,
       savingConfig: false,
       updateRequested: false
     };
@@ -42,10 +40,17 @@ class BasicTab extends React.Component<IProps, IState> {
     }
   }
 
+  public componentDidUpdate(prevProps: Readonly<IProps>): void {
+    if (prevProps.connected !== this.props.connected) {
+      this.componentDidMount();
+    }
+  }
+
   public render() {
     const {connected, motorConfig} = this.props;
-    const {activeMotorType, savingConfig, updateRequested} = this.state;
+    const {savingConfig, updateRequested} = this.state;
 
+    const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
     const currentLimit = motorConfig.currentLimit;
@@ -149,7 +154,6 @@ class BasicTab extends React.Component<IProps, IState> {
   public selectMotorType(motorType: MotorConfiguration) {
     this.props.motorConfig.type = motorType.type;
     this.forceUpdate();
-    this.setState({activeMotorType: motorType});
   }
 
   public changeIdleMode() {

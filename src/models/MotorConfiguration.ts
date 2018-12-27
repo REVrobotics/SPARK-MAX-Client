@@ -283,3 +283,14 @@ export default class MotorConfiguration implements ISerializable {
 
 export const REV_BRUSHLESS = new MotorConfiguration("Brushless",  1);
 export const REV_BRUSHED = new MotorConfiguration("Brushed", 0);
+
+export function getFromID(id: number): MotorConfiguration {
+  switch (id) {
+    case 0:
+      return REV_BRUSHED;
+    case 1:
+      return REV_BRUSHLESS;
+    default:
+      return REV_BRUSHLESS;
+  }
+}
