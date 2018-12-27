@@ -1,6 +1,77 @@
 import PIDFProfile from "./PIDFProfile";
 
 export default class MotorConfiguration implements ISerializable {
+  get smartCurrentStallLimit(): number {
+    return this._smartCurrentStallLimit;
+  }
+
+  set smartCurrentStallLimit(value: number) {
+    this._smartCurrentStallLimit = value;
+  }
+
+  get smartCurrentFreeLimit(): number {
+    return this._smartCurrentFreeLimit;
+  }
+
+  set smartCurrentFreeLimit(value: number) {
+    this._smartCurrentFreeLimit = value;
+  }
+
+  get smartCurrentConfig(): number {
+    return this._smartCurrentConfig;
+  }
+
+  set smartCurrentConfig(value: number) {
+    this._smartCurrentConfig = value;
+  }
+
+  get motorKv(): number {
+    return this._motorKv;
+  }
+
+  set motorKv(value: number) {
+    this._motorKv = value;
+  }
+
+  get motorR(): number {
+    return this._motorR;
+  }
+
+  set motorR(value: number) {
+    this._motorR = value;
+  }
+
+  get motorL(): number {
+    return this._motorL;
+  }
+
+  set motorL(value: number) {
+    this._motorL = value;
+  }
+
+  get encoderCountsPerRevolution(): number {
+    return this._encoderCountsPerRevolution;
+  }
+
+  set encoderCountsPerRevolution(value: number) {
+    this._encoderCountsPerRevolution = value;
+  }
+
+  get encoderAverageDepth(): number {
+    return this._encoderAverageDepth;
+  }
+
+  set encoderAverageDepth(value: number) {
+    this._encoderAverageDepth = value;
+  }
+
+  get encoderSampleDelta(): number {
+    return this._encoderSampleDelta;
+  }
+
+  set encoderSampleDelta(value: number) {
+    this._encoderSampleDelta = value;
+  }
   private _name: string;
 
   private _canID: number;
@@ -27,6 +98,15 @@ export default class MotorConfiguration implements ISerializable {
   private _rampRate: number;
   private _followerID: number;
   private _followerConfig: string;
+  private _smartCurrentStallLimit: number;
+  private _smartCurrentFreeLimit: number;
+  private _smartCurrentConfig: number;
+  private _motorKv: number;
+  private _motorR: number;
+  private _motorL: number;
+  private _encoderCountsPerRevolution: number;
+  private _encoderAverageDepth: number;
+  private _encoderSampleDelta: number;
 
   constructor(motorName: string, motorType: number) {
     this._name = motorName;
@@ -54,6 +134,15 @@ export default class MotorConfiguration implements ISerializable {
     this._rampRate = 0;
     this._followerID = -1;
     this._followerConfig = "";
+    this._smartCurrentStallLimit = 80;
+    this._smartCurrentFreeLimit = 0;
+    this._smartCurrentConfig = -1;
+    this._motorKv = 480;
+    this._motorR = 35000;
+    this._motorL = 3800;
+    this._encoderCountsPerRevolution = 4096;
+    this._encoderAverageDepth = 64;
+    this._encoderSampleDelta = 200;
   }
 
   public toJSON(): object {
