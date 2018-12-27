@@ -8,7 +8,7 @@ import SparkServer from "./sparkmax-server";
 const {download} = require('electron-dl');
 
 const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
-const isProd = true;
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 

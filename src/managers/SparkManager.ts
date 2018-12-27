@@ -23,7 +23,7 @@ class SparkManager {
       this.listDevices().then((devices: string[]) => {
         if (devices.length > 0) {
           this.connect(devices[0]).then((response: any) => {
-            if (response.root.error) {
+            if (!response.connected) {
               reject(response.root.error);
             } else {
               resolve(devices[0]);

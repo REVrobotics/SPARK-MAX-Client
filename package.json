@@ -51,6 +51,7 @@
     "electron-builder": "^20.38.3",
     "electron-debug": "^2.0.0",
     "electron-rebuild": "^1.8.2",
+    "gulp": "^4.0.0",
     "typescript": "^3.2.2"
   },
   "build": {

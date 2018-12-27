@@ -9,7 +9,7 @@ import BasicTab from "./containers/BasicTab";
 import FirmwareTab from "./containers/FirmwareTab";
 import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
-import SettingsTab from "./containers/SettingsTab";
+// import SettingsTab from "./containers/SettingsTab";
 import SparkManager from "./managers/SparkManager";
 import MotorConfiguration from "./models/MotorConfiguration";
 import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "./store/actions";
@@ -105,7 +105,7 @@ class App extends React.Component<IProps> {
           {/*<Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />*/}
           <Tab id="main-tab-firmware" title="Firmware" panel={<FirmwareTab/>} />
           <Tab id="main-tab-help" title="Help" panel={<HelpTab/>} />
-          <Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />
+          {/*<Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />*/}
         </Tabs>
       </div>
     );
