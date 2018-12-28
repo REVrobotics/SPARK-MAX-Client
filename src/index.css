@@ -196,3 +196,7 @@ input:checked ~ .bp3-control-indicator {
 .advanced {
     margin-top: -15px;
 }
+
+.update-container {
+    margin-top: 15px;
+}

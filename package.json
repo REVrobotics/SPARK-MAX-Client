@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "SPARK MAX Client",
-  "version": "0.11.8",
+  "version": "0.11.9",
   "private": true,
   "author": "REV Robotics LLC",
   "description": "SPARK MAX Motor Controller Client",
@@ -19,13 +19,13 @@
     "echarts": "^4.2.0-rc.2",
     "echarts-for-react": "^2.0.15-beta.0",
     "electron-dl": "^1.12.0",
+    "electron-updater": "^4.0.6",
     "protobufjs": "^6.8.8",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-redux": "^6.0.0",
     "react-scripts-ts": "3.1.0",
     "redux": "^4.0.1",
-    "update-electron-app": "^1.3.0",
     "zeromq": "^5.1.0"
   },
   "scripts": {
@@ -36,9 +36,8 @@
     "build-desktop": "tsc -p tsconfig.electron.json",
     "predist": "npm run build && npm run build-desktop",
     "dist": "electron-builder",
-    "postinstall": "electron-builder install-app-deps",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "release-win": "electron-builder --win -p always",
+    "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "@types/node": "^10.12.15",
@@ -55,7 +54,7 @@
     "typescript": "^3.2.2"
   },
   "build": {
-    "appId": "org.revrobotics.sparkmax.client.0.11.8",
+    "appId": "org.revrobotics.sparkmax.client",
     "productName": "SPARK MAX Client",
     "copyright": "2018 REV Robotics LLC",
     "files": [
@@ -73,7 +72,8 @@
       "buildResources": "res"
     },
     "win": {
-      "target": "NSIS"
+      "target": "NSIS",
+      "publish": "github"
     },
     "nsis": {
       "oneClick": false,

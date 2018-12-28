@@ -19,6 +19,9 @@ export type SET_MOTOR_CONFIG = typeof SET_MOTOR_CONFIG;
 export const ADD_LOG = "ADD_LOG";
 export type ADD_LOG = typeof ADD_LOG;
 
+export const SET_UPDATE_AVAILABLE = "SET_UPDATE_AVAILABLE";
+export type SET_UPDATE_AVAILABLE = typeof SET_UPDATE_AVAILABLE;
+
 export interface IApplicationState {
   isConnected: boolean,
   connectionStatus: string,
@@ -26,7 +29,8 @@ export interface IApplicationState {
   connectedDevice: string,
   parameters: number[],
   currentConfig: MotorConfiguration,
-  logs: string[]
+  logs: string[],
+  updateAvailable: boolean
 }
 
 export interface IUpdateConnectionStatus extends Action {
@@ -72,5 +76,12 @@ export interface IAddLog extends Action {
   }
 }
 
+export interface ISetUpdateAvailable extends Action {
+  type: SET_UPDATE_AVAILABLE,
+  payload: {
+    updateAvailable: boolean
+  }
+}
+
 export type ApplicationActions = IUpdateConnectionStatus | ISetIsConnecting | ISetConnectedDevice | ISetParameters
-  | ISetMotorConfig | IAddLog;
+  | ISetMotorConfig | IAddLog | ISetUpdateAvailable;

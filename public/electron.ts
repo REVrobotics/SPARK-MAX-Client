@@ -33,7 +33,21 @@ function createWindow() {
    */
   if (isProd) {
     mainWindow.loadFile(path.join(__dirname, "./index.html"));
-    require("update-electron-app")();
+
+    const {autoUpdater} = require("electron-updater");
+
+    autoUpdater.checkForUpdatesAndNotify();
+
+    // When the update has been downloaded and is ready to be installed, notify the renderer process.
+    autoUpdater.on('update-downloaded', () => {
+      mainWindow.webContents.send('install-ready')
+    });
+
+    // When receiving a quitAndInstall signal, quit and install the new version
+    ipcMain.on("install-new", () => {
+      autoUpdater.quitAndInstall();
+    });
+
   } else {
     mainWindow.loadURL("http://localhost:3000/");
     require("electron-debug")({showDevTools: true, enabled: true});

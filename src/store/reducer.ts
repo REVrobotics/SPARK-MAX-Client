@@ -6,7 +6,7 @@ import {
   IApplicationState,
   SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS
+  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
 } from "./types";
 
 export const initialState: IApplicationState = {
@@ -16,7 +16,8 @@ export const initialState: IApplicationState = {
   isConnected: false,
   isConnecting: false,
   parameters: [],
-  logs: []
+  logs: [],
+  updateAvailable: false
 };
 
 const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialState, action: any) => {
@@ -33,6 +34,8 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
       return {...state, currentConfig: action.payload.config};
     case ADD_LOG:
       return {...state, logs: [...state.logs, action.payload.log]};
+    case SET_UPDATE_AVAILABLE:
+      return {...state, updateAvailable: action.payload.updateAvailable};
     default:
       return state;
   }

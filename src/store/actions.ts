@@ -4,10 +4,10 @@ import {
   ADD_LOG,
   IAddLog,
   ISetConnectedDevice,
-  ISetIsConnecting, ISetMotorConfig, ISetParameters,
+  ISetIsConnecting, ISetMotorConfig, ISetParameters, ISetUpdateAvailable,
   IUpdateConnectionStatus, SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS
+  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
 } from "./types";
 
 export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
@@ -51,4 +51,11 @@ export const addLog: ActionCreator<IAddLog> = (log: string) => ({
     log
   },
   type: ADD_LOG
+});
+
+export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAvailable: boolean) => ({
+  payload: {
+    updateAvailable
+  },
+  type: SET_UPDATE_AVAILABLE
 });

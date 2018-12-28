@@ -12,9 +12,16 @@ import RunTab from "./containers/RunTab";
 // import SettingsTab from "./containers/SettingsTab";
 import SparkManager from "./managers/SparkManager";
 import MotorConfiguration from "./models/MotorConfiguration";
-import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "./store/actions";
 import {
-  ApplicationActions, IAddLog, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  addLog,
+  setConnectedDevice,
+  setIsConnecting,
+  setMotorConfig,
+  setUpdateAvailable,
+  updateConnectionStatus
+} from "./store/actions";
+import {
+  ApplicationActions, IAddLog, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig, ISetUpdateAvailable,
   IUpdateConnectionStatus
 } from "./store/types";
 import WebProvider from "./providers/WebProvider";
@@ -64,7 +71,8 @@ interface IProps {
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
   setConnectedDevice: (device: string) => ISetConnectedDevice,
   setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
-  addLog: (log: string) => IAddLog
+  addLog: (log: string) => IAddLog,
+  setUpdateAvailable: (updateAvailable: boolean) => ISetUpdateAvailable
 }
 
 class App extends React.Component<IProps> {
@@ -91,6 +99,9 @@ class App extends React.Component<IProps> {
     SparkManager.onDisconnect(() => {
       this.props.updateConnectionStatus(false, "DISCONNECTED");
       this.props.setConnectedDevice("");
+    });
+    SparkManager.onUpdateAvailable(() => {
+      this.props.setUpdateAvailable(true);
     });
   }
 
@@ -160,7 +171,8 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
     setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
-    addLog: (log: string) => dispatch(addLog(log))
+    addLog: (log: string) => dispatch(addLog(log)),
+    setUpdateAvailable: (updateAvailable: boolean) => dispatch(setUpdateAvailable(updateAvailable))
   };
 }
 

@@ -90,6 +90,17 @@ class RunTab extends React.Component<IProps, IState> {
 
   public componentWillUnmount() {
     window.removeEventListener("keydown", this.listenForEmergencyStop);
+    if (this.state.running) {
+      SparkManager.disableHeartbeat(this.receiveHeartbeat);
+    }
+  }
+
+  public componentDidUpdate(prevProps: Readonly<IProps>): void {
+    if (prevProps.connected !== this.props.connected) {
+      if (!this.props.connected && this.state.running) {
+        this.stop();
+      }
+    }
   }
 
   public render() {
@@ -150,7 +161,7 @@ class RunTab extends React.Component<IProps, IState> {
               label="Mode"
               selectedValue={mode}
               onChange={this.changeMode}
-              disabled={!connected}
+              disabled={true}
             >
               <Radio label="Percent" value={0}/>
               <Radio label="Velocity" value={1}/>

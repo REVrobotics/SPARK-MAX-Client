@@ -18,6 +18,14 @@ class SparkManager {
 
   private constructor() {}
 
+  public onUpdateAvailable(listener: () => void) {
+    ipcRenderer.on("install-ready", listener);
+  }
+
+  public installUpdate() {
+    ipcRenderer.send("install-new");
+  }
+
   public discoverAndConnect(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.listDevices().then((devices: string[]) => {
