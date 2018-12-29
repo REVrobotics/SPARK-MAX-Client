@@ -1,10 +1,10 @@
 {
   "name": "spark-max-client",
-  "productName": "SPARK MAX Client",
-  "version": "0.11.9",
+  "productName": "REV SPARK MAX Client",
+  "version": "0.11.11",
   "private": true,
   "author": "REV Robotics LLC",
-  "description": "SPARK MAX Motor Controller Client",
+  "description": "REV SPARK MAX Motor Controller Client",
   "main": "build/electron.js",
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
   },
   "build": {
     "appId": "org.revrobotics.sparkmax.client",
-    "productName": "SPARK MAX Client",
+    "productName": "REV SPARK MAX Client",
     "copyright": "2018 REV Robotics LLC",
     "files": [
       "build/**/*",
@@ -77,6 +77,7 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": true,
       "allowToChangeInstallationDirectory": true
     }
   },

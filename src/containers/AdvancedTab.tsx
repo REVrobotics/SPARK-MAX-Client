@@ -128,7 +128,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
           </FormGroup>
           <FormGroup
-            label="Can ID"
+            label="CAN ID"
             labelFor="advanced-can-id"
             className="form-group-fifth"
           >

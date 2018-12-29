@@ -3,6 +3,17 @@ All releases of the SPARK MAX Client follow [semantic versioning](https://semver
 Major builds are incompatible with older ones, minor builds are backwards-compatible, and patches could be released to current
 major/minor builds.
 
+### v0.11.11 - 12/28/2018
+Major/Breaking features:
+* _None_
+
+Minor features:
+* _None_
+
+Bug fixes:
+* Fixed some language around the application
+* Firmware tab now defaults to the firmware directory of the application.
+
 ### v0.11.9 - 12/27/2018
 Major/Breaking features:
 * _None_

@@ -2,7 +2,7 @@ import {app, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
 
-const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
+const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
 const configPath = path.join(appDataPath, "config.json");
 
 fs.mkdir(appDataPath, {recursive: true}, (dirError: any) => {

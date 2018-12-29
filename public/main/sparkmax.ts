@@ -7,7 +7,7 @@ import SparkServer from "./sparkmax-server";
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
 
-const appDataPath = app.getPath("appData") + path.sep + "SPARK MAX Client";
+const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
 const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
@@ -184,10 +184,12 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
 });
 
 ipcMain.on("request-firmware", (event: any) => {
+  const firmwareDir = path.join(appDataPath, "firmware");
   dialog.showOpenDialog(BrowserWindow.getFocusedWindow() as BrowserWindow, {
     filters: [{name: "Firmware Files (*.dfu)", extensions: ["dfu"]}],
     properties: ["openFile"],
-    title: "Firmware Loading"
+    title: "Firmware Loading",
+    defaultPath: firmwareDir
   }, (filePaths) => {
     if (filePaths && filePaths.length > 0) {
       event.sender.send("request-firmware-response", filePaths);

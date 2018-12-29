@@ -103,9 +103,11 @@ class FirmwareTab extends React.Component<IProps, IState> {
               loadingFirmware: false,
               outputText: [
                 ...this.state.outputText,
-                "Your hardware requires a recovery update for this firmware.",
-                "Disconnect your controller from the application and your device, then press and hold the button on the controller, and plug it back in again.",
-                "After you've completed this process, please press `Continue`."
+                "Your SPARK MAX requires a recovery update for this firmware version. Please follow these steps:",
+                "1. Unplug the USB cable to your SPARK MAX and, if connected, disconnect main power.",
+                "2. Press and hold the MODE button on the SPARK MAX with a straightened paper clip or something similar.",
+                "3. While still holding the MODE button, plug the USB cable back in to the SPARK MAX. You can release the button at this point.",
+                "4. Press the 'Continue' button below."
               ]
             });
           } else {

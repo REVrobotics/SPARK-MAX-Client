@@ -80,7 +80,7 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label="Can ID"
+            label="CAN ID"
             labelFor="basic-can-id"
             className="form-group-quarter"
           >
