@@ -13,7 +13,6 @@
   "dependencies": {
     "@blueprintjs/core": "^3.10.0",
     "@blueprintjs/select": "^3.4.0",
-    "@types/serialport": "^7.0.1",
     "axios": "^0.18.0",
     "better-queue": "^3.8.10",
     "echarts": "^4.2.0-rc.2",
@@ -49,7 +48,6 @@
     "electron": "^3.0.12",
     "electron-builder": "^20.38.3",
     "electron-debug": "^2.0.0",
-    "electron-rebuild": "^1.8.2",
     "gulp": "^4.0.0",
     "typescript": "^3.2.2"
   },
