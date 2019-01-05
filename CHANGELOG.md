@@ -3,7 +3,9 @@ All releases of the SPARK MAX Client follow [semantic versioning](https://semver
 Major builds are incompatible with older ones, minor builds are backwards-compatible, and patches could be released to current
 major/minor builds.
 
-### v0.11.13 - 1/3/2019
+Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
+
+### v0.11.14 - 1/4/2019* (UNRELEASED)
 Major/Breaking features:
 * _None_
 
@@ -13,6 +15,7 @@ Minor features:
 Bug fixes:
 * Installer now comes with the SPARK MAX firmware driver.
 * Installer now comes with the STM32 virtual COM port driver.
+* Client now downloads latest firmware on application boot regardless of controller connection status.
 
 ### v0.11.11 - 12/28/2018
 Major/Breaking features:

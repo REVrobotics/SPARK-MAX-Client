@@ -48,5 +48,33 @@ function createLicense(cb) {
   });
 }
 
+function makeDevEnv(cb) {
+  const mainDir = path.join(__dirname, "public");
+  const mainFile = path.join(mainDir, "electron.ts");
+  const sparkFile = path.join(mainDir, "main/sparkmax.ts");
+  let mainContents = fs.readFileSync(mainFile) + "";
+  let sparkContents = fs.readFileSync(sparkFile) + "";
+  mainContents = mainContents.replace("const isProd = true;", "const isProd = false;");
+  sparkContents = sparkContents.replace("const isProd = true;", "const isProd = false;");
+  fs.writeFileSync(mainFile, mainContents);
+  fs.writeFileSync(sparkFile, sparkContents);
+  cb();
+}
+
+function makeProdEnv(cb) {
+  const mainDir = path.join(__dirname, "public");
+  const mainFile = path.join(mainDir, "electron.ts");
+  const sparkFile = path.join(mainDir, "main/sparkmax.ts");
+  let mainContents = fs.readFileSync(mainFile) + "";
+  let sparkContents = fs.readFileSync(sparkFile) + "";
+  mainContents = mainContents.replace("const isProd = false;", "const isProd = true;");
+  sparkContents = sparkContents.replace("const isProd = false;", "const isProd = true;");
+  fs.writeFileSync(mainFile, mainContents);
+  fs.writeFileSync(sparkFile, sparkContents);
+  cb();
+}
+
 exports.default = defaultTask;
 exports.license = createLicense;
+exports.enterDev = makeDevEnv;
+exports.enterProd = makeProdEnv;

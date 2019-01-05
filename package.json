@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "REV SPARK MAX Client",
-  "version": "0.11.13",
+  "version": "0.11.14",
   "private": true,
   "author": "REV Robotics LLC",
   "description": "REV SPARK MAX Motor Controller Client",
@@ -34,8 +34,8 @@
     "build": "react-scripts-ts build",
     "build-desktop": "tsc -p tsconfig.electron.json",
     "predist": "npm run build && npm run build-desktop",
-    "dist": "electron-builder",
-    "release-win": "electron-builder --win -p always",
+    "dist": "gulp enterProd && electron-builder",
+    "release-win": "gulp enterProd && electron-builder --win -p always",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
@@ -54,7 +54,7 @@
   "build": {
     "appId": "org.revrobotics.sparkmax.client",
     "productName": "REV SPARK MAX Client",
-    "copyright": "2018 REV Robotics LLC",
+    "copyright": "2019 REV Robotics LLC",
     "files": [
       "build/**/*",
       "node_modules/**/*"

@@ -81,6 +81,7 @@ class App extends React.Component<IProps> {
   }
 
   public componentDidMount() {
+    this.downloadLatestFirmware();
     this.props.updateConnectionStatus(false, "SEARCHING...");
     this.props.setIsConnecting(true);
     SparkManager.discoverAndConnect().then((device: string) => {
@@ -133,7 +134,6 @@ class App extends React.Component<IProps> {
             for (const firmware of firmwareJSON.firmware) {
               if (firmware.spec === "Latest") {
                 if (this.isOldFirmware(version, firmware.version)) {
-                  SparkManager.downloadFile(firmware.url);
                   SparkManager.showInfoBox("SPARK MAX Firmware", `Your motor controller is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Firmware' tab.`);
                 }
               }
@@ -143,6 +143,20 @@ class App extends React.Component<IProps> {
           this.props.addLog(error);
         });
       }
+    });
+  }
+
+  private downloadLatestFirmware() {
+    WebProvider.get("content/sw/max/sparkmax-gui-cfg.json").then((firmwareJSON: any) => {
+      if (firmwareJSON.firmware) {
+        for (const firmware of firmwareJSON.firmware) {
+          if (firmware.spec === "Latest") {
+            SparkManager.downloadFile(firmware.url);
+          }
+        }
+      }
+    }).catch((error: any) => {
+      this.props.addLog(error);
     });
   }
 
