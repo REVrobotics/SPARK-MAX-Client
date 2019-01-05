@@ -33,8 +33,8 @@
     "start": "concurrently \"npm run react\" \"npm run desktop\"",
     "build": "react-scripts-ts build",
     "build-desktop": "tsc -p tsconfig.electron.json",
-    "predist": "npm run build && npm run build-desktop",
-    "dist": "gulp enterProd && electron-builder",
+    "predist": "gulp enterProd && npm run build && npm run build-desktop",
+    "dist": "electron-builder",
     "release-win": "gulp enterProd && electron-builder --win -p always",
     "postinstall": "electron-builder install-app-deps"
   },

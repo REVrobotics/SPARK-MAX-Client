@@ -5,7 +5,7 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.11.14 - 1/4/2019* (UNRELEASED)
+### v0.11.14 - 1/5/2019 - Happy Kickoff Everybody!
 Major/Breaking features:
 * _None_
 
