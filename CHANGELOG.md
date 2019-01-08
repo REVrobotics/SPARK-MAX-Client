@@ -5,7 +5,7 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.12.0 - 1/8/2019 - Addition: About Tab
+### v0.12.1 - 1/8/2019 - Addition: About Tab
 Major/Breaking features:
 * _None_
 

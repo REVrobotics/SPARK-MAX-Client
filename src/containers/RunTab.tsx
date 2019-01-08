@@ -251,8 +251,9 @@ class RunTab extends React.Component<IProps, IState> {
   }
 
   private run() {
-    this.setState({running: true});
+    this.setState({running: true, output: 0.0});
     SparkManager.enableHeartbeat(20, this.receiveHeartbeat);
+    SparkManager.setSetpoint(0.0);
   }
 
   private stop() {
