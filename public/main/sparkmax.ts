@@ -8,7 +8,7 @@ import SparkServer from "./sparkmax-server";
 const {download} = require('electron-dl');
 
 const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
-const isProd = true;
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -133,7 +133,8 @@ ipcMain.on("disable-heartbeat", (event: any) => {
   if (heartbeatID !== -1) {
     console.log("Disabling heartbeat");
     global.clearInterval(heartbeatID);
-    server.setpoint({enable: false, setpoint: 0.0}, (err: any, response: any) => {
+    setpoint = 0.0;
+    server.setpoint({enable: false, setpoint}, (err: any, response: any) => {
       heartbeatID = null;
       event.sender.send("disable-heartbeat-response", err, response);
     });

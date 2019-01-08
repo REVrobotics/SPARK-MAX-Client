@@ -4,6 +4,7 @@ import PIDFProfile from "../models/PIDFProfile";
 const MAX_PARAMETERS: number = 58;
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
+const remote = (window as any).require("electron").remote;
 
 class SparkManager {
 
@@ -24,6 +25,10 @@ class SparkManager {
 
   public installUpdate() {
     ipcRenderer.send("install-new");
+  }
+
+  public getVersion() {
+    return remote.app.getVersion();
   }
 
   public discoverAndConnect(): Promise<string> {
@@ -281,10 +286,10 @@ class SparkManager {
     values.push(await this.setParameter(46, config.outputRatio));
     values.push(await this.setParameter(50, config.limitSwitchForwardPolarity));
     values.push(await this.setParameter(51, config.limitSwitchReversePolarity));
-    values.push(await this.setParameter(52, config.hardLimitSwitchForwardEnabled ? 1 : 0));
-    values.push(await this.setParameter(53, config.hardLimitSwitchReverseEnabled ? 1 : 0));
-    values.push(await this.setParameter(54, config.softLimitSwitchForwardEnabled ? 1 : 0));
-    values.push(await this.setParameter(55, config.softLimitSwitchReverseEnabled ? 1 : 0));
+    values.push(await this.setParameter(52, config.hardLimitSwitchForwardEnabled));
+    values.push(await this.setParameter(53, config.hardLimitSwitchReverseEnabled));
+    values.push(await this.setParameter(54, config.softLimitSwitchForwardEnabled));
+    values.push(await this.setParameter(55, config.softLimitSwitchReverseEnabled));
     values.push(await this.setParameter(56, config.rampRate));
     values.push(await this.setParameter(57, config.followerID));
     values.push(await this.setParameter(58, config.followerConfig));
@@ -354,7 +359,7 @@ class SparkManager {
     ipcRenderer.send("show-info", title, message);
   }
 
-  private setParameter(id: number, value: number | string): Promise<number> {
+  private setParameter(id: number, value: number | string | boolean): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("set-param-" + id + "-response", (event: any, error: any, response: any) => {
         if (error) {

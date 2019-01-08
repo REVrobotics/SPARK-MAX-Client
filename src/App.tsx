@@ -25,6 +25,7 @@ import {
   IUpdateConnectionStatus
 } from "./store/types";
 import WebProvider from "./providers/WebProvider";
+import AboutTab from "./containers/AboutTab";
 
 /* TEST_JSON only used for when WebProvider isn't available. */
 // const TEST_JSON = {
@@ -119,6 +120,7 @@ class App extends React.Component<IProps> {
           {/*<Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />*/}
           <Tab id="main-tab-firmware" title="Firmware" panel={<FirmwareTab/>} />
           <Tab id="main-tab-help" title="Help" panel={<HelpTab/>} />
+          <Tab id="main-tab-about" title="About" panel={<AboutTab/>} />
           {/*<Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />*/}
         </Tabs>
       </div>

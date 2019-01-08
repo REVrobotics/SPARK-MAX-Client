@@ -9,7 +9,7 @@ function createLicense(cb) {
   const pkgPath = path.join(__dirname, "package.json");
   fs.readFile(pkgPath, (err, data) => {
     if (!err) {
-      const pkgJSON = JSON.parse(data);
+      const pkgJSON = JSON.parse(data + "");
       let license = fs.readFileSync(path.join(__dirname, "LICENSE")) + "\n";
       for (dep in pkgJSON.dependencies) {
         const depDir = path.join(__dirname, "node_modules/" + dep);

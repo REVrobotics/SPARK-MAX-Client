@@ -191,14 +191,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-is-slave"
             className="form-group-quarter"
           >
-            <Switch checked={forwardPolarity === 1} disabled={!connected} label={forwardPolarity === 1 ? "Open" : "Closed"} onChange={this.changeForwardPolarity} />
+            <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeForwardPolarity} />
           </FormGroup>
           <FormGroup
             label="Reverse Limit Switch Polarity"
             labelFor="advanced-is-slave"
             className="form-group-quarter"
           >
-            <Switch checked={reversePolarity === 1} disabled={!connected} label={reversePolarity === 1 ? "Open" : "Closed"} onChange={this.changeReversePolarity} />
+            <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeReversePolarity} />
           </FormGroup>
           <FormGroup
             label="Current Chop"
@@ -304,13 +304,13 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeForwardPolarity() {
     const prevValue = this.props.motorConfig.limitSwitchForwardPolarity;
-    this.props.motorConfig.limitSwitchForwardPolarity = prevValue === 1 ? 0 : 1;
+    this.props.motorConfig.limitSwitchForwardPolarity = !prevValue;
     this.forceUpdate();
   }
 
   public changeReversePolarity() {
     const prevValue = this.props.motorConfig.limitSwitchReversePolarity;
-    this.props.motorConfig.limitSwitchReversePolarity = prevValue === 1 ? 0 : 1;
+    this.props.motorConfig.limitSwitchReversePolarity = !prevValue;
     this.forceUpdate();
   }
 

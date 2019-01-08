@@ -5,6 +5,19 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
+### v0.11.18 - 1/5/2019 - Bug Fixes, Bug Fixes, Bug Fixes*
+Major/Breaking features:
+* _None_
+
+Minor features:
+* _None_
+
+Bug fixes:
+* Fixed 'Run' tab setting controller setpoint after disabling and returning to the tab.
+* Fixed text for limit switch labels, they now display "Normally Closed" and "Normally Open".
+* Fixed improper types on limit switch polarities and limit switch enables. 
+
+
 ### v0.11.15 - 1/5/2019 - Happy Kickoff Everybody!
 Major/Breaking features:
 * _None_

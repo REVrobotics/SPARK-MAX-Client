@@ -1,77 +1,6 @@
 import PIDFProfile from "./PIDFProfile";
 
 export default class MotorConfiguration implements ISerializable {
-  get smartCurrentStallLimit(): number {
-    return this._smartCurrentStallLimit;
-  }
-
-  set smartCurrentStallLimit(value: number) {
-    this._smartCurrentStallLimit = value;
-  }
-
-  get smartCurrentFreeLimit(): number {
-    return this._smartCurrentFreeLimit;
-  }
-
-  set smartCurrentFreeLimit(value: number) {
-    this._smartCurrentFreeLimit = value;
-  }
-
-  get smartCurrentConfig(): number {
-    return this._smartCurrentConfig;
-  }
-
-  set smartCurrentConfig(value: number) {
-    this._smartCurrentConfig = value;
-  }
-
-  get motorKv(): number {
-    return this._motorKv;
-  }
-
-  set motorKv(value: number) {
-    this._motorKv = value;
-  }
-
-  get motorR(): number {
-    return this._motorR;
-  }
-
-  set motorR(value: number) {
-    this._motorR = value;
-  }
-
-  get motorL(): number {
-    return this._motorL;
-  }
-
-  set motorL(value: number) {
-    this._motorL = value;
-  }
-
-  get encoderCountsPerRevolution(): number {
-    return this._encoderCountsPerRevolution;
-  }
-
-  set encoderCountsPerRevolution(value: number) {
-    this._encoderCountsPerRevolution = value;
-  }
-
-  get encoderAverageDepth(): number {
-    return this._encoderAverageDepth;
-  }
-
-  set encoderAverageDepth(value: number) {
-    this._encoderAverageDepth = value;
-  }
-
-  get encoderSampleDelta(): number {
-    return this._encoderSampleDelta;
-  }
-
-  set encoderSampleDelta(value: number) {
-    this._encoderSampleDelta = value;
-  }
   private _name: string;
 
   private _canID: number;
@@ -89,8 +18,8 @@ export default class MotorConfiguration implements ISerializable {
   private _currentLimit: number;
   private _controlProfiles: PIDFProfile[];
   private _outputRatio: number;
-  private _limitSwitchForwardPolarity: number;
-  private _limitSwitchReversePolarity: number;
+  private _limitSwitchForwardPolarity: boolean;
+  private _limitSwitchReversePolarity: boolean;
   private _hardLimitSwitchForwardEnabled: boolean;
   private _hardLimitSwitchReverseEnabled: boolean;
   private _softLimitSwitchForwardEnabled: boolean;
@@ -125,8 +54,8 @@ export default class MotorConfiguration implements ISerializable {
     this._type = motorType;
     this._controlProfiles = [];
     this._outputRatio = 0;
-    this._limitSwitchForwardPolarity = 0;
-    this._limitSwitchReversePolarity = 0;
+    this._limitSwitchForwardPolarity = true;
+    this._limitSwitchReversePolarity = true;
     this._hardLimitSwitchForwardEnabled = false;
     this._hardLimitSwitchReverseEnabled = false;
     this._softLimitSwitchForwardEnabled = false;
@@ -297,19 +226,19 @@ export default class MotorConfiguration implements ISerializable {
     this._outputRatio = value;
   }
 
-  get limitSwitchForwardPolarity(): number {
+  get limitSwitchForwardPolarity(): boolean {
     return this._limitSwitchForwardPolarity;
   }
 
-  set limitSwitchForwardPolarity(value: number) {
+  set limitSwitchForwardPolarity(value: boolean) {
     this._limitSwitchForwardPolarity = value;
   }
 
-  get limitSwitchReversePolarity(): number {
+  get limitSwitchReversePolarity(): boolean {
     return this._limitSwitchReversePolarity;
   }
 
-  set limitSwitchReversePolarity(value: number) {
+  set limitSwitchReversePolarity(value: boolean) {
     this._limitSwitchReversePolarity = value;
   }
 
@@ -367,6 +296,77 @@ export default class MotorConfiguration implements ISerializable {
 
   set followerConfig(value: string) {
     this._followerConfig = value;
+  }
+  get smartCurrentStallLimit(): number {
+    return this._smartCurrentStallLimit;
+  }
+
+  set smartCurrentStallLimit(value: number) {
+    this._smartCurrentStallLimit = value;
+  }
+
+  get smartCurrentFreeLimit(): number {
+    return this._smartCurrentFreeLimit;
+  }
+
+  set smartCurrentFreeLimit(value: number) {
+    this._smartCurrentFreeLimit = value;
+  }
+
+  get smartCurrentConfig(): number {
+    return this._smartCurrentConfig;
+  }
+
+  set smartCurrentConfig(value: number) {
+    this._smartCurrentConfig = value;
+  }
+
+  get motorKv(): number {
+    return this._motorKv;
+  }
+
+  set motorKv(value: number) {
+    this._motorKv = value;
+  }
+
+  get motorR(): number {
+    return this._motorR;
+  }
+
+  set motorR(value: number) {
+    this._motorR = value;
+  }
+
+  get motorL(): number {
+    return this._motorL;
+  }
+
+  set motorL(value: number) {
+    this._motorL = value;
+  }
+
+  get encoderCountsPerRevolution(): number {
+    return this._encoderCountsPerRevolution;
+  }
+
+  set encoderCountsPerRevolution(value: number) {
+    this._encoderCountsPerRevolution = value;
+  }
+
+  get encoderAverageDepth(): number {
+    return this._encoderAverageDepth;
+  }
+
+  set encoderAverageDepth(value: number) {
+    this._encoderAverageDepth = value;
+  }
+
+  get encoderSampleDelta(): number {
+    return this._encoderSampleDelta;
+  }
+
+  set encoderSampleDelta(value: number) {
+    this._encoderSampleDelta = value;
   }
 }
 
