@@ -5,12 +5,12 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.11.18 - 1/5/2019 - Bug Fixes, Bug Fixes, Bug Fixes*
+### v0.12.0 - 1/8/2019 - Addition: About Tab
 Major/Breaking features:
 * _None_
 
 Minor features:
-* _None_
+* Added 'About' tab to the client. This displays license and copyright information as well as SPARK MAX server/client versions.
 
 Bug fixes:
 * Fixed 'Run' tab setting controller setpoint after disabling and returning to the tab.
