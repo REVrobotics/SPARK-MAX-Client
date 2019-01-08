@@ -216,9 +216,10 @@ ipcMain.on("download", (event: any, url: string) => {
   const firmwareDir = path.join(appDataPath, "firmware");
   const parsedUrl =  url.split("/");
   const fileName = parsedUrl[parsedUrl.length - 1];
+  console.log(`Received download request from ${url}`);
     fs.mkdir(firmwareDir, {recursive: true}, (dirError: any) => {
     if (fs.existsSync(path.join(firmwareDir, fileName))) {
-      console.log("File already exists. Not downloading.");
+      console.log("Firmware already exists. Not downloading.");
     } else {
       console.log(`Download started from ${url}`);
       download(BrowserWindow.getFocusedWindow() as BrowserWindow, url, {directory: firmwareDir}).then((saved: DownloadItem) => {

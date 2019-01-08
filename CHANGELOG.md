@@ -5,7 +5,7 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.11.14 - 1/5/2019 - Happy Kickoff Everybody!
+### v0.11.15 - 1/5/2019 - Happy Kickoff Everybody!
 Major/Breaking features:
 * _None_
 
@@ -16,6 +16,7 @@ Bug fixes:
 * Installer now comes with the SPARK MAX firmware driver.
 * Installer now comes with the STM32 virtual COM port driver.
 * Client now downloads latest firmware on application boot regardless of controller connection status.
+* Added additional loading on firmware download.
 
 ### v0.11.11 - 12/28/2018
 Major/Breaking features:

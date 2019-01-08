@@ -336,7 +336,7 @@ class RunTab extends React.Component<IProps, IState> {
     if (this.state.running) {
       if (event.key === " " || event.key === "Enter") {
         console.log("Emergency stop was pressed.");
-        this.setState({running: false});
+        this.stop();
       }
     }
   }

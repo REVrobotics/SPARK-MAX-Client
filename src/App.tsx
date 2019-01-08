@@ -78,6 +78,8 @@ interface IProps {
 class App extends React.Component<IProps> {
   constructor(props: IProps) {
     super(props);
+
+    WebProvider.initialize("www.revrobotics.com");
   }
 
   public componentDidMount() {
@@ -127,7 +129,6 @@ class App extends React.Component<IProps> {
     SparkManager.getFirmware().then((versionJSON: any) => {
       if (versionJSON.version && versionJSON.version.length > 0) {
         const version = versionJSON.version.substring(1, versionJSON.version.length);
-        WebProvider.initialize("www.revrobotics.com");
         WebProvider.get("content/sw/max/sparkmax-gui-cfg.json").then((firmwareJSON: any) => {
         // const firmwareJSON: any = TEST_JSON;
           if (firmwareJSON.firmware) {
