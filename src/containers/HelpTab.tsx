@@ -101,7 +101,7 @@ class HelpTab extends React.Component<IProps, IState> {
         {
           downloadingUpdate &&
           <div id={"help-download"}>
-            <div className={"fill-w center-items"}>Downloading Update ({`${(downloadJSON.bytesPerSecond / 1000000).toFixed(2) || "0"}mb/s - ${(downloadJSON.transferred / 1000000).toFixed(2) || "0"}mb total`})</div>
+            <div className={"fill-w center-items"}>Downloading Update ({`${((downloadJSON.bytesPerSecond || 0) / 1000000).toFixed(2)}mb/s - ${((downloadJSON.transferred || 0) / 1000000).toFixed(2)}mb total`})</div>
             <div id={"help-download-bar"}>
               <ProgressBar value={downloadJSON.percent / 100} intent={"warning"}/>
             </div>
