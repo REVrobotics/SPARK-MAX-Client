@@ -57,6 +57,14 @@
     margin-top: 0;
 }
 
+#help-download {
+    margin-top: 10px;
+}
+
+#help-download-bar {
+    margin-top: 10px;
+}
+
 .bp3-tabs {
     padding: 0 10px 0 10px;
 }

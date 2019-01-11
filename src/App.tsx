@@ -104,9 +104,6 @@ class App extends React.Component<IProps> {
       this.props.updateConnectionStatus(false, "DISCONNECTED");
       this.props.setConnectedDevice("");
     });
-    SparkManager.onUpdateAvailable(() => {
-      this.props.setUpdateAvailable(true);
-    });
   }
 
   public render() {

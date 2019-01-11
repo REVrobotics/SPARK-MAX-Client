@@ -36,11 +36,40 @@ function createWindow() {
 
     const {autoUpdater} = require("electron-updater");
 
-    autoUpdater.checkForUpdatesAndNotify();
+    // autoUpdater.checkForUpdatesAndNotify();
+
+    // When an update has been detected that it is available
+    autoUpdater.on("update-available", () => {
+      mainWindow.webContents.send("install-available");
+    });
+
+    // When an update is not available.
+    autoUpdater.on("update-not-available", () => {
+      mainWindow.webContents.send("install-not-available");
+    });
 
     // When the update has been downloaded and is ready to be installed, notify the renderer process.
     autoUpdater.on('update-downloaded', () => {
-      mainWindow.webContents.send('install-ready')
+      console.log("Successfully downloaded update.");
+      mainWindow.webContents.send('install-ready');
+    });
+
+    autoUpdater.on("download-progress", (downloadJSON: any) => {
+      mainWindow.webContents.send("install-progress", downloadJSON);
+    });
+
+    // When receiving an updateCheck signal, let's check if there's a new version available!
+    ipcMain.on("update-check", () => {
+      autoUpdater.autoDownload = false;
+      autoUpdater.checkForUpdates().then(() => {
+        console.log("Finished checking for update. Sending results back to user.");
+      });
+    });
+
+    // When the user wants to download the update
+    ipcMain.on("install-download", () => {
+      console.log("Downloading update...");
+      autoUpdater.downloadUpdate();
     });
 
     // When receiving a quitAndInstall signal, quit and install the new version

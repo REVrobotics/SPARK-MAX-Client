@@ -19,8 +19,31 @@ class SparkManager {
 
   private constructor() {}
 
-  public onUpdateAvailable(listener: () => void) {
+  public onDownloadProgress(listener: (event: any, downloadJSON: any) => void) {
+    ipcRenderer.on("install-progress", listener);
+  }
+
+  public onUpdateDownloaded(listener: () => void) {
+    ipcRenderer.removeAllListeners("download-progress");
     ipcRenderer.on("install-ready", listener);
+  }
+
+  public checkForUpdates(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      ipcRenderer.on("install-available", () => {
+        ipcRenderer.removeAllListeners("install-not-available");
+        resolve(true);
+      });
+      ipcRenderer.on("install-not-available", () => {
+        ipcRenderer.removeAllListeners("install-available");
+        resolve(false);
+      });
+      ipcRenderer.send("update-check");
+    });
+  }
+
+  public beginDownload() {
+    ipcRenderer.send("install-download");
   }
 
   public installUpdate() {

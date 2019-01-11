@@ -1,0 +1,10 @@
+.fill-w {
+    width: 100%;
+}
+
+
+.center-items {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
