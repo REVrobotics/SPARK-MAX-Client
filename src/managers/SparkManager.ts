@@ -307,12 +307,12 @@ class SparkManager {
       values.push(await this.setParameter(44, config.controlProfiles[3].maxOutput));
     }
     values.push(await this.setParameter(46, config.outputRatio));
-    values.push(await this.setParameter(50, config.limitSwitchForwardPolarity));
-    values.push(await this.setParameter(51, config.limitSwitchReversePolarity));
-    values.push(await this.setParameter(52, config.hardLimitSwitchForwardEnabled));
-    values.push(await this.setParameter(53, config.hardLimitSwitchReverseEnabled));
-    values.push(await this.setParameter(54, config.softLimitSwitchForwardEnabled));
-    values.push(await this.setParameter(55, config.softLimitSwitchReverseEnabled));
+    values.push(await this.setParameter(50, config.limitSwitchForwardPolarity ? 1 : 0));
+    values.push(await this.setParameter(51, config.limitSwitchReversePolarity ? 1 : 0));
+    values.push(await this.setParameter(52, config.hardLimitSwitchForwardEnabled ? 1 : 0));
+    values.push(await this.setParameter(53, config.hardLimitSwitchReverseEnabled ? 1 : 0));
+    values.push(await this.setParameter(54, config.softLimitSwitchForwardEnabled ? 1 : 0));
+    values.push(await this.setParameter(55, config.softLimitSwitchReverseEnabled ? 1 : 0));
     values.push(await this.setParameter(56, config.rampRate));
     values.push(await this.setParameter(57, config.followerID));
     values.push(await this.setParameter(58, config.followerConfig));
