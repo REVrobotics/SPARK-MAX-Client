@@ -5,7 +5,7 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.13.3 - 1/12/2019 - Addition: About Tab and Fixes
+### v0.13.4 - 1/12/2019 - Addition: About Tab and Fixes
 Major/Breaking features:
 * _None_
 
@@ -18,6 +18,7 @@ Bug fixes/patches:
 * Fixed improper types on limit switch polarities and limit switch enables.
 * Added client communication in checking for updates.
 * Fixed firmware update messages sometimes duplicating.
+* Removed weird boxes appearing around all inputs.
 
 
 ### v0.11.15 - 1/5/2019 - Happy Kickoff Everybody!

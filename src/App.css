@@ -1,7 +1,14 @@
+.bp3-icon-chevron-up::before {
+    content: none;
+}
+
+.bp3-icon-chevron-down::before {
+    content: none;
+}
+
 .fill-w {
     width: 100%;
 }
-
 
 .center-items {
     display: flex;
