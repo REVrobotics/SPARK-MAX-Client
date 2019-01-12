@@ -32,6 +32,8 @@ interface IState {
 }
 
 class FirmwareTab extends React.Component<IProps, IState> {
+  private _lastMessage: string;
+
   constructor(props: IProps) {
     super(props);
     this.state = {
@@ -45,6 +47,8 @@ class FirmwareTab extends React.Component<IProps, IState> {
     this.openFileDialog = this.openFileDialog.bind(this);
     this.updateFirmwareStatus = this.updateFirmwareStatus.bind(this);
     this.loadFirmware = this.loadFirmware.bind(this);
+
+    this._lastMessage = "";
   }
 
   public componentDidMount(): void {
@@ -195,8 +199,11 @@ class FirmwareTab extends React.Component<IProps, IState> {
         const percentComplete: number = parseFloat(response.updateStagePercent.toFixed(3));
         updatedOutput.push(`(${(percentComplete * 100).toFixed(1)}%) ${response.updateStageMessage}`);
       } else if (typeof response.updateStageMessage !== "undefined") {
-        updatedOutput.push(`${response.updateStageMessage}...`);
+        if (this._lastMessage !== response.updateStageMessage) {
+          updatedOutput.push(`(0.0%) ${response.updateStageMessage}`);
+        }
       }
+      this._lastMessage = response.updateStageMessage;
       this.setState({outputText: updatedOutput});
     }
   }

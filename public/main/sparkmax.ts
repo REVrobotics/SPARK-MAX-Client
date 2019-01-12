@@ -171,7 +171,7 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
             firmwareID = null;
           }
         });
-      }, 100);
+      }, 50);
       console.log("Starting firmware update...");
       server.firmware({filename}, (error: any, response: any) => {
         if (response.updateStarted && response.updateStarted === true) {
