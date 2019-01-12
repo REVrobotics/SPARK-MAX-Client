@@ -18,30 +18,35 @@ Parts of the project structure were created by [create-react-app](https://github
 4. Once the project has installed it's dependencies, run `npm start` to start both the react development server and the desktop electron environment.
 
 ## Project Scripts
-###`npm run react`
+### `npm run react`
 This starts the react TypeScript development server only. When this window loads, an error will display saying 'window.require is not a function'.
 This is okay, because the application itself is an electron desktop application, and a typical browser doesn't have the necessary libraries that electron has.
 
-###`npm run desktop`
+### `npm run desktop`
 This starts the electron desktop environment. Without the react development server, this window will display a blank, white screen.
 It is recommended to first start the react server, and then run the desktop environment.
 
-###`npm run build`
+### `npm run build`
 This script builds the react source files from the `src` directory.
 
-###`npm run build-desktop`
+### `npm run build-desktop`
 This script builds the desktop environment's main process files from `public/main`.
 Make sure all production variables are set to 'true' if you plan on making a production build.
 
-###`npm run dist`
+### `npm run dist`
 This script is responsible for packaging all of the SPARK MAX Client's project files into a distributable format.
 Most of this is done by the [electron-builder](https://github.com/electron-userland/electron-builder) module. Out of all the scripts,
 this one takes the most time to complete (approx. 5 minutes). It should also be noted that this runs `npm run build` and `npm run build-desktop` before the actual script itself.
 
-###`npm install`
+### `npm install`
 This is the typical, default installation command that the node package manager has. The SPARK MAX Client has a `npm run postinstall` script that is automatically
 run after `npm install` is finished, which builds the proper binaries for the electron environment. This provides native access to operating system calls such as
 the file system.
+
+## Using gulp.js
+The SPARK MAX Client repository comes with some pre-built gulpfile commands that may help during development.
+
+### 
 
 ## SPARK MAX Client Changelog
 For detailed descriptions on what's changed between versions, head over to the repository's [CHANGELOG.md](https://github.com/REVrobotics/SPARK-MAX-Client/blob/master/CHANGELOG.md).
