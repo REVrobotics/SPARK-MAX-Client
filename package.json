@@ -35,6 +35,7 @@
     "build-desktop": "tsc -p tsconfig.electron.json",
     "predist": "gulp enterProd && npm run build && npm run build-desktop",
     "dist": "electron-builder",
+    "prerelease-win": "gulp enterProd && npm run build && npm run build-desktop",
     "release-win": "gulp enterProd && electron-builder --win -p always",
     "postinstall": "electron-builder install-app-deps"
   },
