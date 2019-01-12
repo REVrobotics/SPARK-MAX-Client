@@ -79,6 +79,7 @@ class RunTab extends React.Component<IProps, IState> {
     this.sanitizeValue = this.sanitizeValue.bind(this);
 
     this.listenForEmergencyStop = this.listenForEmergencyStop.bind(this);
+    this.preventFocus = this.preventFocus.bind(this);
   }
 
   public componentDidMount() {
@@ -86,12 +87,20 @@ class RunTab extends React.Component<IProps, IState> {
       this.modifyProfile(0);
     }
     window.addEventListener("keydown", this.listenForEmergencyStop);
+    const runBtn = document.getElementById("run-btn");
+    if (runBtn !== null) {
+      runBtn.addEventListener("mousedown", this.preventFocus);
+    }
   }
 
   public componentWillUnmount() {
     window.removeEventListener("keydown", this.listenForEmergencyStop);
     if (this.state.running) {
       SparkManager.disableHeartbeat(this.receiveHeartbeat);
+    }
+    const runBtn = document.getElementById("run-btn");
+    if (runBtn !== null) {
+      runBtn.removeEventListener("mousedown", this.preventFocus);
     }
   }
 
@@ -177,7 +186,7 @@ class RunTab extends React.Component<IProps, IState> {
           <FormGroup
             className="form-group-quarter"
           >
-            <Button className="rev-btn" fill={true} disabled={!connected} onClick={running ? this.stop : this.run}>{running ? "Stop" : "Run"}</Button>
+            <Button id="run-btn" className="rev-btn" fill={true} disabled={!connected} onClick={running ? this.stop : this.run}>{running ? "Stop" : "Run"}</Button>
           </FormGroup>
           <FormGroup
             className="form-group-quarter"
@@ -340,6 +349,10 @@ class RunTab extends React.Component<IProps, IState> {
         this.stop();
       }
     }
+  }
+
+  private preventFocus(event: any) {
+    event.preventDefault();
   }
 }
 
