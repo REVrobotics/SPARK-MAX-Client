@@ -5,6 +5,17 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
+### v0.13.4 - 1/12/2019 - Added VC++ 2013 Installation
+Major/Breaking features:
+* _None_
+
+Minor features:
+* _None_
+
+Bug fixes/patches:
+* Added VC++ 2013 to the application NSIS installation.
+* Code signed the client executable
+
 ### v0.13.4 - 1/12/2019 - Addition: About Tab and Fixes
 Major/Breaking features:
 * _None_

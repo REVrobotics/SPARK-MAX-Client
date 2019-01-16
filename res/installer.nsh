@@ -169,4 +169,12 @@
     ${EndIf}
   ${EndIf}
 
+  ${If} ${RunningX64}
+    File "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x64.exe"
+    ExecWait "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x64.exe"
+  ${Else}
+    File "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x86.exe"
+    ExecWait "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x86.exe"
+  ${EndIf}
+
 !macroend
