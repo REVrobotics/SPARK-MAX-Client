@@ -109,9 +109,19 @@ service sparkMaxServer {
     rpc Follow(followerRequest) returns (rootResponse) {}
 
     /*
-    * Get the status of the DRV8320 device.
+    * Get the faults, sticky faults, and status of the DRV8320 device.
+    */
+    rpc ClearFaults(clearFaultsRequest) returns (clearFaultsResponse) {}
+
+    /*
+    * Get the faults, sticky faults, and status of the DRV8320 device.
     */
     rpc DRVStatus(DRVStatusRequest) returns (DRVStatusResponse) {}
+
+    /*
+    * Get the faults, sticky faults, and status of the DRV8320 device.
+    */
+    rpc Telemetry(telemetryRequest) returns (telemetryResponse) {}
 }
 
 /*
@@ -133,6 +143,8 @@ message RequestWire {
         burnRequest             burn = 23;
         parameterListRequest    parameterList = 24;
         DRVStatusRequest        drvStatus = 25;
+        clearFaultsRequest      clearFaults = 26;
+        telemetryRequest        telemetry = 27;
     }
 }
 
@@ -153,6 +165,8 @@ message ResponseWire {
         pingResponse            ping = 20;
         burnResponse            burn = 21;
         DRVStatusResponse       drvStatus = 25;
+        clearFaultsResponse     clearFaults = 26;
+        telemetryResponse       telemetry = 27;
     }
 }
 
@@ -164,7 +178,7 @@ message connectRequest {
 }
 
 /*
-* Response format for connect() 
+* Response format for connect()
 */
 message connectResponse {
     bool connected = 1;
@@ -200,7 +214,7 @@ message pingResponse {
     rootResponse root = 1;
 
     //Returns true if the application is connected to the controller
-    //This will be false while updating. After an update is complete, 
+    //This will be false while updating. After an update is complete,
     //Connect() will need to be called again
     bool connected = 2;
 }
@@ -214,7 +228,7 @@ message burnRequest {
 }
 
 
-message burnResponse {    
+message burnResponse {
     rootResponse root = 1;
     bool verify = 2;
 }
@@ -252,7 +266,7 @@ message rootResponse {
 */
 message listRequest {
     rootCommand root = 1;
-    bool all = 2; 
+    bool all = 2;
 }
 
 /*
@@ -281,7 +295,7 @@ message firmwareResponse {
     //Return true if the firmware was updated, false otherwise
     //Returns false when polling the firmware version
     bool updateStarted = 2;
-    
+
     rootResponse root = 3;
     uint32 major = 4;
     uint32 minor = 5;
@@ -308,7 +322,7 @@ message firmwareResponse {
     bool updateComplete = 12;
 
     //This field is only valid when updateComplete = true
-    //If this flag returns false, check root.error to 
+    //If this flag returns false, check root.error to
     //get the error during the update process
     bool updateCompletedSuccessfully = 13;
 }
@@ -341,7 +355,7 @@ message addressResponse {
 /*
 * Request type for Set Parameter()
 */
-message setParameterRequest { 
+message setParameterRequest {
     rootCommand root = 1;
     configParam parameter = 2;
     string value = 3;
@@ -350,7 +364,7 @@ message setParameterRequest {
 /*
 * Request type for Get Parameter()
 */
-message getParameterRequest { 
+message getParameterRequest {
     rootCommand root = 1;
     configParam parameter = 2;
 }
@@ -363,15 +377,15 @@ message parameterResponse {
     paramType type = 2;
     paramStatus status = 3;
     rootResponse root = 4;
+    uint32 number = 5;
 }
 
-message parameterListRequest { 
-    rootCommand root = 1;  
+message parameterListRequest {
+    rootCommand root = 1;
 }
 
 message parameterListResponse {
-    repeated string parameter = 1;
-    repeated paramType type = 2;
+    repeated parameterResponse parameters = 1;
     rootResponse root = 3;
 }
 
@@ -379,7 +393,7 @@ message parameterListResponse {
 * Request format for Setpoint() command
 */
 message setpointRequest {
-    rootCommand root = 1;  
+    rootCommand root = 1;
     float setpoint = 2;
     bool enable = 3;
 }
@@ -400,6 +414,14 @@ message followerRequest {
     uint32 followerconfig = 3;
 }
 
+message clearFaultsRequest {
+    rootCommand root = 1;
+}
+
+message clearFaultsResponse {
+    rootResponse root = 1;
+}
+
 /*
 * Request for status from the DRV8320
 */
@@ -414,6 +436,102 @@ message DRVStatusResponse {
     DRVStat0 stat0 = 1;
     DRVStat1 stat1 = 2;
     rootResponse root = 3;
+    FaultFlags faults = 4;
+    FaultFlags stickyFaults = 5;
+}
+
+message FaultFlags {
+    /*
+    * Indicates voltage went below the level that the motor driver
+    * voltage will cut off.
+    */
+    bool Brownout = 1;
+
+    /*
+    * Indicates the motor current reached the value set by
+    * kCurrentChop (default 115A)
+    */
+    bool Overcurrent = 2;
+
+    /*
+    * Indicates the voltage exceeded the recommended max
+    */
+    bool Overvoltage = 3;
+
+    /*
+    * Indicates a fault with the motor, e.g. mismatch
+    * motor type?
+    */
+    bool MotorFault = 4;
+
+    /*
+    * Indicates the fault with the sensor, most likey a
+    * disconnected sensor, or a brushless motor configured
+    * in a mode other than Hall Sensor mode
+    */
+    bool SensorFault = 5;
+
+    /*
+    * Not implemented
+    */
+    bool Stall = 6;
+
+    /*
+    * Indicates an error with the internally stored settings
+    */
+    bool EEPROMCRC = 7;
+
+    /*
+    * Indicates an error with CAN transmission
+    */
+    bool CANTX = 8;
+
+    /*
+    * Indicates an error with CAN Reception
+    */
+    bool CANRX = 9;
+
+    /*
+    * Indicates the motor controller has reset. This flag is
+    * set in the 'Faults' bit when the device first powers on, and cleared
+    * when initialization is complete (but still persists as a sticky fault)
+    */
+    bool HasReset = 10;
+
+    /*
+    * Indicates a fault with the motor driver IC, use the DRV status bits
+    * to determine the cause
+    */
+    bool DRVFault = 11;
+
+    /*
+    * Indicates some other fault not covered by the other bits
+    */
+    bool OtherFault = 12;
+
+    /*
+    * Indicates the configured fwd soft limit was triggered, whether or not
+    * enabled.
+    */
+    bool SoftLimitFwd = 13;
+
+    /*
+    * Indicates the configured rev soft limit was triggered, whether or not
+    * enabled.
+    */
+    bool SoftLimitRev = 14;
+
+    /*
+    * Indicates the configured fwd hard limit was triggered (limit switch input),
+    * whether or not enabled.
+    */
+    bool HardLimitFwd = 15;
+
+    /*
+    * Indicates the configured rev hard limit was triggered (limit switch input),
+    * whether or not enabled.
+    */
+    bool HardLimitRev = 16;
 }
 
 /*
@@ -429,47 +547,47 @@ message DRVStat0 {
     * Indicates VDS overcurrent fault on the C high-side MOSFET
     */
     bool VDS_HC = 2;
-    
+
     /*
     * Indicates VDS overcurrent fault on the B low-side MOSFET
     */
     bool VDS_LB = 3;
-    
+
     /*
     * Indicates VDS overcurrent fault on the B high-side MOSFET
     */
     bool VDS_HB = 4;
-    
+
     /*
     * Indicates VDS overcurrent fault on the A low-side MOSFET
     */
     bool VDS_LA = 5;
-    
+
     /*
     * Indicates VDS overcurrent fault on the A high-side MOSFET
     */
     bool VDS_HA = 6;
-    
+
     /*
     * Indicates overtemperature shutdown
     */
     bool OTSD = 7;
-    
+
     /*
     * Indicates undervoltage lockout fault condition
     */
     bool UVLO = 8;
-    
+
     /*
     * Indicates gate drive fault condition
     */
     bool GDF = 9;
-    
+
     /*
     * Indicates VDS monitor overcurrent fault condition
     */
     bool VDS_OCP = 10;
-    
+
     /*
     * Logic OR of FAULT status registers. Mirrors nFAULT pin.
     */
@@ -480,59 +598,78 @@ message DRVStat0 {
 * DRV8320 Stat1 register
 */
 message DRVStat1 {
-    
+
     /*
     * Indicates gate drive fault on the C low-side MOSFET
     */
     bool VGS_LC = 1;
-    
+
     /*
     * Indicates gate drive fault on the C high-side MOSFET
     */
     bool VGS_HC = 2;
-    
+
     /*
     * Indicates gate drive fault on the B low-side MOSFET
     */
     bool VGS_LB = 3;
-    
+
     /*
     * Indicates gate drive fault on the B high-side MOSFET
     */
     bool VGS_HB = 4;
-    
+
     /*
     * Indicates gate drive fault on the A low-side MOSFET
     */
     bool VGS_LA = 5;
-    
+
     /*
     * Indicates gate drive fault on the A high-side MOSFET
     */
-    bool VGS_HA = 6;  
-    
+    bool VGS_HA = 6;
+
     /*
     * Indicates charge pump undervoltage fault condition
-    */  
+    */
     bool CPUV = 7;
-    
+
     /*
     * Indicates overtemperature warning
     */
     bool OTW = 8;
-    
+
     /*
     * Always 0 for DRV8320
     */
     bool SC_OC = 9;
-    
+
     /*
     * Always 0 for DRV8320
     */
     bool SB_OC = 10;
-    
+
     /*
     * Always 0 for DRV8320
     */
     bool SA_OC = 11;
+}
+
+enum telemetryId {
+    SensorPosition = 0;
+}
+
+message telemetryData {
+    telemetryId id = 1;
+    float value = 2;
+}
+
+message telemetryRequest {
+    rootCommand root = 1;
+    telemetryData data = 2;
+}
+
+message telemetryResponse {
+    rootResponse root = 1;
+    repeated telemetryData data = 2;
 }
