@@ -6,6 +6,13 @@ const MAX_PARAMETERS: number = 58;
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
 
+export interface IServerResponse {
+  requestValue: number | string | boolean,
+  responseValue: number | string | boolean,
+  type: number,
+  status: number,
+}
+
 class SparkManager {
 
   public static getInstance(): SparkManager {
@@ -365,7 +372,13 @@ class SparkManager {
     });
   }
 
-  public getParameter(id: number): Promise<number> {
+  public async setAndGetParameter(parameter: ConfigParameter, value: number | string | boolean): Promise<IServerResponse> {
+    const setResponse: any = await this.setParameter(parameter, value);
+    const getResponse: any = await this.getParameter(parameter);
+    return {requestValue: value, responseValue: getResponse.value, status: setResponse.type, type: getResponse.type};
+  }
+
+  private getParameter(id: number): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("get-param-" + id + "-response", (event: any, error: any, response: any) => {
         if (error) {

@@ -2,7 +2,7 @@ import {Alert, Button, FormGroup, NumericInput, Radio, RadioGroup, Switch} from 
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
-import SparkManager from "../managers/SparkManager";
+import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 
@@ -147,8 +147,11 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeCanID(id: number) {
-    this.props.motorConfig.canID = id;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
+      console.log(res);
+      this.props.motorConfig.canID = id;
+      this.forceUpdate();
+    });
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
