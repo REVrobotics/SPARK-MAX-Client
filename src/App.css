@@ -6,6 +6,14 @@
     content: none;
 }
 
+.bp3-icon::before {
+    content: none;
+}
+
+.bp3-label {
+    display: flex;
+}
+
 .fill-w {
     width: 100%;
 }

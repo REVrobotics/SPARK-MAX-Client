@@ -6,6 +6,7 @@ import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 import {ConfigParameter} from "../models/ConfigParameter";
+import PopoverHelp from "../components/PopoverHelp";
 
 interface IProps {
   connected: boolean,
@@ -15,7 +16,8 @@ interface IProps {
 
 interface IState {
   updateRequested: boolean,
-  savingConfig: boolean
+  savingConfig: boolean,
+  serverCanResponse: IServerResponse
 }
 
 class BasicTab extends React.Component<IProps, IState> {
@@ -23,7 +25,8 @@ class BasicTab extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       savingConfig: false,
-      updateRequested: false
+      updateRequested: false,
+      serverCanResponse: {requestValue: "", responseValue: "", status: 0, type: 0}
     };
     this.openConfirmModal = this.openConfirmModal.bind(this);
     this.closeConfirmModal = this.closeConfirmModal.bind(this);
@@ -50,7 +53,7 @@ class BasicTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected, motorConfig, burnedConfig} = this.props;
-    const {savingConfig, updateRequested} = this.state;
+    const {savingConfig, updateRequested, serverCanResponse} = this.state;
 
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
@@ -58,7 +61,8 @@ class BasicTab extends React.Component<IProps, IState> {
     const currentLimit = motorConfig.currentLimit;
 
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
-    console.log(canModified, motorConfig.canID, burnedConfig.canID);
+    const canError: boolean = serverCanResponse.status === 4;
+
     return (
       <div>
         <Alert
@@ -85,7 +89,7 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label="CAN ID"
+            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${serverCanResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${serverCanResponse.responseValue}.`}/>}
             labelFor="basic-can-id"
             className={(canModified ? "modified" : "") + " form-group-quarter"}
           >
@@ -96,6 +100,7 @@ class BasicTab extends React.Component<IProps, IState> {
               min={0}
               max={24}
               disabled={!connected}
+              className={canError ? "field-error" : ""}
             />
           </FormGroup>
           <FormGroup
@@ -154,7 +159,7 @@ class BasicTab extends React.Component<IProps, IState> {
   public changeCanID(id: number) {
     SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
       this.props.motorConfig.canID = res.responseValue as number;
-      console.log(this.props.motorConfig.canID, this.props.burnedConfig.canID);
+      this.setState({serverCanResponse: res});
       this.forceUpdate();
     });
   }

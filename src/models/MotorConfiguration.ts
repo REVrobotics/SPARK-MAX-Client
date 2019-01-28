@@ -89,12 +89,65 @@ export default class MotorConfiguration implements ISerializable {
       hall_offset: this.hallOffset,
       pole_pairs: this.polePairs,
       current_chop: this.currentChop,
-      current_limit: this.currentLimit
+      current_limit: this.currentLimit,
+      control_profiles: this.controlProfiles.map((profile: PIDFProfile) => profile.toJSON()),
+      output_ratio: this.outputRatio,
+      limit_forward_polarity: this.limitSwitchForwardPolarity,
+      limit_reverse_polarity: this.limitSwitchReversePolarity,
+      hard_limit_forward_enabled: this.hardLimitSwitchForwardEnabled,
+      hard_limit_reverse_enabled: this.hardLimitSwitchReverseEnabled,
+      soft_limit_forward_enabled: this.softLimitSwitchForwardEnabled,
+      soft_limit_reverse_enabled: this.softLimitSwitchReverseEnabled,
+      ramp_rate: this.rampRate,
+      follower_id: this.followerID,
+      follower_config: this.followerConfig,
+      smart_current_stall_limit: this.smartCurrentStallLimit,
+      smart_current_free_limit: this.smartCurrentFreeLimit,
+      smart_current_config: this.smartCurrentConfig,
+      motor_kv: this.motorKv,
+      motor_r: this.motorR,
+      motor_l: this.motorL,
+      enc_counts_per_rev: this.encoderCountsPerRevolution,
+      enc_avg_depth: this.encoderAverageDepth,
+      enc_sample_delta: this.encoderSampleDelta
     };
   }
 
   public fromJSON(json: any): MotorConfiguration {
     const config: MotorConfiguration = new MotorConfiguration(json.name, json.type);
+    config.name = json.name || "UNNAMED CONFIG";
+    config.canID = json.can_id || 0;
+    config.inputMode = json.input_mode || 0;
+    config.commutationAdvance = json.comm_advance || 0;
+    config.sensorType = json.sensor_type || 1;
+    config.controlType = json.control_type || 0;
+    config.idleMode = json.idle_mode || 0;
+    config.inputDeadband = json.input_deadband || 0;
+    config.firmwareVersion = json.firmware_version || "0.0.0";
+    config.hallOffset = json.hall_offset || 0;
+    config.polePairs = json.pole_pairs || 0;
+    config.currentChop = json.current_chop || 0;
+    config.currentLimit = json.current_limit || 0;
+    config.controlProfiles = typeof json.control_profiles !== "undefined" ? json.control_profiles.map((profile: any) => new PIDFProfile().fromJSON(profile)) : [];
+    config.outputRatio = json.output_ratio || 0;
+    config.limitSwitchForwardPolarity = json.limit_forward_polarity || true;
+    config.limitSwitchReversePolarity = json.limit_reverse_polarity || true;
+    config.hardLimitSwitchForwardEnabled = json.hard_limit_forward_enabled || false;
+    config.hardLimitSwitchReverseEnabled = json.hard_limit_reverse_enabled || false;
+    config.softLimitSwitchForwardEnabled = json.soft_limit_forward_enabled || false;
+    config.softLimitSwitchReverseEnabled = json.soft_limit_reverse_enabled || false;
+    config.rampRate = json.ramp_rate || 0;
+    config.followerID = json.follower_id || -1;
+    config.followerConfig = json.follower_config || "";
+    config.smartCurrentStallLimit = json.smart_current_stall_limit || 80;
+    config.smartCurrentFreeLimit = json.smart_current_free_limit || 0;
+    config.smartCurrentConfig = json.smart_current_config || -1;
+    config.motorKv = json.motor_kv || 480;
+    config.motorR = json.motor_r || 35000;
+    config.motorL = json.motor_l || 3800;
+    config.encoderCountsPerRevolution = json.enc_counts_per_rev || 4096;
+    config.encoderAverageDepth = json.enc_avg_depth || 64;
+    config.encoderSampleDelta = json.enc_sample_delta || 200;
     return config;
   }
 

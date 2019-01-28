@@ -210,6 +210,41 @@ input:checked ~ .bp3-control-indicator {
 }
 
 .modified {
-    font-weight: bold;
     font-style: italic;
+    font-weight: bold;
+}
+
+.modified > label::after {
+    content: '*';
+}
+
+.field-error > .bp3-input-group > input {
+    border: 1px solid rgba(243, 0, 0, 0.6);
+}
+
+.field-error > .bp3-input-group > input:focus {
+    outline: rgba(243, 0, 0, 0.6) auto 2px;
+    -webkit-box-shadow:0 0 0 1px #bd2700, 0 0 0 3px rgba(164, 39, 0, 0.3), inset 0 1px 1px rgba(146, 35, 0, 0.2);
+    box-shadow:0 0 0 1px #bd2700, 0 0 0 3px rgba(164, 39, 0, 0.3), inset 0 1px 1px rgba(146, 35, 0, 0.2);
+}
+
+.popover-container {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+
+.popover-container > .bp3-popover-wrapper {
+    margin-top: 0 !important;
+}
+
+.popover-icon {
+    margin-left: 5px;
+}
+
+.popover-popover {
+    padding: 5px;
+    z-index: 99;
+    max-width: 250px;
+    background-color: #ffffff;
 }

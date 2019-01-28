@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.10.0",
+    "@blueprintjs/icons": "^3.5.1",
     "@blueprintjs/select": "^3.4.0",
     "axios": "^0.18.0",
     "better-queue": "^3.8.10",

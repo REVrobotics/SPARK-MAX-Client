@@ -96,7 +96,7 @@ class App extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
-        this.props.setBurnedConfig(config);
+        this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
         this.checkForFirmwareUpdate();
       });
     }).catch((error: any) => {
