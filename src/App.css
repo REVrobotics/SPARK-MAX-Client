@@ -11,7 +11,7 @@
 }
 
 .bp3-label {
-    display: flex;
+    display: flex !important;
 }
 
 .fill-w {
