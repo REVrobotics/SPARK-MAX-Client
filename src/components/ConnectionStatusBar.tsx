@@ -4,10 +4,13 @@ import {connect} from "react-redux";
 import {Dispatch} from "redux";
 import SparkManager from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
-import {setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
+import {
+  setBurnedMotorConfig, setConnectedDevice, setIsConnecting, setMotorConfig,
+  updateConnectionStatus
+} from "../store/actions";
 import {
   ApplicationActions,
-  IApplicationState,
+  IApplicationState, ISetBurnedMotorConfig,
   ISetConnectedDevice,
   ISetIsConnecting, ISetMotorConfig,
   IUpdateConnectionStatus
@@ -21,7 +24,8 @@ interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
   setConnectedDevice: (device: string) => ISetConnectedDevice,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
-  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig
+  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
 }
 
 class ConnectionStatusBar extends React.Component<IProps> {
@@ -54,6 +58,7 @@ class ConnectionStatusBar extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
+        this.props.setBurnedConfig(config);
       });
     }).catch(() => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
@@ -85,6 +90,7 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
     setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config)),
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status))
   };

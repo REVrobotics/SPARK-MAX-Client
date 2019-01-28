@@ -1,15 +1,16 @@
 import {Reducer} from "redux";
-import {REV_BRUSHLESS} from "../models/MotorConfiguration";
+import {default as MotorConfiguration, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {
   ADD_LOG,
   ApplicationActions,
-  IApplicationState,
+  IApplicationState, SET_BURNED_MOTOR_CONFIG,
   SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
+  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
 } from "./types";
 
 export const initialState: IApplicationState = {
+  burnedConfig: new MotorConfiguration("REV BRUSHLESS", 1),
   connectedDevice: "",
   connectionStatus: "NOT CONNECTED",
   currentConfig: REV_BRUSHLESS,
@@ -30,8 +31,10 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
       return {...state, connectedDevice: action.payload.connectedDevice};
     case SET_PARAMETERS:
       return {...state, parameters: action.payload.parameters};
-    case SET_MOTOR_CONFIG:
+    case SET_CURRENT_MOTOR_CONFIG:
       return {...state, currentConfig: action.payload.config};
+    case SET_BURNED_MOTOR_CONFIG:
+      return {...state, burnedConfig: action.payload.config};
     case ADD_LOG:
       return {...state, logs: [...state.logs, action.payload.log]};
     case SET_UPDATE_AVAILABLE:

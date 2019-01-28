@@ -1,4 +1,4 @@
-enum ConfigParameter {
+export enum ConfigParameter {
   /*
   * CAN ID
   * @default 0

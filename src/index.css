@@ -208,3 +208,8 @@ input:checked ~ .bp3-control-indicator {
 .update-container {
     margin-top: 15px;
 }
+
+.modified {
+    font-weight: bold;
+    font-style: italic;
+}

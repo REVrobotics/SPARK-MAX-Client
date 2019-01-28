@@ -5,10 +5,12 @@ import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
+import {ConfigParameter} from "../models/ConfigParameter";
 
 interface IProps {
   connected: boolean,
-  motorConfig: MotorConfiguration
+  motorConfig: MotorConfiguration,
+  burnedConfig: MotorConfiguration,
 }
 
 interface IState {
@@ -47,13 +49,16 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected, motorConfig} = this.props;
+    const {connected, motorConfig, burnedConfig} = this.props;
     const {savingConfig, updateRequested} = this.state;
 
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
     const currentLimit = motorConfig.currentLimit;
+
+    const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
+    console.log(canModified, motorConfig.canID, burnedConfig.canID);
     return (
       <div>
         <Alert
@@ -82,7 +87,7 @@ class BasicTab extends React.Component<IProps, IState> {
           <FormGroup
             label="CAN ID"
             labelFor="basic-can-id"
-            className="form-group-quarter"
+            className={(canModified ? "modified" : "") + " form-group-quarter"}
           >
             <NumericInput
               id="basic-can-id"
@@ -148,8 +153,8 @@ class BasicTab extends React.Component<IProps, IState> {
 
   public changeCanID(id: number) {
     SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
-      console.log(res);
-      this.props.motorConfig.canID = id;
+      this.props.motorConfig.canID = res.responseValue as number;
+      console.log(this.props.motorConfig.canID, this.props.burnedConfig.canID);
       this.forceUpdate();
     });
   }
@@ -189,7 +194,8 @@ class BasicTab extends React.Component<IProps, IState> {
 export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
-    motorConfig: state.currentConfig
+    motorConfig: state.currentConfig,
+    burnedConfig: state.burnedConfig
   };
 }
 

@@ -1,5 +1,6 @@
 import MotorConfiguration from "../models/MotorConfiguration";
 import PIDFProfile from "../models/PIDFProfile";
+import {ConfigParameter} from "../models/ConfigParameter";
 
 const MAX_PARAMETERS: number = 58;
 
@@ -375,7 +376,7 @@ class SparkManager {
   public async setAndGetParameter(parameter: ConfigParameter, value: number | string | boolean): Promise<IServerResponse> {
     const setResponse: any = await this.setParameter(parameter, value);
     const getResponse: any = await this.getParameter(parameter);
-    return {requestValue: value, responseValue: getResponse.value, status: setResponse.type, type: getResponse.type};
+    return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
   }
 
   private getParameter(id: number): Promise<number> {

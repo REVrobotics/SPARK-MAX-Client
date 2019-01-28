@@ -2,12 +2,12 @@ import {ActionCreator} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
   ADD_LOG,
-  IAddLog,
+  IAddLog, ISetBurnedMotorConfig,
   ISetConnectedDevice,
   ISetIsConnecting, ISetMotorConfig, ISetParameters, ISetUpdateAvailable,
-  IUpdateConnectionStatus, SET_CONNECTED_DEVICE,
+  IUpdateConnectionStatus, SET_BURNED_MOTOR_CONFIG, SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
+  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
 } from "./types";
 
 export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
@@ -43,7 +43,14 @@ export const setMotorConfig: ActionCreator<ISetMotorConfig> = (config: MotorConf
   payload: {
     config
   },
-  type: SET_MOTOR_CONFIG
+  type: SET_CURRENT_MOTOR_CONFIG
+});
+
+export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (config: MotorConfiguration) => ({
+  payload: {
+    config
+  },
+  type: SET_BURNED_MOTOR_CONFIG
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({

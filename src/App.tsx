@@ -14,6 +14,7 @@ import SparkManager from "./managers/SparkManager";
 import MotorConfiguration from "./models/MotorConfiguration";
 import {
   addLog,
+  setBurnedMotorConfig,
   setConnectedDevice,
   setIsConnecting,
   setMotorConfig,
@@ -21,7 +22,8 @@ import {
   updateConnectionStatus
 } from "./store/actions";
 import {
-  ApplicationActions, IAddLog, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig, ISetUpdateAvailable,
+  ApplicationActions, IAddLog, ISetBurnedMotorConfig, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  ISetUpdateAvailable,
   IUpdateConnectionStatus
 } from "./store/types";
 import WebProvider from "./providers/WebProvider";
@@ -71,7 +73,8 @@ interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
   setConnectedDevice: (device: string) => ISetConnectedDevice,
-  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
+  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
   addLog: (log: string) => IAddLog,
   setUpdateAvailable: (updateAvailable: boolean) => ISetUpdateAvailable
 }
@@ -93,6 +96,7 @@ class App extends React.Component<IProps> {
       this.props.setConnectedDevice(device);
       SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
         this.props.setCurrentConfig(config);
+        this.props.setBurnedConfig(config);
         this.checkForFirmwareUpdate();
       });
     }).catch((error: any) => {
@@ -183,6 +187,7 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
     setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config)),
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
     addLog: (log: string) => dispatch(addLog(log)),
