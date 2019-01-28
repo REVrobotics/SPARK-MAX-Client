@@ -10,64 +10,25 @@ import FirmwareTab from "./containers/FirmwareTab";
 import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
 // import SettingsTab from "./containers/SettingsTab";
-import SparkManager from "./managers/SparkManager";
+import SparkManager, {IServerResponse} from "./managers/SparkManager";
 import MotorConfiguration from "./models/MotorConfiguration";
 import {
   addLog,
   setBurnedMotorConfig,
   setConnectedDevice,
   setIsConnecting,
-  setMotorConfig,
+  setMotorConfig, setParamResponses,
   setUpdateAvailable,
   updateConnectionStatus
 } from "./store/actions";
 import {
   ApplicationActions, IAddLog, ISetBurnedMotorConfig, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  ISetParamResponses,
   ISetUpdateAvailable,
   IUpdateConnectionStatus
 } from "./store/types";
 import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
-
-/* TEST_JSON only used for when WebProvider isn't available. */
-// const TEST_JSON = {
-//   "firmware": [
-//     {
-//       "spec": "Beta",
-//       "version": "0.1.99999"
-//     },
-//     {
-//       "spec": "Recovery Update Required",
-//       "version": "1.0.372"
-//     },
-//     {
-//       "spec": "Previous",
-//       "version": "1.0.373",
-//       "url": "https://www.revrobotics.com/content/uw/sparkmax/firmware/sparkmax-firmwar-1.0.373.dfu",
-//       "md5": "23f232a3b2df2867c2097239870980987c0fa0"
-//     },
-//     {
-//       "spec": "Latest",
-//       "version": "1.0.376",
-//       "url": "https://www.revrobotics.com/content/uw/sparkmax/firmware/sparkmax-firmwar-1.0.376.dfu",
-//       "md5": "23f232a3b2df2867c2097239870980987c0fa0"
-//     }
-//   ],
-//   "GUI": [
-//     {
-//       "spec": "Previous",
-//       "version": "0.8.1",
-//       "url": "https://www.revrobotics.com/content/uw/sparkmax/gui/sparkmax-gui-0.8.1.exe",
-//       "md5": "23f232a3b2df2867c2097239870980987c0fa0"
-//     },
-//     {
-//       "spec": "Latest",
-//       "version": "0.9.7",
-//       "url": "https://www.revrobotics.com/content/uw/sparkmax/gui/sparkmax-gui-0.9.7.exe",
-//       "md5": "23f232a3b2df2867c2097239870980987c0fa0"
-//     }
-//   ]
-// };
 
 interface IProps {
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
@@ -76,7 +37,8 @@ interface IProps {
   setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
   setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
   addLog: (log: string) => IAddLog,
-  setUpdateAvailable: (updateAvailable: boolean) => ISetUpdateAvailable
+  setUpdateAvailable: (updateAvailable: boolean) => ISetUpdateAvailable,
+  setParamResponses: (paramResponse: IServerResponse[]) => ISetParamResponses
 }
 
 class App extends React.Component<IProps> {
@@ -84,6 +46,10 @@ class App extends React.Component<IProps> {
     super(props);
 
     WebProvider.initialize("www.revrobotics.com");
+  }
+
+  public componentWillMount() {
+    this.initParamResponses();
   }
 
   public componentDidMount() {
@@ -181,6 +147,14 @@ class App extends React.Component<IProps> {
       return curBuild < othBuild;
     }
   }
+
+  private initParamResponses() {
+    const paramResponses: IServerResponse[] = [];
+    for (let i = 0; i < 75; i++) {
+      paramResponses.push({requestValue: "", responseValue: "", status: 0, type: 0});
+    }
+    this.props.setParamResponses(paramResponses);
+  }
 }
 
 export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
@@ -191,7 +165,8 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
     setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
     addLog: (log: string) => dispatch(addLog(log)),
-    setUpdateAvailable: (updateAvailable: boolean) => dispatch(setUpdateAvailable(updateAvailable))
+    setUpdateAvailable: (updateAvailable: boolean) => dispatch(setUpdateAvailable(updateAvailable)),
+    setParamResponses: (paramResponses: IServerResponse[]) => dispatch(setParamResponses(paramResponses))
   };
 }
 

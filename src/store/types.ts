@@ -1,5 +1,6 @@
 import {Action} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
+import {IServerResponse} from "../managers/SparkManager";
 
 export const SET_CONNECTION_STATUS = "SET_CONNECTED";
 export type SET_CONNECTION_STATUS = typeof SET_CONNECTION_STATUS;
@@ -19,6 +20,9 @@ export type SET_CURRENT_MOTOR_CONFIG = typeof SET_CURRENT_MOTOR_CONFIG;
 export const SET_BURNED_MOTOR_CONFIG = "SET_BURNED_MOTOR_CONFIG";
 export type SET_BURNED_MOTOR_CONFIG = typeof SET_BURNED_MOTOR_CONFIG;
 
+export const SET_SERVER_PARAM_RESPONSE = "SET_SERVER_PARAM_RESPONSE";
+export type SET_SERVER_PARAM_RESPONSE = typeof SET_SERVER_PARAM_RESPONSE;
+
 export const ADD_LOG = "ADD_LOG";
 export type ADD_LOG = typeof ADD_LOG;
 
@@ -34,7 +38,8 @@ export interface IApplicationState {
   currentConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
   logs: string[],
-  updateAvailable: boolean
+  updateAvailable: boolean,
+  paramResponses: IServerResponse[]
 }
 
 export interface IUpdateConnectionStatus extends Action {
@@ -80,6 +85,13 @@ export interface ISetBurnedMotorConfig extends Action {
   }
 }
 
+export interface ISetParamResponses extends Action {
+  type: SET_SERVER_PARAM_RESPONSE,
+  payload: {
+    paramResponses: IServerResponse[]
+  }
+}
+
 export interface IAddLog extends Action {
   type: ADD_LOG,
   payload: {
@@ -95,4 +107,4 @@ export interface ISetUpdateAvailable extends Action {
 }
 
 export type ApplicationActions = IUpdateConnectionStatus | ISetIsConnecting | ISetConnectedDevice | ISetParameters
-  | ISetMotorConfig | ISetBurnedMotorConfig | IAddLog | ISetUpdateAvailable;
+  | ISetMotorConfig | ISetBurnedMotorConfig | ISetParamResponses | IAddLog | ISetUpdateAvailable;

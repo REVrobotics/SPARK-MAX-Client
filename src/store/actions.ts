@@ -4,11 +4,12 @@ import {
   ADD_LOG,
   IAddLog, ISetBurnedMotorConfig,
   ISetConnectedDevice,
-  ISetIsConnecting, ISetMotorConfig, ISetParameters, ISetUpdateAvailable,
+  ISetIsConnecting, ISetMotorConfig, ISetParameters, ISetParamResponses, ISetUpdateAvailable,
   IUpdateConnectionStatus, SET_BURNED_MOTOR_CONFIG, SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_UPDATE_AVAILABLE
+  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_SERVER_PARAM_RESPONSE, SET_UPDATE_AVAILABLE
 } from "./types";
+import {IServerResponse} from "../managers/SparkManager";
 
 export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
   payload: {
@@ -51,6 +52,13 @@ export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (confi
     config
   },
   type: SET_BURNED_MOTOR_CONFIG
+});
+
+export const setParamResponses: ActionCreator<ISetParamResponses> = (paramResponses: IServerResponse[]) => ({
+  payload: {
+    paramResponses
+  },
+  type: SET_SERVER_PARAM_RESPONSE
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({

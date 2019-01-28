@@ -12,12 +12,12 @@ interface IProps {
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
+  paramResponses: IServerResponse[]
 }
 
 interface IState {
   updateRequested: boolean,
   savingConfig: boolean,
-  serverCanResponse: IServerResponse
 }
 
 class BasicTab extends React.Component<IProps, IState> {
@@ -25,8 +25,7 @@ class BasicTab extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       savingConfig: false,
-      updateRequested: false,
-      serverCanResponse: {requestValue: "", responseValue: "", status: 0, type: 0}
+      updateRequested: false
     };
     this.openConfirmModal = this.openConfirmModal.bind(this);
     this.closeConfirmModal = this.closeConfirmModal.bind(this);
@@ -53,15 +52,17 @@ class BasicTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected, motorConfig, burnedConfig} = this.props;
-    const {savingConfig, updateRequested, serverCanResponse} = this.state;
+    const {savingConfig, updateRequested} = this.state;
 
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
     const currentLimit = motorConfig.currentLimit;
 
+    // CAN ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
-    const canError: boolean = serverCanResponse.status === 4;
+    const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
+    const canError: boolean = canResponse.status === 4;
 
     return (
       <div>
@@ -89,7 +90,7 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${serverCanResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${serverCanResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
             labelFor="basic-can-id"
             className={(canModified ? "modified" : "") + " form-group-quarter"}
           >
@@ -141,7 +142,7 @@ class BasicTab extends React.Component<IProps, IState> {
             loading={savingConfig}
             onClick={this.openConfirmModal}
           >
-            Update Configuration
+            Save Configuration
           </Button>
         </div>
       </div>
@@ -159,7 +160,7 @@ class BasicTab extends React.Component<IProps, IState> {
   public changeCanID(id: number) {
     SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
       this.props.motorConfig.canID = res.responseValue as number;
-      this.setState({serverCanResponse: res});
+      this.props.paramResponses[ConfigParameter.kCanID] = res;
       this.forceUpdate();
     });
   }
@@ -180,18 +181,21 @@ class BasicTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
+  private getParamResponse(id: number): IServerResponse {
+    if (typeof this.props.paramResponses[id] !== "undefined") {
+      return this.props.paramResponses[id];
+    } else {
+      return {requestValue: "", responseValue: "", status: 0, type: 0};
+    }
+  }
+
   private updateConfiguration() {
     this.setState({savingConfig: true});
-    SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
-      SparkManager.burnFlash().then((flashRes: any) => {
-        this.setState({savingConfig: false});
-      }).catch((error: any) => {
-        this.setState({savingConfig: false});
-        console.log(error);
-      });
-    }).catch((error: any) => {
-      console.log(error);
+    SparkManager.burnFlash().then(() => {
       this.setState({savingConfig: false});
+    }).catch((error: any) => {
+      this.setState({savingConfig: false});
+      console.log(error);
     });
   }
 }
@@ -200,7 +204,8 @@ export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
     motorConfig: state.currentConfig,
-    burnedConfig: state.burnedConfig
+    burnedConfig: state.burnedConfig,
+    paramResponses: state.paramResponses
   };
 }
 

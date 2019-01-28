@@ -214,7 +214,7 @@ input:checked ~ .bp3-control-indicator {
     font-weight: bold;
 }
 
-.modified > label::after {
+.modified > label > div > span:first-child::after {
     content: '*';
 }
 
