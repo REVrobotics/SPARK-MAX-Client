@@ -4,13 +4,18 @@ import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager from "../managers/SparkManager";
 import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS, getFromID as getMotorFromID} from "../models/MotorConfiguration";
-import {IApplicationState} from "../store/types";
+import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
+import {Dispatch} from "redux";
+import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
 
 interface IProps {
   connected: boolean,
-  motorConfig: MotorConfiguration
+  motorConfig: MotorConfiguration,
+  burnedConfig: MotorConfiguration,
+  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig
 }
 
 interface IState {
@@ -79,7 +84,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected, motorConfig} = this.props;
+    const {connected, burnedConfig, motorConfig} = this.props;
     const {currentLimitEnabled, inputRampLimit, currentChopEnabled,
       rampRateEnabled, savingConfig, slaveMode,
       updateRequested} = this.state;
@@ -96,6 +101,49 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const reverseLimitEnabled = motorConfig.hardLimitSwitchReverseEnabled;
     const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
     const reversePolarity = motorConfig.limitSwitchReversePolarity;
+
+    // Motor Type
+    const typeModified: boolean = motorConfig.type !== burnedConfig.type;
+
+    // Current Limit
+    const currModified: boolean = motorConfig.currentLimit !== burnedConfig.currentLimit;
+
+    // Can ID
+    const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
+
+    // Idle Mode
+    const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
+
+    // Motor Deadband
+    const deadbandModified: boolean = motorConfig.inputDeadband !== burnedConfig.inputDeadband;
+
+    // Sensor Type
+    const sensorModified: boolean = motorConfig.sensorType !== burnedConfig.sensorType;
+
+    // Output Ratio
+    const outputModified: boolean = motorConfig.outputRatio !== burnedConfig.outputRatio;
+
+    // Forward Limit Switch
+    const forwardEnabledModified: boolean = motorConfig.hardLimitSwitchForwardEnabled !== burnedConfig.hardLimitSwitchForwardEnabled;
+
+    // Reverse Limit Switch
+    const reverseEnabledModified: boolean = motorConfig.hardLimitSwitchReverseEnabled !== burnedConfig.hardLimitSwitchReverseEnabled;
+
+    // Forward Polarity
+    const forwardPolarityModified: boolean = motorConfig.limitSwitchForwardPolarity !== burnedConfig.limitSwitchForwardPolarity;
+
+    // Reverse Polarity
+    const reversePolarityModified: boolean = motorConfig.limitSwitchReversePolarity !== burnedConfig.limitSwitchReversePolarity;
+
+    // Current Chop
+    const chopModified: boolean = motorConfig.currentChop !== burnedConfig.currentChop;
+
+    // Ramp Rate
+    const rampModified: boolean = motorConfig.rampRate !== burnedConfig.rampRate;
+
+    // Master ID
+    const masterModified: boolean = motorConfig.followerID !== burnedConfig.followerID;
+
     return (
       <div className="advanced">
         <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
@@ -105,7 +153,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Select Motor Type"
             labelFor="advanced-motor-type"
-            className="form-group-two-fifths"
+            className={(typeModified ? "modified" : "") + " form-group-two-fifths"}
           >
             <MotorTypeSelect
               activeConfig={activeMotorType}
@@ -123,14 +171,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Manual Limit"
             labelFor="advanced-current-limit"
-            className="form-group-fifth"
+            className={(currModified ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
           </FormGroup>
           <FormGroup
             label="CAN ID"
             labelFor="advanced-can-id"
-            className="form-group-fifth"
+            className={(canModified ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={0} max={24}/>
           </FormGroup>
@@ -139,14 +187,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Idle Mode"
             labelFor="advanced-idle-mode"
-            className="form-group-quarter"
+            className={(idleModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch checked={isCoastMode} disabled={!connected} label={isCoastMode ? "Coast" : "Brake"} onChange={this.changeIdleMode} />
           </FormGroup>
           <FormGroup
             label="Motor Deadband"
             labelFor="advanced-deadband"
-            className="form-group-three-quarters"
+            className={(deadbandModified ? "modified" : "") + " form-group-three-quarters"}
           >
             <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={1.0} stepSize={0.01} onChange={this.changeDeadband} />
           </FormGroup>
@@ -155,7 +203,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Select Sensor Type"
             labelFor="advanced-motor-type"
-            className="form-group-quarter"
+            className={(sensorModified ? "modified" : "") + " form-group-quarter"}
           >
             <SensorTypeSelect
               activeSensor={getSensorFromID(sensorType)}
@@ -166,21 +214,21 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Output Ratio"
             labelFor="advanced-can-id"
-            className="form-group-quarter"
+            className={(outputModified ? "modified" : "") + " form-group-quarter"}
           >
             <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeOutputRatio} min={0} max={24}/>
           </FormGroup>
           <FormGroup
             label="Forward Limit Switch Enabled"
             labelFor="advanced-is-slave"
-            className="form-group-quarter"
+            className={(forwardEnabledModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch checked={forwardLimitEnabled} disabled={!connected} label={forwardLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitEnabled} />
           </FormGroup>
           <FormGroup
             label="Reverse Limit Switch Enabled"
             labelFor="advanced-is-slave"
-            className="form-group-quarter"
+            className={(reverseEnabledModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch checked={reverseLimitEnabled} disabled={!connected} label={reverseLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitEnabled} />
           </FormGroup>
@@ -189,14 +237,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Forward Limit Switch Polarity"
             labelFor="advanced-is-slave"
-            className="form-group-quarter"
+            className={(forwardPolarityModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeForwardPolarity} />
           </FormGroup>
           <FormGroup
             label="Reverse Limit Switch Polarity"
             labelFor="advanced-is-slave"
-            className="form-group-quarter"
+            className={(reversePolarityModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeReversePolarity} />
           </FormGroup>
@@ -210,7 +258,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Current Value"
             labelFor="advanced-input-rate"
-            className="form-group-quarter"
+            className={(chopModified ? "modified" : "") + " form-group-quarter"}
           >
             <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentChop} min={0} max={1024}/>
           </FormGroup>
@@ -226,7 +274,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Rate (V/s)"
             labelFor="advanced-output-rate"
-            className="form-group-quarter"
+            className={(rampModified ? "modified" : "") + " form-group-quarter"}
           >
             <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024}/>
           </FormGroup>
@@ -240,7 +288,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Master ID"
             labelFor="advanced-master-id"
-            className="form-group-quarter"
+            className={(masterModified ? "modified" : "") + " form-group-quarter"}
           >
             <NumericInput id="advanced-master-id" value={masterID} disabled={!slaveMode} onValueChange={this.changeMasterID} min={0} max={24}/>
           </FormGroup>
@@ -364,18 +412,19 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   private updateConfiguration() {
-    console.log(this.props.motorConfig);
     this.setState({savingConfig: true});
-    SparkManager.setParamsFromConfig(this.props.motorConfig).then((res: any) => {
-      SparkManager.burnFlash().then((flashRes: any) => {
+    SparkManager.burnFlash().then(() => {
+      SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+        this.props.setCurrentConfig(config);
+        this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
         this.setState({savingConfig: false});
       }).catch((error: any) => {
-        this.setState({savingConfig: false});
         console.log(error);
+        this.setState({savingConfig: false});
       });
     }).catch((error: any) => {
-      console.log(error);
       this.setState({savingConfig: false});
+      console.log(error);
     });
   }
 
@@ -397,8 +446,16 @@ class AdvancedTab extends React.Component<IProps, IState> {
 export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
-    motorConfig: state.currentConfig
+    motorConfig: state.currentConfig,
+    burnedConfig: state.burnedConfig
   };
 }
 
-export default connect(mapStateToProps)(AdvancedTab);
+export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+  return {
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config))
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AdvancedTab);
