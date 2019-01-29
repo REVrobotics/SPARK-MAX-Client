@@ -3,14 +3,19 @@ import ReactEcharts from "echarts-for-react";
 import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState} from "../store/types";
+import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
 import SparkManager from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
 import PIDFProfile from "../models/PIDFProfile";
+import {Dispatch} from "redux";
+import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
 
 interface IProps {
   connected: boolean,
-  motorConfig: MotorConfiguration
+  motorConfig: MotorConfiguration,
+  burnedConfig: MotorConfiguration,
+  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig
 }
 
 interface IState {
@@ -359,8 +364,16 @@ class RunTab extends React.Component<IProps, IState> {
 export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
-    motorConfig: state.currentConfig
+    motorConfig: state.currentConfig,
+    burnedConfig: state.burnedConfig
   };
 }
 
-export default connect(mapStateToProps)(RunTab);
+export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+  return {
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config))
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RunTab);
