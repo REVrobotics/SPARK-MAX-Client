@@ -19,6 +19,7 @@ Bug fixes/patches:
 * Ramp rate has been changed to %/s (seconds to full speed)
 * Motor deadband slider now only goes to values 0 to 0.3
 * Client now waits for parameters from the SPARK Server before anything may be interacted with.
+* Fixed firmware update requiring recovery update for firmware versions 1.1.x
 
 ### v0.13.4 - 1/12/2019 - Added VC++ 2013 Installation
 Major/Breaking features:
