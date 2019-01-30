@@ -201,7 +201,7 @@ class SparkManager {
         config.hallOffset = values[9];
         config.polePairs = values[10];
         config.currentChop = values[11];
-        config.currentLimit = values[12];
+        config.currentChopCycles = values[12];
         config.controlProfiles[0].p = values[13];
         config.controlProfiles[0].i = values[14];
         config.controlProfiles[0].d = values[15];
@@ -244,6 +244,15 @@ class SparkManager {
         config.rampRate = values[56];
         config.followerID = values[57];
         config.followerConfig = values[58];
+        config.smartCurrentStallLimit = values[59];
+        config.smartCurrentFreeLimit = values[60];
+        config.smartCurrentConfig = values[61];
+        config.motorKv = values[63];
+        config.motorR = values[64];
+        config.motorL = values[65];
+        config.encoderCountsPerRevolution = values[69];
+        config.encoderAverageDepth = values[70];
+        config.encoderSampleDelta = values[71];
         resolve(config);
       }).catch((error: any) => {
         reject(error);
@@ -279,7 +288,7 @@ class SparkManager {
     values.push(await this.setParameter(9, config.hallOffset));
     values.push(await this.setParameter(10, config.polePairs));
     values.push(await this.setParameter(11, config.currentChop));
-    values.push(await this.setParameter(12, config.currentLimit));
+    values.push(await this.setParameter(12, config.currentChopCycles));
     if (typeof config.controlProfiles !== "undefined" && config.controlProfiles.length > 3) {
       values.push(await this.setParameter(13, config.controlProfiles[0].p));
       values.push(await this.setParameter(14, config.controlProfiles[0].i));

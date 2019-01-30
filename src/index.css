@@ -222,6 +222,16 @@ input:checked ~ .bp3-control-indicator {
     border: 1px solid rgba(243, 0, 0, 0.6);
 }
 
+.field-error > .bp3-slider-track > .bp3-slider-progress.bp3-intent-primary {
+    background-color: rgba(243, 0, 0, 0.6);
+}
+
+.field-error > .bp3-slider-handle {
+    outline: rgba(243, 0, 0, 0.6) auto 2px;
+    -webkit-box-shadow:0 0 0 1px #bd2700, 0 0 0 3px rgba(164, 39, 0, 0.3), inset 0 1px 1px rgba(146, 35, 0, 0.2);
+    box-shadow:0 0 0 1px #bd2700, 0 0 0 3px rgba(164, 39, 0, 0.3), inset 0 1px 1px rgba(146, 35, 0, 0.2);
+}
+
 .field-error > .bp3-input-group > input:focus {
     outline: rgba(243, 0, 0, 0.6) auto 2px;
     -webkit-box-shadow:0 0 0 1px #bd2700, 0 0 0 3px rgba(164, 39, 0, 0.3), inset 0 1px 1px rgba(146, 35, 0, 0.2);

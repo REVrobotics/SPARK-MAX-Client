@@ -15,7 +15,7 @@ export default class MotorConfiguration implements ISerializable {
   private _hallOffset: number;
   private _polePairs: number;
   private _currentChop: number;
-  private _currentLimit: number;
+  private _currentChopCycles: number;
   private _controlProfiles: PIDFProfile[];
   private _outputRatio: number;
   private _limitSwitchForwardPolarity: boolean;
@@ -50,7 +50,7 @@ export default class MotorConfiguration implements ISerializable {
     this._hallOffset = 0;
     this._polePairs = 0;
     this._currentChop = 0;
-    this._currentLimit = 0;
+    this._currentChopCycles = 0;
     this._type = motorType;
     this._controlProfiles = [];
     this._outputRatio = 0;
@@ -89,7 +89,7 @@ export default class MotorConfiguration implements ISerializable {
       hall_offset: this.hallOffset,
       pole_pairs: this.polePairs,
       current_chop: this.currentChop,
-      current_limit: this.currentLimit,
+      current_chop_cycles: this.currentChopCycles,
       control_profiles: this.controlProfiles.map((profile: PIDFProfile) => profile.toJSON()),
       output_ratio: this.outputRatio,
       limit_forward_polarity: this.limitSwitchForwardPolarity,
@@ -127,7 +127,7 @@ export default class MotorConfiguration implements ISerializable {
     config.hallOffset = json.hall_offset || 0;
     config.polePairs = json.pole_pairs || 0;
     config.currentChop = json.current_chop || 0;
-    config.currentLimit = json.current_limit || 0;
+    config.currentChopCycles = json.current_chop_cycles || 0;
     config.controlProfiles = typeof json.control_profiles !== "undefined" ? json.control_profiles.map((profile: any) => new PIDFProfile().fromJSON(profile)) : [];
     config.outputRatio = json.output_ratio || 0;
     config.limitSwitchForwardPolarity = json.limit_forward_polarity || true;
@@ -255,12 +255,12 @@ export default class MotorConfiguration implements ISerializable {
     this._currentChop = value;
   }
 
-  get currentLimit(): number {
-    return this._currentLimit;
+  get currentChopCycles(): number {
+    return this._currentChopCycles;
   }
 
-  set currentLimit(value: number) {
-    this._currentLimit = value;
+  set currentChopCycles(value: number) {
+    this._currentChopCycles = value;
   }
 
   get controlProfiles(): PIDFProfile[] {

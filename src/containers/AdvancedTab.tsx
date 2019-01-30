@@ -77,6 +77,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
   public componentDidMount(): void {
     if (this.props.connected) {
       this.changeMotorType(this.props.motorConfig.type === 1 ? REV_BRUSHLESS : REV_BRUSHED);
+      this.setState({currentChopEnabled: this.props.motorConfig.currentChop > 0});
     }
   }
 
@@ -88,14 +89,13 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public render() {
     const {connected, burnedConfig, motorConfig} = this.props;
-    const {currentLimitEnabled, inputRampLimit, currentChopEnabled,
-      rampRateEnabled, savingConfig, slaveMode,
-      updateRequested} = this.state;
+    const {currentChopEnabled, rampRateEnabled, savingConfig, slaveMode, updateRequested} = this.state;
     const activeMotorType = getMotorFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
     const sensorType = motorConfig.sensorType;
-    const currentLimit = motorConfig.currentLimit;
+    const currentChop = motorConfig.currentChop;
+    const currentChopCycles = motorConfig.currentChopCycles;
     const deadband = motorConfig.inputDeadband;
     const outputRatio = motorConfig.outputRatio;
     const rampRate = motorConfig.rampRate;
@@ -107,10 +107,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     // Motor Type
     const typeModified: boolean = motorConfig.type !== burnedConfig.type;
-
-    // Current Limit
-    const currModified: boolean = motorConfig.currentLimit !== burnedConfig.currentLimit;
-
     // Can ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
     const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
@@ -121,6 +117,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     // Motor Deadband
     const deadbandModified: boolean = motorConfig.inputDeadband.toFixed(4) !== burnedConfig.inputDeadband.toFixed(4);
+    const deadbandResponse: IServerResponse = this.getParamResponse(ConfigParameter.kInputDeadband);
+    const deadbandError: boolean = deadbandResponse.status === 4;
 
     // Sensor Type
     const sensorModified: boolean = motorConfig.sensorType !== burnedConfig.sensorType;
@@ -142,6 +140,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     // Current Chop
     const chopModified: boolean = motorConfig.currentChop !== burnedConfig.currentChop;
+    const chopResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCurrentChop);
+    const chopError: boolean = chopResponse.status === 4;
 
     // Ramp Rate
     const rampModified: boolean = motorConfig.rampRate !== burnedConfig.rampRate;
@@ -167,28 +167,35 @@ class AdvancedTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label="Current Limit"
+            label="Current Chop"
             labelFor="advanced-has-limit"
             className="form-group-fifth"
           >
-            <Switch checked={currentLimitEnabled} disabled={!connected} label={currentLimitEnabled ? "On" : "No Limit"} onChange={this.changeCurrentLimitEnabled} />
+            <Switch checked={currentChopEnabled} disabled={!connected} label={currentChopEnabled ? "On" : "No Limit"} onChange={this.changeCurrentLimitEnabled} />
           </FormGroup>
           <FormGroup
-            label="Manual Limit"
+            label={<PopoverHelp enabled={!chopError} title={"Chop Value"} content={`Your requested value of ${chopResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${chopResponse.responseValue}.`}/>}
             labelFor="advanced-current-limit"
-            className={(currModified ? "modified" : "") + " form-group-fifth"}
+            className={(chopModified ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
+            <NumericInput id="advanced-current-limit" value={currentChop} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} className={chopError ? "field-error" : ""} stepSize={0.5} min={10} max={125}/>
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
-            labelFor="advanced-can-id"
-            className={(canModified ? "modified" : "") + " form-group-fifth"}
+            label={"Chop Cycles"}
+            labelFor="advanced-chop-cycles-id"
+            className={"form-group-fifth"}
           >
-            <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={0} max={24} className={canError ? "field-error" : ""}/>
+            <NumericInput id="advanced-chop-cycles-id" disabled={!currentChopEnabled} value={currentChopCycles} min={0} max={100}/>
           </FormGroup>
         </div>
         <div className="form">
+          <FormGroup
+            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
+            labelFor="advanced-can-id"
+            className={(canModified ? "modified" : "") + " form-group-quarter"}
+          >
+            <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={0} max={24} className={canError ? "field-error" : ""}/>
+          </FormGroup>
           <FormGroup
             label="Idle Mode"
             labelFor="advanced-idle-mode"
@@ -197,11 +204,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <Switch checked={isCoastMode} disabled={!connected} label={isCoastMode ? "Coast" : "Brake"} onChange={this.changeIdleMode} />
           </FormGroup>
           <FormGroup
-            label="Motor Deadband"
+            label={<PopoverHelp enabled={!deadbandError} title={"Motor Deadband"} content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
             labelFor="advanced-deadband"
-            className={(deadbandModified ? "modified" : "") + " form-group-three-quarters"}
+            className={(deadbandModified ? "modified" : "") + " form-group-half"}
           >
-            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={1.0} stepSize={0.01} onChange={this.changeDeadband} />
+            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01} onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -214,6 +221,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
               activeSensor={getSensorFromID(sensorType)}
               connected={connected}
               onSensorSelect={this.changeSensorType}
+              disabled={motorConfig.type === 1}
             />
           </FormGroup>
           <FormGroup
@@ -253,20 +261,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
           >
             <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeReversePolarity} />
           </FormGroup>
-          <FormGroup
-            label="Current Chop"
-            labelFor="advanced-input-limit"
-            className="form-group-quarter"
-          >
-            <Switch checked={currentChopEnabled} disabled={!connected} label={currentChopEnabled ? "Enabled" : "Disabled"} onChange={this.changeCurrentChopEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Current Value"
-            labelFor="advanced-input-rate"
-            className={(chopModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <NumericInput id="advanced-input-rate" value={inputRampLimit} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentChop} min={0} max={1024}/>
-          </FormGroup>
         </div>
         <div className="form">
           <FormGroup
@@ -277,7 +271,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
           </FormGroup>
           <FormGroup
-            label="Rate (V/s)"
+            label="Rate (seconds to full speed)"
             labelFor="advanced-output-rate"
             className={(rampModified ? "modified" : "") + " form-group-quarter"}
           >
@@ -315,6 +309,9 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeMotorType(motorType: MotorConfiguration) {
     this.props.motorConfig.type = motorType.type;
+    if (motorType.type === 1) {
+      this.props.motorConfig.sensorType = 1;
+    }
     this.forceUpdate();
   }
 
@@ -324,12 +321,18 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeCurrentLimitEnabled() {
-    const newEnabled: boolean = !this.state.currentLimitEnabled;
+    const newEnabled: boolean = !this.state.currentChopEnabled;
     if (!newEnabled) {
-      this.props.motorConfig.currentLimit = 0;
-      this.forceUpdate();
+      SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, 0).then((chopRes: IServerResponse) => {
+        this.props.motorConfig.currentChop = chopRes.responseValue as number;
+        this.props.paramResponses[ConfigParameter.kCurrentChop] = chopRes;
+        SparkManager.setAndGetParameter(ConfigParameter.kCurrentChopCycles, 0).then((chopCycleRes: IServerResponse) => {
+          this.props.motorConfig.currentChopCycles = chopCycleRes.responseValue as number;
+          this.props.paramResponses[ConfigParameter.kCurrentChopCycles] = chopCycleRes;
+        });
+      });
     }
-    this.setState({currentLimitEnabled: newEnabled});
+    this.setState({currentChopEnabled: newEnabled});
   }
 
   public changeIdleMode() {
@@ -339,13 +342,20 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeCurrentLimit(value: number) {
-    this.props.motorConfig.currentLimit = value;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, value).then((res: IServerResponse) => {
+      this.props.motorConfig.currentChop = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kCurrentChop] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeDeadband(value: number) {
-    this.props.motorConfig.inputDeadband = value;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kInputDeadband, value).then((res: IServerResponse) => {
+      this.props.motorConfig.inputDeadband = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kInputDeadband] = res;
+      console.log(res);
+      this.forceUpdate();
+    });
   }
 
   public changeForwardLimitEnabled() {
@@ -396,7 +406,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeRampRate(value: number) {
-    this.props.motorConfig.rampRate = value;
+    this.props.motorConfig.rampRate = 1 / value;
     this.forceUpdate();
   }
 

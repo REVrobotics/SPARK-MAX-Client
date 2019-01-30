@@ -20,14 +20,15 @@ const renderer = (sensor: Sensor, itemProps: IItemRendererProps) => {
 
 interface IProps {
   activeSensor: Sensor
-  connected: boolean
+  connected: boolean,
+  disabled?: boolean,
   onSensorSelect: (sensorType: Sensor) => void
 }
 
 export const SensorTypeSelect: React.SFC<IProps> = (props) => {
   return (
     <SensorSelect filterable={false} items={defaultItems} itemRenderer={renderer} onItemSelect={props.onSensorSelect}>
-      <Button fill={true} disabled={!props.connected} text={props.activeSensor.name} rightIcon="double-caret-vertical" />
+      <Button fill={true} disabled={!props.connected || props.disabled} text={props.activeSensor.name} rightIcon="double-caret-vertical" />
     </SensorSelect>
   );
 };

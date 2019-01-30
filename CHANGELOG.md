@@ -5,15 +5,20 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v0.14.0* - 1/27/2019 - Updated SPARK MAX Server Executable
+### v1.0.0* - 1/29/2019 - Updated SPARK MAX Server Executable and Major UI improvements
 Major/Breaking features:
-* _None_
+* Updated SPARK Server executable and Command/Types protocol buffers.
 
 Minor features:
-* _None_
+* MotorConfiguration class can now be completely serialized/deserialized into JSON format.
+* All text fields now provide real-time feedback in terms of their validity to the SPARK Server
+* Invalid fields will reveal a blinking question circle. Hover over it to see why the value is invalid.
+* In brushless mode, only the 'Hall Effect' sensor may be selected, and will default when brushless is selected.
 
 Bug fixes/patches:
-* Updated SPARK MAX Server to v0.1.131
+* Ramp rate has been changed to %/s (seconds to full speed)
+* Motor deadband slider now only goes to values 0 to 0.3
+* Client now waits for parameters from the SPARK Server before anything may be interacted with.
 
 ### v0.13.4 - 1/12/2019 - Added VC++ 2013 Installation
 Major/Breaking features:

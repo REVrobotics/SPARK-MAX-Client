@@ -61,7 +61,7 @@ class BasicTab extends React.Component<IProps, IState> {
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
-    const currentLimit = motorConfig.currentLimit;
+    const currentLimit = motorConfig.currentChop;
 
     // Motor Type
     const typeModified: boolean = motorConfig.type !== burnedConfig.type;
@@ -75,7 +75,7 @@ class BasicTab extends React.Component<IProps, IState> {
     const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
 
     // Current
-    const currModified: boolean = motorConfig.currentLimit !== burnedConfig.currentLimit;
+    const currModified: boolean = motorConfig.currentChop !== burnedConfig.currentChop;
 
     return (
       <div>
@@ -132,7 +132,7 @@ class BasicTab extends React.Component<IProps, IState> {
         </div>
         <div className="form">
           <FormGroup
-            label="Current Limit"
+            label="Current Chop"
             inline={true}
             className={currModified ? "modified" : ""}
           >
@@ -191,7 +191,7 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeCurrentLimit(value: any) {
-    this.props.motorConfig.currentLimit = parseInt(value.currentTarget.value, 10);
+    this.props.motorConfig.currentChop = parseInt(value.currentTarget.value, 10);
     this.forceUpdate();
   }
 
