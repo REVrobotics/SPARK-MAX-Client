@@ -489,18 +489,25 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   private updateConfiguration() {
     this.setState({savingConfig: true});
-    SparkManager.burnFlash().then(() => {
-      SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-        this.props.setCurrentConfig(config);
-        this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-        this.setState({savingConfig: false});
+    SparkManager.setParamsFromConfig(this.props.motorConfig).then(() => {
+      SparkManager.burnFlash().then(() => {
+        setTimeout(() => {
+          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+            this.props.setCurrentConfig(config);
+            this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+            this.setState({savingConfig: false});
+          }).catch((error: any) => {
+            console.log(error);
+            this.setState({savingConfig: false});
+          });
+        }, 1000);
       }).catch((error: any) => {
-        console.log(error);
         this.setState({savingConfig: false});
+        console.log(error);
       });
     }).catch((error: any) => {
-      this.setState({savingConfig: false});
       console.log(error);
+      this.setState({savingConfig: false});
     });
   }
 
