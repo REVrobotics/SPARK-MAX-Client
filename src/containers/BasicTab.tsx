@@ -4,15 +4,19 @@ import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {IApplicationState} from "../store/types";
+import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
 import {ConfigParameter} from "../models/ConfigParameter";
 import PopoverHelp from "../components/PopoverHelp";
+import {Dispatch} from "redux";
+import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
 
 interface IProps {
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
-  paramResponses: IServerResponse[]
+  paramResponses: IServerResponse[],
+  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
 }
 
 interface IState {
@@ -59,10 +63,19 @@ class BasicTab extends React.Component<IProps, IState> {
     const isCoastMode = motorConfig.idleMode === 0;
     const currentLimit = motorConfig.currentLimit;
 
+    // Motor Type
+    const typeModified: boolean = motorConfig.type !== burnedConfig.type;
+
     // CAN ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
     const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
     const canError: boolean = canResponse.status === 4;
+
+    // Idle Mode
+    const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
+
+    // Current
+    const currModified: boolean = motorConfig.currentLimit !== burnedConfig.currentLimit;
 
     return (
       <div>
@@ -81,7 +94,7 @@ class BasicTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Select Motor Type"
             labelFor="basic-motor-type"
-            className="form-group-half"
+            className={(typeModified ? "modified" : "") + " form-group-half"}
           >
             <MotorTypeSelect
               activeConfig={activeMotorType}
@@ -107,7 +120,7 @@ class BasicTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Idle Mode"
             labelFor="basic-idle-mode"
-            className="form-group-quarter"
+            className={(idleModified ? "modified" : "") + " form-group-quarter"}
           >
             <Switch
               checked={isCoastMode}
@@ -121,6 +134,7 @@ class BasicTab extends React.Component<IProps, IState> {
           <FormGroup
             label="Current Limit"
             inline={true}
+            className={currModified ? "modified" : ""}
           >
             <RadioGroup
               inline={true}
@@ -192,7 +206,14 @@ class BasicTab extends React.Component<IProps, IState> {
   private updateConfiguration() {
     this.setState({savingConfig: true});
     SparkManager.burnFlash().then(() => {
-      this.setState({savingConfig: false});
+      SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+        this.props.setCurrentConfig(config);
+        this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+        this.setState({savingConfig: false});
+      }).catch((error: any) => {
+        console.log(error);
+        this.setState({savingConfig: false});
+      });
     }).catch((error: any) => {
       this.setState({savingConfig: false});
       console.log(error);
@@ -209,4 +230,11 @@ export function mapStateToProps(state: IApplicationState) {
   };
 }
 
-export default connect(mapStateToProps)(BasicTab);
+export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+  return {
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(BasicTab);
