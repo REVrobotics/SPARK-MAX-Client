@@ -2,15 +2,19 @@ import {Alert, Button, FormGroup, NumericInput, Slider, Switch} from "@blueprint
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
-import SparkManager from "../managers/SparkManager";
+import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS, getFromID as getMotorFromID} from "../models/MotorConfiguration";
 import {IApplicationState} from "../store/types";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
+import {ConfigParameter} from "../models/ConfigParameter";
+import PopoverHelp from "../components/PopoverHelp";
 
 interface IProps {
   connected: boolean,
-  motorConfig: MotorConfiguration
+  motorConfig: MotorConfiguration,
+  burnedConfig: MotorConfiguration,
+  paramResponses: IServerResponse[]
 }
 
 interface IState {
@@ -79,7 +83,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected, motorConfig} = this.props;
+    const {connected, burnedConfig, motorConfig} = this.props;
     const {currentLimitEnabled, inputRampLimit, currentChopEnabled,
       rampRateEnabled, savingConfig, slaveMode,
       updateRequested} = this.state;
@@ -96,6 +100,12 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const reverseLimitEnabled = motorConfig.hardLimitSwitchReverseEnabled;
     const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
     const reversePolarity = motorConfig.limitSwitchReversePolarity;
+
+    // CAN ID
+    const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
+    const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
+    const canError: boolean = canResponse.status === 4;
+
     return (
       <div className="advanced">
         <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
@@ -128,11 +138,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <NumericInput id="advanced-current-limit" value={currentLimit} disabled={!currentLimitEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} stepSize={0.5} min={0} max={100}/>
           </FormGroup>
           <FormGroup
-            label="CAN ID"
+            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
             labelFor="advanced-can-id"
-            className="form-group-fifth"
+            className={(canModified ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={0} max={24}/>
+            <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={0} max={24} className={canError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -253,8 +263,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeCanID(id: number) {
-    this.props.motorConfig.canID = id;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
+      this.props.motorConfig.canID = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kCanID] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeMotorType(motorType: MotorConfiguration) {
@@ -392,12 +405,22 @@ class AdvancedTab extends React.Component<IProps, IState> {
       event.target.value = "0.0";
     }
   }
+
+  private getParamResponse(id: number): IServerResponse {
+    if (typeof this.props.paramResponses[id] !== "undefined") {
+      return this.props.paramResponses[id];
+    } else {
+      return {requestValue: "", responseValue: "", status: 0, type: 0};
+    }
+  }
 }
 
 export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
-    motorConfig: state.currentConfig
+    motorConfig: state.currentConfig,
+    burnedConfig: state.burnedConfig,
+    paramResponses: state.paramResponses
   };
 }
 

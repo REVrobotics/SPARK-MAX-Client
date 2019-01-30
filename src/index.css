@@ -240,6 +240,7 @@ input:checked ~ .bp3-control-indicator {
 
 .popover-icon {
     margin-left: 5px;
+    animation: blink 2s infinite;
 }
 
 .popover-popover {
@@ -247,4 +248,10 @@ input:checked ~ .bp3-control-indicator {
     z-index: 99;
     max-width: 250px;
     background-color: #ffffff;
+}
+
+@keyframes blink {
+    0%   { opacity: 1; }
+    40%  { opacity: 0; }
+    80%  { opacity: 1; }
 }
