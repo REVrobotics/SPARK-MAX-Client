@@ -3,7 +3,11 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS, getFromID as getMotorFromID} from "../models/MotorConfiguration";
+import MotorConfiguration, {
+  getFromID as getMotorFromID,
+  REV_BRUSHED,
+  REV_BRUSHLESS
+} from "../models/MotorConfiguration";
 import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
@@ -56,10 +60,13 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.changeCanID = this.changeCanID.bind(this);
     this.changeCurrentLimitEnabled = this.changeCurrentLimitEnabled.bind(this);
     this.changeIdleMode = this.changeIdleMode.bind(this);
-    this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
+    this.changeCurrentChop = this.changeCurrentChop.bind(this);
+    this.changeCurrentChopCycles = this.changeCurrentChopCycles.bind(this);
     this.changeDeadband = this.changeDeadband.bind(this);
-    this.changeForwardLimitEnabled = this.changeForwardLimitEnabled.bind(this);
-    this.changeReverseLimitEnabled = this.changeReverseLimitEnabled.bind(this);
+    this.changeForwardLimitHardEnabled = this.changeForwardLimitHardEnabled.bind(this);
+    this.changeReverseLimitHardEnabled = this.changeReverseLimitHardEnabled.bind(this);
+    this.changeForwardLimitSoftEnabled = this.changeForwardLimitSoftEnabled.bind(this);
+    this.changeReverseLimitSoftEnabled = this.changeReverseLimitSoftEnabled.bind(this);
     this.changeForwardPolarity = this.changeForwardPolarity.bind(this);
     this.changeReversePolarity = this.changeReversePolarity.bind(this);
     this.changeSlaveMode = this.changeSlaveMode.bind(this);
@@ -100,13 +107,16 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const outputRatio = motorConfig.outputRatio;
     const rampRate = motorConfig.rampRate;
     const masterID = motorConfig.followerID;
-    const forwardLimitEnabled = motorConfig.hardLimitSwitchForwardEnabled;
-    const reverseLimitEnabled = motorConfig.hardLimitSwitchReverseEnabled;
+    const forwardLimitHardEnabled = motorConfig.hardLimitSwitchForwardEnabled;
+    const reverseLimitHardEnabled = motorConfig.hardLimitSwitchReverseEnabled;
+    const forwardLimitSoftEnabled = motorConfig.softLimitSwitchForwardEnabled;
+    const reverseLimitSoftEnabled = motorConfig.softLimitSwitchReverseEnabled;
     const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
     const reversePolarity = motorConfig.limitSwitchReversePolarity;
 
     // Motor Type
     const typeModified: boolean = motorConfig.type !== burnedConfig.type;
+
     // Can ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
     const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
@@ -125,12 +135,16 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
     // Output Ratio
     const outputModified: boolean = motorConfig.outputRatio !== burnedConfig.outputRatio;
+    const outputResponse: IServerResponse = this.getParamResponse(ConfigParameter.kOutputRatio);
+    const outputError: boolean = outputResponse.status === 4;
 
     // Forward Limit Switch
-    const forwardEnabledModified: boolean = motorConfig.hardLimitSwitchForwardEnabled !== burnedConfig.hardLimitSwitchForwardEnabled;
+    const forwardEnabledHardModified: boolean = motorConfig.hardLimitSwitchForwardEnabled !== burnedConfig.hardLimitSwitchForwardEnabled;
+    const forwardEnabledSoftModified: boolean = motorConfig.softLimitSwitchForwardEnabled !== burnedConfig.softLimitSwitchForwardEnabled;
 
     // Reverse Limit Switch
-    const reverseEnabledModified: boolean = motorConfig.hardLimitSwitchReverseEnabled !== burnedConfig.hardLimitSwitchReverseEnabled;
+    const reverseEnabledHardModified: boolean = motorConfig.hardLimitSwitchReverseEnabled !== burnedConfig.hardLimitSwitchReverseEnabled;
+    const reverseEnabledSoftModified: boolean = motorConfig.softLimitSwitchReverseEnabled !== burnedConfig.softLimitSwitchReverseEnabled;
 
     // Forward Polarity
     const forwardPolarityModified: boolean = motorConfig.limitSwitchForwardPolarity !== burnedConfig.limitSwitchForwardPolarity;
@@ -143,8 +157,15 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const chopResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCurrentChop);
     const chopError: boolean = chopResponse.status === 4;
 
+    // Current Chop Cycles
+    const chopCyclesModified: boolean = motorConfig.currentChopCycles !== burnedConfig.currentChopCycles;
+    const chopCyclesResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCurrentChopCycles);
+    const chopCyclesError: boolean = chopCyclesResponse.status === 4;
+
     // Ramp Rate
     const rampModified: boolean = motorConfig.rampRate !== burnedConfig.rampRate;
+    const rampResponse: IServerResponse = this.getParamResponse(ConfigParameter.kRampRate);
+    const rampError: boolean = rampResponse.status === 4;
 
     // Master ID
     const masterModified: boolean = motorConfig.followerID !== burnedConfig.followerID;
@@ -178,14 +199,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-current-limit"
             className={(chopModified ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="advanced-current-limit" value={currentChop} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentLimit} className={chopError ? "field-error" : ""} stepSize={0.5} min={10} max={125}/>
+            <NumericInput id="advanced-current-limit" value={currentChop} disabled={!currentChopEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeCurrentChop} className={chopError ? "field-error" : ""} stepSize={0.5} min={10} max={125}/>
           </FormGroup>
           <FormGroup
-            label={"Chop Cycles"}
+            label={<PopoverHelp enabled={!chopCyclesError} title={"Chop Cycles"} content={`Your requested value of ${chopCyclesResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${chopCyclesResponse.responseValue}.`}/>}
             labelFor="advanced-chop-cycles-id"
-            className={"form-group-fifth"}
+            className={(chopCyclesModified ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="advanced-chop-cycles-id" disabled={!currentChopEnabled} value={currentChopCycles} min={0} max={100}/>
+            <NumericInput id="advanced-chop-cycles-id" disabled={!currentChopEnabled} value={currentChopCycles} onValueChange={this.changeCurrentChopCycles} min={0} max={100} className={chopCyclesError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -225,25 +246,25 @@ class AdvancedTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label="Output Ratio"
+            label={<PopoverHelp enabled={!outputError} title={"Output Ratio"} content={`Your requested value of ${outputResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${outputResponse.responseValue}.`}/>}
             labelFor="advanced-can-id"
             className={(outputModified ? "modified" : "") + " form-group-quarter"}
           >
-            <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeOutputRatio} min={0} max={24}/>
+            <NumericInput id="advanced-can-id" disabled={!connected} value={outputRatio} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeOutputRatio} min={0} max={24} className={outputError ? "field-error" : ""}/>
           </FormGroup>
           <FormGroup
-            label="Forward Limit Switch Enabled"
+            label="Forward Limit Switch (Hard)"
             labelFor="advanced-is-slave"
-            className={(forwardEnabledModified ? "modified" : "") + " form-group-quarter"}
+            className={(forwardEnabledHardModified ? "modified" : "") + " form-group-quarter"}
           >
-            <Switch checked={forwardLimitEnabled} disabled={!connected} label={forwardLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitEnabled} />
+            <Switch checked={forwardLimitHardEnabled} disabled={!connected} label={forwardLimitHardEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitHardEnabled} />
           </FormGroup>
           <FormGroup
-            label="Reverse Limit Switch Enabled"
+            label="Reverse Limit Switch (Hard)"
             labelFor="advanced-is-slave"
-            className={(reverseEnabledModified ? "modified" : "") + " form-group-quarter"}
+            className={(reverseEnabledHardModified ? "modified" : "") + " form-group-quarter"}
           >
-            <Switch checked={reverseLimitEnabled} disabled={!connected} label={reverseLimitEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitEnabled} />
+            <Switch checked={reverseLimitHardEnabled} disabled={!connected} label={reverseLimitHardEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitHardEnabled} />
           </FormGroup>
         </div>
         <div className="form">
@@ -261,6 +282,20 @@ class AdvancedTab extends React.Component<IProps, IState> {
           >
             <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeReversePolarity} />
           </FormGroup>
+          <FormGroup
+            label="Forward Limit Switch (Soft)"
+            labelFor="advanced-is-slave"
+            className={(forwardEnabledSoftModified ? "modified" : "") + " form-group-quarter"}
+          >
+            <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label={forwardLimitSoftEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitSoftEnabled} />
+          </FormGroup>
+          <FormGroup
+            label="Reverse Limit Switch (Soft)"
+            labelFor="advanced-is-slave"
+            className={(reverseEnabledSoftModified ? "modified" : "") + " form-group-quarter"}
+          >
+            <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label={reverseLimitSoftEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitSoftEnabled} />
+          </FormGroup>
         </div>
         <div className="form">
           <FormGroup
@@ -271,11 +306,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
           </FormGroup>
           <FormGroup
-            label="Rate (seconds to full speed)"
+            label={<PopoverHelp enabled={!rampError} title={"Rate (seconds to full speed)"} content={`Your requested value of ${rampResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${rampResponse.responseValue}.`}/>}
             labelFor="advanced-output-rate"
             className={(rampModified ? "modified" : "") + " form-group-quarter"}
           >
-            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024}/>
+            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024} className={rampError ? "field-error" : ""}/>
           </FormGroup>
           <FormGroup
             label="Slave Mode"
@@ -292,8 +327,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
             <NumericInput id="advanced-master-id" value={masterID} disabled={!slaveMode} onValueChange={this.changeMasterID} min={0} max={24}/>
           </FormGroup>
         </div>
-        <div className="form">
-          <Button className="rev-btn" disabled={!connected} loading={savingConfig} onClick={this.openConfirmModal}>Update Configuration</Button>
+        <div className="form update-container">
+          <Button className="rev-btn" disabled={!connected} loading={savingConfig} onClick={this.openConfirmModal}>Save Configuration</Button>
         </div>
       </div>
     );
@@ -341,10 +376,18 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.forceUpdate();
   }
 
-  public changeCurrentLimit(value: number) {
+  public changeCurrentChop(value: number) {
     SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, value).then((res: IServerResponse) => {
       this.props.motorConfig.currentChop = res.responseValue as number;
       this.props.paramResponses[ConfigParameter.kCurrentChop] = res;
+      this.forceUpdate();
+    });
+  }
+
+  public changeCurrentChopCycles(value: number) {
+    SparkManager.setAndGetParameter(ConfigParameter.kCurrentChopCycles, value).then((res: IServerResponse) => {
+      this.props.motorConfig.currentChopCycles = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kCurrentChopCycles] = res;
       this.forceUpdate();
     });
   }
@@ -358,13 +401,23 @@ class AdvancedTab extends React.Component<IProps, IState> {
     });
   }
 
-  public changeForwardLimitEnabled() {
+  public changeForwardLimitHardEnabled() {
     this.props.motorConfig.hardLimitSwitchForwardEnabled = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
     this.forceUpdate();
   }
 
-  public changeReverseLimitEnabled() {
+  public changeReverseLimitHardEnabled() {
     this.props.motorConfig.hardLimitSwitchReverseEnabled = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
+    this.forceUpdate();
+  }
+
+  public changeForwardLimitSoftEnabled() {
+    this.props.motorConfig.softLimitSwitchForwardEnabled = !this.props.motorConfig.softLimitSwitchForwardEnabled;
+    this.forceUpdate();
+  }
+
+  public changeReverseLimitSoftEnabled() {
+    this.props.motorConfig.softLimitSwitchReverseEnabled = !this.props.motorConfig.softLimitSwitchReverseEnabled;
     this.forceUpdate();
   }
 
@@ -400,14 +453,24 @@ class AdvancedTab extends React.Component<IProps, IState> {
   public changeRampRateEnabled() {
     const newEnabled: boolean = !this.state.rampRateEnabled;
     if (!newEnabled) {
-      this.props.motorConfig.rampRate = 0;
+      SparkManager.setAndGetParameter(ConfigParameter.kRampRate, 0).then((res: IServerResponse) => {
+        this.props.motorConfig.rampRate = res.responseValue as number;
+        this.props.paramResponses[ConfigParameter.kRampRate] = res;
+        this.forceUpdate();
+      });
     }
     this.setState({rampRateEnabled: newEnabled});
   }
 
   public changeRampRate(value: number) {
-    this.props.motorConfig.rampRate = 1 / value;
-    this.forceUpdate();
+    if (value > 0) {
+      value = 1 / value;
+    }
+    SparkManager.setAndGetParameter(ConfigParameter.kRampRate, value).then((res: IServerResponse) => {
+      this.props.motorConfig.rampRate = (res.responseValue as number) * 100;
+      this.props.paramResponses[ConfigParameter.kRampRate] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeCurrentChopEnabled() {
@@ -419,14 +482,12 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.setState({currentChopEnabled: newEnabled});
   }
 
-  public changeCurrentChop(value: number) {
-    this.props.motorConfig.currentChop = value;
-    this.forceUpdate();
-  }
-
   public changeOutputRatio(value: number) {
-    this.props.motorConfig.outputRatio = value;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kOutputRatio, value).then((res: IServerResponse) => {
+      this.props.motorConfig.outputRatio = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kOutputRatio] = res;
+      this.forceUpdate();
+    });
   }
 
   private updateConfiguration() {
