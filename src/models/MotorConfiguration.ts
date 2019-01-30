@@ -137,7 +137,7 @@ export default class MotorConfiguration implements ISerializable {
     config.softLimitSwitchForwardEnabled = json.soft_limit_forward_enabled || false;
     config.softLimitSwitchReverseEnabled = json.soft_limit_reverse_enabled || false;
     config.rampRate = json.ramp_rate || 0;
-    config.followerID = json.follower_id || -1;
+    config.followerID = json.follower_id;
     config.followerConfig = json.follower_config || "";
     config.smartCurrentStallLimit = json.smart_current_stall_limit || 80;
     config.smartCurrentFreeLimit = json.smart_current_free_limit || 0;

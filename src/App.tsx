@@ -11,7 +11,7 @@ import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
 // import SettingsTab from "./containers/SettingsTab";
 import SparkManager, {IServerResponse} from "./managers/SparkManager";
-import MotorConfiguration from "./models/MotorConfiguration";
+import MotorConfiguration, {REV_BRUSHLESS} from "./models/MotorConfiguration";
 import {
   addLog,
   setBurnedMotorConfig,
@@ -57,14 +57,19 @@ class App extends React.Component<IProps> {
     this.props.updateConnectionStatus(false, "SEARCHING...");
     this.props.setIsConnecting(true);
     SparkManager.discoverAndConnect().then((device: string) => {
-      this.props.updateConnectionStatus(true, "CONNECTED");
-      this.props.setIsConnecting(false);
+      this.props.updateConnectionStatus(false, "GETTING PARAMETERS...");
       this.props.setConnectedDevice(device);
-      SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-        this.props.setCurrentConfig(config);
-        this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-        this.checkForFirmwareUpdate();
-      });
+      setTimeout(() => {
+        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+          this.props.updateConnectionStatus(true, "CONNECTED");
+          this.props.setIsConnecting(false);
+          this.props.setCurrentConfig(config);
+          const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
+          this.props.setBurnedConfig(burn);
+          console.log(config.followerID, config.toJSON());
+          this.checkForFirmwareUpdate();
+        });
+      }, 1000);
     }).catch((error: any) => {
       this.props.updateConnectionStatus(false, "CONNECTION FAILED");
       this.props.setIsConnecting(false);
@@ -73,6 +78,9 @@ class App extends React.Component<IProps> {
     SparkManager.onDisconnect(() => {
       this.props.updateConnectionStatus(false, "DISCONNECTED");
       this.props.setConnectedDevice("");
+      this.props.setParamResponses([]);
+      this.props.setCurrentConfig(REV_BRUSHLESS);
+      this.props.setBurnedConfig(REV_BRUSHLESS);
     });
   }
 

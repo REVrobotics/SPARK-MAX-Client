@@ -209,12 +209,12 @@ input:checked ~ .bp3-control-indicator {
     margin-top: 15px;
 }
 
-.modified {
+.modified > label {
     font-style: italic;
     font-weight: bold;
 }
 
-.modified > label > div > span:first-child::after {
+.modified > label > div > span:first-child::after, .modified > label > span:first-child::after {
     content: '*';
 }
 

@@ -17,7 +17,7 @@ class PopoverHelp extends React.Component<IProps> {
     const disabled = typeof enabled !== "undefined" ? enabled : false;
     return (
       <div className="popover-container">
-        <span>{title}</span>
+        <span className="popover-title">{title}</span>
         {
           !disabled &&
           <Popover

@@ -120,7 +120,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
     const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
 
     // Motor Deadband
-    const deadbandModified: boolean = motorConfig.inputDeadband !== burnedConfig.inputDeadband;
+    const deadbandModified: boolean = motorConfig.inputDeadband.toFixed(4) !== burnedConfig.inputDeadband.toFixed(4);
 
     // Sensor Type
     const sensorModified: boolean = motorConfig.sensorType !== burnedConfig.sensorType;

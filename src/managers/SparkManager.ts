@@ -235,8 +235,8 @@ class SparkManager {
         config.controlProfiles[3].minOutput = values[43];
         config.controlProfiles[3].maxOutput = values[44];
         config.outputRatio = values[46];
-        config.limitSwitchForwardPolarity = values[50];
-        config.limitSwitchReversePolarity = values[51];
+        config.limitSwitchForwardPolarity = values[50] === 0;
+        config.limitSwitchReversePolarity = values[51] === 0;
         config.hardLimitSwitchForwardEnabled = values[52] === 1;
         config.hardLimitSwitchReverseEnabled = values[53] === 1;
         config.softLimitSwitchForwardEnabled = values[54] === 1;
