@@ -132,6 +132,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
             if (firmwareJSON.firmware) {
               for (const firmware of firmwareJSON.firmware) {
                 if (firmware.spec === "Recovery Update Required") {
+                  console.log(this.isOldFirmware("1.1.480", firmware.version));
                   if (this.isOldFirmware(version, firmware.version)) {
                     resolve(true);
                   } else {
@@ -230,8 +231,10 @@ class FirmwareTab extends React.Component<IProps, IState> {
       return true;
     } else if (curMinor < othMinor) {
       return true;
+    } else if (curBuild < othBuild) {
+      return true;
     } else {
-      return curBuild < othBuild;
+      return false;
     }
   }
 }

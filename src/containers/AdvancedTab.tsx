@@ -463,11 +463,8 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeRampRate(value: number) {
-    if (value > 0) {
-      value = 1 / value;
-    }
     SparkManager.setAndGetParameter(ConfigParameter.kRampRate, value).then((res: IServerResponse) => {
-      this.props.motorConfig.rampRate = (res.responseValue as number) * 100;
+      this.props.motorConfig.rampRate = (res.responseValue as number);
       this.props.paramResponses[ConfigParameter.kRampRate] = res;
       this.forceUpdate();
     });
