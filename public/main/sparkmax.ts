@@ -2,13 +2,15 @@ import {ChildProcess, execFile} from "child_process";
 import {app, BrowserWindow, DownloadItem, dialog, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
+
 import SparkServer from "./sparkmax-server";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
+const opn = require("opn");
 
 const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
-const isProd = true;
+const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -230,4 +232,8 @@ ipcMain.on("download", (event: any, url: string) => {
       });
     }
   });
+});
+
+ipcMain.on("open-url", (event: any, url: string) => {
+  opn(url);
 });

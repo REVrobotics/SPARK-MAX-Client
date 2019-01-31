@@ -39,6 +39,9 @@ class HelpTab extends React.Component<IProps, IState> {
     this.onProgressUpdate = this.onProgressUpdate.bind(this);
     this.quitAndUpdate = this.quitAndUpdate.bind(this);
     this.checkForUpdates = this.checkForUpdates.bind(this);
+    this.openJavaDocs = this.openJavaDocs.bind(this);
+    this.openCppDocs = this.openCppDocs.bind(this);
+    this.openSamples = this.openSamples.bind(this);
   }
 
   public render() {
@@ -91,6 +94,14 @@ class HelpTab extends React.Component<IProps, IState> {
             <li>Make sure you're using the latest version of the SPARK MAX Client.</li>
             <li>Contact <a href="mailto:support@revrobotics.com">support@revrobotics.com</a></li>
           </ol>
+        </div>
+        <div>
+          <h2>Documentation</h2>
+          <ul>
+            <li><a href={"#"} onClick={this.openJavaDocs}>SPARK MAX Java API</a></li>
+            <li><a href={"#"} onClick={this.openCppDocs}>SPARK MAX C++ API</a></li>
+            <li><a href={"#"} onClick={this.openSamples}>SPARK MAX Code Samples</a></li>
+          </ul>
         </div>
         <div className="form">
           <Button className="rev-btn" onClick={this.viewLogs}>View Application Logs</Button>
@@ -154,6 +165,18 @@ class HelpTab extends React.Component<IProps, IState> {
     setTimeout(() => {
       SparkManager.installUpdate();
     }, 500);
+  }
+
+  private openJavaDocs() {
+    SparkManager.openURL("http://www.revrobotics.com/content/sw/max/sw-docs/java/com/revrobotics/package-summary.html");
+  }
+
+  private openCppDocs() {
+    SparkManager.openURL("http://www.revrobotics.com/content/sw/max/sw-docs/cpp/index.html");
+  }
+
+  private openSamples() {
+    SparkManager.openURL("https://github.com/REVrobotics/SPARK-MAX-Examples");
   }
 
 }

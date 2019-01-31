@@ -62,6 +62,10 @@ class SparkManager {
     return remote.app.getVersion();
   }
 
+  public openURL(url: string) {
+    ipcRenderer.send("open-url", url);
+  }
+
   public discoverAndConnect(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.listDevices().then((devices: string[]) => {
