@@ -106,10 +106,6 @@ function createWindow() {
    * also want to kill that process we started to prevent any memory leaks or possible operating system slowdown.
    */
   mainWindow.on("closed", () => {
-    setTimeout(() => {
-      ipcMain.emit("kill-server");
-    }, 250);
-
     // De-referencing our window object.
     (mainWindow as any) = null;
   });
@@ -121,7 +117,10 @@ app.on("ready", createWindow);
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    app.quit();
+    setTimeout(() => {
+      app.quit();
+      ipcMain.emit("kill-server");
+    }, 250);
   }
 });
 

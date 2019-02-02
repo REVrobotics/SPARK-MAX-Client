@@ -39,7 +39,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
     this.state = {
       firmwareVersion: "NOT CONNECTED",
       firmwarePath: "",
-      outputText: ["Please connect to a device to see it's firmware."],
+      outputText: ["[INFO] Please connect to a device to see it's firmware."],
       loadingFirmware: false,
       recoveryRequired: false
     };
@@ -54,13 +54,15 @@ class FirmwareTab extends React.Component<IProps, IState> {
   public componentDidMount(): void {
     if (this.props.connected) {
       this.setState({
-        outputText: [...this.state.outputText, "Connected. Loading firmware version..."]
+        outputText: [...this.state.outputText, "[INFO] Connected. Loading firmware version..."]
       });
+      this.scrollToBottom();
       SparkManager.getFirmware().then((response: any) => {
         this.setState({
-          outputText: [...this.state.outputText, "Current firmware version: " + response.version],
+          outputText: [...this.state.outputText, "[INFO] Current firmware version: " + response.version],
           firmwareVersion: response.version
         });
+        this.scrollToBottom();
       });
     }
   }
@@ -93,11 +95,13 @@ class FirmwareTab extends React.Component<IProps, IState> {
       this.props.setIsConnecting(true);
       this.props.updateConnectionStatus(false, "LOADING FIRMWARE...");
       this.setState({loadingFirmware: true});
+      this.scrollToBottom();
       if (paths.length > 0) {
         this.setState({
           firmwarePath: paths[0],
-          outputText: [...this.state.outputText, "Loading firmware from " + paths[0]]
+          outputText: [...this.state.outputText, "[INFO] Loading firmware from " + paths[0]]
         });
+        this.scrollToBottom();
         this.checkIfRecoveryRequired().then((required: true) => {
           if (required) {
             this.props.setIsConnecting(false);
@@ -114,6 +118,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
                 "4. Press the 'Continue' button below."
               ]
             });
+            this.scrollToBottom();
           } else {
             this.loadFirmware();
           }
@@ -132,7 +137,6 @@ class FirmwareTab extends React.Component<IProps, IState> {
             if (firmwareJSON.firmware) {
               for (const firmware of firmwareJSON.firmware) {
                 if (firmware.spec === "Recovery Update Required") {
-                  console.log(this.isOldFirmware("1.1.480", firmware.version));
                   if (this.isOldFirmware(version, firmware.version)) {
                     resolve(true);
                   } else {
@@ -161,12 +165,14 @@ class FirmwareTab extends React.Component<IProps, IState> {
     this.setState({loadingFirmware: true});
     SparkManager.loadFirmware(this.state.firmwarePath, this.updateFirmwareStatus).then((res: any) => {
       if (res.updateComplete && !res.updateCompletedSuccessfully) {
+        this.sendFirmwareError(res.root.error);
         this.sendFirmwareError();
       } else {
         this.setState({
-          outputText: [...this.state.outputText, "Successfully updated firmware. Connecting back to controller..."]
+          outputText: [...this.state.outputText, "[INFO] Successfully updated firmware. Connecting back to controller..."]
         });
         this.setState({loadingFirmware: false});
+        this.scrollToBottom();
         SparkManager.discoverAndConnect().then((device: string) => {
           this.props.updateConnectionStatus(true, "CONNECTED");
           this.props.setIsConnecting(false);
@@ -183,7 +189,8 @@ class FirmwareTab extends React.Component<IProps, IState> {
           this.props.addLog(error);
         });
       }
-    }).catch(() => {
+    }).catch((error: any) => {
+      this.sendFirmwareError(error);
       this.sendFirmwareError();
     });
   }
@@ -191,31 +198,34 @@ class FirmwareTab extends React.Component<IProps, IState> {
   private updateFirmwareStatus(event: any, error: any, response: any) {
     if (response.updateStarted) {
       this.setState({
-        outputText: [...this.state.outputText, "Started firmware update process..."]
+        outputText: [...this.state.outputText, "[INFO] Started firmware update process..."]
       });
     } else if (response.isUpdating) {
       const updatedOutput: string[] = this.state.outputText;
       if (typeof response.updateStagePercent !== "undefined") {
         updatedOutput.pop();
         const percentComplete: number = parseFloat(response.updateStagePercent.toFixed(3));
-        updatedOutput.push(`(${(percentComplete * 100).toFixed(1)}%) ${response.updateStageMessage}`);
+        updatedOutput.push(`[INFO] (${(percentComplete * 100).toFixed(1)}%) ${response.updateStageMessage}`);
       } else if (typeof response.updateStageMessage !== "undefined") {
         if (this._lastMessage !== response.updateStageMessage) {
-          updatedOutput.push(`(0.0%) ${response.updateStageMessage}`);
+          updatedOutput.push(`[INFO] (0.0%) ${response.updateStageMessage}`);
         }
       }
       this._lastMessage = response.updateStageMessage;
       this.setState({outputText: updatedOutput});
     }
+    this.scrollToBottom();
   }
 
-  private sendFirmwareError() {
+  private sendFirmwareError(error?: string) {
+    const msg: string = "[ERROR] " + (typeof error !== "undefined" ? error : "Error loading firmware. Please disconnect the SPARK MAX controller, and try again.");
     this.setState({
-      outputText: [...this.state.outputText, "Error loading firmware. Please disconnect the SPARK MAX controller, and try again."]
+      outputText: [...this.state.outputText, msg]
     });
     this.setState({loadingFirmware: false});
     this.props.setIsConnecting(false);
     this.props.updateConnectionStatus(false, "DISCONNECTED");
+    this.scrollToBottom();
   }
 
   private isOldFirmware(current: string, other: string): boolean {
@@ -235,6 +245,13 @@ class FirmwareTab extends React.Component<IProps, IState> {
       return true;
     } else {
       return false;
+    }
+  }
+
+  private scrollToBottom() {
+    const console = document.getElementById("firmware-console");
+    if (console !== null) {
+      console.scrollTop = console.scrollHeight;
     }
   }
 }

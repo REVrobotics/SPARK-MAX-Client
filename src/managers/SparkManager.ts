@@ -159,7 +159,7 @@ class SparkManager {
       ipcRenderer.once("load-firmware-finish", (event: any, error: any, response: any) => {
         ipcRenderer.removeListener("load-firmware-response", listener);
         if (error && !response.updateCompletedSuccessfully) {
-          reject(error);
+          reject({error, response});
         } else {
           resolve(response);
         }
