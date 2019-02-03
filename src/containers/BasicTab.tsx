@@ -180,19 +180,33 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
-    this.props.motorConfig.type = motorType.type;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
+      this.props.motorConfig.type = res.responseValue as number;
+      if (this.props.motorConfig.type === 1) {
+        this.props.motorConfig.sensorType = 1;
+      }
+      this.props.paramResponses[ConfigParameter.kMotorType] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeIdleMode() {
     const prevMode: number = this.props.motorConfig.idleMode;
-    this.props.motorConfig.idleMode = prevMode === 0 ? 1 : 0;
-    this.forceUpdate();
+    const newMode: number = prevMode === 0 ? 1 : 0;
+    SparkManager.setAndGetParameter(ConfigParameter.kIdleMode, newMode).then((res: IServerResponse) => {
+      this.props.motorConfig.idleMode = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kIdleMode] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeCurrentLimit(value: any) {
-    this.props.motorConfig.currentChop = parseInt(value.currentTarget.value, 10);
-    this.forceUpdate();
+    const chop: number = parseInt(value.currentTarget.value, 10);
+    SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, chop).then((res: IServerResponse) => {
+      this.props.motorConfig.currentChop = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kCurrentChop] = res;
+      this.forceUpdate();
+    });
   }
 
   private getParamResponse(id: number): IServerResponse {
@@ -205,25 +219,20 @@ class BasicTab extends React.Component<IProps, IState> {
 
   private updateConfiguration() {
     this.setState({savingConfig: true});
-    SparkManager.setParamsFromConfig(this.props.motorConfig).then(() => {
-      SparkManager.burnFlash().then(() => {
-        setTimeout(() => {
-          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-            this.props.setCurrentConfig(config);
-            this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-            this.setState({savingConfig: false});
-          }).catch((error: any) => {
-            console.log(error);
-            this.setState({savingConfig: false});
-          });
-        }, 1000);
-      }).catch((error: any) => {
-        this.setState({savingConfig: false});
-        console.log(error);
-      });
+    SparkManager.burnFlash().then(() => {
+      setTimeout(() => {
+        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+          this.props.setCurrentConfig(config);
+          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+          this.setState({savingConfig: false});
+        }).catch((error: any) => {
+          console.log(error);
+          this.setState({savingConfig: false});
+        });
+      }, 1000);
     }).catch((error: any) => {
-      console.log(error);
       this.setState({savingConfig: false});
+      console.log(error);
     });
   }
 }

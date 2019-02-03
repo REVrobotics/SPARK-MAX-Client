@@ -343,16 +343,22 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeMotorType(motorType: MotorConfiguration) {
-    this.props.motorConfig.type = motorType.type;
-    if (motorType.type === 1) {
-      this.props.motorConfig.sensorType = 1;
-    }
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
+      this.props.motorConfig.type = res.responseValue as number;
+      if (this.props.motorConfig.type === 1) {
+        this.props.motorConfig.sensorType = 1;
+      }
+      this.props.paramResponses[ConfigParameter.kMotorType] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeSensorType(sensorType: Sensor) {
-    this.props.motorConfig.sensorType = sensorType.id;
-    this.forceUpdate();
+    SparkManager.setAndGetParameter(ConfigParameter.kSensorType, sensorType.id).then((res: IServerResponse) => {
+      this.props.motorConfig.sensorType = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kSensorType] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeCurrentLimitEnabled() {
@@ -372,8 +378,12 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeIdleMode() {
     const prevMode: number = this.props.motorConfig.idleMode;
-    this.props.motorConfig.idleMode = prevMode === 0 ? 1 : 0;
-    this.forceUpdate();
+    const newMode: number = prevMode === 0 ? 1 : 0;
+    SparkManager.setAndGetParameter(ConfigParameter.kIdleMode, newMode).then((res: IServerResponse) => {
+      this.props.motorConfig.idleMode = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kIdleMode] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeCurrentChop(value: number) {
@@ -402,35 +412,57 @@ class AdvancedTab extends React.Component<IProps, IState> {
   }
 
   public changeForwardLimitHardEnabled() {
-    this.props.motorConfig.hardLimitSwitchForwardEnabled = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
+    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitFwdEn, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.hardLimitSwitchForwardEnabled = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kHardLimitFwdEn] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeReverseLimitHardEnabled() {
-    this.props.motorConfig.hardLimitSwitchReverseEnabled = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
+    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitRevEn, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.hardLimitSwitchReverseEnabled = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kHardLimitRevEn] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeForwardLimitSoftEnabled() {
-    this.props.motorConfig.softLimitSwitchForwardEnabled = !this.props.motorConfig.softLimitSwitchForwardEnabled;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.softLimitSwitchForwardEnabled;
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwdEn, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.softLimitSwitchForwardEnabled = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kSoftLimitFwdEn] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeReverseLimitSoftEnabled() {
-    this.props.motorConfig.softLimitSwitchReverseEnabled = !this.props.motorConfig.softLimitSwitchReverseEnabled;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.softLimitSwitchReverseEnabled;
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.softLimitSwitchReverseEnabled = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kSoftLimitRevEn] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeForwardPolarity() {
-    const prevValue = this.props.motorConfig.limitSwitchForwardPolarity;
-    this.props.motorConfig.limitSwitchForwardPolarity = !prevValue;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.limitSwitchForwardPolarity;
+    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchFwdPolarity, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.limitSwitchForwardPolarity = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kLimitSwitchFwdPolarity] = res;
+      this.forceUpdate();
+    });
   }
 
   public changeReversePolarity() {
-    const prevValue = this.props.motorConfig.limitSwitchReversePolarity;
-    this.props.motorConfig.limitSwitchReversePolarity = !prevValue;
-    this.forceUpdate();
+    const newValue: boolean = !this.props.motorConfig.limitSwitchReversePolarity;
+    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchRevPolarity, newValue).then((res: IServerResponse) => {
+      this.props.motorConfig.limitSwitchReversePolarity = res.responseValue === 1;
+      this.props.paramResponses[ConfigParameter.kLimitSwitchRevPolarity] = res;
+      this.forceUpdate();
+    });
   }
 
   public openConfirmModal() {
@@ -473,8 +505,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
   public changeCurrentChopEnabled() {
     const newEnabled: boolean = !this.state.currentChopEnabled;
     if (!newEnabled) {
-      this.props.motorConfig.currentChop = 0;
-      this.forceUpdate();
+      SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, 0).then((res: IServerResponse) => {
+        this.props.motorConfig.currentChop = res.responseValue as number;
+        this.props.paramResponses[ConfigParameter.kCurrentChop] = res;
+        this.forceUpdate();
+      });
     }
     this.setState({currentChopEnabled: newEnabled});
   }
@@ -489,25 +524,20 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   private updateConfiguration() {
     this.setState({savingConfig: true});
-    SparkManager.setParamsFromConfig(this.props.motorConfig).then(() => {
-      SparkManager.burnFlash().then(() => {
-        setTimeout(() => {
-          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-            this.props.setCurrentConfig(config);
-            this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-            this.setState({savingConfig: false});
-          }).catch((error: any) => {
-            console.log(error);
-            this.setState({savingConfig: false});
-          });
-        }, 1000);
-      }).catch((error: any) => {
-        this.setState({savingConfig: false});
-        console.log(error);
-      });
+    SparkManager.burnFlash().then(() => {
+      setTimeout(() => {
+        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+          this.props.setCurrentConfig(config);
+          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+          this.setState({savingConfig: false});
+        }).catch((error: any) => {
+          console.log(error);
+          this.setState({savingConfig: false});
+        });
+      }, 1000);
     }).catch((error: any) => {
-      console.log(error);
       this.setState({savingConfig: false});
+      console.log(error);
     });
   }
 
