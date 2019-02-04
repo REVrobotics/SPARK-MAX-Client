@@ -72,6 +72,10 @@ export default class MotorConfiguration implements ISerializable {
     this._encoderCountsPerRevolution = 4096;
     this._encoderAverageDepth = 64;
     this._encoderSampleDelta = 200;
+
+    for (let i = 0; i < 3; i++) {
+      this.controlProfiles.push(new PIDFProfile());
+    }
   }
 
   public toJSON(): object {

@@ -4,16 +4,17 @@ import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
 import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
-import SparkManager from "../managers/SparkManager";
+import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
-import PIDFProfile from "../models/PIDFProfile";
 import {Dispatch} from "redux";
 import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
+import PopoverHelp from "../components/PopoverHelp";
 
 interface IProps {
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
+  paramResponses: IServerResponse[],
   setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
   setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig
 }
@@ -118,13 +119,30 @@ class RunTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected} = this.props;
+    const {burnedConfig, connected, motorConfig} = this.props;
     const {currentProfile, option, mode, output, running, pStr, iStr, dStr, fStr, updatingProfile} = this.state;
 
     const p = pStr;
     const i = iStr;
     const d = dStr;
     const f = fStr;
+    const paramStart = 13 + (currentProfile * 8);
+
+    const pMod: boolean = motorConfig.controlProfiles[currentProfile].p !== burnedConfig.controlProfiles[currentProfile].p;
+    const pRes: IServerResponse = this.getParamResponse(paramStart);
+    const pErr: boolean = pRes.status === 4;
+
+    const iMod: boolean = motorConfig.controlProfiles[currentProfile].i !== burnedConfig.controlProfiles[currentProfile].i;
+    const iRes: IServerResponse = this.getParamResponse(paramStart + 1);
+    const iErr: boolean = iRes.status === 4;
+
+    const dMod: boolean = motorConfig.controlProfiles[currentProfile].d !== burnedConfig.controlProfiles[currentProfile].d;
+    const dRes: IServerResponse = this.getParamResponse(paramStart + 2);
+    const dErr: boolean = dRes.status === 4;
+
+    const fMod: boolean = motorConfig.controlProfiles[currentProfile].f !== burnedConfig.controlProfiles[currentProfile].f;
+    const fRes: IServerResponse = this.getParamResponse(paramStart + 3);
+    const fErr: boolean = fRes.status === 4;
 
     return (
       <div className="graph">
@@ -139,31 +157,31 @@ class RunTab extends React.Component<IProps, IState> {
             label="PID Profile"
             className="form-group-fifth"
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={currentProfile} min={0} max={3} onValueChange={this.modifyProfile}/>
+            <NumericInput id="pid-profile" disabled={!connected} value={currentProfile} min={0} max={3} onValueChange={this.modifyProfile}/>
           </FormGroup>
           <FormGroup
-            label="P"
-            className="form-group-fifth"
+            label={<PopoverHelp enabled={!pErr} title={"P"} content={`Your requested value of ${pRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${pRes.responseValue}.`}/>}
+            className={(pMod ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={p} min={0} step={0.001} max={3} onValueChange={this.modifyP} onBlur={this.sanitizeValue}/>
+            <NumericInput id="pid-profile" disabled={!connected} value={p} min={0} step={0.001} max={3} onValueChange={this.modifyP} onBlur={this.sanitizeValue} className={pErr ? "field-error" : ""}/>
           </FormGroup>
           <FormGroup
-            label="I"
-            className="form-group-fifth"
+            label={<PopoverHelp enabled={!iErr} title={"I"} content={`Your requested value of ${iRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${iRes.responseValue}.`}/>}
+            className={(iMod ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={i} min={0} step={0.001} max={3} onValueChange={this.modifyI} onBlur={this.sanitizeValue}/>
+            <NumericInput id="pid-profile" disabled={!connected} value={i} min={0} step={0.001} max={3} onValueChange={this.modifyI} onBlur={this.sanitizeValue} className={iErr ? "field-error" : ""}/>
           </FormGroup>
           <FormGroup
-            label="D"
-            className="form-group-fifth"
+            label={<PopoverHelp enabled={!dErr} title={"D"} content={`Your requested value of ${dRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${dRes.responseValue}.`}/>}
+            className={(dMod ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={d} min={0} step={0.001} max={3} onValueChange={this.modifyD} onBlur={this.sanitizeValue}/>
+            <NumericInput id="pid-profile" disabled={!connected} value={d} min={0} step={0.001} max={3} onValueChange={this.modifyD} onBlur={this.sanitizeValue} className={dErr ? "field-error" : ""}/>
           </FormGroup>
           <FormGroup
-            label="F"
-            className="form-group-fifth"
+            label={<PopoverHelp enabled={!fErr} title={"F"} content={`Your requested value of ${fRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${fRes.responseValue}.`}/>}
+            className={(fMod ? "modified" : "") + " form-group-fifth"}
           >
-            <NumericInput id="pid-profile" disabled={!this.props.connected} value={f} min={0} step={0.001} max={3} onValueChange={this.modifyF} onBlur={this.sanitizeValue}/>
+            <NumericInput id="pid-profile" disabled={!connected} value={f} min={0} step={0.001} max={3} onValueChange={this.modifyF} onBlur={this.sanitizeValue} className={fErr ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form">
@@ -196,7 +214,7 @@ class RunTab extends React.Component<IProps, IState> {
           <FormGroup
             className="form-group-quarter"
           >
-            <Button className="rev-btn" fill={true} disabled={!connected} loading={updatingProfile} onClick={this.updateProfile}>Update PID</Button>
+            <Button className="rev-btn" fill={true} disabled={!connected} loading={updatingProfile} onClick={this.updateProfile}>Save PIDF</Button>
           </FormGroup>
         </div>
       </div>
@@ -205,14 +223,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private updateProfile() {
     this.setState({updatingProfile: true});
-    const profile: PIDFProfile = new PIDFProfile();
-    profile.p = parseFloat(this.state.pStr);
-    profile.i = parseFloat(this.state.iStr);
-    profile.d = parseFloat(this.state.dStr);
-    profile.f = parseFloat(this.state.fStr);
-    this.props.motorConfig.controlProfiles[this.state.currentProfile] = profile;
-    this.forceUpdate();
-    SparkManager.setControlProfile(this.state.currentProfile, profile).then(() => {
+    SparkManager.burnFlash().then(() => {
       this.setState({updatingProfile: false});
     }).catch((error: any) => {
       console.log(error);
@@ -242,19 +253,55 @@ class RunTab extends React.Component<IProps, IState> {
   }
 
   private modifyP(value: number, valueStr: string) {
-    this.setState({pStr: valueStr});
+    const paramStart: number = 13 + (this.state.currentProfile * 8);
+    SparkManager.setAndGetParameter(paramStart, value).then((res: IServerResponse) => {
+      this.props.motorConfig.controlProfiles[this.state.currentProfile].p = res.responseValue as number;
+      this.props.paramResponses[paramStart] = res;
+      if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
+        this.setState({pStr: valueStr});
+      } else {
+        this.setState({pStr: res.responseValue + ""})
+      }
+    });
   }
 
   private modifyI(value: number, valueStr: string) {
-    this.setState({iStr: valueStr});
+    const paramStart: number = 13 + (this.state.currentProfile * 8);
+    SparkManager.setAndGetParameter(paramStart + 1, value).then((res: IServerResponse) => {
+      this.props.motorConfig.controlProfiles[this.state.currentProfile].i = res.responseValue as number;
+      this.props.paramResponses[paramStart + 1] = res;
+      if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
+        this.setState({iStr: valueStr});
+      } else {
+        this.setState({iStr: res.responseValue + ""});
+      }
+    });
   }
 
   private modifyD(value: number, valueStr: string) {
-    this.setState({dStr: valueStr});
+    const paramStart: number = 13 + (this.state.currentProfile * 8);
+    SparkManager.setAndGetParameter(paramStart + 2, value).then((res: IServerResponse) => {
+      this.props.motorConfig.controlProfiles[this.state.currentProfile].d = res.responseValue as number;
+      this.props.paramResponses[paramStart + 2] = res;
+      if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
+        this.setState({dStr: valueStr});
+      } else {
+        this.setState({dStr: res.responseValue + ""});
+      }
+    });
   }
 
   private modifyF(value: number, valueStr: string) {
-    this.setState({fStr: valueStr});
+    const paramStart: number = 13 + (this.state.currentProfile * 8);
+    SparkManager.setAndGetParameter(paramStart + 3, value).then((res: IServerResponse) => {
+      this.props.motorConfig.controlProfiles[this.state.currentProfile].f = res.responseValue as number;
+      this.props.paramResponses[paramStart + 3] = res;
+      if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
+        this.setState({fStr: valueStr});
+      } else {
+        this.setState({fStr: res.responseValue + ""});
+      }
+    });
   }
 
   private sanitizeValue(event: any) {
@@ -359,13 +406,22 @@ class RunTab extends React.Component<IProps, IState> {
   private preventFocus(event: any) {
     event.preventDefault();
   }
+
+  private getParamResponse(id: number): IServerResponse {
+    if (typeof this.props.paramResponses[id] !== "undefined") {
+      return this.props.paramResponses[id];
+    } else {
+      return {requestValue: "", responseValue: "", status: 0, type: 0};
+    }
+  }
 }
 
 export function mapStateToProps(state: IApplicationState) {
   return {
     connected: state.isConnected,
     motorConfig: state.currentConfig,
-    burnedConfig: state.burnedConfig
+    burnedConfig: state.burnedConfig,
+    paramResponses: state.paramResponses
   };
 }
 
