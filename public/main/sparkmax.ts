@@ -32,7 +32,7 @@ ipcMain.on("start-server", (event: any, port: any) => {
   if (fs.existsSync(exePath)) {
     try {
       usbProc = execFile(exePath, ["-r", "-p", port], (error: any, stdout: any) => {
-        console.log("Successfully started the SPARK server.");
+        console.log("Successfully started the SPARK server. PID is " + (usbProc as ChildProcess).pid);
         event.sender.send("start-server-response", error);
       });
       console.log("Successfully started the SPARK server.");
@@ -49,7 +49,8 @@ ipcMain.on("start-server", (event: any, port: any) => {
 
 ipcMain.on("kill-server", () => {
   if (usbProc !== null) {
-    process.kill(usbProc.pid);
+    console.log("Killing " + usbProc.pid);
+    (usbProc as ChildProcess).kill();
   }
 });
 

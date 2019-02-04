@@ -22,7 +22,8 @@ import {
   updateConnectionStatus
 } from "./store/actions";
 import {
-  ApplicationActions, IAddLog, ISetBurnedMotorConfig, ISetConnectedDevice, ISetIsConnecting, ISetMotorConfig,
+  ApplicationActions, IAddLog, IApplicationState, ISetBurnedMotorConfig, ISetConnectedDevice, ISetIsConnecting,
+  ISetMotorConfig,
   ISetParamResponses,
   ISetUpdateAvailable,
   IUpdateConnectionStatus
@@ -31,6 +32,8 @@ import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
 
 interface IProps {
+  connected: boolean,
+  connectedDevice: string,
   updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
   setIsConnecting: (connecting: boolean) => ISetIsConnecting,
   setConnectedDevice: (device: string) => ISetConnectedDevice,
@@ -82,6 +85,12 @@ class App extends React.Component<IProps> {
       this.props.setCurrentConfig(REV_BRUSHLESS);
       this.props.setBurnedConfig(REV_BRUSHLESS);
     });
+  }
+
+  public componentWillUnmount() {
+    if (this.props.connected) {
+      SparkManager.disconnect(this.props.connectedDevice);
+    }
   }
 
   public render() {
@@ -165,6 +174,13 @@ class App extends React.Component<IProps> {
   }
 }
 
+export function mapStateToProps(state: IApplicationState) {
+  return {
+    connected: state.isConnected,
+    connectedDevice: state.connectedDevice
+  };
+}
+
 export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
@@ -178,4 +194,4 @@ export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   };
 }
 
-export default connect(null, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

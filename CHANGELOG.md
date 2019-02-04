@@ -14,12 +14,14 @@ Minor features:
 * All text fields now provide real-time feedback in terms of their validity to the SPARK Server
 * Invalid fields will reveal a blinking question circle. Hover over it to see why the value is invalid.
 * In brushless mode, only the 'Hall Effect' sensor may be selected, and will default when brushless is selected.
+* 'Run' tab now provides feedback on invalid/valid PIDF values.
 
 Bug fixes/patches:
 * Ramp rate has been changed to %/s (seconds to full speed)
 * Motor deadband slider now only goes to values 0 to 0.3
 * Client now waits for parameters from the SPARK Server before anything may be interacted with.
 * Fixed firmware update requiring recovery update for firmware versions 1.1.x
+* Properly disconnects SPARK MAX controller on application close.
 
 ### v0.13.4 - 1/12/2019 - Added VC++ 2013 Installation
 Major/Breaking features:
