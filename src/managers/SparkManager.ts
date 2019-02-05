@@ -189,7 +189,6 @@ class SparkManager {
     return new Promise<MotorConfiguration>((resolve, reject) => {
       this.getAllParameters().then((values: any[]) => {
         const config: MotorConfiguration = new MotorConfiguration("REV Brushless", 1);
-        console.log("RAW: " + values[2]);
         config.canID = values[0];
         config.inputMode = values[1];
         config.type = values[2];
