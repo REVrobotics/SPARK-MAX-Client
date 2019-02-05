@@ -149,7 +149,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
         </Alert>
         <Alert isOpen={restoreRequested} cancelButtonText="Cancel" confirmButtonText="Yes" intent="warning" onCancel={this.closeRestoreWarnModal} onClose={this.closeRestoreWarnModal} onConfirm={this.restoreDefaults}>
-          WARNING: You are about to restore the connected SPARK MAX controller to it's factory defaults. <b>This does not burn the flash to the controller.</b> Are you sure you want to do proceed?
+          WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Click Save Configuration to save these settings to flash. Are you sure you want to proceed?
         </Alert>
         <div className="form">
           <FormGroup
@@ -326,7 +326,6 @@ class AdvancedTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(ConfigParameter.kInputDeadband, value).then((res: IServerResponse) => {
       this.props.motorConfig.inputDeadband = res.responseValue as number;
       this.props.paramResponses[ConfigParameter.kInputDeadband] = res;
-      console.log(res);
       this.forceUpdate();
     });
   }

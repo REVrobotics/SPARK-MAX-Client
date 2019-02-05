@@ -2,7 +2,7 @@ import MotorConfiguration from "../models/MotorConfiguration";
 import PIDFProfile from "../models/PIDFProfile";
 import {ConfigParameter} from "../models/ConfigParameter";
 
-const MAX_PARAMETERS: number = 58;
+const MAX_PARAMETERS: number = 74;
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
