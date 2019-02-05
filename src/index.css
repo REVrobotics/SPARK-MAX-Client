@@ -175,6 +175,11 @@ input:checked ~ .bp3-control-indicator {
     background: #e48d00 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
 
+.bad-btn {
+    color: #ffffff !important;
+    background: #e41b11 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
+}
+
 .form-group-row {
     display: flex;
     justify-content: center;
@@ -206,7 +211,10 @@ input:checked ~ .bp3-control-indicator {
 }
 
 .update-container {
-    margin-top: 15px;
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
 .modified > label {

@@ -131,6 +131,19 @@ class SparkManager {
     ipcRenderer.send("download", url);
   }
 
+  public restoreDefaults(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      ipcRenderer.once("restore-defaults-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("restore-defaults");
+    });
+  }
+
   public requestFirmware(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
       ipcRenderer.once("request-firmware-response", (event: any, paths: any[]) => {

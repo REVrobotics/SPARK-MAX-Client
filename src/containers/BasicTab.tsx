@@ -1,4 +1,4 @@
-import {Alert, Button, FormGroup, NumericInput, Radio, RadioGroup, Switch} from "@blueprintjs/core";
+import {Alert, Button, FormGroup, NumericInput, Switch} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
@@ -37,7 +37,6 @@ class BasicTab extends React.Component<IProps, IState> {
     this.selectMotorType = this.selectMotorType.bind(this);
     this.changeCanID = this.changeCanID.bind(this);
     this.changeIdleMode = this.changeIdleMode.bind(this);
-    this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
 
     this.updateConfiguration = this.updateConfiguration.bind(this);
   }
@@ -49,7 +48,6 @@ class BasicTab extends React.Component<IProps, IState> {
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
     const isCoastMode = motorConfig.idleMode === 0;
-    const currentLimit = motorConfig.currentChop;
 
     // Motor Type
     const typeModified: boolean = motorConfig.type !== burnedConfig.type;
@@ -61,9 +59,6 @@ class BasicTab extends React.Component<IProps, IState> {
 
     // Idle Mode
     const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
-
-    // Current
-    const currModified: boolean = motorConfig.currentChop !== burnedConfig.currentChop;
 
     return (
       <div>
@@ -99,7 +94,7 @@ class BasicTab extends React.Component<IProps, IState> {
               id="basic-can-id"
               value={canID}
               onValueChange={this.changeCanID}
-              min={0}
+              min={1}
               max={24}
               disabled={!connected}
               className={canError ? "field-error" : ""}
@@ -116,25 +111,6 @@ class BasicTab extends React.Component<IProps, IState> {
               label={isCoastMode ? "Coast" : "Brake"}
               onChange={this.changeIdleMode}
             />
-          </FormGroup>
-        </div>
-        <div className="form">
-          <FormGroup
-            label="Current Chop"
-            inline={true}
-            className={currModified ? "modified" : ""}
-          >
-            <RadioGroup
-              inline={true}
-              selectedValue={currentLimit}
-              onChange={this.changeCurrentLimit}
-              disabled={!connected}
-            >
-              <Radio label="20A" value={20}/>
-              <Radio label="30A" value={30}/>
-              <Radio label="40A" value={40}/>
-              <Radio label="No Limit" value={0}/>
-            </RadioGroup>
           </FormGroup>
         </div>
         <div className="form">
@@ -188,15 +164,6 @@ class BasicTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(ConfigParameter.kIdleMode, newMode).then((res: IServerResponse) => {
       this.props.motorConfig.idleMode = res.responseValue as number;
       this.props.paramResponses[ConfigParameter.kIdleMode] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeCurrentLimit(value: any) {
-    const chop: number = parseInt(value.currentTarget.value, 10);
-    SparkManager.setAndGetParameter(ConfigParameter.kCurrentChop, chop).then((res: IServerResponse) => {
-      this.props.motorConfig.currentChop = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kCurrentChop] = res;
       this.forceUpdate();
     });
   }

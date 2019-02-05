@@ -121,6 +121,13 @@ ipcMain.on("burn-flash", (event: any) => {
   });
 });
 
+ipcMain.on("restore-defaults", (event: any) => {
+  // TODO - Implement.
+  setTimeout(() => {
+    event.sender.send("restore-defaults-response", null, null);
+  });
+});
+
 ipcMain.on("enable-heartbeat", (event: any, interval: number) => {
   if (heartbeatID === null) {
     console.log("Enabling heartbeat for every " + interval + "ms");
