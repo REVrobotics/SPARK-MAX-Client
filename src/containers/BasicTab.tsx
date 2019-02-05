@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import MotorConfiguration, {getFromID, REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
+import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
 import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
 import {ConfigParameter} from "../models/ConfigParameter";
 import PopoverHelp from "../components/PopoverHelp";
@@ -40,18 +40,6 @@ class BasicTab extends React.Component<IProps, IState> {
     this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
 
     this.updateConfiguration = this.updateConfiguration.bind(this);
-  }
-
-  public componentDidMount(): void {
-    if (this.props.connected) {
-      this.selectMotorType(this.props.motorConfig.type === 1 ? REV_BRUSHLESS : REV_BRUSHED);
-    }
-  }
-
-  public componentDidUpdate(prevProps: Readonly<IProps>): void {
-    if (prevProps.connected !== this.props.connected) {
-      this.componentDidMount();
-    }
   }
 
   public render() {
@@ -183,7 +171,11 @@ class BasicTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
       this.props.motorConfig.type = res.responseValue as number;
       if (this.props.motorConfig.type === 1) {
-        this.props.motorConfig.sensorType = 1;
+        SparkManager.setAndGetParameter(ConfigParameter.kSensorType, 1).then((sensorRes: IServerResponse) => {
+          this.props.motorConfig.sensorType = sensorRes.responseValue as number;
+          this.props.paramResponses[ConfigParameter.kSensorType] = sensorRes;
+          this.forceUpdate();
+        });
       }
       this.props.paramResponses[ConfigParameter.kMotorType] = res;
       this.forceUpdate();
@@ -219,17 +211,23 @@ class BasicTab extends React.Component<IProps, IState> {
 
   private updateConfiguration() {
     this.setState({savingConfig: true});
-    SparkManager.burnFlash().then(() => {
-      setTimeout(() => {
-        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-          this.props.setCurrentConfig(config);
-          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-          this.setState({savingConfig: false});
-        }).catch((error: any) => {
-          console.log(error);
-          this.setState({savingConfig: false});
-        });
-      }, 1000);
+    SparkManager.setParamsFromConfig(this.props.motorConfig).then(() => {
+      SparkManager.burnFlash().then(() => {
+        setTimeout(() => {
+          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+            console.log(config);
+            this.props.setCurrentConfig(config);
+            this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+            this.setState({savingConfig: false});
+          }).catch((error: any) => {
+            console.log(error);
+            this.setState({savingConfig: false});
+          });
+        }, 1000);
+      }).catch((error: any) => {
+        this.setState({savingConfig: false});
+        console.log(error);
+      });
     }).catch((error: any) => {
       this.setState({savingConfig: false});
       console.log(error);

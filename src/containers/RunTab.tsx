@@ -224,10 +224,19 @@ class RunTab extends React.Component<IProps, IState> {
   private updateProfile() {
     this.setState({updatingProfile: true});
     SparkManager.burnFlash().then(() => {
-      this.setState({updatingProfile: false});
+      setTimeout(() => {
+        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+          this.props.setCurrentConfig(config);
+          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
+          this.setState({updatingProfile: false});
+        }).catch((error: any) => {
+          console.log(error);
+          this.setState({updatingProfile: false});
+        });
+      }, 1000);
     }).catch((error: any) => {
-      console.log(error);
       this.setState({updatingProfile: false});
+      console.log(error);
     });
   }
 
@@ -257,6 +266,7 @@ class RunTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(paramStart, value).then((res: IServerResponse) => {
       this.props.motorConfig.controlProfiles[this.state.currentProfile].p = res.responseValue as number;
       this.props.paramResponses[paramStart] = res;
+      console.log(res);
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
         this.setState({pStr: valueStr});
       } else {
@@ -306,9 +316,8 @@ class RunTab extends React.Component<IProps, IState> {
 
   private sanitizeValue(event: any) {
     const decimalValue: number = parseFloat(event.target.value);
-    if (decimalValue !== 0) {
-      event.target.value = decimalValue;
-    }
+    console.log(decimalValue);
+    event.target.value = decimalValue;
   }
 
   private run() {

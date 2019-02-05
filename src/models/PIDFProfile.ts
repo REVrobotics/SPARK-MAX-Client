@@ -19,13 +19,30 @@ export default class PIDFProfile implements ISerializable {
     this._maxOutput = 1.0;
   }
 
-  public fromJSON(json: any): PIDFProfile {
-    const profile: PIDFProfile = new PIDFProfile();
-    return profile;
+  public toJSON(): object {
+    return {
+      p: this.p,
+      i: this.i,
+      d: this.d,
+      f: this.f,
+      i_zone: this.iZone,
+      d_filter: this.dFilter,
+      min_output: this.minOutput,
+      max_output: this.maxOutput
+    };
   }
 
-  public toJSON(): object {
-    return {};
+  public fromJSON(json: any): PIDFProfile {
+    const profile: PIDFProfile = new PIDFProfile();
+    profile.p = json.p || 0;
+    profile.i = json.i || 0;
+    profile.d = json.d || 0;
+    profile.f = json.f || 0;
+    profile.iZone = json.i_zone || 0;
+    profile.dFilter = json.d_filter || 0;
+    profile.minOutput = json.min_output || 0;
+    profile.maxOutput = json.max_output || 1.0;
+    return profile;
   }
 
   get p(): number {

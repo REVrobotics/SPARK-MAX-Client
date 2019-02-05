@@ -69,7 +69,6 @@ class App extends React.Component<IProps> {
           this.props.setCurrentConfig(config);
           const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
           this.props.setBurnedConfig(burn);
-          console.log(config.followerID, config.toJSON());
           this.checkForFirmwareUpdate();
         });
       }, 1000);

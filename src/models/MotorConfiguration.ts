@@ -73,8 +73,8 @@ export default class MotorConfiguration implements ISerializable {
     this._encoderAverageDepth = 64;
     this._encoderSampleDelta = 200;
 
-    for (let i = 0; i < 3; i++) {
-      this.controlProfiles.push(new PIDFProfile());
+    for (let i = 0; i < 4; i++) {
+      this._controlProfiles.push(new PIDFProfile());
     }
   }
 
@@ -120,6 +120,7 @@ export default class MotorConfiguration implements ISerializable {
   public fromJSON(json: any): MotorConfiguration {
     const config: MotorConfiguration = new MotorConfiguration(json.name, json.type);
     config.name = json.name || "UNNAMED CONFIG";
+    config.type = json.type;
     config.canID = json.can_id || 0;
     config.inputMode = json.input_mode || 0;
     config.commutationAdvance = json.comm_advance || 0;
@@ -152,6 +153,7 @@ export default class MotorConfiguration implements ISerializable {
     config.encoderCountsPerRevolution = json.enc_counts_per_rev || 4096;
     config.encoderAverageDepth = json.enc_avg_depth || 64;
     config.encoderSampleDelta = json.enc_sample_delta || 200;
+    console.log(config.type);
     return config;
   }
 
