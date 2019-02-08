@@ -134,6 +134,10 @@ class SparkServer {
   public firmware(firmwareCommand: any, cb: Function) {
     this.sendCommand("firmware", "firmware", firmwareCommand, cb);
   }
+
+  public factoryReset(factoryResetCommand: any, cb: Function) {
+    this.sendCommand("factoryReset", "factoryReset", factoryResetCommand, cb);
+  }
 }
 
 export default SparkServer;

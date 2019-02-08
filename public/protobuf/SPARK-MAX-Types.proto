@@ -223,8 +223,7 @@ enum configParam {
     /*
     * If the half bridge detects this current limit, it will disable the motor dr
     * iver for a fixed amount of time set by kCurrentChopCycles. This is a low s
-    * ophistication 'current control'. Set to 0 to disable. The max value is 125
-    * .
+    * ophistication 'current control'. The max value is 125.
     * @default 115
     * @type float32
     * @unit Amps
@@ -565,7 +564,7 @@ enum configParam {
     * nit 'time from 0 to full'.
     * @default 0
     * @type float32
-    * @unit V/s
+    * @unit DC/sec
     */
     kRampRate = 56;
 
@@ -711,28 +710,301 @@ enum configParam {
 
     /*
     * Only available in closed loop modes
-    *
-    * 0 = Disabled
-    * 1 = Control loop voltage output mode
-    * 2 = Voltage compensation mode
-    *
+0 = Disabled
+1 = Control loop voltage
+    * output mode
+2 = Voltage compensation mode
     * @default 0
     * @type uint
     */
     kClosedLoopVoltageMode = 74;
 
     /*
-    * In Voltage compensation mode, this is the max scaled voltage.
-    *
+    * In voltage compensation mode mode, this is the max scaled voltage.
     * @default 0
     * @type float32
     */
     kCompensatedNominalVoltage = 75;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxVelocity_0 = 76;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxAccel_0 = 77;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMinVelOutput_0 = 78;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAllowedClosedLoopError_0 = 79;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAccelStrategy_0 = 80;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxVelocity_1 = 81;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxAccel_1 = 82;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMinVelOutput_1 = 83;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAllowedClosedLoopError_1 = 84;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAccelStrategy_1 = 85;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxVelocity_2 = 86;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxAccel_2 = 87;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMinVelOutput_2 = 88;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAllowedClosedLoopError_2 = 89;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAccelStrategy_2 = 90;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxVelocity_3 = 91;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMaxAccel_3 = 92;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionMinVelOutput_3 = 93;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAllowedClosedLoopError_3 = 94;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSmartMotionAccelStrategy_3 = 95;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kIMaxAccum_0 = 96;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder1_0 = 97;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder2_0 = 98;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder3_0 = 99;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kIMaxAccum_1 = 100;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder1_1 = 101;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder2_1 = 102;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder3_1 = 103;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kIMaxAccum_2 = 104;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder1_2 = 105;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder2_2 = 106;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder3_2 = 107;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kIMaxAccum_3 = 108;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder1_3 = 109;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder2_3 = 110;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    */
+    kSlot3Placeholder3_3 = 111;
+
+    /*
+    *
+    * @default 1
+    * @type float32
+    */
+    kPositionConversionFactor = 112;
+
+    /*
+    *
+    * @default 1
+    * @type float32
+    */
+    kVelocityConversionFactor = 113;
+
+    /*
+    *
+    * @default 0
+    * @type float32
+    * @unit DC/sec
+    */
+    kClosedLoopRampRate = 114;
 }
 
 enum configParamTypes {
     option allow_alias = true;
     kDefault_t = 0;
+
     //Below is auto generated
     kCanID_t = 1;
     kInputMode_t = 1;
@@ -810,6 +1082,45 @@ enum configParamTypes {
     kEncoderRsvd1_t = 1;
     kClosedLoopVoltageMode_t = 1;
     kCompensatedNominalVoltage_t = 2;
+    kSmartMotionMaxVelocity_0_t = 2;
+    kSmartMotionMaxAccel_0_t = 2;
+    kSmartMotionMinVelOutput_0_t = 2;
+    kSmartMotionAllowedClosedLoopError_0_t = 2;
+    kSmartMotionAccelStrategy_0_t = 2;
+    kSmartMotionMaxVelocity_1_t = 2;
+    kSmartMotionMaxAccel_1_t = 2;
+    kSmartMotionMinVelOutput_1_t = 2;
+    kSmartMotionAllowedClosedLoopError_1_t = 2;
+    kSmartMotionAccelStrategy_1_t = 2;
+    kSmartMotionMaxVelocity_2_t = 2;
+    kSmartMotionMaxAccel_2_t = 2;
+    kSmartMotionMinVelOutput_2_t = 2;
+    kSmartMotionAllowedClosedLoopError_2_t = 2;
+    kSmartMotionAccelStrategy_2_t = 2;
+    kSmartMotionMaxVelocity_3_t = 2;
+    kSmartMotionMaxAccel_3_t = 2;
+    kSmartMotionMinVelOutput_3_t = 2;
+    kSmartMotionAllowedClosedLoopError_3_t = 2;
+    kSmartMotionAccelStrategy_3_t = 2;
+    kIMaxAccum_0_t = 2;
+    kSlot3Placeholder1_0_t = 2;
+    kSlot3Placeholder2_0_t = 2;
+    kSlot3Placeholder3_0_t = 2;
+    kIMaxAccum_1_t = 2;
+    kSlot3Placeholder1_1_t = 2;
+    kSlot3Placeholder2_1_t = 2;
+    kSlot3Placeholder3_1_t = 2;
+    kIMaxAccum_2_t = 2;
+    kSlot3Placeholder1_2_t = 2;
+    kSlot3Placeholder2_2_t = 2;
+    kSlot3Placeholder3_2_t = 2;
+    kIMaxAccum_3_t = 2;
+    kSlot3Placeholder1_3_t = 2;
+    kSlot3Placeholder2_3_t = 2;
+    kSlot3Placeholder3_3_t = 2;
+    kPositionConversionFactor_t = 2;
+    kVelocityConversionFactor_t = 2;
+    kClosedLoopRampRate_t = 2;
 }
 
 //Bit definitions for DRV STAT0

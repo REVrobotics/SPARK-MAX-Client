@@ -61,11 +61,6 @@ service sparkMaxServer {
     //rpc Heartbeat(heartbeatRequest) returns (rootResponse) {}
 
     /*
-    * Change the SPARK address. Currently done through SetParameter()
-    */
-    //rpc Address(addressRequest) returns (addressResponse) {}
-
-    /*
     * Set a device parameter. The parameter should be configParam type
     * the value is a string in both the request and response.
     */
@@ -80,7 +75,7 @@ service sparkMaxServer {
     rpc GetParameter(getParameterRequest) returns (parameterResponse) {}
 
     /*
-    * Make all configuration changes permanent for the next time the 
+    * Make all configuration changes permanent for the next time the
     * device powers on. Note: This writes any values that have changed
     * and can only be called when the device is not enabled. Since this
     * method writes directly to FLASH, avoid calling frequently, as each
@@ -93,7 +88,7 @@ service sparkMaxServer {
     /*
     * Return a list of all available parameters with their name, number, and type
     */
-    //rpc ListParameters(parameterListRequest) returns (parameterListResponse) {}
+    rpc ListParameters(parameterListRequest) returns (parameterListResponse) {}
 
     /*
     * Send a setpoint command. The value should be native units depending
@@ -122,6 +117,11 @@ service sparkMaxServer {
     * Get the faults, sticky faults, and status of the DRV8320 device.
     */
     rpc Telemetry(telemetryRequest) returns (telemetryResponse) {}
+
+    /*
+    * Reset the controller to factory defaults
+    */
+    rpc FactoryReset(factoryResetRequest) returns (rootResponse) {}
 }
 
 /*
@@ -145,6 +145,7 @@ message RequestWire {
         DRVStatusRequest        drvStatus = 25;
         clearFaultsRequest      clearFaults = 26;
         telemetryRequest        telemetry = 27;
+        factoryResetRequest     factoryReset = 28;
     }
 }
 
@@ -167,6 +168,7 @@ message ResponseWire {
         DRVStatusResponse       drvStatus = 25;
         clearFaultsResponse     clearFaults = 26;
         telemetryResponse       telemetry = 27;
+        //factoryResetResponse    factoryReset = 28;
     }
 }
 
@@ -672,4 +674,10 @@ message telemetryRequest {
 message telemetryResponse {
     rootResponse root = 1;
     repeated telemetryData data = 2;
+}
+
+message factoryResetRequest {
+    rootCommand root = 1;
+    bool fullWipe = 2;
+    bool burnAfterWrite = 3;
 }

@@ -124,7 +124,7 @@ export default class MotorConfiguration implements ISerializable {
     config.canID = json.can_id || 0;
     config.inputMode = json.input_mode || 0;
     config.commutationAdvance = json.comm_advance || 0;
-    config.sensorType = json.sensor_type || 1;
+    config.sensorType = json.sensor_type;
     config.controlType = json.control_type || 0;
     config.idleMode = json.idle_mode || 0;
     config.inputDeadband = json.input_deadband || 0;
@@ -153,7 +153,6 @@ export default class MotorConfiguration implements ISerializable {
     config.encoderCountsPerRevolution = json.enc_counts_per_rev || 4096;
     config.encoderAverageDepth = json.enc_avg_depth || 64;
     config.encoderSampleDelta = json.enc_sample_delta || 200;
-    console.log(config.type);
     return config;
   }
 

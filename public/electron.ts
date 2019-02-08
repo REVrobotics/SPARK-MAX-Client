@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 
 // const isProd = process.env.NODE_ENV === "production";
-const isProd = false;
+const isProd = true;
 
 let mainWindow: Electron.BrowserWindow;
 

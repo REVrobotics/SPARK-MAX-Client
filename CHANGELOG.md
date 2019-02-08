@@ -5,9 +5,9 @@ major/minor builds.
 
 Current application changes that are implemented but not yet released will be denoted with an _* (asterisk)_.
 
-### v1.0.0* - 1/29/2019 - Updated SPARK MAX Server Executable and Major UI improvements
+### v1.0.0* - 2/8/2019 - Updated SPARK MAX Server Executable and Major UI improvements
 Major/Breaking features:
-* Updated SPARK Server executable and Command/Types protocol buffers.
+* Added 'Factory Reset' option in the 'Advanced' tab.
 
 Minor features:
 * MotorConfiguration class can now be completely serialized/deserialized into JSON format.
@@ -15,6 +15,7 @@ Minor features:
 * Invalid fields will reveal a blinking question circle. Hover over it to see why the value is invalid.
 * In brushless mode, only the 'Hall Effect' sensor may be selected, and will default when brushless is selected.
 * 'Run' tab now provides feedback on invalid/valid PIDF values.
+* Updated SPARK Server executable and Command/Types protocol buffers.
 
 Bug fixes/patches:
 * Ramp rate has been changed to %/s (seconds to full speed)

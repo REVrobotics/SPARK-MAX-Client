@@ -10,7 +10,7 @@ const {download} = require('electron-dl');
 const opn = require("opn");
 
 const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
-const isProd = false;
+const isProd = true;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer("127.0.0.1", 8001);
 
@@ -122,9 +122,10 @@ ipcMain.on("burn-flash", (event: any) => {
 });
 
 ipcMain.on("restore-defaults", (event: any) => {
-  // TODO - Implement.
-  setTimeout(() => {
-    event.sender.send("restore-defaults-response", null, null);
+  server.factoryReset({fullWipe: false, burnAfterWrite: true}, (err: any, response: any) => {
+    setTimeout(() => {
+      event.sender.send("restore-defaults-response", err, response);
+    }, 1000);
   });
 });
 

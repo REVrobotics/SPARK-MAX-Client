@@ -8,13 +8,16 @@ import MotorConfiguration, {
   REV_BRUSHED,
   REV_BRUSHLESS
 } from "../models/MotorConfiguration";
-import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
+import {
+  ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetIsConnecting,
+  ISetMotorConfig, IUpdateConnectionStatus
+} from "../store/types";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
 import {ConfigParameter} from "../models/ConfigParameter";
 import PopoverHelp from "../components/PopoverHelp";
 import {Dispatch} from "redux";
-import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
+import {setBurnedMotorConfig, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
 
 interface IProps {
   connected: boolean,
@@ -22,7 +25,9 @@ interface IProps {
   burnedConfig: MotorConfiguration,
   paramResponses: IServerResponse[],
   setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
-  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig
+  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
+  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
+  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
 }
 
 interface IState {
@@ -149,7 +154,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
           Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
         </Alert>
         <Alert isOpen={restoreRequested} cancelButtonText="Cancel" confirmButtonText="Yes" intent="warning" onCancel={this.closeRestoreWarnModal} onClose={this.closeRestoreWarnModal} onConfirm={this.restoreDefaults}>
-          WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Click Save Configuration to save these settings to flash. Are you sure you want to proceed?
+          WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?
         </Alert>
         <div className="form">
           <FormGroup
@@ -297,7 +302,11 @@ class AdvancedTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
       this.props.motorConfig.type = res.responseValue as number;
       if (this.props.motorConfig.type === 1) {
-        this.props.motorConfig.sensorType = 1;
+        SparkManager.setAndGetParameter(ConfigParameter.kSensorType, 1).then((sensorRes: IServerResponse) => {
+          this.props.motorConfig.sensorType = sensorRes.responseValue as number;
+          this.props.paramResponses[ConfigParameter.kSensorType] = sensorRes;
+          this.forceUpdate();
+        });
       }
       this.props.paramResponses[ConfigParameter.kMotorType] = res;
       this.forceUpdate();
@@ -441,19 +450,28 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   private restoreDefaults() {
     this.setState({restoringDefaults: true});
+    this.props.setIsConnecting(true);
+    this.props.updateConnectionStatus(false, "RESETTING...");
     SparkManager.restoreDefaults().then(() => {
+      this.props.updateConnectionStatus(true, "GETTING PARAMETERS...");
       setTimeout(() => {
         SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
           this.props.setCurrentConfig(config);
           this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
           this.setState({restoringDefaults: false});
+          this.props.setIsConnecting(false);
+          this.props.updateConnectionStatus(true, "CONNECTED");
         }).catch((error: any) => {
           console.log(error);
+          this.props.setIsConnecting(false);
+          this.props.updateConnectionStatus(true, "CONNECTED");
           this.setState({restoringDefaults: false});
         });
       }, 1000);
     }).catch((error: any) => {
       this.setState({restoringDefaults: false});
+      this.props.setIsConnecting(false);
+      this.props.updateConnectionStatus(true, "CONNECTED");
       console.log(error);
     })
   }
@@ -493,7 +511,9 @@ export function mapStateToProps(state: IApplicationState) {
 export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
   return {
     setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
-    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config))
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config)),
+    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
+    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
   };
 }
 
