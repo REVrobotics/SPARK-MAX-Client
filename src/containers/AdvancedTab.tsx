@@ -341,7 +341,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeForwardLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitFwdEn, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.hardLimitSwitchForwardEnabled = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kHardLimitFwdEn] = res;
       this.forceUpdate();
@@ -350,7 +350,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeReverseLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitRevEn, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.hardLimitSwitchReverseEnabled = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kHardLimitRevEn] = res;
       this.forceUpdate();
@@ -359,7 +359,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeForwardLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwdEn, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitSwitchForwardEnabled = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kSoftLimitFwdEn] = res;
       this.forceUpdate();
@@ -368,7 +368,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeReverseLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitSwitchReverseEnabled = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kSoftLimitRevEn] = res;
       this.forceUpdate();
@@ -377,7 +377,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeForwardPolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchForwardPolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchFwdPolarity, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchFwdPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.limitSwitchForwardPolarity = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kLimitSwitchFwdPolarity] = res;
       this.forceUpdate();
@@ -386,7 +386,7 @@ class AdvancedTab extends React.Component<IProps, IState> {
 
   public changeReversePolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchReversePolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchRevPolarity, newValue).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchRevPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.limitSwitchReversePolarity = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kLimitSwitchRevPolarity] = res;
       this.forceUpdate();
