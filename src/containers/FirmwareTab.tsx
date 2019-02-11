@@ -229,23 +229,20 @@ class FirmwareTab extends React.Component<IProps, IState> {
   }
 
   private isOldFirmware(current: string, other: string): boolean {
-    const currentParts: string[] = current.split(".");
-    const otherParts: string[] = other.split(".");
-    const curMajor = parseInt(currentParts[0], 10);
-    const curMinor = parseInt(currentParts[1], 10);
-    const curBuild = parseInt(currentParts[2], 10);
-    const othMajor = parseInt(otherParts[0], 10);
-    const othMinor = parseInt(otherParts[1], 10);
-    const othBuild = parseInt(otherParts[2], 10);
-    if (curMajor < othMajor) {
-      return true;
-    } else if (curMinor < othMinor) {
-      return true;
-    } else if (curBuild < othBuild) {
-      return true;
-    } else {
-      return false;
+    const curVer = current.toString().split(".");
+    const othVer = other.toString().split(".");
+
+    for(let i = 0; i < (Math.max(curVer.length, othVer.length)); i++){
+
+      if(Number(curVer[i]) < Number(othVer[i])){
+        return true;
+      }
+
+      if(curVer[i] !== othVer[i]){
+        break;
+      }
     }
+    return false;
   }
 
   private scrollToBottom() {
