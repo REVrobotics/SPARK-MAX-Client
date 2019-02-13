@@ -135,12 +135,12 @@ export default class MotorConfiguration implements ISerializable {
     config.currentChopCycles = json.current_chop_cycles || 0;
     config.controlProfiles = typeof json.control_profiles !== "undefined" ? json.control_profiles.map((profile: any) => new PIDFProfile().fromJSON(profile)) : [];
     config.outputRatio = json.output_ratio || 0;
-    config.limitSwitchForwardPolarity = json.limit_forward_polarity || true;
-    config.limitSwitchReversePolarity = json.limit_reverse_polarity || true;
-    config.hardLimitSwitchForwardEnabled = json.hard_limit_forward_enabled || false;
-    config.hardLimitSwitchReverseEnabled = json.hard_limit_reverse_enabled || false;
-    config.softLimitSwitchForwardEnabled = json.soft_limit_forward_enabled || false;
-    config.softLimitSwitchReverseEnabled = json.soft_limit_reverse_enabled || false;
+    config.limitSwitchForwardPolarity = json.limit_forward_polarity;
+    config.limitSwitchReversePolarity = json.limit_reverse_polarity;
+    config.hardLimitSwitchForwardEnabled = json.hard_limit_forward_enabled;
+    config.hardLimitSwitchReverseEnabled = json.hard_limit_reverse_enabled;
+    config.softLimitSwitchForwardEnabled = json.soft_limit_forward_enabled;
+    config.softLimitSwitchReverseEnabled = json.soft_limit_reverse_enabled;
     config.rampRate = json.ramp_rate || 0;
     config.followerID = json.follower_id;
     config.followerConfig = json.follower_config || "";
