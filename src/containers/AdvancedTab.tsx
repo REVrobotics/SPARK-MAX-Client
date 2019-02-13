@@ -3,11 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import MotorConfiguration, {
-  getFromID as getMotorFromID,
-  REV_BRUSHED,
-  REV_BRUSHLESS
-} from "../models/MotorConfiguration";
+import MotorConfiguration, {getFromID as getMotorFromID} from "../models/MotorConfiguration";
 import {
   ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetIsConnecting,
   ISetMotorConfig, IUpdateConnectionStatus
@@ -43,13 +39,12 @@ class AdvancedTab extends React.Component<IProps, IState> {
     super(props);
 
     this.state = {
-      rampRateEnabled: false,
+      rampRateEnabled: this.props.motorConfig.rampRate > 0,
       savingConfig: false,
       updateRequested: false,
       restoringDefaults: false,
       restoreRequested: false
     };
-
     this.openConfirmModal = this.openConfirmModal.bind(this);
     this.openRestoreWarnModal = this.openRestoreWarnModal.bind(this);
     this.closeConfirmModal = this.closeConfirmModal.bind(this);
@@ -76,15 +71,10 @@ class AdvancedTab extends React.Component<IProps, IState> {
     this.provideDefault = this.provideDefault.bind(this);
   }
 
-  public componentDidMount(): void {
-    if (this.props.connected) {
-      this.changeMotorType(this.props.motorConfig.type === 1 ? REV_BRUSHLESS : REV_BRUSHED);
-    }
-  }
-
-  public componentDidUpdate(prevProps: Readonly<IProps>): void {
-    if (prevProps.connected !== this.props.connected) {
-      this.componentDidMount();
+  public componentDidUpdate(prevProps: IProps) {
+    if (this.props.motorConfig !== prevProps.motorConfig) {
+      console.log(this.props.motorConfig.rampRate);
+      this.setState({rampRateEnabled: this.props.motorConfig.rampRate > 0});
     }
   }
 
@@ -247,14 +237,14 @@ class AdvancedTab extends React.Component<IProps, IState> {
             labelFor="advanced-is-slave"
             className={(forwardPolarityModified ? "modified" : "") + " form-group-quarter"}
           >
-            <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeForwardPolarity} />
+            <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Closed" : "Normally Open"} onChange={this.changeForwardPolarity} />
           </FormGroup>
           <FormGroup
             label="Reverse Limit Switch Polarity"
             labelFor="advanced-is-slave"
             className={(reversePolarityModified ? "modified" : "") + " form-group-quarter"}
           >
-            <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Open" : "Normally Closed"} onChange={this.changeReversePolarity} />
+            <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Closed" : "Normally Open"} onChange={this.changeReversePolarity} />
           </FormGroup>
           <FormGroup
             label="Ramp Rate"

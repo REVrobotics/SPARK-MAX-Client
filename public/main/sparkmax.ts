@@ -125,7 +125,7 @@ ipcMain.on("burn-flash", (event: any) => {
 });
 
 ipcMain.on("restore-defaults", (event: any) => {
-  server.factoryReset({fullWipe: false, burnAfterWrite: true}, (err: any, response: any) => {
+  server.factoryReset({fullWipe: true, burnAfterWrite: true}, (err: any, response: any) => {
     setTimeout(() => {
       event.sender.send("restore-defaults-response", err, response);
     }, 1000);

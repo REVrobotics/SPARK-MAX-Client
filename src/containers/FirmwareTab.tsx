@@ -177,12 +177,14 @@ class FirmwareTab extends React.Component<IProps, IState> {
           this.props.updateConnectionStatus(true, "CONNECTED");
           this.props.setIsConnecting(false);
           this.props.setConnectedDevice(device);
-          SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-            this.props.setCurrentConfig(config);
-            SparkManager.getFirmware().then((response: any) => {
-              this.setState({firmwareVersion: response.version});
+          setTimeout(() => {
+            SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+              this.props.setCurrentConfig(config);
+              SparkManager.getFirmware().then((response: any) => {
+                this.setState({firmwareVersion: response.version});
+              });
             });
-          });
+          }, 1000)
         }).catch((error: any) => {
           this.props.updateConnectionStatus(false, "CONNECTION FAILED");
           this.props.setIsConnecting(false);
