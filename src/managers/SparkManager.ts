@@ -195,7 +195,7 @@ class SparkManager {
   }
 
   public onDisconnect(f: () => void): void {
-    ipcRenderer.on("disconnection", () => f());
+    ipcRenderer.on("disconnect-response", () => f());
   }
 
   public getConfigFromParams(): Promise<MotorConfiguration> {

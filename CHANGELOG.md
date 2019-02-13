@@ -16,6 +16,7 @@ Minor features:
 * In brushless mode, only the 'Hall Effect' sensor may be selected, and will default when brushless is selected.
 * 'Run' tab now provides feedback on invalid/valid PIDF values.
 * Updated SPARK Server executable and Command/Types protocol buffers.
+* The client now knows when the SPARK MAX controller is disconnected, and acts appropriately.
 
 Bug fixes/patches:
 * Ramp rate has been changed to %/s (seconds to full speed)

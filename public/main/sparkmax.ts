@@ -67,9 +67,12 @@ ipcMain.on("connect", (event: any, device: string) => {
             if (pingErr) {
               console.error(err);
             } else {
-              if (!pingResponse.connected) {
+              if (!pingResponse.connected && firmwareID === null) {
+                console.log("Detected device disconnect");
                 global.clearInterval(connCheckID);
-                server.disconnect({device: currentDevice, keepalive: true}, (disconnectErr: any, disconnectResponse: any) => {
+                connCheckID = null;
+                server.disconnect({device: currentDevice, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
+                  console.log("Disconnected " + currentDevice + " from the SPARK server");
                   event.sender.send("disconnect-response", disconnectErr, disconnectResponse);
                 });
               }
@@ -187,6 +190,10 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
       server.firmware({filename}, (error: any, response: any) => {
         if (response.updateStarted && response.updateStarted === true) {
           console.log("Disconnecting on " + currentDevice);
+          if (connCheckID !== null) {
+            global.clearInterval(connCheckID);
+            connCheckID = null;
+          }
           server.disconnect({device: currentDevice});
         }
         event.sender.send("load-firmware-response", error, response);

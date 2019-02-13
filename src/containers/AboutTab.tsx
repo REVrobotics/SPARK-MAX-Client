@@ -19,7 +19,7 @@ class AboutTab extends React.Component {
           </p>
         </div>
         <div>
-          <p><b>Server Version</b>: v1.1.35</p>
+          <p><b>Server Version</b>: v1.1.46</p>
           <p><b>Client Version</b>: v{SparkManager.getVersion()}</p>
         </div>
       </div>

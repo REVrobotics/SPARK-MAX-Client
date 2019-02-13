@@ -29,7 +29,7 @@ service sparkMaxServer {
     * is provided, connect to the default port, which is 
     * the first port found with a SPARK device.
     */
-    rpc Connect(connectRequest) returns (connectResponse) {}
+        rpc Connect(connectRequest) returns (connectResponse) {}
 
     /*
     * Disconnect the serial port
