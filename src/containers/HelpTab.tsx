@@ -75,7 +75,7 @@ class HelpTab extends React.Component<IProps, IState> {
         <Dialog
           isOpen={viewingLogs}
           onClose={this.unviewLogs}
-        >c
+        >
           <div className="bp3-dialog-header">
             <h4 className="bp3-heading">Application Logs</h4>
           </div>
