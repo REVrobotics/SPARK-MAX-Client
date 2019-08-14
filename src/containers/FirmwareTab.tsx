@@ -149,8 +149,31 @@ class FirmwareTab extends React.Component<IProps, IState> {
     return <Cell loading={this.state.loadingCANFirmware}>{`${this.state.deviceList[rowIndex] ? this.state.deviceList[rowIndex].firmware : ""}`}</Cell>
   };
 
+  private buildUpdateString = (detail: CANScanDetail) => {
+    if (detail && detail.updateable) {
+      return detail.selected;
+    } else if (detail) {
+      return "N/A";
+    } else {
+      return "";
+    }
+  }
+
+  private buildUpdateTooltip = (detail: CANScanDetail) => {
+    if (detail && detail.updateable) {
+      return "Click to add this device to the update group.";
+    } else if (detail) {
+      return "Unable to update this device.";
+    } else {
+      return "";
+    }
+  }
+
   private updateColumnRenderer = (rowIndex: number) => {
-    return <Cell interactive={true} tooltip={"Click to add this device to the update group."} onKeyDown={this.handleConsoleClick}>{`${this.state.deviceList[rowIndex] ? this.state.deviceList[rowIndex].selected : ""}`}</Cell>
+    return <Cell interactive={true}
+                 tooltip={`${this.buildUpdateTooltip(this.state.deviceList[rowIndex])}`}
+                 onKeyDown={this.handleConsoleClick}>{`${this.buildUpdateString(this.state.deviceList[rowIndex])}`}
+                 </Cell>
   };
 
   private handleCellClick = (region: IRegion[]) => {
@@ -177,7 +200,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
       this.setState({loadingCANFirmware: true});
 
       value.forEach( (deviceString) => {
-        deviceDetails.push(new CANScanDetail(deviceString, "Device Name", "Firmware String"));
+        deviceDetails.push(new CANScanDetail(deviceString, "Device Name", "Firmware String", false));
       });
 
       this.setState({ deviceList: deviceDetails, scanInProgress: false, loadingCANFirmware: false });

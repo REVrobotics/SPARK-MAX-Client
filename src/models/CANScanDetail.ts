@@ -3,12 +3,14 @@ export default class CANScanDetail {
     private _name: string;
     private _firmware: string;
     private _selected: boolean;
+    private _updateable: boolean;
   
-    constructor(intf: string, name: string, firmware: string) {
+    constructor(intf: string, name: string, firmware: string, updateable: boolean) {
       this._interface = intf;
       this._name = name;
       this._firmware = firmware;
       this._selected = false;
+      this._updateable = updateable;
     }
   
     get interface(): string {
@@ -41,6 +43,14 @@ export default class CANScanDetail {
   
     set selected(value: boolean) {
       this._selected = value;
+    }
+  
+    get updateable(): boolean {
+      return this._updateable;
+    }
+  
+    set updateable(value: boolean) {
+      this._updateable = value;
     }
 
   }
