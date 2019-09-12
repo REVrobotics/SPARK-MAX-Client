@@ -6,6 +6,10 @@ const isProd = false;
 
 let mainWindow: Electron.BrowserWindow;
 
+if (!isProd) {
+  require("electron-debug")({showDevTools: true});
+}
+
 /**
  * Simply put, creates the main window that our application resides in. Technically, this function can be called
  * multiple times to create multiple windows.
@@ -79,7 +83,6 @@ function createWindow() {
 
   } else {
     mainWindow.loadURL("http://localhost:3000/");
-    require("electron-debug")({showDevTools: true, enabled: true});
   }
 
   /* These are the two main process files associated with our program. They deal with everything with the SPARK MAX
@@ -94,9 +97,6 @@ function createWindow() {
    */
   mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.show();
-    if (!isProd) {
-      mainWindow.webContents.openDevTools({mode: "detach"});
-    }
   });
 
   // If we wanted a standard menubar with our application, we would remove this line of code.
