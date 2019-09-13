@@ -114,7 +114,12 @@ class BasicTab extends React.Component<IProps, IState> {
     // CAN ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
     const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
-    const canError: boolean = canResponse.status === 4;
+    const canResponseError: boolean = canResponse.status === 4;
+    const canIs0: boolean = !canResponseError && canID === 0;
+    const canError = canResponseError || canIs0;
+    const canErrorText = canResponseError && `Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`
+      || canIs0 && 'It is highly recommended to change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.'
+      || '';
 
     // Idle Mode
     const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
@@ -195,7 +200,7 @@ class BasicTab extends React.Component<IProps, IState> {
             <ConfigurationSelect connected={connected}/>
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={canErrorText}/>}
             labelFor="basic-can-id"
             className={(canModified ? "modified" : "") + " form-group-quarter"}
           >
@@ -276,8 +281,8 @@ class BasicTab extends React.Component<IProps, IState> {
             <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01} onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
           </FormGroup>
         </div>
-        <div className="form form-top form-space-between no-wrap">
-          <div className="form-column">
+        <div className="form form-top form-space-between">
+          <div className="form-column form-column-third no-wrap">
             <h4 className="form-title">Limit Switch</h4>
             <div className="form-control-group">
               <Switch checked={forwardLimitHardEnabled} disabled={!connected} label="Forward Limit" className={forwardEnabledHardModified ? "modified" : ""} onChange={this.changeForwardLimitHardEnabled} />
@@ -289,7 +294,7 @@ class BasicTab extends React.Component<IProps, IState> {
               <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Closed" : "Normally Open"} className={reversePolarityModified ? "modified" : ""} onChange={this.changeReversePolarity} />
             </div>
           </div>
-          <div className="form-column">
+          <div className="form-column form-column-third no-wrap">
             <h4 className="form-title">Soft Limits</h4>
 
             <FormGroup className="form-group-fit">
@@ -314,7 +319,7 @@ class BasicTab extends React.Component<IProps, IState> {
               <NumericInput id="advanced-current-limit" disabled={!connected || !reverseLimitSoftEnabled} value={softLimitReverse} onValueChange={this.changeReverseLimitSoftValue} min={0} className={softLimitReverseError ? "field-error" : ""}/>
             </FormGroup>
           </div>
-          <div className="form-column">
+          <div className="form-column form-column-third">
             <h4 className="form-title">Ramp Rate</h4>
             <FormGroup className="form-group-fit">
               <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
