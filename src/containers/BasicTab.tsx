@@ -118,8 +118,8 @@ class BasicTab extends React.Component<IProps, IState> {
     const canIs0: boolean = !canResponseError && canID === 0;
     const canError = canResponseError || canIs0;
     const canErrorText = canResponseError && `Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`
-      || canIs0 && 'It is highly recommended to change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.'
-      || '';
+      || canIs0 && "For proper operation of the SPARK MAX, please change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62."
+      || "";
 
     // Idle Mode
     const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
