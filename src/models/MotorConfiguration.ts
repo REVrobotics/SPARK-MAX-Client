@@ -24,6 +24,8 @@ export default class MotorConfiguration implements ISerializable {
   private _hardLimitSwitchReverseEnabled: boolean;
   private _softLimitSwitchForwardEnabled: boolean;
   private _softLimitSwitchReverseEnabled: boolean;
+  private _softLimitForward: number;
+  private _softLimitReverse: number;
   private _rampRate: number;
   private _followerID: number;
   private _followerConfig: string;
@@ -60,6 +62,8 @@ export default class MotorConfiguration implements ISerializable {
     this._hardLimitSwitchReverseEnabled = false;
     this._softLimitSwitchForwardEnabled = false;
     this._softLimitSwitchReverseEnabled = false;
+    this._softLimitForward = 0;
+    this._softLimitReverse = 0;
     this._rampRate = 0;
     this._followerID = -1;
     this._followerConfig = "";
@@ -102,6 +106,8 @@ export default class MotorConfiguration implements ISerializable {
       hard_limit_reverse_enabled: this.hardLimitSwitchReverseEnabled,
       soft_limit_forward_enabled: this.softLimitSwitchForwardEnabled,
       soft_limit_reverse_enabled: this.softLimitSwitchReverseEnabled,
+      soft_limit_forward: this.softLimitForward,
+      soft_limit_reverse: this.softLimitReverse,
       ramp_rate: this.rampRate,
       follower_id: this.followerID,
       follower_config: this.followerConfig,
@@ -141,6 +147,8 @@ export default class MotorConfiguration implements ISerializable {
     config.hardLimitSwitchReverseEnabled = json.hard_limit_reverse_enabled;
     config.softLimitSwitchForwardEnabled = json.soft_limit_forward_enabled;
     config.softLimitSwitchReverseEnabled = json.soft_limit_reverse_enabled;
+    config.softLimitForward = json.soft_limit_forward;
+    config.softLimitReverse = json.soft_limit_reverse;
     config.rampRate = json.ramp_rate || 0;
     config.followerID = json.follower_id;
     config.followerConfig = json.follower_config || "";
@@ -330,6 +338,22 @@ export default class MotorConfiguration implements ISerializable {
 
   set softLimitSwitchReverseEnabled(value: boolean) {
     this._softLimitSwitchReverseEnabled = value;
+  }
+
+  get softLimitForward(): number {
+    return this._softLimitForward;
+  }
+
+  set softLimitForward(value: number) {
+    this._softLimitForward = value;
+  }
+
+  get softLimitReverse(): number {
+    return this._softLimitReverse;
+  }
+
+  set softLimitReverse(value: number) {
+    this._softLimitReverse = value;
   }
 
   get rampRate(): number {

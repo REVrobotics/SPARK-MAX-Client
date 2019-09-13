@@ -25,10 +25,16 @@ interface IProps {
   onSensorSelect: (sensorType: Sensor) => void
 }
 
-export const SensorTypeSelect: React.SFC<IProps> = (props) => {
+export const SensorTypeSelect: React.FC<IProps> = (props) => {
+  const disabled = !props.connected || props.disabled;
+
   return (
-    <SensorSelect filterable={false} items={defaultItems} itemRenderer={renderer} onItemSelect={props.onSensorSelect}>
-      <Button fill={true} disabled={!props.connected || props.disabled} text={props.activeSensor.name} rightIcon="double-caret-vertical" />
+    <SensorSelect filterable={false}
+                  disabled={disabled}
+                  items={defaultItems}
+                  itemRenderer={renderer}
+                  onItemSelect={props.onSensorSelect}>
+      <Button fill={true} disabled={disabled} text={props.activeSensor.name} rightIcon="double-caret-vertical" />
     </SensorSelect>
   );
 };

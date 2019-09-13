@@ -21,7 +21,7 @@ function createWindow() {
    * https://electronjs.org/docs/api/browser-window
    */
   mainWindow = new BrowserWindow({
-    height: 600,
+    height: 650,
     icon: "./favicon.ico",
     resizable: false,
     show: false,

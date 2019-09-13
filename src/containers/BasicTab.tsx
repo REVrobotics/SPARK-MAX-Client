@@ -17,6 +17,7 @@ import {Dispatch} from "redux";
 import {setBurnedMotorConfig, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
+import {ConfigurationSelect} from "../components/ConfigurationSelect";
 
 interface IProps {
   connected: boolean,
@@ -62,12 +63,15 @@ class BasicTab extends React.Component<IProps, IState> {
     this.changeReverseLimitHardEnabled = this.changeReverseLimitHardEnabled.bind(this);
     this.changeForwardLimitSoftEnabled = this.changeForwardLimitSoftEnabled.bind(this);
     this.changeReverseLimitSoftEnabled = this.changeReverseLimitSoftEnabled.bind(this);
+    this.changeForwardLimitSoftValue = this.changeForwardLimitSoftValue.bind(this);
+    this.changeReverseLimitSoftValue = this.changeReverseLimitSoftValue.bind(this);
     this.changeForwardPolarity = this.changeForwardPolarity.bind(this);
     this.changeReversePolarity = this.changeReversePolarity.bind(this);
     this.changeRampRateEnabled = this.changeRampRateEnabled.bind(this);
     this.changeRampRate = this.changeRampRate.bind(this);
 
     this.changeSensorType = this.changeSensorType.bind(this);
+    this.changeEncoderCpr = this.changeEncoderCpr.bind(this);
     this.changeDeadband = this.changeDeadband.bind(this);
 
     this.sanitizeValue = this.sanitizeValue.bind(this);
@@ -92,6 +96,7 @@ class BasicTab extends React.Component<IProps, IState> {
     const currentLimit = motorConfig.smartCurrentStallLimit;
     const isCoastMode = motorConfig.idleMode === 0;
     const sensorType = motorConfig.sensorType;
+    const encoderCpr = motorConfig.encoderCountsPerRevolution;
     const deadband = motorConfig.inputDeadband;
     const forwardLimitHardEnabled = motorConfig.hardLimitSwitchForwardEnabled;
     const reverseLimitHardEnabled = motorConfig.hardLimitSwitchReverseEnabled;
@@ -99,6 +104,8 @@ class BasicTab extends React.Component<IProps, IState> {
     const reverseLimitSoftEnabled = motorConfig.softLimitSwitchReverseEnabled;
     const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
     const reversePolarity = motorConfig.limitSwitchReversePolarity;
+    const softLimitForward = motorConfig.softLimitForward;
+    const softLimitReverse = motorConfig.softLimitReverse;
     const rampRate = motorConfig.rampRate;
 
     // Motor Type
@@ -114,6 +121,11 @@ class BasicTab extends React.Component<IProps, IState> {
 
     // Sensor Type
     const sensorModified: boolean = motorConfig.sensorType !== burnedConfig.sensorType;
+
+    // Encoder CPR
+    const encoderCprModified: boolean = motorConfig.encoderCountsPerRevolution !== burnedConfig.encoderCountsPerRevolution;
+    const encoderCprResponse: IServerResponse = this.getParamResponse(ConfigParameter.kEncoderCountsPerRev);
+    const encoderCprError: boolean = encoderCprResponse.status === 4;
 
     // Motor Deadband
     const deadbandModified: boolean = motorConfig.inputDeadband.toFixed(4) !== burnedConfig.inputDeadband.toFixed(4);
@@ -148,6 +160,16 @@ class BasicTab extends React.Component<IProps, IState> {
     const rampResponse: IServerResponse = this.getParamResponse(ConfigParameter.kRampRate);
     const rampError: boolean = rampResponse.status === 4;
 
+    // Soft Forward Limit
+    const softLimitForwardModified: boolean = motorConfig.softLimitForward !== burnedConfig.softLimitForward;
+    const softLimitForwardResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSoftLimitFwd);
+    const softLimitForwardError: boolean = softLimitForwardResponse.status === 4;
+
+    // Soft Reverse Limit
+    const softLimitReverseModified: boolean = motorConfig.softLimitReverse !== burnedConfig.softLimitReverse;
+    const softLimitReverseResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSoftLimitRev);
+    const softLimitReverseError: boolean = softLimitReverseResponse.status === 4;
+
     return (
       <div>
         <Alert
@@ -164,17 +186,13 @@ class BasicTab extends React.Component<IProps, IState> {
         <Alert isOpen={restoreRequested} cancelButtonText="Cancel" confirmButtonText="Yes" intent="warning" onCancel={this.closeRestoreWarnModal} onClose={this.closeRestoreWarnModal} onConfirm={this.restoreDefaults}>
           WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?
         </Alert>
-        <div className="form">
+        <div className="form form-left">
           <FormGroup
-            label="Select Motor Type"
-            labelFor="basic-motor-type"
-            className={(typeModified ? "modified" : "") + " form-group-half"}
+            label="Select Configuration"
+            labelFor="configuration-id"
+            className="form-group-half"
           >
-            <MotorTypeSelect
-              activeConfig={activeMotorType}
-              connected={connected}
-              onMotorSelect={this.selectMotorType}
-            />
+            <ConfigurationSelect connected={connected}/>
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
@@ -191,6 +209,19 @@ class BasicTab extends React.Component<IProps, IState> {
               className={canError ? "field-error" : ""}
             />
           </FormGroup>
+        </div>
+        <div className="form">
+          <FormGroup
+            label="Select Motor Type"
+            labelFor="basic-motor-type"
+            className={(typeModified ? "modified" : "") + " form-group-half"}
+          >
+            <MotorTypeSelect
+              activeConfig={activeMotorType}
+              connected={connected}
+              onMotorSelect={this.selectMotorType}
+            />
+          </FormGroup>
           <FormGroup
             label="Idle Mode"
             labelFor="basic-idle-mode"
@@ -202,6 +233,13 @@ class BasicTab extends React.Component<IProps, IState> {
               label={isCoastMode ? "Coast" : "Brake"}
               onChange={this.changeIdleMode}
             />
+          </FormGroup>
+          <FormGroup
+            label={<PopoverHelp enabled={!currentError} title={"Smart Current Limit"} content={`Your requested value of ${currentResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${currentResponse.responseValue}.`}/>}
+            labelFor="advanced-current-limit"
+            className={(currentModified ? "modified" : "") + " form-group-quarter"}
+          >
+            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit} onValueChange={this.changeCurrentLimit} min={0} className={currentError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form form-space-between">
@@ -218,16 +256,20 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!currentError} title={"Smart Current Limit"} content={`Your requested value of ${currentResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${currentResponse.responseValue}.`}/>}
-            labelFor="advanced-current-limit"
-            className={(currentModified ? "modified" : "") + " form-group-quarter"}
+            label={<PopoverHelp enabled={!encoderCprError} title={"Encoder CPR"} content={`Your requested value of ${encoderCprResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${encoderCprResponse.responseValue}.`}/>}
+            labelFor="encoder-cpr"
+            className={(encoderCprModified ? "modified" : "") + " form-group-quarter"}
           >
-            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit} onValueChange={this.changeCurrentLimit} min={0} className={currentError ? "field-error" : ""}/>
+            <NumericInput
+              id="encoder-cpr"
+              value={encoderCpr}
+              onValueChange={this.changeEncoderCpr}
+              min={1}
+              disabled={!connected || motorConfig.type === 1 || sensorType !== 2}
+            />
           </FormGroup>
-        </div>
-        <div className="form form-left">
           <FormGroup
-            label={<PopoverHelp enabled={!deadbandError} title={"Motor Deadband"} content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!deadbandError} title={"PWM Input Deadband"} content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
             labelFor="advanced-deadband"
             className={(deadbandModified ? "modified" : "") + " form-group-half"}
           >
@@ -253,9 +295,23 @@ class BasicTab extends React.Component<IProps, IState> {
             <FormGroup className="form-group-fit">
               <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label="Forward Limit" className={forwardEnabledSoftModified ? "modified" : ""} onChange={this.changeForwardLimitSoftEnabled} />
             </FormGroup>
+            <FormGroup
+              label={<PopoverHelp enabled={!softLimitForwardError} title={"Forward Limit (value)"} content={`Your requested value of ${softLimitForwardResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitForwardResponse.responseValue}.`}/>}
+              labelFor="advanced-current-limit"
+              className={softLimitForwardModified ? "modified" : ""}
+            >
+              <NumericInput id="advanced-current-limit" disabled={!connected || !forwardLimitSoftEnabled} value={softLimitForward} onValueChange={this.changeForwardLimitSoftValue} min={0} className={softLimitForwardError ? "field-error" : ""}/>
+            </FormGroup>
 
             <FormGroup className="form-group-fit">
               <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label="Reverse Limit" className={reverseEnabledSoftModified ? "modified" : ""} onChange={this.changeReverseLimitSoftEnabled} />
+            </FormGroup>
+            <FormGroup
+              label={<PopoverHelp enabled={!softLimitForwardError} title={"Reverse Limit (value)"} content={`Your requested value of ${softLimitReverseResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitReverseResponse.responseValue}.`}/>}
+              labelFor="advanced-current-limit"
+              className={softLimitReverseModified ? "modified" : ""}
+            >
+              <NumericInput id="advanced-current-limit" disabled={!connected || !reverseLimitSoftEnabled} value={softLimitReverse} onValueChange={this.changeReverseLimitSoftValue} min={0} className={softLimitReverseError ? "field-error" : ""}/>
             </FormGroup>
           </div>
           <div className="form-column">
@@ -337,6 +393,14 @@ class BasicTab extends React.Component<IProps, IState> {
     });
   }
 
+  public changeEncoderCpr(encoderCpr: number) {
+    SparkManager.setAndGetParameter(ConfigParameter.kEncoderCountsPerRev, encoderCpr).then((res: IServerResponse) => {
+      this.props.motorConfig.encoderCountsPerRevolution = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kEncoderCountsPerRev] = res;
+      this.forceUpdate();
+    });
+  }
+
   public changeDeadband(value: number) {
     SparkManager.setAndGetParameter(ConfigParameter.kInputDeadband, value).then((res: IServerResponse) => {
       this.props.motorConfig.inputDeadband = res.responseValue as number;
@@ -385,6 +449,22 @@ class BasicTab extends React.Component<IProps, IState> {
     SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitSwitchReverseEnabled = res.responseValue === 1;
       this.props.paramResponses[ConfigParameter.kSoftLimitRevEn] = res;
+      this.forceUpdate();
+    });
+  }
+
+  public changeForwardLimitSoftValue(value: number) {
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwd, value).then((res: IServerResponse) => {
+      this.props.motorConfig.softLimitForward = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kSoftLimitFwd] = res;
+      this.forceUpdate();
+    });
+  }
+
+  public changeReverseLimitSoftValue(value: number) {
+    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRev, value).then((res: IServerResponse) => {
+      this.props.motorConfig.softLimitReverse = res.responseValue as number;
+      this.props.paramResponses[ConfigParameter.kSoftLimitRev] = res;
       this.forceUpdate();
     });
   }

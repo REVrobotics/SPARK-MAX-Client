@@ -24,10 +24,16 @@ interface IProps {
   onMotorSelect: (motorType: MotorConfiguration) => void
 }
 
-export const MotorTypeSelect: React.SFC<IProps> = (props) => {
+export const MotorTypeSelect: React.FC<IProps> = (props) => {
+  const disabled = !props.connected;
+
   return (
-    <MotorSelect filterable={false} items={defaultItems} itemRenderer={renderer} onItemSelect={props.onMotorSelect}>
-      <Button fill={true} disabled={!props.connected} text={props.activeConfig.name} rightIcon="double-caret-vertical" />
+    <MotorSelect filterable={false}
+                 disabled={disabled}
+                 items={defaultItems}
+                 itemRenderer={renderer}
+                 onItemSelect={props.onMotorSelect}>
+      <Button fill={true} disabled={disabled} text={props.activeConfig.name} rightIcon="double-caret-vertical" />
     </MotorSelect>
   );
 };
