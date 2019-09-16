@@ -15,10 +15,12 @@ class SparkServer {
   private socket: Socket;
   private cmdQueue: any;
   private root: Root;
+  private isGrpc: boolean;
 
-  constructor(host: string, port: number) {
+  constructor(host: string, port: number, isGrpc: boolean) {
     this.host = host;
     this.port = port;
+    this.isGrpc = isGrpc;
     this.socket = socket("req");
     this.socket.connect(`tcp://${this.host}:${this.port}`);
     this.cmdQueue = new queue((input: any, cb: Function) => {

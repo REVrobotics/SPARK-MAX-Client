@@ -2,14 +2,15 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Provider} from "react-redux";
 import {createStore} from "redux";
+import {ipcRenderer, remote} from 'electron';
 import App from './App';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import reducer from "./store/reducer";
 
 const applicationStore = createStore(reducer);
-const ipcRenderer = (window as any).require("electron").ipcRenderer;
-const headless = false;
+// read value passed from the main process
+const headless = remote.getGlobal("headless");
 
 if (headless) {
   ReactDOM.render(
@@ -20,7 +21,6 @@ if (headless) {
   );
   registerServiceWorker();
 } else {
-  // TODO - Add looking for config 'port' number.
   ipcRenderer.on("start-server-response", (event: any, error: any) => {
     ReactDOM.render(
       <Provider store={applicationStore}>
