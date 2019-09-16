@@ -141,6 +141,49 @@ input:checked ~ .bp3-control-indicator {
     width: 100%;
 }
 
+.form-top {
+    align-items: flex-start;
+}
+
+.form-left {
+    justify-content: flex-start;
+}
+
+.form-right {
+    justify-content: flex-end;
+}
+
+.form-space-between {
+    justify-content: space-between;
+}
+
+h4.form-title {
+    margin: 10px 0 15px;
+    width: 100%;
+
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: normal;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-column + .form-column {
+    margin-left: 20px;
+}
+
+.form-column-third {
+    width: 33%;
+}
+
+.form-control-group + .form-control-group {
+    margin-top: 15px;
+}
+
 .form-group-three-quarters {
     width: 75%;
 }
@@ -161,8 +204,20 @@ input:checked ~ .bp3-control-indicator {
     width: 20%;
 }
 
+.bp3-form-group.form-group-fit {
+    margin: 0;
+}
+
+.bp3-form-group.form-group-fit .bp3-control {
+    margin-top: 0;
+}
+
 .inline {
     flex-direction: row;
+}
+
+.no-wrap {
+    white-space: nowrap;
 }
 
 .echart-container {
@@ -217,12 +272,14 @@ input:checked ~ .bp3-control-indicator {
     align-items: center;
 }
 
-.modified > label {
+.modified > label, label.modified {
     font-style: italic;
     font-weight: bold;
 }
 
-.modified > label > div > span:first-child::after, .modified > label > span:first-child::after {
+.modified > label > div > span:first-child::after,
+.modified > label > span:first-child::after,
+label.modified::after {
     content: '*';
 }
 

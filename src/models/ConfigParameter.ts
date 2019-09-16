@@ -596,5 +596,19 @@ export enum ConfigParameter {
   * @default 0
   * @type float32
   */
-  kCompensatedNominalVoltage = 75
+  kCompensatedNominalVoltage = 75,
+
+  /*
+  *
+  * @default 0
+  * @type float32
+  */
+  kSoftLimitFwd = 115,
+
+  /*
+  *
+  * @default 0
+  * @type float32
+  */
+  kSoftLimitRev = 116
 }
