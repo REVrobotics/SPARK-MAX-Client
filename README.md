@@ -17,6 +17,20 @@ Parts of the project structure were created by [create-react-app](https://github
 3. Open up a command prompt or terminal window, and type `npm install` from the project root directory.
 4. Once the project has installed it's dependencies, run `npm start` to start both the react development server and the desktop electron environment.
 
+## Generation of gRPC client from .proto files
+Project includes helper script which simplifies gRPC client generation based on .proto files.
+This script downloads file from GitHub repository and generates gRPC client using protoc tool.
+ 
+1. To download .proto files from repository provide all settings into `proto-gen.config.js`.
+2. It is recommended to provide all sensitive settings in `proto-gen.secret.js` or `proto-gen.secret.json` file. Secret file will be not committed into Git.
+    1. Copy `scripts/proto-gen/proto-gen.secret-sample.js` file and rename it either to `proto-gen.secret.json` or `proto-gen.secret.js`.
+3. Run
+    ```
+    npm run proto-gen
+    ```
+
+**Note.** Look at comments in [scripts/proto-gen/proto-gen.config.js](proto-gen.config.js) file to understand how to tune generation process.  
+
 ## Project Scripts
 ### `npm run react`
 This starts the react TypeScript development server only. When this window loads, an error will display saying 'window.require is not a function'.
