@@ -1,6 +1,7 @@
 import MotorConfiguration from "../models/MotorConfiguration";
 import PIDFProfile from "../models/PIDFProfile";
 import {ConfigParam} from "../models/ConfigParam";
+import {ListRequestDto, ListResponseDto} from "../models/dto";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -66,7 +67,7 @@ class SparkManager {
 
   public discoverAndConnect(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this.listDevices().then((devices: string[]) => {
+      this.listUsbDevices().then((devices: string[]) => {
         if (devices.length > 0) {
           this.connect(devices[0]).then((response: any) => {
             if (!response.connected) {
@@ -86,16 +87,24 @@ class SparkManager {
     });
   }
 
-  public listDevices(): Promise<string[]> {
-    return new Promise<string[]>((resolve, reject) => {
-      ipcRenderer.once("list-device-response", (event: any, error: any, response: any) => {
+  public listUsbDevices(): Promise<string[]> {
+    return this.listDevices({ all: false }).then(({ deviceList }) => deviceList);
+  }
+
+  public listAllDevices(): Promise<string[]> {
+    return this.listDevices({ all: true }).then(({ deviceList }) => deviceList);
+  }
+
+  public listDevices(request: ListRequestDto): Promise<ListResponseDto> {
+    return new Promise<ListResponseDto>((resolve, reject) => {
+      ipcRenderer.once("list-device-response", (event: any, error: any, response: ListResponseDto) => {
         if (error) {
           reject(error);
         } else {
-          resolve(response.deviceList);
+          resolve(response);
         }
       });
-      ipcRenderer.send("list-device");
+      ipcRenderer.send("list-device", request);
     });
   }
 

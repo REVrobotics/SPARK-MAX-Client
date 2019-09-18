@@ -12,7 +12,7 @@ import {
   factoryResetRequestFromDto,
   firmwareRequestFromDto,
   firmwareResponseToDto,
-  getParameterRequestFromDto,
+  getParameterRequestFromDto, ListRequestDto,
   listRequestFromDto,
   listResponseToDto, parameterListRequestFromDto, parameterListResponse, parameterListResponseToDto, parameterResponse,
   parameterResponseToDto,
@@ -103,7 +103,7 @@ class SparkServer {
     this.cmdQueue.push({id: "init"});
   }
 
-  private sendCommand(lookupType: any, responseType: any, msg: string, cb?: Function) {
+  private sendCommand(lookupType: any, responseType: any, msg: any, cb?: Function) {
     /*Queue the attached request
     * Priority:
     *   - Connect (also flush queue)
@@ -155,11 +155,10 @@ class SparkServer {
     }
   }
 
-  public list(listCommand: any, cb?: Function) {
+  public list(listCommand: ListRequestDto, cb?: Function) {
     if (this.isGrpc) {
       this.grpcClient.list(listRequestFromDto(listCommand), wrapIntoGrpcCallback(cb, listResponseToDto));
     } else {
-      listCommand.ctrl = 1;
       this.sendCommand("list", "list", listCommand, cb);
     }
   }

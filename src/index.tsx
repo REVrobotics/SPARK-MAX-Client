@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Provider} from "react-redux";
-import {createStore} from "redux";
+import {applyMiddleware, createStore} from "redux";
+import thunk from "redux-thunk";
 import App from './App';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import reducer from "./store/reducer";
 
-const applicationStore = createStore(reducer);
+const applicationStore = createStore(reducer, applyMiddleware(thunk));
 // read value passed from the main process
 const electron = (window as any).require("electron");
 const {ipcRenderer, remote} = electron;

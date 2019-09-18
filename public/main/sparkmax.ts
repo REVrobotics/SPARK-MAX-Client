@@ -5,6 +5,7 @@ import * as path from "path";
 
 import SparkServer from "./sparkmax-server";
 import {USE_GRPC, HOST, PORT} from "../program-args";
+import {ListRequestDto} from "../proto-gen";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
@@ -126,8 +127,8 @@ ipcMain.on("get-param-list", (event: any) => {
   });
 });
 
-ipcMain.on("list-device", (event: any) => {
-  server.list({all: true}, (err: any, response: any) => {
+ipcMain.on("list-device", (event: any, request: ListRequestDto) => {
+  server.list(request, (err: any, response: any) => {
     event.sender.send("list-device-response", err, response);
   });
 });

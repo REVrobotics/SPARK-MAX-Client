@@ -2,12 +2,25 @@ import {ActionCreator} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
   ADD_LOG,
-  IAddLog, ISetBurnedMotorConfig,
+  IAddLog,
+  ISetBurnedMotorConfig,
   ISetConnectedDevice,
-  ISetIsConnecting, ISetMotorConfig, ISetParameters, ISetParamResponses, ISetUpdateAvailable,
-  IUpdateConnectionStatus, SET_BURNED_MOTOR_CONFIG, SET_CONNECTED_DEVICE,
+  ISetIsConnecting,
+  ISetMotorConfig,
+  ISetParameters,
+  ISetParamResponses,
+  ISetUpdateAvailable,
+  ISetUsbDevices,
+  IUpdateConnectionStatus,
+  SET_BURNED_MOTOR_CONFIG,
+  SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_SERVER_PARAM_RESPONSE, SET_UPDATE_AVAILABLE
+  SET_CONNECTION_STATUS,
+  SET_CURRENT_MOTOR_CONFIG,
+  SET_PARAMETERS,
+  SET_SERVER_PARAM_RESPONSE,
+  SET_UPDATE_AVAILABLE,
+  SET_USB_DEVICES
 } from "./types";
 import {IServerResponse} from "../managers/SparkManager";
 
@@ -31,6 +44,13 @@ export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (connected
     connectedDevice
   },
   type: SET_CONNECTED_DEVICE
+});
+
+export const setUsbDevices: ActionCreator<ISetUsbDevices> = (usbDevices: string[]) => ({
+  payload: {
+    usbDevices
+  },
+  type: SET_USB_DEVICES
 });
 
 export const setParameters: ActionCreator<ISetParameters> = (parameters: number[]) => ({

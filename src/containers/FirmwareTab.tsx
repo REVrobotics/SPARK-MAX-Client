@@ -194,7 +194,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
   private scanDevices = () => {
     this.setState({scanInProgress: true, loadingCANFirmware: false});
-    SparkManager.listDevices().then(value => {
+    SparkManager.listAllDevices().then(value => {
       const deviceDetails = new Array<CANScanDetail>();
 
       this.setState({loadingCANFirmware: true});

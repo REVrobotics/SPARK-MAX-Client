@@ -3,13 +3,20 @@ import {default as MotorConfiguration, REV_BRUSHLESS} from "../models/MotorConfi
 import {
   ADD_LOG,
   ApplicationActions,
-  IApplicationState, SET_BURNED_MOTOR_CONFIG,
+  IApplicationState,
+  SET_BURNED_MOTOR_CONFIG,
   SET_CONNECTED_DEVICE,
   SET_CONNECTING,
-  SET_CONNECTION_STATUS, SET_CURRENT_MOTOR_CONFIG, SET_PARAMETERS, SET_SERVER_PARAM_RESPONSE, SET_UPDATE_AVAILABLE
+  SET_CONNECTION_STATUS,
+  SET_CURRENT_MOTOR_CONFIG,
+  SET_PARAMETERS,
+  SET_SERVER_PARAM_RESPONSE,
+  SET_UPDATE_AVAILABLE,
+  SET_USB_DEVICES
 } from "./types";
 
 export const initialState: IApplicationState = {
+  usbDevices: [],
   burnedConfig: new MotorConfiguration("REV BRUSHLESS", 1),
   connectedDevice: "",
   connectionStatus: "NOT CONNECTED",
@@ -30,6 +37,8 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
       return {...state, isConnecting: action.payload.isConnecting};
     case SET_CONNECTED_DEVICE:
       return {...state, connectedDevice: action.payload.connectedDevice};
+    case SET_USB_DEVICES:
+      return {...state, usbDevices: action.payload.usbDevices};
     case SET_PARAMETERS:
       return {...state, parameters: action.payload.parameters};
     case SET_CURRENT_MOTOR_CONFIG:
