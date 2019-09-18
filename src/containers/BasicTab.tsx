@@ -11,7 +11,7 @@ import {
   ISetMotorConfig,
   IUpdateConnectionStatus
 } from "../store/types";
-import {ConfigParameter} from "../models/ConfigParameter";
+import {ConfigParam} from "../models/ConfigParam";
 import PopoverHelp from "../components/PopoverHelp";
 import {Dispatch} from "redux";
 import {setBurnedMotorConfig, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
@@ -113,7 +113,7 @@ class BasicTab extends React.Component<IProps, IState> {
 
     // CAN ID
     const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
-    const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
+    const canResponse: IServerResponse = this.getParamResponse(ConfigParam.kCanID);
     const canResponseError: boolean = canResponse.status === 4;
     const canIs0: boolean = !canResponseError && canID === 0;
     const canError = canResponseError || canIs0;
@@ -129,17 +129,17 @@ class BasicTab extends React.Component<IProps, IState> {
 
     // Encoder CPR
     const encoderCprModified: boolean = motorConfig.encoderCountsPerRevolution !== burnedConfig.encoderCountsPerRevolution;
-    const encoderCprResponse: IServerResponse = this.getParamResponse(ConfigParameter.kEncoderCountsPerRev);
+    const encoderCprResponse: IServerResponse = this.getParamResponse(ConfigParam.kEncoderCountsPerRev);
     const encoderCprError: boolean = encoderCprResponse.status === 4;
 
     // Motor Deadband
     const deadbandModified: boolean = motorConfig.inputDeadband.toFixed(4) !== burnedConfig.inputDeadband.toFixed(4);
-    const deadbandResponse: IServerResponse = this.getParamResponse(ConfigParameter.kInputDeadband);
+    const deadbandResponse: IServerResponse = this.getParamResponse(ConfigParam.kInputDeadband);
     const deadbandError: boolean = deadbandResponse.status === 4;
 
     // Smart Current Limit
     const currentModified: boolean = motorConfig.smartCurrentStallLimit !== burnedConfig.smartCurrentStallLimit;
-    const currentResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSmartCurrentStallLimit);
+    const currentResponse: IServerResponse = this.getParamResponse(ConfigParam.kSmartCurrentStallLimit);
     const currentError: boolean = currentResponse.status === 4;
 
     // Forward Limit Switch
@@ -162,17 +162,17 @@ class BasicTab extends React.Component<IProps, IState> {
 
     // Ramp Rate
     const rampModified: boolean = motorConfig.rampRate !== burnedConfig.rampRate;
-    const rampResponse: IServerResponse = this.getParamResponse(ConfigParameter.kRampRate);
+    const rampResponse: IServerResponse = this.getParamResponse(ConfigParam.kRampRate);
     const rampError: boolean = rampResponse.status === 4;
 
     // Soft Forward Limit
     const softLimitForwardModified: boolean = motorConfig.softLimitForward !== burnedConfig.softLimitForward;
-    const softLimitForwardResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSoftLimitFwd);
+    const softLimitForwardResponse: IServerResponse = this.getParamResponse(ConfigParam.kSoftLimitFwd);
     const softLimitForwardError: boolean = softLimitForwardResponse.status === 4;
 
     // Soft Reverse Limit
     const softLimitReverseModified: boolean = motorConfig.softLimitReverse !== burnedConfig.softLimitReverse;
-    const softLimitReverseResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSoftLimitRev);
+    const softLimitReverseResponse: IServerResponse = this.getParamResponse(ConfigParam.kSoftLimitRev);
     const softLimitReverseError: boolean = softLimitReverseResponse.status === 4;
 
     return (
@@ -358,24 +358,24 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeCanID(id: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kCanID, id).then((res: IServerResponse) => {
       this.props.motorConfig.canID = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kCanID] = res;
+      this.props.paramResponses[ConfigParam.kCanID] = res;
       this.forceUpdate();
     });
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
-    SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kMotorType, motorType.type).then((res: IServerResponse) => {
       this.props.motorConfig.type = res.responseValue as number;
       if (this.props.motorConfig.type === 1) {
-        SparkManager.setAndGetParameter(ConfigParameter.kSensorType, 1).then((sensorRes: IServerResponse) => {
+        SparkManager.setAndGetParameter(ConfigParam.kSensorType, 1).then((sensorRes: IServerResponse) => {
           this.props.motorConfig.sensorType = sensorRes.responseValue as number;
-          this.props.paramResponses[ConfigParameter.kSensorType] = sensorRes;
+          this.props.paramResponses[ConfigParam.kSensorType] = sensorRes;
           this.forceUpdate();
         });
       }
-      this.props.paramResponses[ConfigParameter.kMotorType] = res;
+      this.props.paramResponses[ConfigParam.kMotorType] = res;
       this.forceUpdate();
     });
   }
@@ -383,111 +383,111 @@ class BasicTab extends React.Component<IProps, IState> {
   public changeIdleMode() {
     const prevMode: number = this.props.motorConfig.idleMode;
     const newMode: number = prevMode === 0 ? 1 : 0;
-    SparkManager.setAndGetParameter(ConfigParameter.kIdleMode, newMode).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kIdleMode, newMode).then((res: IServerResponse) => {
       this.props.motorConfig.idleMode = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kIdleMode] = res;
+      this.props.paramResponses[ConfigParam.kIdleMode] = res;
       this.forceUpdate();
     });
   }
 
   public changeSensorType(sensorType: Sensor) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSensorType, sensorType.id).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSensorType, sensorType.id).then((res: IServerResponse) => {
       this.props.motorConfig.sensorType = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSensorType] = res;
+      this.props.paramResponses[ConfigParam.kSensorType] = res;
       this.forceUpdate();
     });
   }
 
   public changeEncoderCpr(encoderCpr: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kEncoderCountsPerRev, encoderCpr).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kEncoderCountsPerRev, encoderCpr).then((res: IServerResponse) => {
       this.props.motorConfig.encoderCountsPerRevolution = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kEncoderCountsPerRev] = res;
+      this.props.paramResponses[ConfigParam.kEncoderCountsPerRev] = res;
       this.forceUpdate();
     });
   }
 
   public changeDeadband(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kInputDeadband, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kInputDeadband, value).then((res: IServerResponse) => {
       this.props.motorConfig.inputDeadband = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kInputDeadband] = res;
+      this.props.paramResponses[ConfigParam.kInputDeadband] = res;
       this.forceUpdate();
     });
   }
 
   public changeCurrentLimit(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSmartCurrentStallLimit, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSmartCurrentStallLimit, value).then((res: IServerResponse) => {
       this.props.motorConfig.smartCurrentStallLimit = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSmartCurrentStallLimit] = res;
+      this.props.paramResponses[ConfigParam.kSmartCurrentStallLimit] = res;
       this.forceUpdate();
     });
   }
 
   public changeForwardLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kHardLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.hardLimitSwitchForwardEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kHardLimitFwdEn] = res;
+      this.props.paramResponses[ConfigParam.kHardLimitFwdEn] = res;
       this.forceUpdate();
     });
   }
 
   public changeReverseLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kHardLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.hardLimitSwitchReverseEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kHardLimitRevEn] = res;
+      this.props.paramResponses[ConfigParam.kHardLimitRevEn] = res;
       this.forceUpdate();
     });
   }
 
   public changeForwardLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSoftLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitSwitchForwardEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kSoftLimitFwdEn] = res;
+      this.props.paramResponses[ConfigParam.kSoftLimitFwdEn] = res;
       this.forceUpdate();
     });
   }
 
   public changeReverseLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSoftLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitSwitchReverseEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kSoftLimitRevEn] = res;
+      this.props.paramResponses[ConfigParam.kSoftLimitRevEn] = res;
       this.forceUpdate();
     });
   }
 
   public changeForwardLimitSoftValue(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwd, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSoftLimitFwd, value).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitForward = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSoftLimitFwd] = res;
+      this.props.paramResponses[ConfigParam.kSoftLimitFwd] = res;
       this.forceUpdate();
     });
   }
 
   public changeReverseLimitSoftValue(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRev, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kSoftLimitRev, value).then((res: IServerResponse) => {
       this.props.motorConfig.softLimitReverse = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSoftLimitRev] = res;
+      this.props.paramResponses[ConfigParam.kSoftLimitRev] = res;
       this.forceUpdate();
     });
   }
 
   public changeForwardPolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchForwardPolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchFwdPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kLimitSwitchFwdPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.limitSwitchForwardPolarity = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kLimitSwitchFwdPolarity] = res;
+      this.props.paramResponses[ConfigParam.kLimitSwitchFwdPolarity] = res;
       this.forceUpdate();
     });
   }
 
   public changeReversePolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchReversePolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchRevPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kLimitSwitchRevPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
       this.props.motorConfig.limitSwitchReversePolarity = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kLimitSwitchRevPolarity] = res;
+      this.props.paramResponses[ConfigParam.kLimitSwitchRevPolarity] = res;
       this.forceUpdate();
     });
   }
@@ -495,9 +495,9 @@ class BasicTab extends React.Component<IProps, IState> {
   public changeRampRateEnabled() {
     const newEnabled: boolean = !this.state.rampRateEnabled;
     if (!newEnabled) {
-      SparkManager.setAndGetParameter(ConfigParameter.kRampRate, 0).then((res: IServerResponse) => {
+      SparkManager.setAndGetParameter(ConfigParam.kRampRate, 0).then((res: IServerResponse) => {
         this.props.motorConfig.rampRate = res.responseValue as number;
-        this.props.paramResponses[ConfigParameter.kRampRate] = res;
+        this.props.paramResponses[ConfigParam.kRampRate] = res;
         this.forceUpdate();
       });
     }
@@ -505,9 +505,9 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public changeRampRate(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kRampRate, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(ConfigParam.kRampRate, value).then((res: IServerResponse) => {
       this.props.motorConfig.rampRate = (res.responseValue as number);
-      this.props.paramResponses[ConfigParameter.kRampRate] = res;
+      this.props.paramResponses[ConfigParam.kRampRate] = res;
       this.forceUpdate();
     });
   }

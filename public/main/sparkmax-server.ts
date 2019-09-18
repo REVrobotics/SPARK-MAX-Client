@@ -4,12 +4,23 @@ import {load, Root} from "protobufjs";
 import {socket, Socket} from "zeromq";
 import {credentials} from "grpc";
 import {
-  burnRequest,
-  connectRequest,
-  disconnectRequest, factoryResetRequest, firmwareRequest, firmwareResponse,
-  getParameterRequest,
-  listRequest,
-  listResponse, parameterResponse, pingRequest, rootCommand, setParameterRequest, setpointRequest, setpointResponse,
+  burnRequestFromDto, burnResponseToDto,
+  connectRequestFromDto,
+  connectResponseToDto,
+  disconnectRequestFromDto,
+  disconnectResponseToDto,
+  factoryResetRequestFromDto,
+  firmwareRequestFromDto,
+  firmwareResponseToDto,
+  getParameterRequestFromDto,
+  listRequestFromDto,
+  listResponseToDto, parameterListRequestFromDto, parameterListResponse, parameterListResponseToDto, parameterResponse,
+  parameterResponseToDto,
+  pingRequestFromDto, pingResponseToDto,
+  rootResponseToDto,
+  setParameterRequestFromDto,
+  setpointRequestFromDto,
+  setpointResponseToDto,
   sparkMaxServerClient
 } from "../proto-gen";
 import {Message} from "google-protobuf";
@@ -21,22 +32,8 @@ const queue = require("better-queue");
 const PROTO_BUFFERS_TYPES = path.join(__dirname, "../protobuf/SPARK-MAX-Types.proto");
 const PROTO_BUFFERS_COMMANDS = path.join(__dirname, "../protobuf/SPARK-MAX-Commands.proto");
 
-function messageToObject(message: Message): any {
-  return message.toObject() as any;
-}
-
-function createRootCommand(rootObject?: rootCommand.AsObject): rootCommand | undefined {
-  if (rootObject == null) {
-    return;
-  }
-
-  const root = new rootCommand();
-  root.setDevice(rootObject.device);
-  return root;
-}
-
 function wrapIntoGrpcCallback<TMessage extends Message, TDto>(cb: Function = noop,
-                                                                 map: (msg: TMessage) => TDto = messageToObject): (err: any, response: any) => void {
+                                                                 map: (msg: TMessage) => TDto): (err: any, response: any) => void {
   return (err, msg) => {
     if (err) {
       cb(err);
@@ -141,9 +138,7 @@ class SparkServer {
 
   public connect(controlCommand: any, cb?: Function) {
     if (this.isGrpc) {
-      const request = new connectRequest();
-      request.setDevice(controlCommand.device);
-      this.grpcClient.connect(request, wrapIntoGrpcCallback(cb));
+      this.grpcClient.connect(connectRequestFromDto(controlCommand), wrapIntoGrpcCallback(cb, connectResponseToDto));
     } else {
       controlCommand.ctrl = 1;
       this.sendCommand("connect", "connect", controlCommand, cb);
@@ -152,9 +147,7 @@ class SparkServer {
 
   public disconnect(controlCommand: any, cb?: Function) {
     if (this.isGrpc) {
-      const request = new disconnectRequest();
-      request.setDevice(controlCommand.device);
-      this.grpcClient.disconnect(request, wrapIntoGrpcCallback(cb));
+      this.grpcClient.disconnect(disconnectRequestFromDto(controlCommand), wrapIntoGrpcCallback(cb, disconnectResponseToDto));
     } else {
       controlCommand.ctrl = 2;
       this.sendCommand("disconnect", "disconnect", controlCommand, cb);
@@ -163,21 +156,7 @@ class SparkServer {
 
   public list(listCommand: any, cb?: Function) {
     if (this.isGrpc) {
-      const request = new listRequest();
-      request.setAll(listCommand.all);
-      request.setRoot(createRootCommand(listCommand.root));
-      this.grpcClient.list(request, wrapIntoGrpcCallback(cb, (msg: listResponse) => ({
-        deviceList: msg.getDevicelistList(),
-        driverList: msg.getDriverlistList(),
-        extendedList: msg.getExtendedlistList().map((item) => ({
-          deviceId: item.getDeviceid(),
-          deviceName: item.getDevicename(),
-          driverName: item.getDrivername(),
-          interfaceName: item.getInterfacename(),
-          uniqueId: item.getUniqueid(),
-          updateable: item.getUpdateable(),
-        })),
-      })));
+      this.grpcClient.list(listRequestFromDto(listCommand), wrapIntoGrpcCallback(cb, listResponseToDto));
     } else {
       listCommand.ctrl = 1;
       this.sendCommand("list", "list", listCommand, cb);
@@ -186,16 +165,26 @@ class SparkServer {
 
   public getParameter(paramCommand: any, cb: Function) {
     if (this.isGrpc) {
-      const request = new getParameterRequest();
-      request.setRoot(createRootCommand(paramCommand.root));
-      request.setParameter(paramCommand.parameter);
-      this.grpcClient.getParameter(request, wrapIntoGrpcCallback(cb, (msg: parameterResponse) => ({
-        ...msg.toObject(),
-        value: Number(msg.getValue()),
-      })));
+      this.grpcClient.getParameter(getParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, (msg: parameterResponse) => {
+        const result = parameterResponseToDto(msg);
+        return { ...result, value: Number(result.value) };
+      }));
     } else {
       this.sendCommand("getParameter", "parameter", paramCommand, (error: any, result: any) => {
         result.value = Number(result.value);
+        cb(error, result);
+      });
+    }
+  }
+
+  public getParameterList(paramListCommand: any, cb: Function) {
+    if (this.isGrpc) {
+      this.grpcClient.listParameters(parameterListRequestFromDto(paramListCommand), wrapIntoGrpcCallback(cb, (msg: parameterListResponse) => {
+        const result = parameterListResponseToDto(msg);
+        return result.parameters.map((param) => Number(param.value));
+      }));
+    } else {
+      this.sendCommand("listParameters", "listParameters", paramListCommand, (error: any, result: any) => {
         cb(error, result);
       });
     }
@@ -205,16 +194,7 @@ class SparkServer {
     paramCommand.value += "";
 
     if (this.isGrpc) {
-      const request = new setParameterRequest();
-      request.setRoot(createRootCommand(paramCommand.root));
-      request.setParameter(paramCommand.parameter);
-      request.setValue(paramCommand.value);
-      if (paramCommand.root) {
-        const root = new rootCommand();
-        root.setDevice(paramCommand.root.device);
-        request.setRoot(root);
-      }
-      this.grpcClient.setParameter(request, wrapIntoGrpcCallback(cb));
+      this.grpcClient.setParameter(setParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, parameterResponseToDto));
     } else {
       this.sendCommand("setParameter", "parameter", paramCommand, cb);
     }
@@ -223,16 +203,7 @@ class SparkServer {
   public setpoint(setpointCommand: any, cb?: Function) {
     setpointCommand.setpoint = setpointCommand.setpoint / 1024;
     if (this.isGrpc) {
-      const request = new setpointRequest();
-      request.setRoot(createRootCommand(setpointCommand.root));
-      request.setAuxsetpoint(setpointCommand.auxSetpoint);
-      request.setEnable(setpointCommand.enable);
-      request.setPidslot(setpointCommand.pidSlot);
-      request.setSetpoint(setpointCommand.setpoint);
-      this.grpcClient.setpoint(request, wrapIntoGrpcCallback(cb, (msg: setpointResponse) => ({
-        isRunning: msg.getIsrunning(),
-        setpoint: msg.getSetpoint(),
-      })));
+      this.grpcClient.setpoint(setpointRequestFromDto(setpointCommand), wrapIntoGrpcCallback(cb, setpointResponseToDto));
     } else {
       this.sendCommand("setpoint", "setpoint", setpointCommand, cb);
     }
@@ -240,9 +211,7 @@ class SparkServer {
 
   public burnFlash(burnCommand: any, cb?: Function) {
     if (this.isGrpc) {
-      const request = new burnRequest();
-      request.setRoot(createRootCommand(burnCommand.root));
-      this.grpcClient.burnFlash(request, wrapIntoGrpcCallback(cb));
+      this.grpcClient.burnFlash(burnRequestFromDto(burnCommand), wrapIntoGrpcCallback(cb, burnResponseToDto));
     } else {
       burnCommand.verify = true;
       this.sendCommand("burn", "burn", burnCommand, cb);
@@ -255,9 +224,7 @@ class SparkServer {
 
   public ping(pingCommand: any, cb: Function) {
     if (this.isGrpc) {
-      const request = new pingRequest();
-      request.setDevice(pingCommand.device);
-      this.grpcClient.ping(request, wrapIntoGrpcCallback(cb));
+      this.grpcClient.ping(pingRequestFromDto(pingCommand), wrapIntoGrpcCallback(cb, pingResponseToDto));
     } else {
       this.sendCommand("ping", "ping", pingCommand, cb);
     }
@@ -265,24 +232,7 @@ class SparkServer {
 
   public firmware(firmwareCommand: any, cb: Function) {
     if (this.isGrpc) {
-      const request = new firmwareRequest();
-      request.setRoot(createRootCommand(firmwareCommand.root));
-      request.setDevicestoupdateList(firmwareCommand.devicesToUpdate);
-      request.setFilename(firmwareCommand.filename);
-      this.grpcClient.firmware(request, wrapIntoGrpcCallback(cb, (msg: firmwareResponse) => ({
-        build: msg.getBuild(),
-        hardwareVersion: msg.getHardwareversion(),
-        isDebug: msg.getIsdebug(),
-        isUpdating: msg.getIsupdating(),
-        major: msg.getMajor(),
-        minor: msg.getMinor(),
-        updateComplete: msg.getUpdatecomplete(),
-        updateCompletedSuccessfully: msg.getUpdatecompletedsuccessfully(),
-        updateStageMessage: msg.getUpdatestagemessage(),
-        updateStagePercent: msg.getUpdatestagepercent(),
-        updateStarted: msg.getUpdatestarted(),
-        version: msg.getVersion(),
-      })));
+      this.grpcClient.firmware(firmwareRequestFromDto(firmwareCommand), wrapIntoGrpcCallback(cb, firmwareResponseToDto));
     } else {
       this.sendCommand("firmware", "firmware", firmwareCommand, cb);
     }
@@ -290,11 +240,7 @@ class SparkServer {
 
   public factoryReset(factoryResetCommand: any, cb: Function) {
     if (this.isGrpc) {
-      const request = new factoryResetRequest();
-      request.setRoot(createRootCommand(factoryResetCommand.root));
-      request.setFullwipe(factoryResetCommand.fullWipe);
-      request.setBurnafterwrite(factoryResetCommand.burnAfterWrite);
-      this.grpcClient.factoryReset(factoryResetCommand, wrapIntoGrpcCallback(cb));
+      this.grpcClient.factoryReset(factoryResetRequestFromDto(factoryResetCommand), wrapIntoGrpcCallback(cb, rootResponseToDto));
     } else {
       this.sendCommand("factoryReset", "factoryReset", factoryResetCommand, cb);
     }

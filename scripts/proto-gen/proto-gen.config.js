@@ -36,9 +36,9 @@ module.exports = {
     // Base directory for "path" property
     baseDir: "$tempDir/src/main/protobuf",
     // Path to all .proto files relative to "baseDir"
-    path: ["SPARK-MAX-Types.proto"],
+    path: ["SPARK-MAX-Types.proto", "SPARK-MAX-Commands.proto"],
     // Destination path where all generated files should be placed to
-    destDir: "$projectDir/src/proto-gen"
+    destDir: "$projectDir/src/models/proto-gen"
   }, {
     // Generated files should be used either by "main" or "renderer" process
     // gRPC code is generated only for "main" process
@@ -51,5 +51,5 @@ module.exports = {
     path: ["SPARK-MAX-Types.proto", "SPARK-MAX-Commands.proto"],
     // Destination path where all generated files should be placed to
     destDir: "$projectDir/public/proto-gen"
-  }],
+  }]
 };

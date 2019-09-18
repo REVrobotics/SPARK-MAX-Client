@@ -1,8 +1,6 @@
 import MotorConfiguration from "../models/MotorConfiguration";
 import PIDFProfile from "../models/PIDFProfile";
-import {ConfigParameter} from "../models/ConfigParameter";
-
-const MAX_PARAMETERS: number = 74;
+import {ConfigParam} from "../models/ConfigParam";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -354,11 +352,7 @@ class SparkManager {
   }
 
   public async getAllParameters(): Promise<any> {
-    const values: any[] = [];
-    for (let i = 0; i < MAX_PARAMETERS + 1; i++) {
-      values.push(await this.getParameter(i));
-    }
-    return values;
+    return await this.getParameterList();
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
@@ -395,7 +389,7 @@ class SparkManager {
     });
   }
 
-  public async setAndGetParameter(parameter: ConfigParameter, value: number | string | boolean): Promise<IServerResponse> {
+  public async setAndGetParameter(parameter: ConfigParam, value: number | string | boolean): Promise<IServerResponse> {
     const setResponse: any = await this.setParameter(parameter, value);
     const getResponse: any = await this.getParameter(parameter);
     return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
@@ -411,6 +405,19 @@ class SparkManager {
         }
       });
       ipcRenderer.send("get-param", id);
+    });
+  }
+
+  private getParameterList(): Promise<number[]> {
+    return new Promise<number[]>((resolve, reject) => {
+      ipcRenderer.once("get-param-list-response", (event: any, error: any, response: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(response);
+        }
+      });
+      ipcRenderer.send("get-param-list");
     });
   }
 

@@ -65,18 +65,23 @@ ipcMain.on("connect", (event: any, device: string) => {
       if (connCheckID === null) {
         connCheckID = global.setInterval(() => {
           server.ping({device: currentDevice}, (pingErr: any, pingResponse: any) => {
+            let doDisconnect = false;
             if (pingErr) {
               console.error(err);
+              doDisconnect = true;
             } else {
               if (!pingResponse.connected && firmwareID === null) {
                 console.log("Detected device disconnect");
-                global.clearInterval(connCheckID);
-                connCheckID = null;
-                server.disconnect({device: currentDevice, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
-                  console.log("Disconnected " + currentDevice + " from the SPARK server");
-                  event.sender.send("disconnect-response", disconnectErr, disconnectResponse);
-                });
+                doDisconnect = true;
               }
+            }
+            if (doDisconnect) {
+              global.clearInterval(connCheckID);
+              connCheckID = null;
+              server.disconnect({device: currentDevice, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
+                console.log("Disconnected " + currentDevice + " from the SPARK server");
+                event.sender.send("disconnect-response", disconnectErr, disconnectResponse);
+              });
             }
           });
         }, 1000);
@@ -109,6 +114,14 @@ ipcMain.on("get-param", (event: any, parameter: any) => {
   server.getParameter({parameter}, (err: any, response: string) => {
     setTimeout(() => {
       event.sender.send("get-param-" + parameter + "-response", err, response);
+    });
+  });
+});
+
+ipcMain.on("get-param-list", (event: any) => {
+  server.getParameterList({}, (err: any, response: any[]) => {
+    setTimeout(() => {
+      event.sender.send("get-param-list-response", err, response);
     });
   });
 });

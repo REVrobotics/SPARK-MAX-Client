@@ -28,6 +28,7 @@
     "lodash": "^4.17.15",
     "opn": "^5.5.0",
     "protobufjs": "^6.8.8",
+    "protoc-plugin": "0.0.6",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-redux": "^6.0.1",
@@ -37,7 +38,7 @@
     "zeromq": "^5.1.0"
   },
   "scripts": {
-    "react": "react-scripts-ts start",
+    "react": "cross-env BROWSER=none react-scripts-ts start",
     "desktop": "npm run build-desktop && electron build/electron.js",
     "start": "concurrently \"npm run react\" \"npm run desktop\"",
     "start:grpc": "concurrently \"npm run react\" \"npm run desktop -- --grpc --remote --port=3005\"",
@@ -59,6 +60,7 @@
     "@types/react-redux": "^6.0.14",
     "@types/zeromq": "^4.6.2",
     "concurrently": "^4.1.1",
+    "cross-env": "^6.0.0",
     "electron": "^3.1.13",
     "electron-builder": "^20.44.4",
     "electron-debug": "^2.2.0",

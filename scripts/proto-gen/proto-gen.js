@@ -41,22 +41,20 @@ function generate(generationConfig) {
  * @return {Promise<unknown>}
  */
 function generateForRenderer(generationConfig) {
-  const tsCmd = [
+  const dtoCmd = [
     path.resolve(projectDir, "node_modules/grpc-tools/bin/protoc"),
     // protoc TS generation plugin
-    `--plugin=protoc-gen-ts=${normalizeCmdPath(path.resolve(projectDir, "node_modules/.bin/protoc-gen-ts"))}`,
+    `--plugin=protoc-gen-dto=${normalizeCmdPath(path.resolve(projectDir, "scripts/protoc-dto-plugin/protoc-dto-plugin"))}`,
     // Path all internal .proto imports will be resolved upon
     generationConfig.includeDir ? `--proto_path=${resolvePath(generationConfig.includeDir)}` : '',
     // Import settings: format, destination directory
-    `--js_out=import_style=commonjs,binary:${resolvePath(generationConfig.destDir)}`,
-    // Import settings: format, destination directory
-    `--ts_out=${resolvePath(generationConfig.destDir)}`,
+    `--dto_out=${resolvePath(generationConfig.destDir)}`,
     // Source .proto files
     ...generationConfig.path.map((p) => path.resolve(resolvePath(generationConfig.baseDir), p)),
   ];
 
   return fs.mkdirp(resolvePath(generationConfig.destDir))
-    .then(() => exec(tsCmd.join(" "), {
+    .then(() => exec(dtoCmd.join(" "), {
       env: {
         ...process.env,
         PATH: `${process.env.PATH};${path.resolve(projectDir, "node_modules/.bin")}`,
@@ -96,6 +94,18 @@ function generateForMain(generationConfig) {
     ...generationConfig.path.map((p) => path.resolve(resolvePath(generationConfig.baseDir), p)),
   ];
 
+  const dtoCmd = [
+    path.resolve(projectDir, "node_modules/grpc-tools/bin/protoc"),
+    // protoc TS generation plugin
+    `--plugin=protoc-gen-dto=${normalizeCmdPath(path.resolve(projectDir, "scripts/protoc-dto-plugin/protoc-dto-plugin"))}`,
+    // Path all internal .proto imports will be resolved upon
+    generationConfig.includeDir ? `--proto_path=${resolvePath(generationConfig.includeDir)}` : '',
+    // Import settings: format, destination directory
+    `--dto_out=withMappers:${resolvePath(generationConfig.destDir)}`,
+    // Source .proto files
+    ...generationConfig.path.map((p) => path.resolve(resolvePath(generationConfig.baseDir), p)),
+  ];
+
   return fs.mkdirp(resolvePath(generationConfig.destDir))
     .then(() => exec(grpcCmd.join(" "), {
       env: {
@@ -104,6 +114,12 @@ function generateForMain(generationConfig) {
       },
     }))
     .then(() => exec(tsCmd.join(" "), {
+      env: {
+        ...process.env,
+        PATH: `${process.env.PATH};${path.resolve(projectDir, "node_modules/.bin")}`,
+      },
+    }))
+    .then(() => exec(dtoCmd.join(" "), {
       env: {
         ...process.env,
         PATH: `${process.env.PATH};${path.resolve(projectDir, "node_modules/.bin")}`,
@@ -119,7 +135,7 @@ function generateForMain(generationConfig) {
  */
 function download(repositoryConfig) {
   if (repositoryConfig == null) {
-    return;
+    return Promise.resolve();
   }
 
   // Currently only download from GitHub is supported
