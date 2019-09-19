@@ -46,6 +46,15 @@ export const getSelectedDevice = (state: IApplicationState) => {
 export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state.devices[deviceId];
 
 /**
+ * Get device by predefined order
+ *
+ * @param orderedDevices
+ * @param devices
+ */
+export const getDevicesInOrder = ({ orderedDevices, devices }: IApplicationState) =>
+  orderedDevices.map((deviceId) => devices[deviceId]);
+
+/**
  * Returns USB device ID for given device ID.
  * For USB device this method returns its ID.
  * For CAN device this method returns ID of master USB device.

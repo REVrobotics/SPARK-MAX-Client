@@ -103,24 +103,24 @@ ipcMain.on("disconnect", (event: any, device: string) => {
   });
 });
 
-ipcMain.on("set-param", (event: any, parameter: number, value: any) => {
-  server.setParameter({value, parameter}, (err: any, response: any) => {
+ipcMain.on("set-param", (event: any, device: string, parameter: number, value: any) => {
+  server.setParameter({root: {device}, value, parameter}, (err: any, response: any) => {
     setTimeout(() => {
       event.sender.send("set-param-" + parameter + "-response", err, response);
     });
   });
 });
 
-ipcMain.on("get-param", (event: any, parameter: any) => {
-  server.getParameter({parameter}, (err: any, response: string) => {
+ipcMain.on("get-param", (event: any, device: string, parameter: any) => {
+  server.getParameter({root: {device}, parameter}, (err: any, response: string) => {
     setTimeout(() => {
       event.sender.send("get-param-" + parameter + "-response", err, response);
     });
   });
 });
 
-ipcMain.on("get-param-list", (event: any) => {
-  server.getParameterList({}, (err: any, response: any[]) => {
+ipcMain.on("get-param-list", (event: any, device: string) => {
+  server.getParameterList({root: {device}}, (err: any, response: any[]) => {
     setTimeout(() => {
       event.sender.send("get-param-list-response", err, response);
     });
@@ -133,14 +133,14 @@ ipcMain.on("list-device", (event: any, request: ListRequestDto) => {
   });
 });
 
-ipcMain.on("burn-flash", (event: any) => {
-  server.burnFlash({}, (err: any, response: any) => {
+ipcMain.on("burn-flash", (event: any, device: string) => {
+  server.burnFlash({root: {device}}, (err: any, response: any) => {
     event.sender.send("burn-flash-response", err, response);
   });
 });
 
-ipcMain.on("restore-defaults", (event: any) => {
-  server.factoryReset({fullWipe: true, burnAfterWrite: true}, (err: any, response: any) => {
+ipcMain.on("restore-defaults", (event: any, device: string) => {
+  server.factoryReset({root: {device}, fullWipe: true, burnAfterWrite: true}, (err: any, response: any) => {
     setTimeout(() => {
       event.sender.send("restore-defaults-response", err, response);
     }, 1000);
@@ -172,15 +172,6 @@ ipcMain.on("disable-heartbeat", (event: any) => {
 
 ipcMain.on("set-setpoint", (event: any, newSetpoint: number) => {
   setpoint = newSetpoint;
-});
-
-ipcMain.on("save-config", (event: any, device: string) => {
-  console.log("Saving configuration to " + device + "...");
-  server.burnFlash({device}, (error: any, response: any) => {
-    setTimeout(() => {
-      event.sender.send("save-config-response", error, response);
-    });
-  });
 });
 
 ipcMain.on("load-firmware", (event: any, filename: string) => {

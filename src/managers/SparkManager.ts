@@ -135,7 +135,7 @@ class SparkManager {
     ipcRenderer.send("download", url);
   }
 
-  public restoreDefaults(): Promise<any> {
+  public restoreDefaults(device: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       ipcRenderer.once("restore-defaults-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -144,7 +144,7 @@ class SparkManager {
           resolve(response);
         }
       });
-      ipcRenderer.send("restore-defaults");
+      ipcRenderer.send("restore-defaults", device);
     });
   }
 
@@ -185,180 +185,163 @@ class SparkManager {
     });
   }
 
-  public saveConfig(device: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      ipcRenderer.once("save-config-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("save-config", device);
-    });
-  }
-
   public onDisconnect(f: (device: string) => void): void {
     ipcRenderer.on("disconnect-response", (err: Error, device: string) => f(device));
   }
 
-  public getConfigFromParams(): Promise<MotorConfiguration> {
-    return new Promise<MotorConfiguration>((resolve, reject) => {
-      this.getAllParameters().then((values: any[]) => {
-        const config: MotorConfiguration = new MotorConfiguration("REV Brushless", 1);
-        config.canID = values[0];
-        config.inputMode = values[1];
-        config.type = values[2];
-        config.commutationAdvance = values[3];
-        config.sensorType = values[4];
-        config.controlType = values[5];
-        config.idleMode = values[6];
-        config.inputDeadband = values[7];
-        config.firmwareVersion = values[8];
-        config.hallOffset = values[9];
-        config.polePairs = values[10];
-        config.currentChop = values[11];
-        config.currentChopCycles = values[12];
-        config.controlProfiles[0].p = values[13];
-        config.controlProfiles[0].i = values[14];
-        config.controlProfiles[0].d = values[15];
-        config.controlProfiles[0].f = values[16];
-        config.controlProfiles[0].iZone = values[17];
-        config.controlProfiles[0].dFilter = values[18];
-        config.controlProfiles[0].minOutput = values[19];
-        config.controlProfiles[0].maxOutput = values[20];
-        config.controlProfiles[1].p = values[21];
-        config.controlProfiles[1].i = values[22];
-        config.controlProfiles[1].d = values[23];
-        config.controlProfiles[1].f = values[24];
-        config.controlProfiles[1].iZone = values[25];
-        config.controlProfiles[1].dFilter = values[26];
-        config.controlProfiles[1].minOutput = values[27];
-        config.controlProfiles[1].maxOutput = values[28];
-        config.controlProfiles[2].p = values[29];
-        config.controlProfiles[2].i = values[30];
-        config.controlProfiles[2].d = values[31];
-        config.controlProfiles[2].f = values[32];
-        config.controlProfiles[2].iZone = values[33];
-        config.controlProfiles[2].dFilter = values[34];
-        config.controlProfiles[2].minOutput = values[35];
-        config.controlProfiles[2].maxOutput = values[36];
-        config.controlProfiles[3].p = values[37];
-        config.controlProfiles[3].i = values[38];
-        config.controlProfiles[3].d = values[39];
-        config.controlProfiles[3].f = values[40];
-        config.controlProfiles[3].iZone = values[41];
-        config.controlProfiles[3].dFilter = values[42];
-        config.controlProfiles[3].minOutput = values[43];
-        config.controlProfiles[3].maxOutput = values[44];
-        config.outputRatio = values[46];
-        config.limitSwitchForwardPolarity = values[50] === 1;
-        config.limitSwitchReversePolarity = values[51] === 1;
-        config.hardLimitSwitchForwardEnabled = values[52] === 1;
-        config.hardLimitSwitchReverseEnabled = values[53] === 1;
-        config.softLimitSwitchForwardEnabled = values[54] === 1;
-        config.softLimitSwitchReverseEnabled = values[55] === 1;
-        config.rampRate = values[56];
-        config.followerID = values[57];
-        config.followerConfig = values[58];
-        config.smartCurrentStallLimit = values[59];
-        config.smartCurrentFreeLimit = values[60];
-        config.smartCurrentConfig = values[61];
-        config.motorKv = values[63];
-        config.motorR = values[64];
-        config.motorL = values[65];
-        config.encoderCountsPerRevolution = values[69];
-        config.encoderAverageDepth = values[70];
-        config.encoderSampleDelta = values[71];
-        resolve(config);
-      }).catch((error: any) => {
-        reject(error);
-      });
+  public getConfigFromParams(device: string): Promise<MotorConfiguration> {
+    return this.getAllParameters(device).then((values: any[]) => {
+      const config: MotorConfiguration = new MotorConfiguration("REV Brushless", 1);
+      config.canID = values[0];
+      config.inputMode = values[1];
+      config.type = values[2];
+      config.commutationAdvance = values[3];
+      config.sensorType = values[4];
+      config.controlType = values[5];
+      config.idleMode = values[6];
+      config.inputDeadband = values[7];
+      config.firmwareVersion = values[8];
+      config.hallOffset = values[9];
+      config.polePairs = values[10];
+      config.currentChop = values[11];
+      config.currentChopCycles = values[12];
+      config.controlProfiles[0].p = values[13];
+      config.controlProfiles[0].i = values[14];
+      config.controlProfiles[0].d = values[15];
+      config.controlProfiles[0].f = values[16];
+      config.controlProfiles[0].iZone = values[17];
+      config.controlProfiles[0].dFilter = values[18];
+      config.controlProfiles[0].minOutput = values[19];
+      config.controlProfiles[0].maxOutput = values[20];
+      config.controlProfiles[1].p = values[21];
+      config.controlProfiles[1].i = values[22];
+      config.controlProfiles[1].d = values[23];
+      config.controlProfiles[1].f = values[24];
+      config.controlProfiles[1].iZone = values[25];
+      config.controlProfiles[1].dFilter = values[26];
+      config.controlProfiles[1].minOutput = values[27];
+      config.controlProfiles[1].maxOutput = values[28];
+      config.controlProfiles[2].p = values[29];
+      config.controlProfiles[2].i = values[30];
+      config.controlProfiles[2].d = values[31];
+      config.controlProfiles[2].f = values[32];
+      config.controlProfiles[2].iZone = values[33];
+      config.controlProfiles[2].dFilter = values[34];
+      config.controlProfiles[2].minOutput = values[35];
+      config.controlProfiles[2].maxOutput = values[36];
+      config.controlProfiles[3].p = values[37];
+      config.controlProfiles[3].i = values[38];
+      config.controlProfiles[3].d = values[39];
+      config.controlProfiles[3].f = values[40];
+      config.controlProfiles[3].iZone = values[41];
+      config.controlProfiles[3].dFilter = values[42];
+      config.controlProfiles[3].minOutput = values[43];
+      config.controlProfiles[3].maxOutput = values[44];
+      config.outputRatio = values[46];
+      config.limitSwitchForwardPolarity = values[50] === 1;
+      config.limitSwitchReversePolarity = values[51] === 1;
+      config.hardLimitSwitchForwardEnabled = values[52] === 1;
+      config.hardLimitSwitchReverseEnabled = values[53] === 1;
+      config.softLimitSwitchForwardEnabled = values[54] === 1;
+      config.softLimitSwitchReverseEnabled = values[55] === 1;
+      config.rampRate = values[56];
+      config.followerID = values[57];
+      config.followerConfig = values[58];
+      config.smartCurrentStallLimit = values[59];
+      config.smartCurrentFreeLimit = values[60];
+      config.smartCurrentConfig = values[61];
+      config.motorKv = values[63];
+      config.motorR = values[64];
+      config.motorL = values[65];
+      config.encoderCountsPerRevolution = values[69];
+      config.encoderAverageDepth = values[70];
+      config.encoderSampleDelta = values[71];
+      return config;
     });
   }
 
-  public async setControlProfile(profileNumber: number, profile: PIDFProfile): Promise<any> {
+  public async setControlProfile(device: string, profileNumber: number, profile: PIDFProfile): Promise<any> {
     const values: any[] = [];
     const startParam: number = 13 + (profileNumber * 8);
-    values.push(await this.setParameter(startParam, profile.p));
-    values.push(await this.setParameter(startParam + 1, profile.i));
-    values.push(await this.setParameter(startParam + 2, profile.d));
-    values.push(await this.setParameter(startParam + 3, profile.f));
-    values.push(await this.setParameter(startParam + 4, profile.iZone));
-    values.push(await this.setParameter(startParam + 5, profile.dFilter));
-    values.push(await this.setParameter(startParam + 6, profile.minOutput));
-    values.push(await this.setParameter(startParam + 7, profile.maxOutput));
+    values.push(await this.setParameter(device, startParam, profile.p));
+    values.push(await this.setParameter(device, startParam + 1, profile.i));
+    values.push(await this.setParameter(device, startParam + 2, profile.d));
+    values.push(await this.setParameter(device, startParam + 3, profile.f));
+    values.push(await this.setParameter(device, startParam + 4, profile.iZone));
+    values.push(await this.setParameter(device, startParam + 5, profile.dFilter));
+    values.push(await this.setParameter(device, startParam + 6, profile.minOutput));
+    values.push(await this.setParameter(device, startParam + 7, profile.maxOutput));
     return values;
   }
 
-  public async setParamsFromConfig(config: MotorConfiguration): Promise<any> {
+  public async setParamsFromConfig(device: string, config: MotorConfiguration): Promise<any> {
     const values: any[] = [];
-    values.push(await this.setParameter(0, config.canID));
-    values.push(await this.setParameter(1, config.inputMode));
-    values.push(await this.setParameter(2, config.type));
-    values.push(await this.setParameter(3, config.commutationAdvance));
-    values.push(await this.setParameter(4, config.sensorType));
-    values.push(await this.setParameter(5, config.controlType));
-    values.push(await this.setParameter(6, config.idleMode));
-    values.push(await this.setParameter(7, config.inputDeadband));
-    values.push(await this.setParameter(8, config.firmwareVersion));
-    values.push(await this.setParameter(9, config.hallOffset));
-    values.push(await this.setParameter(10, config.polePairs));
-    values.push(await this.setParameter(11, config.currentChop));
-    values.push(await this.setParameter(12, config.currentChopCycles));
+    values.push(await this.setParameter(device, 0, config.canID));
+    values.push(await this.setParameter(device, 1, config.inputMode));
+    values.push(await this.setParameter(device, 2, config.type));
+    values.push(await this.setParameter(device, 3, config.commutationAdvance));
+    values.push(await this.setParameter(device, 4, config.sensorType));
+    values.push(await this.setParameter(device, 5, config.controlType));
+    values.push(await this.setParameter(device, 6, config.idleMode));
+    values.push(await this.setParameter(device, 7, config.inputDeadband));
+    values.push(await this.setParameter(device, 8, config.firmwareVersion));
+    values.push(await this.setParameter(device, 9, config.hallOffset));
+    values.push(await this.setParameter(device, 10, config.polePairs));
+    values.push(await this.setParameter(device, 11, config.currentChop));
+    values.push(await this.setParameter(device, 12, config.currentChopCycles));
     if (typeof config.controlProfiles !== "undefined" && config.controlProfiles.length > 3) {
-      values.push(await this.setParameter(13, config.controlProfiles[0].p));
-      values.push(await this.setParameter(14, config.controlProfiles[0].i));
-      values.push(await this.setParameter(15, config.controlProfiles[0].d));
-      values.push(await this.setParameter(16, config.controlProfiles[0].f));
-      values.push(await this.setParameter(17, config.controlProfiles[0].iZone));
-      values.push(await this.setParameter(18, config.controlProfiles[0].dFilter));
-      values.push(await this.setParameter(19, config.controlProfiles[0].minOutput));
-      values.push(await this.setParameter(20, config.controlProfiles[0].maxOutput));
-      values.push(await this.setParameter(21, config.controlProfiles[1].p));
-      values.push(await this.setParameter(22, config.controlProfiles[1].i));
-      values.push(await this.setParameter(23, config.controlProfiles[1].d));
-      values.push(await this.setParameter(24, config.controlProfiles[1].f));
-      values.push(await this.setParameter(25, config.controlProfiles[1].iZone));
-      values.push(await this.setParameter(26, config.controlProfiles[1].dFilter));
-      values.push(await this.setParameter(27, config.controlProfiles[1].minOutput));
-      values.push(await this.setParameter(28, config.controlProfiles[1].maxOutput));
-      values.push(await this.setParameter(29, config.controlProfiles[2].p));
-      values.push(await this.setParameter(30, config.controlProfiles[2].i));
-      values.push(await this.setParameter(31, config.controlProfiles[2].d));
-      values.push(await this.setParameter(32, config.controlProfiles[2].f));
-      values.push(await this.setParameter(33, config.controlProfiles[2].iZone));
-      values.push(await this.setParameter(34, config.controlProfiles[2].dFilter));
-      values.push(await this.setParameter(35, config.controlProfiles[2].minOutput));
-      values.push(await this.setParameter(36, config.controlProfiles[2].maxOutput));
-      values.push(await this.setParameter(37, config.controlProfiles[3].p));
-      values.push(await this.setParameter(38, config.controlProfiles[3].i));
-      values.push(await this.setParameter(39, config.controlProfiles[3].d));
-      values.push(await this.setParameter(40, config.controlProfiles[3].f));
-      values.push(await this.setParameter(41, config.controlProfiles[3].iZone));
-      values.push(await this.setParameter(42, config.controlProfiles[3].dFilter));
-      values.push(await this.setParameter(43, config.controlProfiles[3].minOutput));
-      values.push(await this.setParameter(44, config.controlProfiles[3].maxOutput));
+      values.push(await this.setParameter(device, 13, config.controlProfiles[0].p));
+      values.push(await this.setParameter(device, 14, config.controlProfiles[0].i));
+      values.push(await this.setParameter(device, 15, config.controlProfiles[0].d));
+      values.push(await this.setParameter(device, 16, config.controlProfiles[0].f));
+      values.push(await this.setParameter(device, 17, config.controlProfiles[0].iZone));
+      values.push(await this.setParameter(device, 18, config.controlProfiles[0].dFilter));
+      values.push(await this.setParameter(device, 19, config.controlProfiles[0].minOutput));
+      values.push(await this.setParameter(device, 20, config.controlProfiles[0].maxOutput));
+      values.push(await this.setParameter(device, 21, config.controlProfiles[1].p));
+      values.push(await this.setParameter(device, 22, config.controlProfiles[1].i));
+      values.push(await this.setParameter(device, 23, config.controlProfiles[1].d));
+      values.push(await this.setParameter(device, 24, config.controlProfiles[1].f));
+      values.push(await this.setParameter(device, 25, config.controlProfiles[1].iZone));
+      values.push(await this.setParameter(device, 26, config.controlProfiles[1].dFilter));
+      values.push(await this.setParameter(device, 27, config.controlProfiles[1].minOutput));
+      values.push(await this.setParameter(device, 28, config.controlProfiles[1].maxOutput));
+      values.push(await this.setParameter(device, 29, config.controlProfiles[2].p));
+      values.push(await this.setParameter(device, 30, config.controlProfiles[2].i));
+      values.push(await this.setParameter(device, 31, config.controlProfiles[2].d));
+      values.push(await this.setParameter(device, 32, config.controlProfiles[2].f));
+      values.push(await this.setParameter(device, 33, config.controlProfiles[2].iZone));
+      values.push(await this.setParameter(device, 34, config.controlProfiles[2].dFilter));
+      values.push(await this.setParameter(device, 35, config.controlProfiles[2].minOutput));
+      values.push(await this.setParameter(device, 36, config.controlProfiles[2].maxOutput));
+      values.push(await this.setParameter(device, 37, config.controlProfiles[3].p));
+      values.push(await this.setParameter(device, 38, config.controlProfiles[3].i));
+      values.push(await this.setParameter(device, 39, config.controlProfiles[3].d));
+      values.push(await this.setParameter(device, 40, config.controlProfiles[3].f));
+      values.push(await this.setParameter(device, 41, config.controlProfiles[3].iZone));
+      values.push(await this.setParameter(device, 42, config.controlProfiles[3].dFilter));
+      values.push(await this.setParameter(device, 43, config.controlProfiles[3].minOutput));
+      values.push(await this.setParameter(device, 44, config.controlProfiles[3].maxOutput));
     }
-    values.push(await this.setParameter(46, config.outputRatio));
-    values.push(await this.setParameter(50, config.limitSwitchForwardPolarity ? 1 : 0));
-    values.push(await this.setParameter(51, config.limitSwitchReversePolarity ? 1 : 0));
-    values.push(await this.setParameter(52, config.hardLimitSwitchForwardEnabled ? 1 : 0));
-    values.push(await this.setParameter(53, config.hardLimitSwitchReverseEnabled ? 1 : 0));
-    values.push(await this.setParameter(54, config.softLimitSwitchForwardEnabled ? 1 : 0));
-    values.push(await this.setParameter(55, config.softLimitSwitchReverseEnabled ? 1 : 0));
-    values.push(await this.setParameter(56, config.rampRate));
-    values.push(await this.setParameter(57, config.followerID));
-    values.push(await this.setParameter(58, config.followerConfig));
+    values.push(await this.setParameter(device, 46, config.outputRatio));
+    values.push(await this.setParameter(device, 50, config.limitSwitchForwardPolarity ? 1 : 0));
+    values.push(await this.setParameter(device, 51, config.limitSwitchReversePolarity ? 1 : 0));
+    values.push(await this.setParameter(device, 52, config.hardLimitSwitchForwardEnabled ? 1 : 0));
+    values.push(await this.setParameter(device, 53, config.hardLimitSwitchReverseEnabled ? 1 : 0));
+    values.push(await this.setParameter(device, 54, config.softLimitSwitchForwardEnabled ? 1 : 0));
+    values.push(await this.setParameter(device, 55, config.softLimitSwitchReverseEnabled ? 1 : 0));
+    values.push(await this.setParameter(device, 56, config.rampRate));
+    values.push(await this.setParameter(device, 57, config.followerID));
+    values.push(await this.setParameter(device, 58, config.followerConfig));
     return values;
   }
 
-  public async setControlMode(mode: number): Promise<any> {
-    return await this.setParameter(5, mode);
+  public async setControlMode(device: string, mode: number): Promise<any> {
+    return await this.setParameter(device, 5, mode);
   }
 
-  public async getAllParameters(): Promise<any> {
-    return await this.getParameterList();
+  public async getAllParameters(device: string): Promise<any> {
+    return await this.getParameterList(device);
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
@@ -382,7 +365,7 @@ class SparkManager {
     ipcRenderer.send("disable-heartbeat");
   }
 
-  public burnFlash(): Promise<any> {
+  public burnFlash(device: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       ipcRenderer.once("burn-flash-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -391,17 +374,19 @@ class SparkManager {
           resolve(error);
         }
       });
-      ipcRenderer.send("burn-flash");
+      ipcRenderer.send("burn-flash", device);
     });
   }
 
-  public async setAndGetParameter(parameter: ConfigParam, value: number | string | boolean): Promise<IServerResponse> {
-    const setResponse: any = await this.setParameter(parameter, value);
-    const getResponse: any = await this.getParameter(parameter);
+  public async setAndGetParameter(device: string,
+                                  parameter: ConfigParam,
+                                  value: number | string | boolean): Promise<IServerResponse> {
+    const setResponse: any = await this.setParameter(device, parameter, value);
+    const getResponse: any = await this.getParameter(device, parameter);
     return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
   }
 
-  private getParameter(id: number): Promise<number> {
+  private getParameter(device: string, id: number): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("get-param-" + id + "-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -410,11 +395,11 @@ class SparkManager {
           resolve(response.value);
         }
       });
-      ipcRenderer.send("get-param", id);
+      ipcRenderer.send("get-param", device, id);
     });
   }
 
-  private getParameterList(): Promise<number[]> {
+  private getParameterList(device: string): Promise<number[]> {
     return new Promise<number[]>((resolve, reject) => {
       ipcRenderer.once("get-param-list-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -423,7 +408,7 @@ class SparkManager {
           resolve(response);
         }
       });
-      ipcRenderer.send("get-param-list");
+      ipcRenderer.send("get-param-list", device);
     });
   }
 
@@ -431,7 +416,7 @@ class SparkManager {
     ipcRenderer.send("show-info", title, message);
   }
 
-  private setParameter(id: number, value: number | string | boolean): Promise<number> {
+  private setParameter(device: string, id: number, value: number | string | boolean): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       ipcRenderer.once("set-param-" + id + "-response", (event: any, error: any, response: any) => {
         if (error) {
@@ -440,7 +425,7 @@ class SparkManager {
           resolve(response);
         }
       });
-      ipcRenderer.send("set-param", id, value);
+      ipcRenderer.send("set-param", device, id, value);
     });
   }
 }

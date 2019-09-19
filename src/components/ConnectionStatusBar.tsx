@@ -2,24 +2,29 @@ import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
 import * as classnames from "classnames";
-import {IApplicationState, SparkDispatch} from "../store/types";
-import {connectMasterUsbDevice, disconnectCurrentUsbDevice} from "../store/device-actions";
+import {IApplicationState, IDeviceState, SparkDispatch} from "../store/types";
+import {connectToSelectedDevice, disconnectSelectedDevice} from "../store/device-actions";
 import {
-  getProcessStatus,
+  getDevicesInOrder,
+  getProcessStatus, getSelectedDevice,
   isConnectableToAnyDevice,
   isInProcessing,
   isSelectedDeviceConnected
 } from "../store/selectors";
+import {DeviceSelect} from "./DeviceSelect";
+import {selectDevice} from "../store/actions";
 
 interface IProps {
+  selectedDevice?: IDeviceState,
+  devices: IDeviceState[],
   connectionStatus: string,
   connecting: boolean,
   connected: boolean,
   connectable: boolean,
 
   connect(): void;
-
   disconnect(): void;
+  selectDevice(device: IDeviceState): void;
 }
 
 class ConnectionStatusBar extends React.Component<IProps> {
@@ -28,22 +33,26 @@ class ConnectionStatusBar extends React.Component<IProps> {
   }
 
   public render() {
-    const {connectionStatus, connecting, connected, connectable} = this.props;
+    const {devices, selectedDevice, connectionStatus, connecting, connected, connectable} = this.props;
     const lampClass = classnames({
       "status-bar-lamp--connected": connected,
       "status-bar-lamp--disconnected": !connected,
     });
     return (
-      <div id="status-bar">
-        <span id="status-bar-lamp" className={lampClass}/>
-        <span id="status-bar-driver-name">{connectionStatus}</span>
-        <span id="status-bar-status">{connectionStatus}</span>
-        <span id="status-bar-button">
+      <div id="status-bar" className="no-wrap">
+        <div id="status-bar-lamp" className={lampClass}/>
+        <div id="status-bar-driver-name">{selectedDevice ? selectedDevice.info.driverName : ""}</div>
+        <div id="status-bar-status">{connectionStatus}</div>
+        <DeviceSelect className="status-bar-device-selector"
+                      devices={devices}
+                      selected={selectedDevice}
+                      onSelect={this.props.selectDevice}/>
+        <div id="status-bar-button">
           <Button fill={true} disabled={!connectable || connecting} loading={connecting}
                   onClick={connected ? this.props.disconnect : this.props.connect}>
             {connected ? "Disconnect" : "Connect"}
           </Button>
-        </span>
+        </div>
       </div>
     );
   }
@@ -51,6 +60,8 @@ class ConnectionStatusBar extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
+    selectedDevice: getSelectedDevice(state),
+    devices: getDevicesInOrder(state),
     connected: isSelectedDeviceConnected(state),
     connecting: isInProcessing(state),
     connectable: isConnectableToAnyDevice(state),
@@ -60,8 +71,9 @@ export function mapStateToProps(state: IApplicationState) {
 
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    connect: () => dispatch(connectMasterUsbDevice()),
-    disconnect: () => dispatch(disconnectCurrentUsbDevice()),
+    connect: () => dispatch(connectToSelectedDevice()),
+    disconnect: () => dispatch(disconnectSelectedDevice()),
+    selectDevice: (device: IDeviceState) => dispatch(selectDevice(device.deviceId)),
   };
 }
 

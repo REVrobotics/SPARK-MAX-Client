@@ -10,7 +10,7 @@ import {
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import {delayPromise} from "../utils/promise-utils";
 import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {getFirstUsbDeviceId, getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "./selectors";
+import {getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "./selectors";
 import {createUsbDeviceState, fromDeviceId} from "./reducer";
 
 export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>> {
@@ -43,20 +43,20 @@ export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>>
   };
 }
 
-export function connectMasterUsbDevice(): SparkAction<Promise<void>> {
+export function connectToSelectedDevice(): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
-    // TODO: if selected device is USB device => connect to it
-    // otherwise (if selected device is CAN device) => find master USB device
-    const usbDevice = getFirstUsbDeviceId(getState());
-    if (usbDevice == null) {
+    const deviceId = getSelectedDeviceId(getState());
+    if (deviceId == null) {
       return Promise.resolve();
     }
 
-    return dispatch(connectUsbDevice(usbDevice));
+    const usbDeviceId = getMasterDeviceId(getState(), deviceId);
+
+    return dispatch(connectUsbDevice(usbDeviceId));
   };
 }
 
-export function disconnectCurrentUsbDevice(): SparkAction<void> {
+export function disconnectSelectedDevice(): SparkAction<void> {
   return (dispatch, getState) => {
     const deviceId = getSelectedDeviceId(getState());
     if (deviceId == null || !isDeviceConnected(getState(), deviceId)) {

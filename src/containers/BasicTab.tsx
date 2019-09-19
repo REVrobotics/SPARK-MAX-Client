@@ -87,7 +87,6 @@ class BasicTab extends React.Component<IProps, IState> {
 
   public componentDidUpdate(prevProps: IProps) {
     if (this.props.motorConfig !== prevProps.motorConfig) {
-      console.log(this.props.motorConfig.rampRate);
       this.setState({rampRateEnabled: this.props.motorConfig.rampRate > 0});
     }
   }

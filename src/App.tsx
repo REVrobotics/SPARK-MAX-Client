@@ -13,7 +13,7 @@ import {IApplicationState, SparkDispatch} from "./store/types";
 import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
 import {initApplication} from "./store/init-actions";
-import {disconnectCurrentUsbDevice} from "./store/device-actions";
+import {disconnectSelectedDevice} from "./store/device-actions";
 
 interface IProps {
   init(): void;
@@ -61,7 +61,7 @@ export function mapStateToProps(state: IApplicationState) {
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     init: () => dispatch(initApplication()),
-    disconnect: () => dispatch(disconnectCurrentUsbDevice()),
+    disconnect: () => dispatch(disconnectSelectedDevice()),
   };
 }
 

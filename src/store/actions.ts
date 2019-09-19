@@ -147,6 +147,6 @@ export const updateSelectedDeviceProcessStatus = (isConnected: boolean, processS
   (dispatch, getState) => {
     const selectedDeviceId = getSelectedDeviceId(getState());
     if (selectedDeviceId) {
-      dispatch(updateDeviceProcessStatus(selectedDeviceId, processStatus));
+      dispatch(updateDeviceProcessStatus(selectedDeviceId, isConnected, processStatus));
     }
   };
