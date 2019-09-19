@@ -22,7 +22,7 @@ interface IProps {
   activeSensor: Sensor
   connected: boolean,
   disabled?: boolean,
-  onSensorSelect: (sensorType: Sensor) => void
+  onSensorSelect(sensorType: Sensor): void
 }
 
 export const SensorTypeSelect: React.FC<IProps> = (props) => {

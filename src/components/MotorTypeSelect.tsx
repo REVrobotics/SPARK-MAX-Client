@@ -21,7 +21,7 @@ const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
 interface IProps {
   activeConfig: MotorConfiguration
   connected: boolean
-  onMotorSelect: (motorType: MotorConfiguration) => void
+  onMotorSelect(motorType: MotorConfiguration): void
 }
 
 export const MotorTypeSelect: React.FC<IProps> = (props) => {

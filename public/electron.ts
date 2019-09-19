@@ -16,6 +16,14 @@ if (process.env.NODE_ENV !== "production") {
  * multiple times to create multiple windows.
  */
 function createWindow() {
+  if (!isProd) {
+    // install React and Redux dev tools for in mode
+    const {default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = require("electron-devtools-installer");
+    Promise.all([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].map((extension) =>
+      installExtension(extension)
+        .then((name: string) => console.log(`Added Extension: ${name}`))
+        .catch((err: any) => console.log('An error occurred: ', err))));
+  }
 
   /*
    * Main window dimensions, properties, and launch icon. All properties can be found at

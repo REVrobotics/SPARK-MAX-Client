@@ -3,20 +3,27 @@ import ReactEcharts from "echarts-for-react";
 import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
-import {ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetMotorConfig} from "../store/types";
+import {IApplicationState, SparkDispatch} from "../store/types";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
-import {Dispatch} from "redux";
-import {setBurnedMotorConfig, setMotorConfig} from "../store/actions";
+import {
+  setSelectedDeviceBurnedMotorConfig,
+  setSelectedDeviceMotorConfig
+} from "../store/actions";
 import PopoverHelp from "../components/PopoverHelp";
+import {
+  getSelectedDeviceBurnedConfig,
+  getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
+  isSelectedDeviceConnected
+} from "../store/selectors";
 
 interface IProps {
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
   paramResponses: IServerResponse[],
-  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
-  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig
+  setCurrentConfig(config: MotorConfiguration): void,
+  setBurnedConfig(config: MotorConfiguration): void
 }
 
 interface IState {
@@ -427,17 +434,17 @@ class RunTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected,
-    motorConfig: state.currentConfig,
-    burnedConfig: state.burnedConfig,
-    paramResponses: state.paramResponses
+    connected: isSelectedDeviceConnected(state),
+    motorConfig: getSelectedDeviceMotorConfig(state),
+    burnedConfig: getSelectedDeviceBurnedConfig(state),
+    paramResponses: getSelectedDeviceParamResponses(state),
   };
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
-    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config))
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setSelectedDeviceMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setSelectedDeviceBurnedMotorConfig(config))
   };
 }
 

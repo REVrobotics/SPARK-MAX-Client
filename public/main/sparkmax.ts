@@ -81,7 +81,7 @@ ipcMain.on("connect", (event: any, device: string) => {
               connCheckID = null;
               server.disconnect({device: currentDevice, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
                 console.log("Disconnected " + currentDevice + " from the SPARK server");
-                event.sender.send("disconnect-response", disconnectErr, disconnectResponse);
+                event.sender.send("disconnect-response", disconnectErr, currentDevice);
               });
             }
           });
@@ -99,7 +99,7 @@ ipcMain.on("disconnect", (event: any, device: string) => {
       global.clearInterval(connCheckID);
       connCheckID = null;
     }
-    event.sender.send("disconnect-response", err, response);
+    event.sender.send("disconnect-response", err, device);
   });
 });
 

@@ -3,27 +3,25 @@ import {Cell, Column, Table, IRegion} from "@blueprintjs/table";
 import * as React from "react";
 import {connect} from "react-redux";
 import {
-  ApplicationActions, IAddLog,
-  IApplicationState,
-  ISetConnectedDevice,
-  ISetIsConnecting, ISetMotorConfig,
-  IUpdateConnectionStatus
+  IApplicationState, SparkDispatch,
 } from "../store/types";
 import SparkManager from "../managers/SparkManager";
-import {Dispatch} from "redux";
-import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
+import {
+  addLog,
+  updateSelectedDeviceIsProcessing, updateSelectedDeviceProcessStatus, setSelectedDeviceMotorConfig
+} from "../store/actions";
 import WebProvider from "../providers/WebProvider";
 import MotorConfiguration from "../models/MotorConfiguration";
 import CANScanDetail from "../models/CANScanDetail";
 import { isNullOrUndefined } from "util";
+import {isSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {
   connected: boolean,
-  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
-  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
-  setConnectedDevice: (device: string) => ISetConnectedDevice,
-  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
-  addLog: (log: string) => IAddLog
+  setIsConnecting(connecting: boolean): void,
+  updateConnectionStatus(connected: boolean, status: string): void,
+  setCurrentConfig(cofig: MotorConfiguration): void,
+  addLog(log: string): void
 }
 
 interface IState {
@@ -302,7 +300,6 @@ class FirmwareTab extends React.Component<IProps, IState> {
         SparkManager.discoverAndConnect().then((device: string) => {
           this.props.updateConnectionStatus(true, "CONNECTED");
           this.props.setIsConnecting(false);
-          this.props.setConnectedDevice(device);
           setTimeout(() => {
             SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
               this.props.setCurrentConfig(config);
@@ -388,17 +385,17 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: isSelectedDeviceConnected(state),
   };
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    setIsConnecting: (connecting: boolean) => dispatch(updateSelectedDeviceIsProcessing(connecting)),
+    updateConnectionStatus: (connected: boolean, status: string) =>
+      dispatch(updateSelectedDeviceProcessStatus(connected, status)),
     addLog: (log: string) => dispatch(addLog(log)),
-    setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
-    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setSelectedDeviceMotorConfig(config)),
   };
 }
 

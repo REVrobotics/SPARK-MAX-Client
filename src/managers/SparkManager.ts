@@ -66,29 +66,26 @@ class SparkManager {
   }
 
   public discoverAndConnect(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      this.listUsbDevices().then((devices: string[]) => {
+    return this.listUsbDevices()
+      .then(({ deviceList }) => deviceList)
+      .then((devices: string[]) => {
         if (devices.length > 0) {
-          this.connect(devices[0]).then((response: any) => {
-            if (!response.connected) {
-              reject(response.root.error);
-            } else {
-              resolve(devices[0]);
-            }
-          }).catch((error: any) => {
-            reject(error);
-          });
+          return this.connect(devices[0])
+            .then((response: any) => {
+              if (!response.connected) {
+                return Promise.reject(response.root.error);
+              } else {
+                return Promise.resolve(devices[0]);
+              }
+            });
         } else {
-          reject("No devices were found.");
+          return Promise.reject("No devices were found.");
         }
-      }).catch((error: any) => {
-        reject(error);
       });
-    });
   }
 
-  public listUsbDevices(): Promise<string[]> {
-    return this.listDevices({ all: false }).then(({ deviceList }) => deviceList);
+  public listUsbDevices(): Promise<ListResponseDto> {
+    return this.listDevices({ all: false });
   }
 
   public listAllDevices(): Promise<string[]> {
@@ -121,13 +118,13 @@ class SparkManager {
     });
   }
 
-  public disconnect(device: string): Promise<any> {
+  public disconnect(device: string): Promise<string> {
     return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("disconnect-response", (event: any, error: any, response: any) => {
+      ipcRenderer.once("disconnect-response", (event: any, error: any, disconnectedDevice: any) => {
         if (error) {
           reject(error);
         } else {
-          resolve();
+          resolve(disconnectedDevice);
         }
       });
       ipcRenderer.send("disconnect", device);
@@ -201,8 +198,8 @@ class SparkManager {
     });
   }
 
-  public onDisconnect(f: () => void): void {
-    ipcRenderer.on("disconnect-response", () => f());
+  public onDisconnect(f: (device: string) => void): void {
+    ipcRenderer.on("disconnect-response", (err: Error, device: string) => f(device));
   }
 
   public getConfigFromParams(): Promise<MotorConfiguration> {

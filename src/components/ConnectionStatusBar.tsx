@@ -4,7 +4,12 @@ import {connect} from "react-redux";
 import * as classnames from "classnames";
 import {IApplicationState, SparkDispatch} from "../store/types";
 import {connectMasterUsbDevice, disconnectCurrentUsbDevice} from "../store/device-actions";
-import {isConnectableSelector} from "../store/selectors";
+import {
+  getProcessStatus,
+  isConnectableToAnyDevice,
+  isInProcessing,
+  isSelectedDeviceConnected
+} from "../store/selectors";
 
 interface IProps {
   connectionStatus: string,
@@ -46,10 +51,10 @@ class ConnectionStatusBar extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected,
-    connecting: state.isConnecting,
-    connectable: isConnectableSelector(state),
-    connectionStatus: state.connectionStatus
+    connected: isSelectedDeviceConnected(state),
+    connecting: isInProcessing(state),
+    connectable: isConnectableToAnyDevice(state),
+    connectionStatus: getProcessStatus(state),
   };
 }
 

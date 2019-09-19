@@ -1,96 +1,152 @@
 import {ActionCreator} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
-  ADD_LOG,
+  ActionType,
   IAddLog,
   ISetBurnedMotorConfig,
-  ISetConnectedDevice,
-  ISetIsConnecting,
+  ISetDeviceProcessing,
   ISetMotorConfig,
   ISetParameters,
   ISetParamResponses,
   ISetUpdateAvailable,
-  ISetUsbDevices,
-  IUpdateConnectionStatus,
-  SET_BURNED_MOTOR_CONFIG,
-  SET_CONNECTED_DEVICE,
-  SET_CONNECTING,
-  SET_CONNECTION_STATUS,
-  SET_CURRENT_MOTOR_CONFIG,
-  SET_PARAMETERS,
-  SET_SERVER_PARAM_RESPONSE,
-  SET_UPDATE_AVAILABLE,
-  SET_USB_DEVICES
+  IAddDevices,
+  IUpdateDeviceProcessStatus,
+  IDeviceState,
+  DeviceId,
+  IUpdateGlobalProcessStatus,
+  ISetGlobalProcessing,
+  SparkAction,
+  ISelectDevice,
 } from "./types";
 import {IServerResponse} from "../managers/SparkManager";
+import {getSelectedDeviceId} from "./selectors";
 
-export const updateConnectionStatus: ActionCreator<IUpdateConnectionStatus> = (isConnected: boolean, connectionStatus: string) => ({
+export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (isConnected: boolean,
+                                                                                     processStatus: string) => ({
   payload: {
-    connectionStatus,
+    processStatus,
     isConnected
   },
-  type: SET_CONNECTION_STATUS
+  type: ActionType.SET_GLOBAL_PROCESS_STATUS
 });
 
-export const setIsConnecting: ActionCreator<ISetIsConnecting> = (isConnecting: boolean) => ({
+export const updateGlobalIsProcessing: ActionCreator<ISetGlobalProcessing> = (isProcessing: boolean) => ({
   payload: {
-    isConnecting
+    isProcessing
   },
-  type: SET_CONNECTING
+  type: ActionType.SET_GLOBAL_PROCESSING
 });
 
-export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (connectedDevice: string) => ({
+export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus> = (deviceId: DeviceId,
+                                                                                     isConnected: boolean,
+                                                                                     processStatus: string) => ({
   payload: {
-    connectedDevice
+    deviceId,
+    processStatus,
+    isConnected
   },
-  type: SET_CONNECTED_DEVICE
+  type: ActionType.SET_DEVICE_PROCESS_STATUS
 });
 
-export const setUsbDevices: ActionCreator<ISetUsbDevices> = (usbDevices: string[]) => ({
+export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (deviceId: DeviceId,
+                                                                              isProcessing: boolean) => ({
   payload: {
-    usbDevices
+    deviceId,
+    isProcessing
   },
-  type: SET_USB_DEVICES
+  type: ActionType.SET_DEVICE_PROCESSING
 });
 
-export const setParameters: ActionCreator<ISetParameters> = (parameters: number[]) => ({
+export const addDevices: ActionCreator<IAddDevices> = (devices: IDeviceState[]) => ({
   payload: {
+    devices
+  },
+  type: ActionType.ADD_DEVICES
+});
+
+export const setParameters: ActionCreator<ISetParameters> = (deviceId: DeviceId, parameters: number[]) => ({
+  payload: {
+    deviceId,
     parameters
   },
-  type: SET_PARAMETERS
+  type: ActionType.SET_PARAMETERS
 });
 
-export const setMotorConfig: ActionCreator<ISetMotorConfig> = (config: MotorConfiguration) => ({
+export const setMotorConfig: ActionCreator<ISetMotorConfig> = (deviceId: DeviceId, config: MotorConfiguration) => ({
   payload: {
+    deviceId,
     config
   },
-  type: SET_CURRENT_MOTOR_CONFIG
+  type: ActionType.SET_CURRENT_MOTOR_CONFIG
 });
 
-export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (config: MotorConfiguration) => ({
+export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (deviceId: DeviceId,
+                                                                           config: MotorConfiguration) => ({
   payload: {
+    deviceId,
     config
   },
-  type: SET_BURNED_MOTOR_CONFIG
+  type: ActionType.SET_BURNED_MOTOR_CONFIG
 });
 
-export const setParamResponses: ActionCreator<ISetParamResponses> = (paramResponses: IServerResponse[]) => ({
+export const setParamResponses: ActionCreator<ISetParamResponses> = (deviceId: DeviceId,
+                                                                     paramResponses: IServerResponse[]) => ({
   payload: {
+    deviceId,
     paramResponses
   },
-  type: SET_SERVER_PARAM_RESPONSE
+  type: ActionType.SET_SERVER_PARAM_RESPONSE
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({
   payload: {
     log
   },
-  type: ADD_LOG
+  type: ActionType.ADD_LOG
 });
 
 export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAvailable: boolean) => ({
   payload: {
     updateAvailable
   },
-  type: SET_UPDATE_AVAILABLE
+  type: ActionType.SET_UPDATE_AVAILABLE
 });
+
+export const selectDevice: ActionCreator<ISelectDevice> = (deviceId: DeviceId) => ({
+  payload: {
+    deviceId
+  },
+  type: ActionType.SELECT_DEVICE,
+});
+
+export const setSelectedDeviceMotorConfig = (config: MotorConfiguration): SparkAction<void> =>
+  (dispatch, getState) => {
+    const selectedDeviceId = getSelectedDeviceId(getState());
+    if (selectedDeviceId) {
+      dispatch(setMotorConfig(selectedDeviceId, config));
+    }
+  };
+
+export const setSelectedDeviceBurnedMotorConfig = (config: MotorConfiguration): SparkAction<void> =>
+  (dispatch, getState) => {
+    const selectedDeviceId = getSelectedDeviceId(getState());
+    if (selectedDeviceId) {
+      dispatch(setBurnedMotorConfig(selectedDeviceId, config));
+    }
+  };
+
+export const updateSelectedDeviceIsProcessing = (isProcessing: boolean): SparkAction<void> =>
+  (dispatch, getState) => {
+    const selectedDeviceId = getSelectedDeviceId(getState());
+    if (selectedDeviceId) {
+      dispatch(updateDeviceIsProcessing(selectedDeviceId, isProcessing));
+    }
+  };
+
+export const updateSelectedDeviceProcessStatus = (isConnected: boolean, processStatus: string): SparkAction<void> =>
+  (dispatch, getState) => {
+    const selectedDeviceId = getSelectedDeviceId(getState());
+    if (selectedDeviceId) {
+      dispatch(updateDeviceProcessStatus(selectedDeviceId, processStatus));
+    }
+  };

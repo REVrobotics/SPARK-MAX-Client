@@ -5,29 +5,34 @@ import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
 import {
-  ApplicationActions,
-  IApplicationState,
-  ISetBurnedMotorConfig, ISetIsConnecting,
-  ISetMotorConfig,
-  IUpdateConnectionStatus
+  IApplicationState, SparkDispatch
 } from "../store/types";
 import {ConfigParam} from "../models/ConfigParam";
 import PopoverHelp from "../components/PopoverHelp";
-import {Dispatch} from "redux";
-import {setBurnedMotorConfig, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
+import {
+  setSelectedDeviceMotorConfig,
+  setSelectedDeviceBurnedMotorConfig,
+  updateSelectedDeviceIsProcessing,
+  updateSelectedDeviceProcessStatus
+} from "../store/actions";
 import {SensorTypeSelect} from "../components/SensorTypeSelect";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
+import {
+  getSelectedDeviceBurnedConfig,
+  getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
+  isSelectedDeviceConnected
+} from "../store/selectors";
 
 interface IProps {
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
   paramResponses: IServerResponse[],
-  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
-  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
-  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
-  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
+  setCurrentConfig(config: MotorConfiguration): void,
+  setBurnedConfig(config: MotorConfiguration): void,
+  updateConnectionStatus(connected: boolean, status: string): void,
+  setIsConnecting(connecting: boolean): void,
 }
 
 interface IState {
@@ -585,19 +590,20 @@ class BasicTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected,
-    motorConfig: state.currentConfig,
-    burnedConfig: state.burnedConfig,
-    paramResponses: state.paramResponses
+    connected: isSelectedDeviceConnected(state),
+    motorConfig: getSelectedDeviceMotorConfig(state),
+    burnedConfig: getSelectedDeviceBurnedConfig(state),
+    paramResponses: getSelectedDeviceParamResponses(state),
   };
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
-    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config)),
-    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    setCurrentConfig: (config: MotorConfiguration) => dispatch(setSelectedDeviceMotorConfig(config)),
+    setBurnedConfig: (config: MotorConfiguration) => dispatch(setSelectedDeviceBurnedMotorConfig(config)),
+    setIsConnecting: (connecting: boolean) => dispatch(updateSelectedDeviceIsProcessing(connecting)),
+    updateConnectionStatus: (connected: boolean, status: string) =>
+      dispatch(updateSelectedDeviceProcessStatus(connected, status)),
   }
 }
 
