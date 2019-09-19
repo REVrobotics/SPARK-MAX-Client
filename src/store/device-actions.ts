@@ -27,7 +27,7 @@ export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>>
       }
       dispatch(setParamResponses(deviceId, paramResponses));
     }).then(() => delayPromise(1000))
-      .then(() => SparkManager.getConfigFromParams())
+      .then(() => SparkManager.getConfigFromParams(fromDeviceId(deviceId)))
       .then((config: MotorConfiguration) => {
         dispatch(updateDeviceProcessStatus(deviceId, true, "CONNECTED"));
         dispatch(updateDeviceIsProcessing(deviceId, false));

@@ -3,7 +3,7 @@ import ReactEcharts from "echarts-for-react";
 import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState, SparkDispatch} from "../store/types";
+import {DeviceId, IApplicationState, SparkDispatch} from "../store/types";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
@@ -12,12 +12,14 @@ import {
 } from "../store/actions";
 import PopoverHelp from "../components/PopoverHelp";
 import {
-  getSelectedDeviceBurnedConfig,
+  getSelectedDeviceBurnedConfig, getSelectedDeviceId,
   getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
   isSelectedDeviceConnected
 } from "../store/selectors";
+import {fromDeviceId} from "../store/reducer";
 
 interface IProps {
+  deviceId: DeviceId,
   connected: boolean,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
@@ -230,9 +232,9 @@ class RunTab extends React.Component<IProps, IState> {
 
   private updateProfile() {
     this.setState({updatingProfile: true});
-    SparkManager.burnFlash().then(() => {
+    SparkManager.burnFlash(fromDeviceId(this.props.deviceId)).then(() => {
       setTimeout(() => {
-        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+        SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((config: MotorConfiguration) => {
           this.props.setCurrentConfig(config);
           this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
           this.setState({updatingProfile: false});
@@ -270,7 +272,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyP(value: number, valueStr: string) {
     const paramStart: number = 13 + (this.state.currentProfile * 8);
-    SparkManager.setAndGetParameter(paramStart, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), paramStart, value).then((res: IServerResponse) => {
       this.props.motorConfig.controlProfiles[this.state.currentProfile].p = res.responseValue as number;
       this.props.paramResponses[paramStart] = res;
       console.log(res);
@@ -284,7 +286,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyI(value: number, valueStr: string) {
     const paramStart: number = 13 + (this.state.currentProfile * 8);
-    SparkManager.setAndGetParameter(paramStart + 1, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), paramStart + 1, value).then((res: IServerResponse) => {
       this.props.motorConfig.controlProfiles[this.state.currentProfile].i = res.responseValue as number;
       this.props.paramResponses[paramStart + 1] = res;
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
@@ -297,7 +299,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyD(value: number, valueStr: string) {
     const paramStart: number = 13 + (this.state.currentProfile * 8);
-    SparkManager.setAndGetParameter(paramStart + 2, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), paramStart + 2, value).then((res: IServerResponse) => {
       this.props.motorConfig.controlProfiles[this.state.currentProfile].d = res.responseValue as number;
       this.props.paramResponses[paramStart + 2] = res;
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
@@ -310,7 +312,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyF(value: number, valueStr: string) {
     const paramStart: number = 13 + (this.state.currentProfile * 8);
-    SparkManager.setAndGetParameter(paramStart + 3, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), paramStart + 3, value).then((res: IServerResponse) => {
       this.props.motorConfig.controlProfiles[this.state.currentProfile].f = res.responseValue as number;
       this.props.paramResponses[paramStart + 3] = res;
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
@@ -373,7 +375,7 @@ class RunTab extends React.Component<IProps, IState> {
     } else if (value.currentTarget.value === 2) {
       modeStr = "Position";
     }
-    SparkManager.setControlMode(value.currentTarget.value);
+    SparkManager.setControlMode(fromDeviceId(this.props.deviceId), value.currentTarget.value);
     this.setState({
       mode: modeStr,
       option: {
@@ -434,6 +436,7 @@ class RunTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
+    deviceId: getSelectedDeviceId(state),
     connected: isSelectedDeviceConnected(state),
     motorConfig: getSelectedDeviceMotorConfig(state),
     burnedConfig: getSelectedDeviceBurnedConfig(state),

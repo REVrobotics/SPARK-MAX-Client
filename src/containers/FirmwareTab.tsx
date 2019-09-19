@@ -3,7 +3,7 @@ import {Cell, Column, Table, IRegion} from "@blueprintjs/table";
 import * as React from "react";
 import {connect} from "react-redux";
 import {
-  IApplicationState, SparkDispatch,
+  DeviceId, IApplicationState, SparkDispatch,
 } from "../store/types";
 import SparkManager from "../managers/SparkManager";
 import {
@@ -14,9 +14,11 @@ import WebProvider from "../providers/WebProvider";
 import MotorConfiguration from "../models/MotorConfiguration";
 import CANScanDetail from "../models/CANScanDetail";
 import { isNullOrUndefined } from "util";
-import {isSelectedDeviceConnected} from "../store/selectors";
+import {getSelectedDeviceId, isSelectedDeviceConnected} from "../store/selectors";
+import {fromDeviceId} from "../store/reducer";
 
 interface IProps {
+  deviceId: DeviceId,
   connected: boolean,
   setIsConnecting(connecting: boolean): void,
   updateConnectionStatus(connected: boolean, status: string): void,
@@ -301,7 +303,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
           this.props.updateConnectionStatus(true, "CONNECTED");
           this.props.setIsConnecting(false);
           setTimeout(() => {
-            SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
+            SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((config: MotorConfiguration) => {
               this.props.setCurrentConfig(config);
               SparkManager.getFirmware().then((response: any) => {
                 this.setState({firmwareVersion: response.version});
@@ -385,6 +387,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
+    deviceId: getSelectedDeviceId(state),
     connected: isSelectedDeviceConnected(state),
   };
 }
