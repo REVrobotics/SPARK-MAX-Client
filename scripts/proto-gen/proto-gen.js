@@ -37,7 +37,7 @@ function generate(generationConfig) {
 }
 
 /**
- * Generates only serializable data structures by .proto files
+ * Generates only serializable data structures (DTOs) by .proto files
  * @return {Promise<unknown>}
  */
 function generateForRenderer(generationConfig) {
@@ -54,6 +54,7 @@ function generateForRenderer(generationConfig) {
   ];
 
   return fs.mkdirp(resolvePath(generationConfig.destDir))
+    // Run DTO generation
     .then(() => exec(dtoCmd.join(" "), {
       env: {
         ...process.env,
@@ -107,18 +108,21 @@ function generateForMain(generationConfig) {
   ];
 
   return fs.mkdirp(resolvePath(generationConfig.destDir))
+    // Generate gRPC client
     .then(() => exec(grpcCmd.join(" "), {
       env: {
         ...process.env,
         PATH: `${process.env.PATH};${path.resolve(projectDir, "node_modules/.bin")}`,
       },
     }))
+    // Run TS code generation for gRPC client
     .then(() => exec(tsCmd.join(" "), {
       env: {
         ...process.env,
         PATH: `${process.env.PATH};${path.resolve(projectDir, "node_modules/.bin")}`,
       },
     }))
+    // Run DTO generation
     .then(() => exec(dtoCmd.join(" "), {
       env: {
         ...process.env,
