@@ -8,8 +8,10 @@ import registerServiceWorker from './registerServiceWorker';
 import reducer from "./store/reducer";
 
 const applicationStore = createStore(reducer);
-const ipcRenderer = (window as any).require("electron").ipcRenderer;
-const headless = false;
+// read value passed from the main process
+const electron = (window as any).require("electron");
+const {ipcRenderer, remote} = electron;
+const headless = !remote.getGlobal("remote");
 
 if (headless) {
   ReactDOM.render(
@@ -20,7 +22,6 @@ if (headless) {
   );
   registerServiceWorker();
 } else {
-  // TODO - Add looking for config 'port' number.
   ipcRenderer.on("start-server-response", (event: any, error: any) => {
     ReactDOM.render(
       <Provider store={applicationStore}>

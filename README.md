@@ -17,6 +17,8 @@ Parts of the project structure were created by [create-react-app](https://github
 3. Open up a command prompt or terminal window, and type `npm install` from the project root directory.
 4. Once the project has installed it's dependencies, run `npm start` to start both the react development server and the desktop electron environment.
 
+**Note.** Look at comments in [scripts/proto-gen/proto-gen.config.js](proto-gen.config.js) file to understand how to tune generation process.  
+
 ## Project Scripts
 ### `npm run react`
 This starts the react TypeScript development server only. When this window loads, an error will display saying 'window.require is not a function'.
@@ -43,10 +45,31 @@ This is the typical, default installation command that the node package manager 
 run after `npm install` is finished, which builds the proper binaries for the electron environment. This provides native access to operating system calls such as
 the file system.
 
+### `npm run proto-gen`
+This script runs generation of code based on .proto files. Look here below below for more details.
+
+## Generation of gRPC client from .proto files
+Project includes helper script which simplifies gRPC client generation based on .proto files.
+This script downloads file from GitHub repository and generates gRPC client using protoc tool.
+ 
+1. To download .proto files from repository provide all settings into `scripts/proto-gen/proto-gen.config.js`.
+2. It is recommended to provide all sensitive settings into `proto-gen.secret.js` or `proto-gen.secret.json` file. Secret file will be not committed into Git.
+    1. Copy `scripts/proto-gen/proto-gen.secret-sample.js` file and rename it either to `proto-gen.secret.json` or `proto-gen.secret.js`.
+3. Run
+    ```
+    npm run proto-gen
+    ```
+
+## Application Arguments
+
+Application supports the following parameters
+* `--host` specifies IP address if the SPARK-MAX server
+* `--port` specifies port of the SPAstaRK-MAX server
+* `--remote`. When `--remote` flag is set, application does not try to start bundled SPARK-MAX server and connects to the specified one (through `--host` and `--port` parameters).
+* `---grpc`. When `--grpc` flag is set, application runs gRPC client instead of ZeroMQ (default). **Note: this option will be removed in future, when support of ZeroMQ is terminated** 
+
 ## Using gulp.js
 The SPARK MAX Client repository comes with some pre-built gulpfile commands that may help during development.
-
-### 
 
 ## SPARK MAX Client Changelog
 For detailed descriptions on what's changed between versions, head over to the repository's [CHANGELOG.md](https://github.com/REVrobotics/SPARK-MAX-Client/blob/master/CHANGELOG.md).

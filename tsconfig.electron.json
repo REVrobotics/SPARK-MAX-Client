@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "module": "commonjs",
     "noImplicitAny": true,
     "sourceMap": true,
@@ -11,6 +12,7 @@
   },
   "include": [
     "public/electron.ts",
-    "public/main/**/*/"
+    "public/main/**/*/",
+    "public/proto-gen/**/*/"
   ]
 }

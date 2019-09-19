@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
+import { HEADLESS } from './program-args';
 
 // const isProd = process.env.NODE_ENV === "production";
 const isProd = false;
@@ -9,6 +10,9 @@ let mainWindow: Electron.BrowserWindow;
 if (!isProd) {
   require("electron-debug")({showDevTools: true});
 }
+
+// the following value is read in the renderer process
+(global as any).headless = HEADLESS;
 
 /**
  * Simply put, creates the main window that our application resides in. Technically, this function can be called

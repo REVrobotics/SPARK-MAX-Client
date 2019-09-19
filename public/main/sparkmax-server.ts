@@ -1,6 +1,29 @@
 import * as path from "path";
+import {noop} from "lodash";
 import {load, Root} from "protobufjs";
 import {socket, Socket} from "zeromq";
+import {credentials} from "grpc";
+import {
+  burnRequestFromDto, burnResponseToDto,
+  connectRequestFromDto,
+  connectResponseToDto,
+  disconnectRequestFromDto,
+  disconnectResponseToDto,
+  factoryResetRequestFromDto,
+  firmwareRequestFromDto,
+  firmwareResponseToDto,
+  getParameterRequestFromDto,
+  listRequestFromDto,
+  listResponseToDto, parameterListRequestFromDto, parameterListResponse, parameterListResponseToDto, parameterResponse,
+  parameterResponseToDto,
+  pingRequestFromDto, pingResponseToDto,
+  rootResponseToDto,
+  setParameterRequestFromDto,
+  setpointRequestFromDto,
+  setpointResponseToDto,
+  sparkMaxServerClient
+} from "../proto-gen";
+import {Message} from "google-protobuf";
 
 // until better-queue gets a types definition
 // tslint:disable
@@ -9,18 +32,45 @@ const queue = require("better-queue");
 const PROTO_BUFFERS_TYPES = path.join(__dirname, "../protobuf/SPARK-MAX-Types.proto");
 const PROTO_BUFFERS_COMMANDS = path.join(__dirname, "../protobuf/SPARK-MAX-Commands.proto");
 
+function wrapIntoGrpcCallback<TMessage extends Message, TDto>(cb: Function = noop,
+                                                                 map: (msg: TMessage) => TDto): (err: any, response: any) => void {
+  return (err, msg) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+
+    cb(null, map(msg));
+  };
+}
+
 class SparkServer {
   private readonly host: string;
   private readonly port: number;
   private socket: Socket;
   private cmdQueue: any;
+  private grpcClient: sparkMaxServerClient;
   private root: Root;
+  private isGrpc: boolean;
 
-  constructor(host: string, port: number) {
+  constructor(host: string, port: number, isGrpc: boolean) {
     this.host = host;
     this.port = port;
+    this.isGrpc = isGrpc;
     this.socket = socket("req");
     this.socket.connect(`tcp://${this.host}:${this.port}`);
+    if (this.isGrpc) {
+      this.startGrpcClient();
+    } else {
+      this.startZmqClient();
+    }
+  }
+
+  private startGrpcClient() {
+    this.grpcClient = new sparkMaxServerClient(`${this.host}:${this.port}`, credentials.createInsecure());
+  }
+
+  private startZmqClient() {
     this.cmdQueue = new queue((input: any, cb: Function) => {
       if (input.id === "init") {
         load(PROTO_BUFFERS_TYPES).then(() => {
@@ -87,40 +137,85 @@ class SparkServer {
   }
 
   public connect(controlCommand: any, cb?: Function) {
-    controlCommand.ctrl = 1;
-    this.sendCommand("connect", "connect", controlCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.connect(connectRequestFromDto(controlCommand), wrapIntoGrpcCallback(cb, connectResponseToDto));
+    } else {
+      controlCommand.ctrl = 1;
+      this.sendCommand("connect", "connect", controlCommand, cb);
+    }
   }
 
   public disconnect(controlCommand: any, cb?: Function) {
-    controlCommand.ctrl = 2;
-    this.sendCommand("disconnect", "disconnect", controlCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.disconnect(disconnectRequestFromDto(controlCommand), wrapIntoGrpcCallback(cb, disconnectResponseToDto));
+    } else {
+      controlCommand.ctrl = 2;
+      this.sendCommand("disconnect", "disconnect", controlCommand, cb);
+    }
   }
 
   public list(listCommand: any, cb?: Function) {
-    listCommand.ctrl = 1;
-    this.sendCommand("list", "list", listCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.list(listRequestFromDto(listCommand), wrapIntoGrpcCallback(cb, listResponseToDto));
+    } else {
+      listCommand.ctrl = 1;
+      this.sendCommand("list", "list", listCommand, cb);
+    }
   }
 
   public getParameter(paramCommand: any, cb: Function) {
-    this.sendCommand("getParameter", "parameter", paramCommand, (error: any, result: any) => {
-      result.value = Number(result.value);
-      cb(error, result);
-    });
+    if (this.isGrpc) {
+      this.grpcClient.getParameter(getParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, (msg: parameterResponse) => {
+        const result = parameterResponseToDto(msg);
+        return { ...result, value: Number(result.value) };
+      }));
+    } else {
+      this.sendCommand("getParameter", "parameter", paramCommand, (error: any, result: any) => {
+        result.value = Number(result.value);
+        cb(error, result);
+      });
+    }
+  }
+
+  public getParameterList(paramListCommand: any, cb: Function) {
+    if (this.isGrpc) {
+      this.grpcClient.listParameters(parameterListRequestFromDto(paramListCommand), wrapIntoGrpcCallback(cb, (msg: parameterListResponse) => {
+        const result = parameterListResponseToDto(msg);
+        return result.parameters.map((param) => Number(param.value));
+      }));
+    } else {
+      this.sendCommand("listParameters", "listParameters", paramListCommand, (error: any, result: any) => {
+        cb(error, result);
+      });
+    }
   }
 
   public setParameter(paramCommand: any, cb?: Function) {
     paramCommand.value += "";
-    this.sendCommand("setParameter", "parameter", paramCommand, cb);
+
+    if (this.isGrpc) {
+      this.grpcClient.setParameter(setParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, parameterResponseToDto));
+    } else {
+      this.sendCommand("setParameter", "parameter", paramCommand, cb);
+    }
   }
 
   public setpoint(setpointCommand: any, cb?: Function) {
     setpointCommand.setpoint = setpointCommand.setpoint / 1024;
-    this.sendCommand("setpoint", "setpoint", setpointCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.setpoint(setpointRequestFromDto(setpointCommand), wrapIntoGrpcCallback(cb, setpointResponseToDto));
+    } else {
+      this.sendCommand("setpoint", "setpoint", setpointCommand, cb);
+    }
   }
 
   public burnFlash(burnCommand: any, cb?: Function) {
-    burnCommand.verify = true;
-    this.sendCommand("burn", "burn", burnCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.burnFlash(burnRequestFromDto(burnCommand), wrapIntoGrpcCallback(cb, burnResponseToDto));
+    } else {
+      burnCommand.verify = true;
+      this.sendCommand("burn", "burn", burnCommand, cb);
+    }
   }
 
   public heartbeat(heartbeatRequest: any, cb: Function) {
@@ -128,15 +223,27 @@ class SparkServer {
   }
 
   public ping(pingCommand: any, cb: Function) {
-    this.sendCommand("ping", "ping", pingCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.ping(pingRequestFromDto(pingCommand), wrapIntoGrpcCallback(cb, pingResponseToDto));
+    } else {
+      this.sendCommand("ping", "ping", pingCommand, cb);
+    }
   }
 
   public firmware(firmwareCommand: any, cb: Function) {
-    this.sendCommand("firmware", "firmware", firmwareCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.firmware(firmwareRequestFromDto(firmwareCommand), wrapIntoGrpcCallback(cb, firmwareResponseToDto));
+    } else {
+      this.sendCommand("firmware", "firmware", firmwareCommand, cb);
+    }
   }
 
   public factoryReset(factoryResetCommand: any, cb: Function) {
-    this.sendCommand("factoryReset", "factoryReset", factoryResetCommand, cb);
+    if (this.isGrpc) {
+      this.grpcClient.factoryReset(factoryResetRequestFromDto(factoryResetCommand), wrapIntoGrpcCallback(cb, rootResponseToDto));
+    } else {
+      this.sendCommand("factoryReset", "factoryReset", factoryResetCommand, cb);
+    }
   }
 }
 
