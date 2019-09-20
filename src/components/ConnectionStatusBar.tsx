@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import * as classnames from "classnames";
 import {IApplicationState, IDeviceState, SparkDispatch} from "../store/types";
-import {connectToSelectedDevice, disconnectSelectedDevice} from "../store/device-actions";
+import {connectToSelectedDevice, disconnectSelectedDevice} from "../store/connection-actions";
 import {
   getDevicesInOrder,
   getProcessStatus, getSelectedDevice,

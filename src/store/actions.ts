@@ -16,7 +16,7 @@ import {
   IUpdateGlobalProcessStatus,
   ISetGlobalProcessing,
   SparkAction,
-  ISelectDevice,
+  ISelectDevice, ProcessType,
 } from "./types";
 import {IServerResponse} from "../managers/SparkManager";
 import {getSelectedDeviceId} from "./selectors";
@@ -49,10 +49,12 @@ export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus
 });
 
 export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (deviceId: DeviceId,
-                                                                              isProcessing: boolean) => ({
+                                                                              isProcessing: boolean,
+                                                                              processType?: ProcessType) => ({
   payload: {
     deviceId,
-    isProcessing
+    isProcessing,
+    processType
   },
   type: ActionType.SET_DEVICE_PROCESSING
 });

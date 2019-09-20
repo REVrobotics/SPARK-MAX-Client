@@ -13,7 +13,8 @@ import {IApplicationState, SparkDispatch} from "./store/types";
 import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
 import {initApplication} from "./store/init-actions";
-import {disconnectSelectedDevice} from "./store/device-actions";
+import {disconnectSelectedDevice} from "./store/connection-actions";
+import UiSupport from "./containers/UiSupport";
 
 interface IProps {
   init(): void;
@@ -38,6 +39,7 @@ class App extends React.Component<IProps> {
   public render() {
     return (
       <div id="main-container">
+        <UiSupport/>
         <ConnectionStatusBar/>
         <Tabs id="main-tabs" defaultSelectedTabId="main-tab-basic" renderActiveTabPanelOnly={true}>
           <Tab id="main-tab-basic" title="Basic" panel={<BasicTab/>}/>

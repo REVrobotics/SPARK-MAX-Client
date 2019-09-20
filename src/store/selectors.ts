@@ -152,9 +152,26 @@ export const isInProcessing = (state: IApplicationState) => {
     return true;
   }
 
-  // Do we have processing for selected device
+  return isSelectedDeviceInProcessing(state);
+};
+
+/**
+ * Returns if we have processing for selected device
+ * @param state
+ */
+export const isSelectedDeviceInProcessing = (state: IApplicationState) => {
   const selectedDevice = getSelectedDevice(state);
   return selectedDevice == null ? false : selectedDevice.isProcessing;
+};
+
+
+/**
+ * Returns if we have processing for selected device
+ * @param state
+ */
+export const getSelectedDeviceProcessType = (state: IApplicationState) => {
+  const selectedDevice = getSelectedDevice(state);
+  return selectedDevice == null ? undefined : selectedDevice.processType;
 };
 
 /**

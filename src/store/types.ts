@@ -2,6 +2,7 @@ import {Action} from "redux";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {IServerResponse} from "../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
+import {Intent} from "@blueprintjs/core";
 
 export enum ActionType {
   SET_GLOBAL_PROCESS_STATUS = "SET_GLOBAL_PROCESS_STATUS",
@@ -14,26 +15,41 @@ export enum ActionType {
   SET_CURRENT_MOTOR_CONFIG = "SET_MOTOR_CONFIG",
   SET_BURNED_MOTOR_CONFIG = "SET_BURNED_MOTOR_CONFIG",
   SET_SERVER_PARAM_RESPONSE = "SET_SERVER_PARAM_RESPONSE",
+  SAVE_CONFIRMATION = "SAVE_CONFIRMATION",
+  BURN_CONFIRMATION = "BURN_CONFIRMATION",
   ADD_LOG = "ADD_LOG",
   SET_UPDATE_AVAILABLE = "SET_UPDATE_AVAILABLE",
   SELECT_DEVICE = "SELECT_DEVICE",
+  OPEN_CONFIRMATION = "OPEN_CONFIRMATION",
+  ANSWER_CONFIRMATION = "ANSWER_CONFIRMATION",
+}
+
+export enum ProcessType {
+  Save = "Save",
+  Reset = "Process"
 }
 
 export type DeviceId = number;
 
 export interface IApplicationState {
-  orderedDevices: DeviceId[];
-  devices: { [deviceId: number]: IDeviceState };
-  selectedDeviceId?: number;
-  isProcessing: boolean;
-  processStatus: string;
+  orderedDevices: DeviceId[],
+  devices: { [deviceId: number]: IDeviceState },
+  selectedDeviceId?: number,
+  isProcessing: boolean,
+  processStatus: string,
   logs: string[],
+  ui: IUiState;
 }
 
 export interface IDeviceInfo {
   driverName: string;
   deviceName: string;
   updateable: boolean;
+}
+
+export interface IUiState {
+  confirmation?: IConfirmationDialogConfig;
+  confirmationOpened: boolean;
 }
 
 export interface IDeviceState {
@@ -43,6 +59,7 @@ export interface IDeviceState {
   isConnected: boolean;
   processStatus: string,
   isProcessing: boolean,
+  processType?: ProcessType,
   parameters: number[],
   currentConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
@@ -84,7 +101,8 @@ export interface ISetDeviceProcessing extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_PROCESSING,
   payload: {
     deviceId: DeviceId,
-    isProcessing: boolean
+    isProcessing: boolean,
+    processType?: ProcessType
   }
 }
 
@@ -127,6 +145,20 @@ export interface ISetParamResponses extends IDeviceAwareAction {
   }
 }
 
+export interface ISaveConfirmation extends IDeviceAwareAction {
+  type: ActionType.SAVE_CONFIRMATION,
+  payload: {
+    deviceId: DeviceId
+  }
+}
+
+export interface IBurnConfirmation extends IDeviceAwareAction {
+  type: ActionType.BURN_CONFIRMATION,
+  payload: {
+    deviceId: DeviceId
+  }
+}
+
 export interface IAddLog extends Action {
   type: ActionType.ADD_LOG,
   payload: {
@@ -148,9 +180,33 @@ export interface ISelectDevice extends IDeviceAwareAction {
   }
 }
 
+export interface IOpenConfirmation extends Action {
+  type: ActionType.OPEN_CONFIRMATION,
+  payload: IConfirmationDialogConfig
+}
+
+export interface IAnswerConfirmation extends Action {
+  type: ActionType.ANSWER_CONFIRMATION,
+  payload: ConfirmationAnswer
+}
+
+export interface IConfirmationDialogConfig {
+  intent: Intent;
+  text: string;
+  yesLabel: string;
+  cancelLabel: string;
+}
+
+export enum ConfirmationAnswer {
+  Yes = "Yes",
+  Cancel = "Cancel"
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | IAddDevices | ISelectDevice
   | ISetParameters | ISetMotorConfig | ISetBurnedMotorConfig | ISetParamResponses | IAddLog | ISetUpdateAvailable
-  | IUpdateGlobalProcessStatus | ISetGlobalProcessing;
+  | IUpdateGlobalProcessStatus | ISetGlobalProcessing
+  | IOpenConfirmation | IAnswerConfirmation
+  | ISaveConfirmation | IBurnConfirmation;

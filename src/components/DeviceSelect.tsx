@@ -26,14 +26,17 @@ interface IProps {
 }
 
 export const DeviceSelect: React.FC<IProps> = ({className, devices, selected, onSelect}) => {
+  const disabled = devices.length <= 1;
+
   return (
     <BpDeviceSelect className={className}
                     items={devices}
+                    disabled={disabled}
                     filterable={false}
                     itemRenderer={renderer} onItemSelect={onSelect}>
       <Button fill={true}
-              disabled={devices.length <= 1}
-              text={selected ? getDeviceText(selected) : ""}
+              disabled={disabled}
+              text={selected ? getDeviceText(selected) : "NO DEVICES"}
               rightIcon="double-caret-vertical"/>
     </BpDeviceSelect>
   );

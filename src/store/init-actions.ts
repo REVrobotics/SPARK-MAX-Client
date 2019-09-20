@@ -9,7 +9,7 @@ import {
   setParamResponses,
   updateDeviceProcessStatus
 } from "./actions";
-import {connectUsbDevice, findUsbDevices} from "./device-actions";
+import {connectUsbDevice, findUsbDevices} from "./connection-actions";
 import {getFirstUsbDeviceId} from "./selectors";
 import {toDeviceId} from "./reducer";
 

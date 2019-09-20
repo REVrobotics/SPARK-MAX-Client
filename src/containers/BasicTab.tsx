@@ -1,17 +1,15 @@
-import {Alert, Button, FormGroup, NumericInput, Slider, Switch} from "@blueprintjs/core";
+import {Button, FormGroup, NumericInput, Slider, Switch} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
-import {
-  DeviceId, IApplicationState, SparkDispatch
-} from "../store/types";
+import {DeviceId, IApplicationState, ProcessType, SparkDispatch} from "../store/types";
 import {ConfigParam} from "../models/ConfigParam";
 import PopoverHelp from "../components/PopoverHelp";
 import {
-  setSelectedDeviceMotorConfig,
   setSelectedDeviceBurnedMotorConfig,
+  setSelectedDeviceMotorConfig,
   updateSelectedDeviceIsProcessing,
   updateSelectedDeviceProcessStatus
 } from "../store/actions";
@@ -19,15 +17,22 @@ import {SensorTypeSelect} from "../components/SensorTypeSelect";
 import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
-  getSelectedDeviceBurnedConfig, getSelectedDeviceId,
-  getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
-  isSelectedDeviceConnected
+  getSelectedDeviceBurnedConfig,
+  getSelectedDeviceId,
+  getSelectedDeviceMotorConfig,
+  getSelectedDeviceParamResponses,
+  getSelectedDeviceProcessType,
+  isSelectedDeviceConnected,
+  isSelectedDeviceInProcessing
 } from "../store/selectors";
 import {fromDeviceId} from "../store/reducer";
+import {burnConfiguration, resetConfiguration} from "../store/parameter-actions";
 
 interface IProps {
   deviceId: DeviceId,
   connected: boolean,
+  processing: boolean,
+  processType?: ProcessType,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
   paramResponses: IServerResponse[],
@@ -35,14 +40,12 @@ interface IProps {
   setBurnedConfig(config: MotorConfiguration): void,
   updateConnectionStatus(connected: boolean, status: string): void,
   setIsConnecting(connecting: boolean): void,
+  burnConfiguration(): void;
+  resetConfiguration(): void;
 }
 
 interface IState {
   rampRateEnabled: boolean,
-  updateRequested: boolean,
-  savingConfig: boolean,
-  restoringDefaults: boolean,
-  restoreRequested: boolean,
 }
 
 class BasicTab extends React.Component<IProps, IState> {
@@ -50,16 +53,7 @@ class BasicTab extends React.Component<IProps, IState> {
     super(props);
     this.state = {
       rampRateEnabled: this.props.motorConfig.rampRate > 0,
-      savingConfig: false,
-      updateRequested: false,
-      restoringDefaults: false,
-      restoreRequested: false
     };
-    this.openConfirmModal = this.openConfirmModal.bind(this);
-    this.closeConfirmModal = this.closeConfirmModal.bind(this);
-    this.openRestoreWarnModal = this.openRestoreWarnModal.bind(this);
-    this.closeRestoreWarnModal = this.closeRestoreWarnModal.bind(this);
-    this.restoreDefaults = this.restoreDefaults.bind(this);
 
     this.selectMotorType = this.selectMotorType.bind(this);
     this.changeCanID = this.changeCanID.bind(this);
@@ -83,8 +77,6 @@ class BasicTab extends React.Component<IProps, IState> {
 
     this.sanitizeValue = this.sanitizeValue.bind(this);
     this.provideDefault = this.provideDefault.bind(this);
-
-    this.updateConfiguration = this.updateConfiguration.bind(this);
   }
 
   public componentDidUpdate(prevProps: IProps) {
@@ -94,8 +86,8 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected, motorConfig, burnedConfig} = this.props;
-    const {rampRateEnabled, savingConfig, updateRequested, restoreRequested, restoringDefaults} = this.state;
+    const {connected, motorConfig, burnedConfig, processType} = this.props;
+    const {rampRateEnabled} = this.state;
 
     const activeMotorType = getFromID(motorConfig.type);
     const canID = motorConfig.canID;
@@ -183,20 +175,6 @@ class BasicTab extends React.Component<IProps, IState> {
 
     return (
       <div>
-        <Alert
-          isOpen={updateRequested}
-          cancelButtonText="Cancel"
-          confirmButtonText="Yes, Update"
-          intent="success"
-          onCancel={this.closeConfirmModal}
-          onClose={this.closeConfirmModal}
-          onConfirm={this.updateConfiguration}
-        >
-          Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
-        </Alert>
-        <Alert isOpen={restoreRequested} cancelButtonText="Cancel" confirmButtonText="Yes" intent="warning" onCancel={this.closeRestoreWarnModal} onClose={this.closeRestoreWarnModal} onConfirm={this.restoreDefaults}>
-          WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?
-        </Alert>
         <div className="form form-left">
           <FormGroup
             label="Select Configuration"
@@ -340,27 +318,17 @@ class BasicTab extends React.Component<IProps, IState> {
           </div>
         </div>
         <div className="form update-container">
-          <Button className="rev-btn" disabled={!connected || restoringDefaults} loading={savingConfig} onClick={this.openConfirmModal}>Save Configuration</Button>
-          <Button className="bad-btn" disabled={!connected || savingConfig} loading={restoringDefaults} onClick={this.openRestoreWarnModal}>Restore Factory Defaults</Button>
+          <Button className="rev-btn"
+                  disabled={!connected || processType === ProcessType.Reset}
+                  loading={processType === ProcessType.Save}
+                  onClick={this.props.burnConfiguration}>Save Configuration</Button>
+          <Button className="bad-btn"
+                  disabled={!connected || processType === ProcessType.Save}
+                  loading={processType === ProcessType.Reset}
+                  onClick={this.props.resetConfiguration}>Restore Factory Defaults</Button>
         </div>
       </div>
     );
-  }
-
-  public openConfirmModal() {
-    this.setState({updateRequested: true});
-  }
-
-  public closeConfirmModal() {
-    this.setState({updateRequested: false});
-  }
-
-  public openRestoreWarnModal() {
-    this.setState({restoreRequested: true});
-  }
-
-  public closeRestoreWarnModal() {
-    this.setState({restoreRequested: false});
   }
 
   private setIntParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: number): Promise<number> {
@@ -495,55 +463,14 @@ class BasicTab extends React.Component<IProps, IState> {
       return {requestValue: "", responseValue: "", status: 0, type: 0};
     }
   }
-
-  private updateConfiguration() {
-    this.setState({savingConfig: true});
-    SparkManager.burnFlash(fromDeviceId(this.props.deviceId)).then(() => {
-      setTimeout(() => {
-        SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((config: MotorConfiguration) => {
-          this.props.setCurrentConfig(config);
-          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-          this.setState({savingConfig: false});
-        }).catch((error: any) => {
-          this.setState({savingConfig: false});
-        });
-      }, 1000);
-    }).catch((error: any) => {
-      this.setState({savingConfig: false});
-    });
-  }
-
-  private restoreDefaults() {
-    this.setState({restoringDefaults: true});
-    this.props.setIsConnecting(true);
-    this.props.updateConnectionStatus(false, "RESETTING...");
-    SparkManager.restoreDefaults(fromDeviceId(this.props.deviceId)).then(() => {
-      this.props.updateConnectionStatus(true, "GETTING PARAMETERS...");
-      setTimeout(() => {
-        SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((config: MotorConfiguration) => {
-          this.props.setCurrentConfig(config);
-          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-          this.setState({restoringDefaults: false});
-          this.props.setIsConnecting(false);
-          this.props.updateConnectionStatus(true, "CONNECTED");
-        }).catch((error: any) => {
-          this.props.setIsConnecting(false);
-          this.props.updateConnectionStatus(true, "CONNECTED");
-          this.setState({restoringDefaults: false});
-        });
-      }, 1000);
-    }).catch((error: any) => {
-      this.setState({restoringDefaults: false});
-      this.props.setIsConnecting(false);
-      this.props.updateConnectionStatus(true, "CONNECTED");
-    })
-  }
 }
 
 export function mapStateToProps(state: IApplicationState) {
   return {
     deviceId: getSelectedDeviceId(state),
     connected: isSelectedDeviceConnected(state),
+    processing: isSelectedDeviceInProcessing(state),
+    processType: getSelectedDeviceProcessType(state),
     motorConfig: getSelectedDeviceMotorConfig(state),
     burnedConfig: getSelectedDeviceBurnedConfig(state),
     paramResponses: getSelectedDeviceParamResponses(state),
@@ -557,6 +484,8 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     setIsConnecting: (connecting: boolean) => dispatch(updateSelectedDeviceIsProcessing(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) =>
       dispatch(updateSelectedDeviceProcessStatus(connected, status)),
+    burnConfiguration: () => dispatch(burnConfiguration()),
+    resetConfiguration: () => dispatch(resetConfiguration()),
   }
 }
 

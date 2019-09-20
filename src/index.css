@@ -42,11 +42,16 @@
     display: flex;
     justify-content: flex-end;
     margin: 0 15px 0 15px;
+    min-width: 200px;
     max-width: 200px;
 }
 
 .status-bar-device-selector .bp3-popover-target {
     width: 100%;
+}
+
+.status-bar-device-selector .bp3-button {
+    justify-content: space-between;
 }
 
 .status-bar-device-selector .bp3-button-text {

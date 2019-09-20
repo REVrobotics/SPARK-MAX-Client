@@ -1,7 +1,15 @@
 import {Reducer} from "redux";
 import {keyBy, sortBy} from "lodash";
 import {default as MotorConfiguration, REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {ActionType, ApplicationActions, DeviceId, IApplicationState, IDeviceInfo, IDeviceState,} from "./types";
+import {
+  ActionType,
+  ApplicationActions,
+  DeviceId,
+  IApplicationState,
+  IDeviceInfo,
+  IDeviceState,
+  IUiState,
+} from "./types";
 import {setField, setFields} from "../utils/object-utils";
 
 export const initialState: IApplicationState = {
@@ -10,6 +18,9 @@ export const initialState: IApplicationState = {
   logs: [],
   isProcessing: false,
   processStatus: "",
+  ui: {
+    confirmationOpened: false
+  }
 };
 
 const createDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState => ({
@@ -68,6 +79,20 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
           deviceReducer(state.devices[action.payload.deviceId], action)));
     case ActionType.ADD_LOG:
       return {...state, logs: [...state.logs, action.payload.log]};
+    case ActionType.OPEN_CONFIRMATION:
+    case ActionType.ANSWER_CONFIRMATION:
+      return setField(state, "ui", uiReducer(state.ui, action));
+    default:
+      return state;
+  }
+};
+
+const uiReducer: Reducer<IUiState> = (state: IUiState, action: ApplicationActions): IUiState => {
+  switch (action.type) {
+    case ActionType.OPEN_CONFIRMATION:
+      return { ...state, confirmation: action.payload, confirmationOpened: true };
+    case ActionType.ANSWER_CONFIRMATION:
+      return { ...state, confirmationOpened: false };
     default:
       return state;
   }
@@ -78,7 +103,7 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
     case ActionType.SET_DEVICE_PROCESS_STATUS:
       return {...state, isConnected: action.payload.isConnected, processStatus: action.payload.processStatus};
     case ActionType.SET_DEVICE_PROCESSING:
-      return {...state, isProcessing: action.payload.isProcessing};
+      return {...state, isProcessing: action.payload.isProcessing, processType: action.payload.processType};
     case ActionType.SET_PARAMETERS:
       return {...state, parameters: action.payload.parameters};
     case ActionType.SET_CURRENT_MOTOR_CONFIG:
