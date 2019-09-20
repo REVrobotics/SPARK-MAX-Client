@@ -1,20 +1,43 @@
-import {ConfirmationAnswer, ProcessType, SparkAction} from "./types";
+import {identity} from "lodash";
+import {ConfirmationAnswer, DeviceId, ProcessType, SparkAction} from "./types";
 import {showConfirmation} from "./ui-actions";
-import {getDevice, getSelectedDeviceId} from "./selectors";
+import {getDevice} from "./selectors";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
-import SparkManager from "../managers/SparkManager";
+import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import {fromDeviceId} from "./reducer";
 import {delayPromise} from "../utils/promise-utils";
-import {setBurnedMotorConfig, setMotorConfig, updateDeviceIsProcessing, updateDeviceProcessStatus} from "./actions";
+import {
+  setBurnedMotorConfig,
+  setMotorConfig,
+  setMotorConfigParameter,
+  updateDeviceIsProcessing,
+  updateDeviceProcessStatus
+} from "./actions";
+import {ConfigParam} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {forSelectedDevice} from "./action-creators";
 
-export const burnConfiguration = (): SparkAction<Promise<void>> =>
+const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue: (value: number) => T) =>
+  (deviceId: DeviceId, motorField: keyof MotorConfiguration, param: ConfigParam, value: T): SparkAction<Promise<T>> =>
+    (dispatch) => {
+      return SparkManager.setAndGetParameter(fromDeviceId(deviceId), param, fromTypedValue(value))
+        .then((res: IServerResponse) => {
+          const responseValue = toTypedValue(res.responseValue as number);
+          dispatch(setMotorConfigParameter(deviceId, {
+            configName: motorField,
+            configValue: responseValue,
+            configParam: param,
+            response: res,
+          }));
+          return responseValue;
+        });
+    };
+
+export const setNumberParameter = createTypedSetter<number>(identity, identity);
+export const setBooleanParameter = createTypedSetter<boolean>((value) => value ? 1 : 0, (value) => value === 1);
+
+export const burnConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId == null) {
-      return Promise.resolve();
-    }
-
-    const device = getDevice(getState(), selectedDeviceId);
+    const device = getDevice(getState(), deviceId);
     const activeMotorType = getFromID(device.currentConfig.type);
 
     return dispatch(showConfirmation({
@@ -27,27 +50,22 @@ export const burnConfiguration = (): SparkAction<Promise<void>> =>
         return;
       }
 
-      dispatch(updateDeviceIsProcessing(selectedDeviceId, true, ProcessType.Save));
-      return SparkManager.burnFlash(fromDeviceId(selectedDeviceId))
+      dispatch(updateDeviceIsProcessing(deviceId, true, ProcessType.Save));
+      return SparkManager.burnFlash(fromDeviceId(deviceId))
         .then(() => delayPromise(1000))
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(selectedDeviceId)).then((config: MotorConfiguration) => {
+          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((config: MotorConfiguration) => {
             dispatch(setMotorConfig(config));
             dispatch(setBurnedMotorConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON())));
           }))
         .finally(() => {
-          dispatch(updateDeviceIsProcessing(selectedDeviceId, false));
+          dispatch(updateDeviceIsProcessing(deviceId, false));
         });
     });
   };
 
-export const resetConfiguration = (): SparkAction<Promise<void>> =>
-  (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId == null) {
-      return Promise.resolve();
-    }
-
+export const resetConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>> =>
+  (dispatch) => {
     return dispatch(showConfirmation({
       intent: "warning",
       text: "WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?",
@@ -58,22 +76,27 @@ export const resetConfiguration = (): SparkAction<Promise<void>> =>
         return;
       }
 
-      dispatch(updateDeviceIsProcessing(selectedDeviceId, true, ProcessType.Reset));
-      dispatch(updateDeviceProcessStatus(selectedDeviceId, false, "RESETTING..."));
+      dispatch(updateDeviceIsProcessing(deviceId, true, ProcessType.Reset));
+      dispatch(updateDeviceProcessStatus(deviceId, false, "RESETTING..."));
 
-      return SparkManager.restoreDefaults(fromDeviceId(selectedDeviceId))
+      return SparkManager.restoreDefaults(fromDeviceId(deviceId))
         .then(() => {
-          dispatch(updateDeviceProcessStatus(selectedDeviceId, true, "GETTING PARAMETERS..."));
+          dispatch(updateDeviceProcessStatus(deviceId, true, "GETTING PARAMETERS..."));
           return delayPromise(1000);
         })
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(selectedDeviceId)).then((config: MotorConfiguration) => {
-            dispatch(setMotorConfig(selectedDeviceId, config));
+          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((config: MotorConfiguration) => {
+            dispatch(setMotorConfig(deviceId, config));
             dispatch(setBurnedMotorConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON())));
           }))
         .finally(() => {
-          dispatch(updateDeviceIsProcessing(selectedDeviceId, false));
-          dispatch(updateDeviceProcessStatus(selectedDeviceId, true, "CONNECTED"));
+          dispatch(updateDeviceIsProcessing(deviceId, false));
+          dispatch(updateDeviceProcessStatus(deviceId, true, "CONNECTED"));
         });
     });
   };
+
+export const setSelectedDeviceNumberParameter = forSelectedDevice(setNumberParameter);
+export const setSelectedDeviceBooleanParameter = forSelectedDevice(setBooleanParameter);
+export const burnSelectedDeviceConfiguration = forSelectedDevice(burnConfiguration);
+export const resetSelectedDeviceConfiguration = forSelectedDevice(resetConfiguration);

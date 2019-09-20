@@ -3,6 +3,7 @@ import MotorConfiguration from "../models/MotorConfiguration";
 import {IServerResponse} from "../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {Intent} from "@blueprintjs/core";
+import {ConfigParam} from "../models/ConfigParam";
 
 export enum ActionType {
   SET_GLOBAL_PROCESS_STATUS = "SET_GLOBAL_PROCESS_STATUS",
@@ -12,7 +13,8 @@ export enum ActionType {
   SET_CONNECTED_DEVICE = "SET_CONNECTED_DEVICE",
   ADD_DEVICES = "ADD_DEVICES",
   SET_PARAMETERS = "SET_PARAMETERS",
-  SET_CURRENT_MOTOR_CONFIG = "SET_MOTOR_CONFIG",
+  SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG",
+  SET_MOTOR_CONFIG_PARAMETER = "SET_MOTOR_CONFIG_PARAMETER",
   SET_BURNED_MOTOR_CONFIG = "SET_BURNED_MOTOR_CONFIG",
   SET_SERVER_PARAM_RESPONSE = "SET_SERVER_PARAM_RESPONSE",
   SAVE_CONFIRMATION = "SAVE_CONFIRMATION",
@@ -122,7 +124,7 @@ export interface ISetParameters extends IDeviceAwareAction {
 }
 
 export interface ISetMotorConfig extends IDeviceAwareAction {
-  type: ActionType.SET_CURRENT_MOTOR_CONFIG,
+  type: ActionType.SET_MOTOR_CONFIG,
   payload: {
     deviceId: DeviceId,
     config: MotorConfiguration
@@ -134,6 +136,20 @@ export interface ISetBurnedMotorConfig extends IDeviceAwareAction {
   payload: {
     deviceId: DeviceId,
     config: MotorConfiguration
+  }
+}
+
+export interface ISetMotorConfigParameterOptions {
+  configName: keyof MotorConfiguration,
+  configValue: any,
+  configParam: ConfigParam,
+  response: IServerResponse,
+}
+
+export interface ISetMotorConfigParameter extends IDeviceAwareAction {
+  type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
+  payload: ISetMotorConfigParameterOptions & {
+    deviceId: DeviceId,
   }
 }
 
@@ -207,6 +223,7 @@ export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationAc
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | IAddDevices | ISelectDevice
   | ISetParameters | ISetMotorConfig | ISetBurnedMotorConfig | ISetParamResponses | IAddLog | ISetUpdateAvailable
+  | ISetMotorConfigParameter
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation;

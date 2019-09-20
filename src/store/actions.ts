@@ -15,11 +15,10 @@ import {
   DeviceId,
   IUpdateGlobalProcessStatus,
   ISetGlobalProcessing,
-  SparkAction,
-  ISelectDevice, ProcessType,
+  ISelectDevice, ProcessType, ISetMotorConfigParameter, ISetMotorConfigParameterOptions,
 } from "./types";
 import {IServerResponse} from "../managers/SparkManager";
-import {getSelectedDeviceId} from "./selectors";
+import {forSelectedDevice} from "./action-creators";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (isConnected: boolean,
                                                                                      processStatus: string) => ({
@@ -79,7 +78,7 @@ export const setMotorConfig: ActionCreator<ISetMotorConfig> = (deviceId: DeviceI
     deviceId,
     config
   },
-  type: ActionType.SET_CURRENT_MOTOR_CONFIG
+  type: ActionType.SET_MOTOR_CONFIG
 });
 
 export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (deviceId: DeviceId,
@@ -89,6 +88,15 @@ export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (devic
     config
   },
   type: ActionType.SET_BURNED_MOTOR_CONFIG
+});
+
+export const setMotorConfigParameter: ActionCreator<ISetMotorConfigParameter> = (deviceId: DeviceId,
+                                                                                 options: ISetMotorConfigParameterOptions) => ({
+  type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
+  payload: {
+    deviceId,
+    ...options,
+  }
 });
 
 export const setParamResponses: ActionCreator<ISetParamResponses> = (deviceId: DeviceId,
@@ -121,34 +129,7 @@ export const selectDevice: ActionCreator<ISelectDevice> = (deviceId: DeviceId) =
   type: ActionType.SELECT_DEVICE,
 });
 
-export const setSelectedDeviceMotorConfig = (config: MotorConfiguration): SparkAction<void> =>
-  (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId) {
-      dispatch(setMotorConfig(selectedDeviceId, config));
-    }
-  };
-
-export const setSelectedDeviceBurnedMotorConfig = (config: MotorConfiguration): SparkAction<void> =>
-  (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId) {
-      dispatch(setBurnedMotorConfig(selectedDeviceId, config));
-    }
-  };
-
-export const updateSelectedDeviceIsProcessing = (isProcessing: boolean): SparkAction<void> =>
-  (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId) {
-      dispatch(updateDeviceIsProcessing(selectedDeviceId, isProcessing));
-    }
-  };
-
-export const updateSelectedDeviceProcessStatus = (isConnected: boolean, processStatus: string): SparkAction<void> =>
-  (dispatch, getState) => {
-    const selectedDeviceId = getSelectedDeviceId(getState());
-    if (selectedDeviceId) {
-      dispatch(updateDeviceProcessStatus(selectedDeviceId, isConnected, processStatus));
-    }
-  };
+export const setSelectedDeviceMotorConfig = forSelectedDevice(setMotorConfig);
+export const setSelectedDeviceBurnedMotorConfig = forSelectedDevice(setBurnedMotorConfig);
+export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
+export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceProcessStatus);

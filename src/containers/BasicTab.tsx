@@ -2,7 +2,7 @@ import {Button, FormGroup, NumericInput, Slider, Switch} from "@blueprintjs/core
 import * as React from "react";
 import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
-import SparkManager, {IServerResponse} from "../managers/SparkManager";
+import {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
 import {DeviceId, IApplicationState, ProcessType, SparkDispatch} from "../store/types";
 import {ConfigParam} from "../models/ConfigParam";
@@ -25,8 +25,10 @@ import {
   isSelectedDeviceConnected,
   isSelectedDeviceInProcessing
 } from "../store/selectors";
-import {fromDeviceId} from "../store/reducer";
-import {burnConfiguration, resetConfiguration} from "../store/parameter-actions";
+import {
+  burnSelectedDeviceConfiguration,
+  resetSelectedDeviceConfiguration, setSelectedDeviceBooleanParameter, setSelectedDeviceNumberParameter
+} from "../store/parameter-actions";
 
 interface IProps {
   deviceId: DeviceId,
@@ -42,6 +44,8 @@ interface IProps {
   setIsConnecting(connecting: boolean): void,
   burnConfiguration(): void;
   resetConfiguration(): void;
+  setBooleanParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: boolean): Promise<boolean>;
+  setNumberParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: number): Promise<number>;
 }
 
 interface IState {
@@ -331,39 +335,15 @@ class BasicTab extends React.Component<IProps, IState> {
     );
   }
 
-  private setIntParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: number): Promise<number> {
-    return SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value)
-      .then((res: IServerResponse) => {
-        const responseValue = res.responseValue as number;
-        this.props.motorConfig[motorField as string] = responseValue;
-        this.props.paramResponses[param] = res;
-        this.forceUpdate();
-        return responseValue;
-      });
-  }
-
-  private setBooleanParameter(motorField: keyof MotorConfiguration,
-                              param: ConfigParam,
-                              value: boolean): Promise<boolean> {
-    return SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value ? 1 : 0)
-      .then((res: IServerResponse) => {
-        const responseValue = res.responseValue === 1;
-        this.props.motorConfig[motorField as string] = responseValue;
-        this.props.paramResponses[param] = res;
-        this.forceUpdate();
-        return responseValue;
-      });
-  }
-
   public changeCanID(id: number) {
-    this.setIntParameter("canID", ConfigParam.kCanID, id);
+    this.props.setNumberParameter("canID", ConfigParam.kCanID, id);
   }
 
   public selectMotorType(motorType: MotorConfiguration) {
-    this.setIntParameter("type", ConfigParam.kMotorType, motorType.type)
+    this.props.setNumberParameter("type", ConfigParam.kMotorType, motorType.type)
       .then((type) => {
         if (type === 1) {
-          return this.setIntParameter("sensorType", ConfigParam.kSensorType, 1);
+          return this.props.setNumberParameter("sensorType", ConfigParam.kSensorType, 1);
         } else {
           return Promise.resolve(0);
         }
@@ -373,73 +353,73 @@ class BasicTab extends React.Component<IProps, IState> {
   public changeIdleMode() {
     const prevMode: number = this.props.motorConfig.idleMode;
     const newMode: number = prevMode === 0 ? 1 : 0;
-    this.setIntParameter('idleMode', ConfigParam.kIdleMode, newMode);
+    this.props.setNumberParameter('idleMode', ConfigParam.kIdleMode, newMode);
   }
 
   public changeSensorType(sensorType: Sensor) {
-    this.setIntParameter('sensorType', ConfigParam.kSensorType, sensorType.id);
+    this.props.setNumberParameter('sensorType', ConfigParam.kSensorType, sensorType.id);
   }
 
   public changeEncoderCpr(encoderCpr: number) {
-    this.setIntParameter('encoderCountsPerRevolution', ConfigParam.kEncoderCountsPerRev, encoderCpr);
+    this.props.setNumberParameter('encoderCountsPerRevolution', ConfigParam.kEncoderCountsPerRev, encoderCpr);
   }
 
   public changeDeadband(value: number) {
-    this.setIntParameter('inputDeadband', ConfigParam.kInputDeadband, value);
+    this.props.setNumberParameter('inputDeadband', ConfigParam.kInputDeadband, value);
   }
 
   public changeCurrentLimit(value: number) {
-    this.setIntParameter('smartCurrentStallLimit', ConfigParam.kSmartCurrentStallLimit, value);
+    this.props.setNumberParameter('smartCurrentStallLimit', ConfigParam.kSmartCurrentStallLimit, value);
   }
 
   public changeForwardLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
-    this.setIntParameter("hardLimitSwitchForwardEnabled", ConfigParam.kHardLimitFwdEn, newValue ? 1 : 0);
+    this.props.setNumberParameter("hardLimitSwitchForwardEnabled", ConfigParam.kHardLimitFwdEn, newValue ? 1 : 0);
   }
 
   public changeReverseLimitHardEnabled() {
     const newValue: boolean = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
-    this.setBooleanParameter("hardLimitSwitchReverseEnabled", ConfigParam.kHardLimitRevEn, newValue);
+    this.props.setBooleanParameter("hardLimitSwitchReverseEnabled", ConfigParam.kHardLimitRevEn, newValue);
   }
 
   public changeForwardLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchForwardEnabled;
-    this.setBooleanParameter("softLimitSwitchForwardEnabled", ConfigParam.kSoftLimitFwdEn, newValue);
+    this.props.setBooleanParameter("softLimitSwitchForwardEnabled", ConfigParam.kSoftLimitFwdEn, newValue);
   }
 
   public changeReverseLimitSoftEnabled() {
     const newValue: boolean = !this.props.motorConfig.softLimitSwitchReverseEnabled;
-    this.setBooleanParameter("softLimitSwitchReverseEnabled", ConfigParam.kSoftLimitRevEn, newValue);
+    this.props.setBooleanParameter("softLimitSwitchReverseEnabled", ConfigParam.kSoftLimitRevEn, newValue);
   }
 
   public changeForwardLimitSoftValue(value: number) {
-    this.setIntParameter("softLimitForward", ConfigParam.kSoftLimitFwd, value);
+    this.props.setNumberParameter("softLimitForward", ConfigParam.kSoftLimitFwd, value);
   }
 
   public changeReverseLimitSoftValue(value: number) {
-    this.setIntParameter("softLimitReverse", ConfigParam.kSoftLimitRev, value);
+    this.props.setNumberParameter("softLimitReverse", ConfigParam.kSoftLimitRev, value);
   }
 
   public changeForwardPolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchForwardPolarity;
-    this.setBooleanParameter("limitSwitchForwardPolarity", ConfigParam.kLimitSwitchFwdPolarity, newValue);
+    this.props.setBooleanParameter("limitSwitchForwardPolarity", ConfigParam.kLimitSwitchFwdPolarity, newValue);
   }
 
   public changeReversePolarity() {
     const newValue: boolean = !this.props.motorConfig.limitSwitchReversePolarity;
-    this.setBooleanParameter("limitSwitchReversePolarity", ConfigParam.kLimitSwitchRevPolarity, newValue);
+    this.props.setBooleanParameter("limitSwitchReversePolarity", ConfigParam.kLimitSwitchRevPolarity, newValue);
   }
 
   public changeRampRateEnabled() {
     const newEnabled: boolean = !this.state.rampRateEnabled;
     if (!newEnabled) {
-      this.setIntParameter("rampRate", ConfigParam.kRampRate, 0);
+      this.props.setNumberParameter("rampRate", ConfigParam.kRampRate, 0);
     }
     this.setState({rampRateEnabled: newEnabled});
   }
 
   public changeRampRate(value: number) {
-    this.setIntParameter("rampRate", ConfigParam.kRampRate, value);
+    this.props.setNumberParameter("rampRate", ConfigParam.kRampRate, value);
   }
 
   private sanitizeValue(event: any) {
@@ -484,8 +464,12 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     setIsConnecting: (connecting: boolean) => dispatch(updateSelectedDeviceIsProcessing(connecting)),
     updateConnectionStatus: (connected: boolean, status: string) =>
       dispatch(updateSelectedDeviceProcessStatus(connected, status)),
-    burnConfiguration: () => dispatch(burnConfiguration()),
-    resetConfiguration: () => dispatch(resetConfiguration()),
+    burnConfiguration: () => dispatch(burnSelectedDeviceConfiguration()),
+    resetConfiguration: () => dispatch(resetSelectedDeviceConfiguration()),
+    setBooleanParameter: (motorField: keyof MotorConfiguration, param: ConfigParam, value: boolean) =>
+      dispatch(setSelectedDeviceBooleanParameter(motorField, param, value)),
+    setNumberParameter: (motorField: keyof MotorConfiguration, param: ConfigParam, value: number) =>
+      dispatch(setSelectedDeviceNumberParameter(motorField, param, value)),
   }
 }
 

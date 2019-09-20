@@ -68,7 +68,8 @@ const reducer: Reducer<IApplicationState> = (state: IApplicationState = initialS
     case ActionType.SET_DEVICE_PROCESS_STATUS:
     case ActionType.SET_DEVICE_PROCESSING:
     case ActionType.SET_PARAMETERS:
-    case ActionType.SET_CURRENT_MOTOR_CONFIG:
+    case ActionType.SET_MOTOR_CONFIG:
+    case ActionType.SET_MOTOR_CONFIG_PARAMETER:
     case ActionType.SET_BURNED_MOTOR_CONFIG:
     case ActionType.SET_SERVER_PARAM_RESPONSE:
       return setField(
@@ -106,8 +107,16 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
       return {...state, isProcessing: action.payload.isProcessing, processType: action.payload.processType};
     case ActionType.SET_PARAMETERS:
       return {...state, parameters: action.payload.parameters};
-    case ActionType.SET_CURRENT_MOTOR_CONFIG:
+    case ActionType.SET_MOTOR_CONFIG:
       return {...state, currentConfig: action.payload.config};
+    case ActionType.SET_MOTOR_CONFIG_PARAMETER:
+      return {
+        ...state,
+        currentConfig: state.currentConfig.clone({
+          [action.payload.configName]: action.payload.configValue,
+        }),
+        paramResponses: setField(state.paramResponses, action.payload.configParam, action.payload.response),
+      };
     case ActionType.SET_BURNED_MOTOR_CONFIG:
       return {...state, burnedConfig: action.payload.config};
     case ActionType.SET_SERVER_PARAM_RESPONSE:

@@ -1,3 +1,4 @@
+import {forEach} from "lodash";
 import PIDFProfile from "./PIDFProfile";
 
 export default class MotorConfiguration implements ISerializable {
@@ -449,6 +450,14 @@ export default class MotorConfiguration implements ISerializable {
 
   set encoderSampleDelta(value: number) {
     this._encoderSampleDelta = value;
+  }
+
+  public clone(configuration: Partial<MotorConfiguration>): MotorConfiguration {
+    const cloned = new MotorConfiguration(this.name, this.type).fromJSON(this.toJSON());
+    forEach(configuration, (value, key) => {
+      cloned[key] = value;
+    });
+    return cloned;
   }
 }
 
