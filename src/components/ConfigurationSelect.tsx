@@ -22,7 +22,7 @@ const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
 };
 
 interface IProps {
-  connected: boolean
+  disabled: boolean
 }
 
 export const ConfigurationSelect: React.FC<IProps> = (props) => {

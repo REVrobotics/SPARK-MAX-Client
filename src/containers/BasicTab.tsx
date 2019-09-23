@@ -24,14 +24,12 @@ import {
   getSelectedDeviceBurnedConfig,
   getSelectedDeviceMotorConfig,
   getSelectedDeviceParamResponses,
-  getSelectedDeviceProcessType,
-  isSelectedDeviceConnected,
+  getSelectedDeviceProcessType, isSelectedDeviceConnected,
   isSelectedDeviceInProcessing
 } from "../store/selectors";
 
 interface IProps {
-  connected: boolean,
-  processing: boolean,
+  enabled: boolean,
   processType?: ProcessType,
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
@@ -96,7 +94,7 @@ class BasicTab extends React.Component<IProps, IState> {
   }
 
   public render() {
-    const {connected, motorConfig, burnedConfig, processType} = this.props;
+    const {enabled, motorConfig, burnedConfig, processType} = this.props;
     const {rampRateEnabled} = this.state;
 
     const activeMotorType = getFromID(motorConfig.type);
@@ -191,7 +189,7 @@ class BasicTab extends React.Component<IProps, IState> {
             labelFor="configuration-id"
             className="form-group-half"
           >
-            <ConfigurationSelect connected={connected}/>
+            <ConfigurationSelect disabled={!enabled}/>
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={canErrorText}/>}
@@ -204,7 +202,7 @@ class BasicTab extends React.Component<IProps, IState> {
               onValueChange={this.changeCanID}
               min={1}
               max={62}
-              disabled={!connected}
+              disabled={!enabled}
               className={canError ? "field-error" : ""}
             />
           </FormGroup>
@@ -217,7 +215,7 @@ class BasicTab extends React.Component<IProps, IState> {
           >
             <MotorTypeSelect
               activeConfig={activeMotorType}
-              connected={connected}
+              disabled={!enabled}
               onMotorSelect={this.selectMotorType}
             />
           </FormGroup>
@@ -228,7 +226,7 @@ class BasicTab extends React.Component<IProps, IState> {
           >
             <Switch
               checked={isCoastMode}
-              disabled={!connected}
+              disabled={!enabled}
               label={isCoastMode ? "Coast" : "Brake"}
               onChange={this.changeIdleMode}
             />
@@ -239,7 +237,7 @@ class BasicTab extends React.Component<IProps, IState> {
             labelFor="advanced-current-limit"
             className={(currentModified ? "modified" : "") + " form-group-quarter"}
           >
-            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit}
+            <NumericInput id="advanced-current-limit" disabled={!enabled} value={currentLimit}
                           onValueChange={this.changeCurrentLimit} min={0}
                           className={currentError ? "field-error" : ""}/>
           </FormGroup>
@@ -252,9 +250,8 @@ class BasicTab extends React.Component<IProps, IState> {
           >
             <SensorTypeSelect
               activeSensor={getSensorFromID(sensorType)}
-              connected={connected}
               onSensorSelect={this.changeSensorType}
-              disabled={motorConfig.type === 1}
+              disabled={!enabled || motorConfig.type === 1}
             />
           </FormGroup>
           <FormGroup
@@ -268,7 +265,7 @@ class BasicTab extends React.Component<IProps, IState> {
               value={encoderCpr}
               onValueChange={this.changeEncoderCpr}
               min={1}
-              disabled={!connected || motorConfig.type === 1 || sensorType !== 2}
+              disabled={!enabled || motorConfig.type === 1 || sensorType !== 2}
             />
           </FormGroup>
           <FormGroup
@@ -277,7 +274,7 @@ class BasicTab extends React.Component<IProps, IState> {
             labelFor="advanced-deadband"
             className={(deadbandModified ? "modified" : "") + " form-group-half"}
           >
-            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01}
+            <Slider initialValue={deadband} disabled={!enabled} value={deadband} min={0} max={0.3} stepSize={0.01}
                     onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
           </FormGroup>
         </div>
@@ -285,19 +282,19 @@ class BasicTab extends React.Component<IProps, IState> {
           <div className="form-column form-column-third no-wrap">
             <h4 className="form-title">Limit Switch</h4>
             <div className="form-control-group">
-              <Switch checked={forwardLimitHardEnabled} disabled={!connected} label="Forward Limit"
+              <Switch checked={forwardLimitHardEnabled} disabled={!enabled} label="Forward Limit"
                       className={forwardEnabledHardModified ? "modified" : ""}
                       onChange={this.changeForwardLimitHardEnabled}/>
-              <Switch checked={forwardPolarity} disabled={!connected}
+              <Switch checked={forwardPolarity} disabled={!enabled}
                       label={forwardPolarity ? "Normally Closed" : "Normally Open"}
                       className={forwardPolarityModified ? "modified" : ""} onChange={this.changeForwardPolarity}/>
             </div>
 
             <div className="form-control-group">
-              <Switch checked={reverseLimitHardEnabled} disabled={!connected} label="Reverse Limit"
+              <Switch checked={reverseLimitHardEnabled} disabled={!enabled} label="Reverse Limit"
                       className={reverseEnabledHardModified ? "modified" : ""}
                       onChange={this.changeReverseLimitHardEnabled}/>
-              <Switch checked={reversePolarity} disabled={!connected}
+              <Switch checked={reversePolarity} disabled={!enabled}
                       label={reversePolarity ? "Normally Closed" : "Normally Open"}
                       className={reversePolarityModified ? "modified" : ""} onChange={this.changeReversePolarity}/>
             </div>
@@ -306,7 +303,7 @@ class BasicTab extends React.Component<IProps, IState> {
             <h4 className="form-title">Soft Limits</h4>
 
             <FormGroup className="form-group-fit">
-              <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label="Forward Limit"
+              <Switch checked={forwardLimitSoftEnabled} disabled={!enabled} label="Forward Limit"
                       className={forwardEnabledSoftModified ? "modified" : ""}
                       onChange={this.changeForwardLimitSoftEnabled}/>
             </FormGroup>
@@ -316,13 +313,13 @@ class BasicTab extends React.Component<IProps, IState> {
               labelFor="advanced-current-limit"
               className={softLimitForwardModified ? "modified" : ""}
             >
-              <NumericInput id="advanced-current-limit" disabled={!connected || !forwardLimitSoftEnabled}
+              <NumericInput id="advanced-current-limit" disabled={!enabled || !forwardLimitSoftEnabled}
                             value={softLimitForward} onValueChange={this.changeForwardLimitSoftValue} min={0}
                             className={softLimitForwardError ? "field-error" : ""}/>
             </FormGroup>
 
             <FormGroup className="form-group-fit">
-              <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label="Reverse Limit"
+              <Switch checked={reverseLimitSoftEnabled} disabled={!enabled} label="Reverse Limit"
                       className={reverseEnabledSoftModified ? "modified" : ""}
                       onChange={this.changeReverseLimitSoftEnabled}/>
             </FormGroup>
@@ -332,7 +329,7 @@ class BasicTab extends React.Component<IProps, IState> {
               labelFor="advanced-current-limit"
               className={softLimitReverseModified ? "modified" : ""}
             >
-              <NumericInput id="advanced-current-limit" disabled={!connected || !reverseLimitSoftEnabled}
+              <NumericInput id="advanced-current-limit" disabled={!enabled || !reverseLimitSoftEnabled}
                             value={softLimitReverse} onValueChange={this.changeReverseLimitSoftValue} min={0}
                             className={softLimitReverseError ? "field-error" : ""}/>
             </FormGroup>
@@ -340,7 +337,7 @@ class BasicTab extends React.Component<IProps, IState> {
           <div className="form-column form-column-third">
             <h4 className="form-title">Ramp Rate</h4>
             <FormGroup className="form-group-fit">
-              <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"}
+              <Switch checked={rampRateEnabled} disabled={!enabled} label={rampRateEnabled ? "Enabled" : "Disabled"}
                       onChange={this.changeRampRateEnabled}/>
             </FormGroup>
             <FormGroup
@@ -358,11 +355,11 @@ class BasicTab extends React.Component<IProps, IState> {
         </div>
         <div className="form update-container">
           <Button className="rev-btn"
-                  disabled={!connected || processType === ProcessType.Reset}
+                  disabled={!enabled || processType === ProcessType.Reset}
                   loading={processType === ProcessType.Save}
                   onClick={this.props.burnConfiguration}>Save Configuration</Button>
           <Button className="bad-btn"
-                  disabled={!connected || processType === ProcessType.Save}
+                  disabled={!enabled || processType === ProcessType.Save}
                   loading={processType === ProcessType.Reset}
                   onClick={this.props.resetConfiguration}>Restore Factory Defaults</Button>
         </div>
@@ -482,8 +479,7 @@ class BasicTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: isSelectedDeviceConnected(state),
-    processing: isSelectedDeviceInProcessing(state),
+    enabled: isSelectedDeviceConnected(state) && !isSelectedDeviceInProcessing(state),
     processType: getSelectedDeviceProcessType(state),
     motorConfig: getSelectedDeviceMotorConfig(state),
     burnedConfig: getSelectedDeviceBurnedConfig(state),

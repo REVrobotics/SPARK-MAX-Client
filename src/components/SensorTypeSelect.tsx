@@ -20,13 +20,12 @@ const renderer = (sensor: Sensor, itemProps: IItemRendererProps) => {
 
 interface IProps {
   activeSensor: Sensor
-  connected: boolean,
   disabled?: boolean,
   onSensorSelect(sensorType: Sensor): void
 }
 
 export const SensorTypeSelect: React.FC<IProps> = (props) => {
-  const disabled = !props.connected || props.disabled;
+  const {disabled} = props;
 
   return (
     <SensorSelect filterable={false}

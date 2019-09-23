@@ -20,12 +20,12 @@ const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
 
 interface IProps {
   activeConfig: MotorConfiguration
-  connected: boolean
+  disabled: boolean
   onMotorSelect(motorType: MotorConfiguration): void
 }
 
 export const MotorTypeSelect: React.FC<IProps> = (props) => {
-  const disabled = !props.connected;
+  const {disabled} = props;
 
   return (
     <MotorSelect filterable={false}
