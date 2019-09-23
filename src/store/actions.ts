@@ -15,16 +15,14 @@ import {
   DeviceId,
   IUpdateGlobalProcessStatus,
   ISetGlobalProcessing,
-  ISelectDevice, ProcessType, ISetMotorConfigParameter, ISetMotorConfigParameterOptions,
+  ProcessType, ISetMotorConfigParameter, ISetMotorConfigParameterOptions, ISetConnectedDevice, ISetDeviceLoaded,
 } from "./types";
 import {IServerResponse} from "../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 
-export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (isConnected: boolean,
-                                                                                     processStatus: string) => ({
+export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
   payload: {
     processStatus,
-    isConnected
   },
   type: ActionType.SET_GLOBAL_PROCESS_STATUS
 });
@@ -37,14 +35,28 @@ export const updateGlobalIsProcessing: ActionCreator<ISetGlobalProcessing> = (is
 });
 
 export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus> = (deviceId: DeviceId,
-                                                                                     isConnected: boolean,
                                                                                      processStatus: string) => ({
   payload: {
     deviceId,
     processStatus,
-    isConnected
   },
   type: ActionType.SET_DEVICE_PROCESS_STATUS
+});
+
+export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (deviceId: DeviceId, connected: boolean) => ({
+  payload: {
+    deviceId,
+    connected
+  },
+  type: ActionType.SET_CONNECTED_DEVICE
+});
+
+export const setDeviceLoaded: ActionCreator<ISetDeviceLoaded> = (deviceId: DeviceId, loaded: boolean) => ({
+  payload: {
+    deviceId,
+    loaded
+  },
+  type: ActionType.SET_DEVICE_LOADED
 });
 
 export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (deviceId: DeviceId,
@@ -120,13 +132,6 @@ export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAva
     updateAvailable
   },
   type: ActionType.SET_UPDATE_AVAILABLE
-});
-
-export const selectDevice: ActionCreator<ISelectDevice> = (deviceId: DeviceId) => ({
-  payload: {
-    deviceId
-  },
-  type: ActionType.SELECT_DEVICE,
 });
 
 export const setSelectedDeviceMotorConfig = forSelectedDevice(setMotorConfig);

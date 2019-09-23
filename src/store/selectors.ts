@@ -10,22 +10,22 @@ import {REV_BRUSHLESS} from "../models/MotorConfiguration";
  * @param orderedDevices
  * @param devices
  */
-export const getFirstUsbDeviceId = ({ orderedDevices, devices}: IApplicationState) =>
-  maybeMap(find(orderedDevices.map((deviceId) => devices[deviceId]), isUsbDevice), ({ deviceId }) => deviceId);
+export const getFirstUsbDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
+  maybeMap(find(orderedDevices.map((deviceId) => devices[deviceId]), isUsbDevice), ({deviceId}) => deviceId);
 
 /**
  * Returns true if at least one device exist, otherwise false
  *
  * @param state
  */
-export const isConnectableToAnyDevice = (state: IApplicationState) => state.orderedDevices.length > 0;
+export const isConnectableToAnyDevice = (state: IApplicationState) => state.deviceSet.orderedDevices.length > 0;
 
 /**
  * Returns ID of selected device
  *
  * @param selectedDeviceId
  */
-export const getSelectedDeviceId = ({ selectedDeviceId }: IApplicationState) => selectedDeviceId;
+export const getSelectedDeviceId = ({context: {selectedDeviceId}}: IApplicationState) => selectedDeviceId;
 
 /**
  * Returns selected device
@@ -34,7 +34,7 @@ export const getSelectedDeviceId = ({ selectedDeviceId }: IApplicationState) => 
  */
 export const getSelectedDevice = (state: IApplicationState) => {
   const selectedDeviceId = getSelectedDeviceId(state);
-  return selectedDeviceId ? state.devices[selectedDeviceId] : undefined;
+  return selectedDeviceId ? state.deviceSet.devices[selectedDeviceId] : undefined;
 };
 
 /**
@@ -43,7 +43,7 @@ export const getSelectedDevice = (state: IApplicationState) => {
  * @param state
  * @param deviceId
  */
-export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state.devices[deviceId];
+export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state.deviceSet.devices[deviceId];
 
 /**
  * Get device by predefined order
@@ -51,7 +51,7 @@ export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state
  * @param orderedDevices
  * @param devices
  */
-export const getDevicesInOrder = ({ orderedDevices, devices }: IApplicationState) =>
+export const getDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
   orderedDevices.map((deviceId) => devices[deviceId]);
 
 /**
@@ -82,12 +82,24 @@ export const getMasterDeviceId = (state: IApplicationState, deviceId: DeviceId) 
 export const isDeviceConnected = (state: IApplicationState, deviceId: DeviceId) => {
   const device = getDevice(state, deviceId);
   if (isUsbDevice(device)) {
-    return device.isConnected;
+    return device.deviceId === state.context.connectedDeviceId;
   } else {
     const usbDevice = getDevice(state, device.masterDeviceId!);
-    return usbDevice.isConnected;
+    return usbDevice.deviceId === state.context.connectedDeviceId;
   }
 };
+
+/**
+ * Returns whether any device is connected
+ * @param state
+ */
+export const isHasConnectedDevice = (state: IApplicationState) => getConnectedDeviceId(state) != null;
+
+/**
+ * Returns id of connected device
+ * @param state
+ */
+export const getConnectedDeviceId = (state: IApplicationState) => state.context.connectedDeviceId;
 
 /**
  * Returns whether selected device is in the connected state
@@ -148,7 +160,7 @@ export const getSelectedDeviceParamResponses = (state: IApplicationState) => {
  */
 export const isInProcessing = (state: IApplicationState) => {
   // Do we have global processing? (for example, searching of devices)
-  if (state.isProcessing) {
+  if (state.context.isProcessing) {
     return true;
   }
 
@@ -181,8 +193,8 @@ export const getSelectedDeviceProcessType = (state: IApplicationState) => {
  */
 export const getProcessStatus = (state: IApplicationState) => {
   // Show processStatus if we have global processing. (for example, searching of devices)
-  if (state.processStatus) {
-    return state.processStatus;
+  if (state.context.processStatus) {
+    return state.context.processStatus;
   }
 
   // Show processStatus if we have processing for selected device

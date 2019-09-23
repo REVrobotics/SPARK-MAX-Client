@@ -11,6 +11,7 @@ export enum ActionType {
   SET_DEVICE_PROCESS_STATUS = "SET_DEVICE_PROCESS_STATUS",
   SET_DEVICE_PROCESSING = "SET_DEVICE_PROCESSING",
   SET_CONNECTED_DEVICE = "SET_CONNECTED_DEVICE",
+  SET_DEVICE_LOADED = "SET_DEVICE_LOADED",
   ADD_DEVICES = "ADD_DEVICES",
   SET_PARAMETERS = "SET_PARAMETERS",
   SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG",
@@ -33,12 +34,21 @@ export enum ProcessType {
 
 export type DeviceId = number;
 
-export interface IApplicationState {
-  orderedDevices: DeviceId[],
-  devices: { [deviceId: number]: IDeviceState },
-  selectedDeviceId?: number,
+export interface IContextState {
+  connectedDeviceId?: DeviceId,
+  selectedDeviceId?: DeviceId,
   isProcessing: boolean,
   processStatus: string,
+}
+
+export interface IDeviceSetState {
+  orderedDevices: DeviceId[],
+  devices: { [deviceId: number]: IDeviceState },
+}
+
+export interface IApplicationState {
+  context: IContextState,
+  deviceSet: IDeviceSetState,
   logs: string[],
   ui: IUiState;
 }
@@ -58,9 +68,9 @@ export interface IDeviceState {
   deviceId: DeviceId;
   info: IDeviceInfo;
   masterDeviceId?: number;
-  isConnected: boolean;
   processStatus: string,
   isProcessing: boolean,
+  isLoaded: boolean,
   processType?: ProcessType,
   parameters: number[],
   currentConfig: MotorConfiguration,
@@ -71,7 +81,6 @@ export interface IDeviceState {
 export interface IUpdateGlobalProcessStatus extends Action {
   type: ActionType.SET_GLOBAL_PROCESS_STATUS,
   payload: {
-    isConnected: boolean,
     processStatus: string
   }
 }
@@ -94,8 +103,23 @@ export interface IUpdateDeviceProcessStatus extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_PROCESS_STATUS,
   payload: {
     deviceId: DeviceId,
-    isConnected: boolean,
     processStatus: string
+  }
+}
+
+export interface ISetConnectedDevice extends IDeviceAwareAction {
+  type: ActionType.SET_CONNECTED_DEVICE,
+  payload: {
+    deviceId: DeviceId,
+    connected: boolean
+  }
+}
+
+export interface ISetDeviceLoaded extends IDeviceAwareAction {
+  type: ActionType.SET_DEVICE_LOADED,
+  payload: {
+    deviceId: DeviceId,
+    loaded: boolean
   }
 }
 
@@ -223,7 +247,7 @@ export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationAc
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | IAddDevices | ISelectDevice
   | ISetParameters | ISetMotorConfig | ISetBurnedMotorConfig | ISetParamResponses | IAddLog | ISetUpdateAvailable
-  | ISetMotorConfigParameter
+  | ISetMotorConfigParameter | ISetConnectedDevice | ISetDeviceLoaded
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation;

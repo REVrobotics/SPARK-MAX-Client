@@ -7,9 +7,11 @@ import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import {fromDeviceId} from "./reducer";
 import {delayPromise} from "../utils/promise-utils";
 import {
-  setBurnedMotorConfig,
+  addLog,
+  setBurnedMotorConfig, setDeviceLoaded,
   setMotorConfig,
   setMotorConfigParameter,
+  setParamResponses,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
 } from "./actions";
@@ -34,6 +36,33 @@ const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue
 
 export const setNumberParameter = createTypedSetter<number>(identity, identity);
 export const setBooleanParameter = createTypedSetter<boolean>((value) => value ? 1 : 0, (value) => value === 1);
+
+export const loadParameters = (deviceId: DeviceId): SparkAction<Promise<void>> =>
+  (dispatch) => {
+    dispatch(updateDeviceProcessStatus(deviceId, "GETTING PARAMETERS..."));
+
+    const paramResponses: IServerResponse[] = [];
+    for (let i = 0; i < 75; i++) {
+      paramResponses.push({requestValue: "", responseValue: "", status: 0, type: 0});
+    }
+    dispatch(setParamResponses(deviceId, paramResponses));
+
+    return delayPromise(1000)
+      .then(() => SparkManager.getConfigFromParams(fromDeviceId(deviceId)))
+      .then((config: MotorConfiguration) => {
+        dispatch(updateDeviceProcessStatus(deviceId, "CONNECTED"));
+        dispatch(updateDeviceIsProcessing(deviceId, false));
+        dispatch(setMotorConfig(deviceId, config));
+        dispatch(setDeviceLoaded(deviceId, true));
+        const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
+        dispatch(setBurnedMotorConfig(deviceId, burn));
+      })
+      .catch((error: any) => {
+        dispatch(updateDeviceProcessStatus(deviceId, "FAILED TO GET PARAMETERS"));
+        dispatch(updateDeviceIsProcessing(deviceId, false));
+        dispatch(addLog(error));
+      });
+  };
 
 export const burnConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
@@ -77,11 +106,11 @@ export const resetConfiguration = (deviceId: DeviceId): SparkAction<Promise<void
       }
 
       dispatch(updateDeviceIsProcessing(deviceId, true, ProcessType.Reset));
-      dispatch(updateDeviceProcessStatus(deviceId, false, "RESETTING..."));
+      dispatch(updateDeviceProcessStatus(deviceId, "RESETTING..."));
 
       return SparkManager.restoreDefaults(fromDeviceId(deviceId))
         .then(() => {
-          dispatch(updateDeviceProcessStatus(deviceId, true, "GETTING PARAMETERS..."));
+          dispatch(updateDeviceProcessStatus(deviceId, "GETTING PARAMETERS..."));
           return delayPromise(1000);
         })
         .then(() =>
@@ -91,7 +120,7 @@ export const resetConfiguration = (deviceId: DeviceId): SparkAction<Promise<void
           }))
         .finally(() => {
           dispatch(updateDeviceIsProcessing(deviceId, false));
-          dispatch(updateDeviceProcessStatus(deviceId, true, "CONNECTED"));
+          dispatch(updateDeviceProcessStatus(deviceId, "CONNECTED"));
         });
     });
   };

@@ -1,44 +1,35 @@
-import {DeviceId, SparkAction} from "./types";
+import {ActionType, DeviceId, SparkAction} from "./types";
 import {
+  addDevices,
   addLog,
-  setBurnedMotorConfig,
-  updateDeviceIsProcessing,
+  setBurnedMotorConfig, setConnectedDevice, setDeviceLoaded,
   setMotorConfig,
-  setParamResponses, addDevices,
-  updateDeviceProcessStatus, updateGlobalProcessStatus, updateGlobalIsProcessing
+  setParamResponses,
+  updateDeviceIsProcessing,
+  updateDeviceProcessStatus,
+  updateGlobalIsProcessing,
+  updateGlobalProcessStatus
 } from "./actions";
-import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import {delayPromise} from "../utils/promise-utils";
-import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "./selectors";
+import SparkManager from "../managers/SparkManager";
+import {REV_BRUSHLESS} from "../models/MotorConfiguration";
+import {getConnectedDeviceId, getDevice, getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "./selectors";
 import {createUsbDeviceState, fromDeviceId} from "./reducer";
+import {loadParameters} from "./parameter-actions";
 
 export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>> {
   return (dispatch) => {
-    dispatch(updateDeviceProcessStatus(deviceId, false, "CONNECTING..."));
+    dispatch(updateDeviceProcessStatus(deviceId, "CONNECTING..."));
     dispatch(updateDeviceIsProcessing(deviceId, true));
 
-    return SparkManager.connect(fromDeviceId(deviceId)).then(() => {
-      dispatch(updateDeviceProcessStatus(deviceId, false, "GETTING PARAMETERS..."));
-
-      const paramResponses: IServerResponse[] = [];
-      for (let i = 0; i < 75; i++) {
-        paramResponses.push({requestValue: "", responseValue: "", status: 0, type: 0});
-      }
-      dispatch(setParamResponses(deviceId, paramResponses));
-    }).then(() => delayPromise(1000))
-      .then(() => SparkManager.getConfigFromParams(fromDeviceId(deviceId)))
-      .then((config: MotorConfiguration) => {
-        dispatch(updateDeviceProcessStatus(deviceId, true, "CONNECTED"));
-        dispatch(updateDeviceIsProcessing(deviceId, false));
-        dispatch(setMotorConfig(deviceId, config));
-        const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
-        dispatch(setBurnedMotorConfig(deviceId, burn));
-      })
+    return SparkManager.connect(fromDeviceId(deviceId))
       .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(deviceId, false, "CONNECTION FAILED"));
+        dispatch(updateDeviceProcessStatus(deviceId, "CONNECTION FAILED"));
         dispatch(updateDeviceIsProcessing(deviceId, false));
         dispatch(addLog(error));
+      })
+      .then(() => {
+        dispatch(setConnectedDevice(deviceId, true));
+        return dispatch(loadParameters(deviceId))
       });
   };
 }
@@ -46,29 +37,34 @@ export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>>
 export function connectToSelectedDevice(): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
     const deviceId = getSelectedDeviceId(getState());
+
+    if (deviceId == null) {
+      return Promise.resolve();
+    }
+
+
+    const usbDeviceId = getMasterDeviceId(getState(), deviceId);
+
+    return dispatch(disconnectCurrentDevice())
+      .then(() => dispatch(connectUsbDevice(usbDeviceId)))
+  };
+}
+
+export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
+  return (dispatch, getState) => {
+    const deviceId = getConnectedDeviceId(getState());
     if (deviceId == null) {
       return Promise.resolve();
     }
 
     const usbDeviceId = getMasterDeviceId(getState(), deviceId);
 
-    return dispatch(connectUsbDevice(usbDeviceId));
-  };
-}
-
-export function disconnectSelectedDevice(): SparkAction<void> {
-  return (dispatch, getState) => {
-    const deviceId = getSelectedDeviceId(getState());
-    if (deviceId == null || !isDeviceConnected(getState(), deviceId)) {
-      return;
-    }
-
-    const usbDeviceId = getMasterDeviceId(getState(), deviceId);
-
     dispatch(updateDeviceIsProcessing(true));
-    SparkManager.disconnect(fromDeviceId(usbDeviceId)).then(() => {
-      dispatch(updateDeviceProcessStatus(usbDeviceId, false, "DISCONNECTED"));
+    return SparkManager.disconnect(fromDeviceId(usbDeviceId)).then(() => {
+      dispatch(updateDeviceProcessStatus(usbDeviceId, "DISCONNECTED"));
       dispatch(updateDeviceIsProcessing(usbDeviceId, false));
+      dispatch(setDeviceLoaded(usbDeviceId, false));
+      dispatch(setConnectedDevice(usbDeviceId, false));
       dispatch(setParamResponses(usbDeviceId, []));
       dispatch(setMotorConfig(usbDeviceId, REV_BRUSHLESS));
       dispatch(setBurnedMotorConfig(usbDeviceId, REV_BRUSHLESS));
@@ -78,14 +74,30 @@ export function disconnectSelectedDevice(): SparkAction<void> {
   };
 }
 
+export const selectDevice = (deviceId: DeviceId): SparkAction<Promise<any>> =>
+  (dispatch, getState) => {
+    const device = getDevice(getState(), deviceId);
+
+    const isConnected = isDeviceConnected(getState(), deviceId);
+
+    // load parameters if device is connected and parameters was not loaded
+    const parametersLoaded = isConnected && !device.isLoaded ? dispatch(loadParameters(deviceId)) : Promise.resolve();
+
+    return parametersLoaded
+      .then(() => dispatch({
+        payload: { deviceId },
+        type: ActionType.SELECT_DEVICE,
+      }));
+  };
+
 export function findUsbDevices(): SparkAction<Promise<void>> {
   return (dispatch) => {
-    dispatch(updateGlobalProcessStatus(false, "SEARCHING..."));
+    dispatch(updateGlobalProcessStatus("SEARCHING..."));
     dispatch(updateGlobalIsProcessing(true));
 
     return SparkManager.listUsbDevices()
-      .then(({ deviceList, extendedList }) => {
-        dispatch(updateGlobalProcessStatus(false, deviceList.length ? "" : "NO DEVICES FOUND"));
+      .then(({deviceList, extendedList}) => {
+        dispatch(updateGlobalProcessStatus(deviceList.length ? "" : "NO DEVICES FOUND"));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(addDevices(extendedList.map((extended) => createUsbDeviceState(extended.deviceId!, {
           deviceName: extended.deviceName!,
@@ -94,7 +106,7 @@ export function findUsbDevices(): SparkAction<Promise<void>> {
         }))));
       })
       .catch(() => {
-        dispatch(updateGlobalProcessStatus(false, "SEARCH FAILED"));
+        dispatch(updateGlobalProcessStatus("SEARCH FAILED"));
         dispatch(updateGlobalIsProcessing(false));
       });
   };

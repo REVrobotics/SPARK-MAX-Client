@@ -3,13 +3,13 @@ import SparkManager from "../managers/SparkManager";
 import {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import WebProvider from "../providers/WebProvider";
 import {
-  addLog, selectDevice,
-  setBurnedMotorConfig,
+  addLog,
+  setBurnedMotorConfig, setConnectedDevice,
   setMotorConfig,
   setParamResponses,
   updateDeviceProcessStatus
 } from "./actions";
-import {connectUsbDevice, findUsbDevices} from "./connection-actions";
+import {connectUsbDevice, findUsbDevices, selectDevice} from "./connection-actions";
 import {getFirstUsbDeviceId} from "./selectors";
 import {toDeviceId} from "./reducer";
 
@@ -29,7 +29,8 @@ export function initApplication(): SparkAction<void> {
 
     SparkManager.onDisconnect((device) => {
       const deviceId = toDeviceId(device);
-      dispatch(updateDeviceProcessStatus(deviceId, false, "DISCONNECTED"));
+      dispatch(updateDeviceProcessStatus(deviceId, "DISCONNECTED"));
+      dispatch(setConnectedDevice(deviceId, false));
       dispatch(setParamResponses(deviceId, []));
       dispatch(setMotorConfig(deviceId, REV_BRUSHLESS));
       dispatch(setBurnedMotorConfig(deviceId, REV_BRUSHLESS));

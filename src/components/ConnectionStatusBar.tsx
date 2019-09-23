@@ -3,7 +3,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import * as classnames from "classnames";
 import {IApplicationState, IDeviceState, SparkDispatch} from "../store/types";
-import {connectToSelectedDevice, disconnectSelectedDevice} from "../store/connection-actions";
+import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice} from "../store/connection-actions";
 import {
   getDevicesInOrder,
   getProcessStatus, getSelectedDevice,
@@ -12,7 +12,6 @@ import {
   isSelectedDeviceConnected
 } from "../store/selectors";
 import {DeviceSelect} from "./DeviceSelect";
-import {selectDevice} from "../store/actions";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -72,7 +71,7 @@ export function mapStateToProps(state: IApplicationState) {
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     connect: () => dispatch(connectToSelectedDevice()),
-    disconnect: () => dispatch(disconnectSelectedDevice()),
+    disconnect: () => dispatch(disconnectCurrentDevice()),
     selectDevice: (device: IDeviceState) => dispatch(selectDevice(device.deviceId)),
   };
 }
