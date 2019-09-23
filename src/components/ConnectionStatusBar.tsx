@@ -2,7 +2,7 @@ import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
 import * as classnames from "classnames";
-import {IApplicationState, IDeviceState} from "../store/state";
+import {getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
   getDevicesInOrder,
@@ -72,7 +72,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     connect: () => dispatch(connectToSelectedDevice()),
     disconnect: () => dispatch(disconnectCurrentDevice()),
-    selectDevice: (device: IDeviceState) => dispatch(selectDevice(device.deviceId)),
+    selectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
   };
 }
 

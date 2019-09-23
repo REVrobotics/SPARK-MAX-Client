@@ -1,4 +1,4 @@
-import {createUsbDeviceState, DeviceId, fromDeviceId} from "../state";
+import {createUsbDeviceState, fromDeviceId, VirtualDeviceId} from "../state";
 import {
   addDevices,
   addLog,
@@ -12,80 +12,89 @@ import {
 } from "./atom-actions";
 import SparkManager from "../../managers/SparkManager";
 import {REV_BRUSHLESS} from "../../models/MotorConfiguration";
-import {getConnectedDeviceId, getDevice, getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "../selectors";
+import {
+  getConnectedVirtualDeviceId,
+  getDevice,
+  getHubVirtualDeviceId,
+  getSelectedVirtualDeviceId,
+  isDeviceConnected,
+  selectDeviceId
+} from "../selectors";
 import {loadParameters} from "./parameter-actions";
 import {ActionType, SparkAction} from "./action-types";
 
-export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>> {
-  return (dispatch) => {
-    dispatch(updateDeviceProcessStatus(deviceId, "CONNECTING..."));
-    dispatch(updateDeviceIsProcessing(deviceId, true));
+export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
+  return (dispatch, getState) => {
+    dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTING..."));
+    dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
 
-    return SparkManager.connect(fromDeviceId(deviceId))
+    return SparkManager.connect(fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!))
       .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(deviceId, "CONNECTION FAILED"));
-        dispatch(updateDeviceIsProcessing(deviceId, false));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTION FAILED"));
+        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
       })
       .then(() => {
-        dispatch(setConnectedDevice(deviceId, true));
-        return dispatch(loadParameters(deviceId))
+        dispatch(setConnectedDevice(virtualDeviceId, true));
+        return dispatch(loadParameters(virtualDeviceId))
       });
   };
 }
 
 export function connectToSelectedDevice(): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
-    const deviceId = getSelectedDeviceId(getState());
+    const deviceId = getSelectedVirtualDeviceId(getState());
 
     if (deviceId == null) {
       return Promise.resolve();
     }
 
 
-    const usbDeviceId = getMasterDeviceId(getState(), deviceId);
+    const hubDeviceId = getHubVirtualDeviceId(getState(), deviceId);
 
     return dispatch(disconnectCurrentDevice())
-      .then(() => dispatch(connectUsbDevice(usbDeviceId)))
+      .then(() => dispatch(connectHubDevice(hubDeviceId)))
   };
 }
 
 export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
   return (dispatch, getState) => {
-    const deviceId = getConnectedDeviceId(getState());
+    const deviceId = getConnectedVirtualDeviceId(getState());
     if (deviceId == null) {
       return Promise.resolve();
     }
 
-    const usbDeviceId = getMasterDeviceId(getState(), deviceId);
+    const hubVirtualDeviceId = getHubVirtualDeviceId(getState(), deviceId);
 
     dispatch(updateDeviceIsProcessing(true));
-    return SparkManager.disconnect(fromDeviceId(usbDeviceId)).then(() => {
-      dispatch(updateDeviceProcessStatus(usbDeviceId, "DISCONNECTED"));
-      dispatch(updateDeviceIsProcessing(usbDeviceId, false));
-      dispatch(setDeviceLoaded(usbDeviceId, false));
-      dispatch(setConnectedDevice(usbDeviceId, false));
-      dispatch(setParamResponses(usbDeviceId, []));
-      dispatch(setMotorConfig(usbDeviceId, REV_BRUSHLESS));
-      dispatch(setBurnedMotorConfig(usbDeviceId, REV_BRUSHLESS));
+    return SparkManager.disconnect(fromDeviceId(selectDeviceId(getState(), hubVirtualDeviceId)!)).then(() => {
+      dispatch(updateDeviceProcessStatus(hubVirtualDeviceId, "DISCONNECTED"));
+      dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
+      dispatch(setDeviceLoaded(hubVirtualDeviceId, false));
+      dispatch(setConnectedDevice(hubVirtualDeviceId, false));
+      dispatch(setParamResponses(hubVirtualDeviceId, []));
+      dispatch(setMotorConfig(hubVirtualDeviceId, REV_BRUSHLESS));
+      dispatch(setBurnedMotorConfig(hubVirtualDeviceId, REV_BRUSHLESS));
     }).catch(() => {
-      dispatch(updateDeviceIsProcessing(usbDeviceId, false));
+      dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
     });
   };
 }
 
-export const selectDevice = (deviceId: DeviceId): SparkAction<Promise<any>> =>
+export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> =>
   (dispatch, getState) => {
-    const device = getDevice(getState(), deviceId);
+    const device = getDevice(getState(), virtualDeviceId);
 
-    const isConnected = isDeviceConnected(getState(), deviceId);
+    const isConnected = isDeviceConnected(getState(), virtualDeviceId);
 
     // load parameters if device is connected and parameters was not loaded
-    const parametersLoaded = isConnected && !device.isLoaded ? dispatch(loadParameters(deviceId)) : Promise.resolve();
+    const parametersLoaded = isConnected && !device.isLoaded ?
+      dispatch(loadParameters(virtualDeviceId))
+      : Promise.resolve();
 
     return parametersLoaded
       .then(() => dispatch({
-        payload: { deviceId },
+        payload: { virtualDeviceId },
         type: ActionType.SELECT_DEVICE,
       }));
   };

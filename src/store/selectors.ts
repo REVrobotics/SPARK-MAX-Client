@@ -1,5 +1,5 @@
 import {find} from "lodash";
-import {DeviceId, IApplicationState, isUsbDevice} from "./state";
+import {getDeviceId, getVirtualDeviceId, IApplicationState, isHubDevice, VirtualDeviceId} from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {REV_BRUSHLESS} from "../models/MotorConfiguration";
 
@@ -9,8 +9,8 @@ import {REV_BRUSHLESS} from "../models/MotorConfiguration";
  * @param orderedDevices
  * @param devices
  */
-export const getFirstUsbDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
-  maybeMap(find(orderedDevices.map((deviceId) => devices[deviceId]), isUsbDevice), ({deviceId}) => deviceId);
+export const getFirstHubVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
+  maybeMap(find(orderedDevices.map((id) => devices[id]), isHubDevice), getVirtualDeviceId);
 
 /**
  * Returns true if at least one device exist, otherwise false
@@ -24,7 +24,18 @@ export const isConnectableToAnyDevice = (state: IApplicationState) => state.devi
  *
  * @param selectedDeviceId
  */
-export const getSelectedDeviceId = ({context: {selectedDeviceId}}: IApplicationState) => selectedDeviceId;
+export const getSelectedVirtualDeviceId = ({context: {selectedVirtualDeviceId}}: IApplicationState) =>
+  selectedVirtualDeviceId;
+
+/**
+ * Returns ID of selected device
+ *
+ * @param state
+ */
+export const getSelectedDeviceId = (state: IApplicationState) => {
+  const device = getSelectedDevice(state);
+  return device ? getDeviceId(device) : undefined;
+};
 
 /**
  * Returns selected device
@@ -32,17 +43,28 @@ export const getSelectedDeviceId = ({context: {selectedDeviceId}}: IApplicationS
  * @param state
  */
 export const getSelectedDevice = (state: IApplicationState) => {
-  const selectedDeviceId = getSelectedDeviceId(state);
-  return selectedDeviceId ? state.deviceSet.devices[selectedDeviceId] : undefined;
+  const id = getSelectedVirtualDeviceId(state);
+  return id ? state.deviceSet.devices[id] : undefined;
 };
 
 /**
  * Returns device by ID
  *
  * @param state
- * @param deviceId
+ * @param id
  */
-export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state.deviceSet.devices[deviceId];
+export const getDevice = (state: IApplicationState, id: VirtualDeviceId) => state.deviceSet.devices[id];
+
+/**
+ * Returns full Device ID for request device
+ *
+ * @param state
+ * @param id
+ */
+export const selectDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = getDevice(state, id);
+  return device ? getDeviceId(device) : undefined;
+};
 
 /**
  * Get device by predefined order
@@ -51,40 +73,40 @@ export const getDevice = (state: IApplicationState, deviceId: DeviceId) => state
  * @param devices
  */
 export const getDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
-  orderedDevices.map((deviceId) => devices[deviceId]);
+  orderedDevices.map((id) => devices[id]);
 
 /**
- * Returns USB device ID for given device ID.
- * For USB device this method returns its ID.
- * For CAN device this method returns ID of master USB device.
+ * Returns HUB device ID for given device ID.
+ * For HUB device this method returns its ID.
+ * For CAN device this method returns ID of master HUB device.
  *
  * @param state
- * @param deviceId
+ * @param id
  */
-export const getMasterDeviceId = (state: IApplicationState, deviceId: DeviceId) => {
-  const device = getDevice(state, deviceId);
-  if (isUsbDevice(device)) {
-    return device.deviceId;
+export const getHubVirtualDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = getDevice(state, id);
+  if (isHubDevice(device)) {
+    return device.id;
   } else {
-    return device.masterDeviceId!;
+    return device.hubDeviceId!;
   }
 };
 
 /**
  * Returns whether given device is connected or not.
- * USB device is connected iff isConnected = true
- * CAN device is connected iff its master USB device is connected.
+ * HUB device is connected iff isConnected = true
+ * CAN device is connected iff its HUB device is connected.
  *
  * @param state
- * @param deviceId
+ * @param id
  */
-export const isDeviceConnected = (state: IApplicationState, deviceId: DeviceId) => {
-  const device = getDevice(state, deviceId);
-  if (isUsbDevice(device)) {
-    return device.deviceId === state.context.connectedDeviceId;
+export const isDeviceConnected = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = getDevice(state, id);
+  if (isHubDevice(device)) {
+    return device.id === state.context.connectedVirtualDeviceId;
   } else {
-    const usbDevice = getDevice(state, device.masterDeviceId!);
-    return usbDevice.deviceId === state.context.connectedDeviceId;
+    const usbDevice = getDevice(state, device.hubDeviceId!);
+    return usbDevice.id === state.context.connectedVirtualDeviceId;
   }
 };
 
@@ -92,25 +114,25 @@ export const isDeviceConnected = (state: IApplicationState, deviceId: DeviceId) 
  * Returns whether any device is connected
  * @param state
  */
-export const isHasConnectedDevice = (state: IApplicationState) => getConnectedDeviceId(state) != null;
+export const isHasConnectedDevice = (state: IApplicationState) => getConnectedVirtualDeviceId(state) != null;
 
 /**
  * Returns id of connected device
  * @param state
  */
-export const getConnectedDeviceId = (state: IApplicationState) => state.context.connectedDeviceId;
+export const getConnectedVirtualDeviceId = (state: IApplicationState) => state.context.connectedVirtualDeviceId;
 
 /**
  * Returns whether selected device is in the connected state
  * @param state
  */
 export const isSelectedDeviceConnected = (state: IApplicationState) => {
-  const selectedDeviceId = getSelectedDeviceId(state);
-  if (selectedDeviceId == null) {
+  const selectedId = getSelectedVirtualDeviceId(state);
+  if (selectedId == null) {
     return false;
   }
 
-  return isDeviceConnected(state, selectedDeviceId);
+  return isDeviceConnected(state, selectedId);
 };
 
 /**

@@ -1,24 +1,26 @@
 import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
+import {uniqueId} from "lodash";
 
 export enum ProcessType {
   Save = "Save",
   Reset = "Process"
 }
 
+export type VirtualDeviceId = string;
 export type DeviceId = number;
 
 export interface IContextState {
-  connectedDeviceId?: DeviceId,
-  selectedDeviceId?: DeviceId,
+  connectedVirtualDeviceId?: VirtualDeviceId,
+  selectedVirtualDeviceId?: VirtualDeviceId,
   isProcessing: boolean,
   processStatus: string,
 }
 
 export interface IDeviceSetState {
-  orderedDevices: DeviceId[],
-  devices: { [deviceId: number]: IDeviceState },
+  orderedDevices: VirtualDeviceId[],
+  devices: { [deviceId: string]: IDeviceState },
 }
 
 export interface IApplicationState {
@@ -40,9 +42,10 @@ export interface IUiState {
 }
 
 export interface IDeviceState {
-  deviceId: DeviceId;
+  id: VirtualDeviceId;
+  fullDeviceId: DeviceId;
   info: IDeviceInfo;
-  masterDeviceId?: number;
+  hubDeviceId?: VirtualDeviceId;
   processStatus: string,
   isProcessing: boolean,
   isLoaded: boolean,
@@ -65,8 +68,9 @@ export enum ConfirmationAnswer {
   Cancel = "Cancel"
 }
 
-const createDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState => ({
-  deviceId,
+const createDeviceState = (fullDeviceId: DeviceId, info: IDeviceInfo): IDeviceState => ({
+  id: uniqueId("device:"),
+  fullDeviceId,
   info,
   burnedConfig: new MotorConfiguration("REV BRUSHLESS", 1),
   processStatus: "NOT CONNECTED",
@@ -80,13 +84,18 @@ const createDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState 
 export const createUsbDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState =>
   createDeviceState(deviceId, info);
 
-export const createCanDeviceState = (deviceId: DeviceId, info: IDeviceInfo, masterDeviceId: number): IDeviceState => ({
+export const createCanDeviceState = (deviceId: DeviceId,
+                                     info: IDeviceInfo,
+                                     hubDeviceId: VirtualDeviceId): IDeviceState => ({
   ...createDeviceState(deviceId, info),
-  masterDeviceId,
+  hubDeviceId,
 });
 
-export const isUsbDevice = (device: IDeviceState) => !device.masterDeviceId;
-export const isCanDevice = (device: IDeviceState) => !isUsbDevice(device);
+export const isHubDevice = (device: IDeviceState) => !device.hubDeviceId;
+export const isCanDevice = (device: IDeviceState) => !isHubDevice(device);
 
 export const toDeviceId = (device: string) => Number(device);
 export const fromDeviceId = (deviceId: DeviceId) => String(deviceId);
+
+export const getDeviceId = (device: IDeviceState) => device.fullDeviceId;
+export const getVirtualDeviceId = (device: IDeviceState) => device.id;

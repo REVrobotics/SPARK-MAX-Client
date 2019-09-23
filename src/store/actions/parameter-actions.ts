@@ -1,7 +1,7 @@
 import {identity} from "lodash";
 import {SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
-import {getDevice} from "../selectors";
+import {getDevice, selectDeviceId} from "../selectors";
 import MotorConfiguration, {getFromID} from "../../models/MotorConfiguration";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
@@ -16,15 +16,18 @@ import {
 } from "./atom-actions";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {forSelectedDevice} from "./action-creators";
-import {ConfirmationAnswer, DeviceId, fromDeviceId, ProcessType} from "../state";
+import {ConfirmationAnswer, DeviceId, fromDeviceId, ProcessType, VirtualDeviceId} from "../state";
 
 const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue: (value: number) => T) =>
-  (deviceId: DeviceId, motorField: keyof MotorConfiguration, param: ConfigParam, value: T): SparkAction<Promise<T>> =>
-    (dispatch) => {
-      return SparkManager.setAndGetParameter(fromDeviceId(deviceId), param, fromTypedValue(value))
+  (virtualDeviceId: VirtualDeviceId, motorField: keyof MotorConfiguration, param: ConfigParam, value: T): SparkAction<Promise<T>> =>
+    (dispatch, getState) => {
+      return SparkManager.setAndGetParameter(
+        fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!),
+        param,
+        fromTypedValue(value))
         .then((res: IServerResponse) => {
           const responseValue = toTypedValue(res.responseValue as number);
-          dispatch(setMotorConfigParameter(deviceId, {
+          dispatch(setMotorConfigParameter(virtualDeviceId, {
             configName: motorField,
             configValue: responseValue,
             configParam: param,
@@ -37,36 +40,36 @@ const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue
 export const setNumberParameter = createTypedSetter<number>(identity, identity);
 export const setBooleanParameter = createTypedSetter<boolean>((value) => value ? 1 : 0, (value) => value === 1);
 
-export const loadParameters = (deviceId: DeviceId): SparkAction<Promise<void>> =>
-  (dispatch) => {
-    dispatch(updateDeviceProcessStatus(deviceId, "GETTING PARAMETERS..."));
+export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
 
     const paramResponses: IServerResponse[] = [];
     for (let i = 0; i < 75; i++) {
       paramResponses.push({requestValue: "", responseValue: "", status: 0, type: 0});
     }
-    dispatch(setParamResponses(deviceId, paramResponses));
+    dispatch(setParamResponses(virtualDeviceId, paramResponses));
 
     return delayPromise(1000)
-      .then(() => SparkManager.getConfigFromParams(fromDeviceId(deviceId)))
+      .then(() => SparkManager.getConfigFromParams(fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!)))
       .then((config: MotorConfiguration) => {
-        dispatch(updateDeviceProcessStatus(deviceId, "CONNECTED"));
-        dispatch(updateDeviceIsProcessing(deviceId, false));
-        dispatch(setMotorConfig(deviceId, config));
-        dispatch(setDeviceLoaded(deviceId, true));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
+        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+        dispatch(setMotorConfig(virtualDeviceId, config));
+        dispatch(setDeviceLoaded(virtualDeviceId, true));
         const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
-        dispatch(setBurnedMotorConfig(deviceId, burn));
+        dispatch(setBurnedMotorConfig(virtualDeviceId, burn));
       })
       .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(deviceId, "FAILED TO GET PARAMETERS"));
-        dispatch(updateDeviceIsProcessing(deviceId, false));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, "FAILED TO GET PARAMETERS"));
+        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
       });
   };
 
-export const burnConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>> =>
+export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    const device = getDevice(getState(), deviceId);
+    const device = getDevice(getState(), virtualDeviceId);
     const activeMotorType = getFromID(device.currentConfig.type);
 
     return dispatch(showConfirmation({
@@ -79,7 +82,9 @@ export const burnConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>
         return;
       }
 
-      dispatch(updateDeviceIsProcessing(deviceId, true, ProcessType.Save));
+      const deviceId = selectDeviceId(getState(), virtualDeviceId)!;
+
+      dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Save));
       return SparkManager.burnFlash(fromDeviceId(deviceId))
         .then(() => delayPromise(1000))
         .then(() =>
@@ -88,7 +93,7 @@ export const burnConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>
             dispatch(setBurnedMotorConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON())));
           }))
         .finally(() => {
-          dispatch(updateDeviceIsProcessing(deviceId, false));
+          dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         });
     });
   };

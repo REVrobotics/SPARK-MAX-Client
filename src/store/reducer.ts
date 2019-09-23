@@ -1,6 +1,14 @@
 import {combineReducers, Reducer} from "redux";
-import {keyBy, sortBy} from "lodash";
-import {IApplicationState, IContextState, IDeviceSetState, IDeviceState, IUiState} from "./state";
+import {keyBy, sortBy, values} from "lodash";
+import {
+  getDeviceId,
+  getVirtualDeviceId,
+  IApplicationState,
+  IContextState,
+  IDeviceSetState,
+  IDeviceState,
+  IUiState
+} from "./state";
 import {setField, setFields} from "../utils/object-utils";
 import {ActionType, ApplicationActions} from "./actions";
 
@@ -11,7 +19,7 @@ export const initialState: IApplicationState = {
   },
   deviceSet: {
     orderedDevices: [],
-    devices: [],
+    devices: {},
   },
   logs: [],
   ui: {
@@ -23,9 +31,9 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialSt
                                                 action: ApplicationActions): IContextState => {
   switch (action.type) {
     case ActionType.SELECT_DEVICE:
-      return setField(state, "selectedDeviceId", action.payload.deviceId);
+      return setField(state, "selectedVirtualDeviceId", action.payload.virtualDeviceId);
     case ActionType.SET_CONNECTED_DEVICE:
-      return setField(state, "connectedDeviceId", action.payload.connected ? action.payload.deviceId : undefined);
+      return setField(state, "connectedVirtualDeviceId", action.payload.connected ? action.payload.virtualDeviceId : undefined);
     case ActionType.SET_GLOBAL_PROCESS_STATUS:
       return setField(state, "processStatus", action.payload.processStatus);
     case ActionType.SET_GLOBAL_PROCESSING:
@@ -50,10 +58,10 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
                                                     action: ApplicationActions): IDeviceSetState => {
   switch (action.type) {
     case ActionType.ADD_DEVICES: {
-      const devices = setFields(state.devices, keyBy(action.payload.devices, "deviceId"));
+      const devices = setFields(state.devices, keyBy(action.payload.devices, getVirtualDeviceId));
       return setFields(state, {
         devices,
-        orderedDevices: sortBy(Object.keys(devices).map(Number)),
+        orderedDevices: sortBy(values(devices), getDeviceId).map(getVirtualDeviceId),
       });
     }
     case ActionType.SET_DEVICE_LOADED:
@@ -68,8 +76,8 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
         state,
         "devices",
         setField(state.devices,
-          action.payload.deviceId,
-          deviceReducer(state.devices[action.payload.deviceId], action)));
+          action.payload.virtualDeviceId,
+          deviceReducer(state.devices[action.payload.virtualDeviceId], action)));
     default:
       return state;
   }

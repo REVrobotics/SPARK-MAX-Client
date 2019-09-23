@@ -5,11 +5,10 @@ import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {ConfigParam} from "../../models/ConfigParam";
 import {
   ConfirmationAnswer,
-  DeviceId,
   IApplicationState,
   IConfirmationDialogConfig,
   IDeviceState,
-  ProcessType
+  ProcessType, VirtualDeviceId
 } from "../state";
 
 export enum ActionType {
@@ -51,14 +50,14 @@ export interface ISetGlobalProcessing extends Action {
 
 export interface IDeviceAwareAction extends Action {
   payload: {
-    deviceId: DeviceId;
+    virtualDeviceId: VirtualDeviceId
   }
 }
 
 export interface IUpdateDeviceProcessStatus extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_PROCESS_STATUS,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     processStatus: string
   }
 }
@@ -66,7 +65,7 @@ export interface IUpdateDeviceProcessStatus extends IDeviceAwareAction {
 export interface ISetConnectedDevice extends IDeviceAwareAction {
   type: ActionType.SET_CONNECTED_DEVICE,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     connected: boolean
   }
 }
@@ -74,7 +73,7 @@ export interface ISetConnectedDevice extends IDeviceAwareAction {
 export interface ISetDeviceLoaded extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_LOADED,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     loaded: boolean
   }
 }
@@ -82,7 +81,7 @@ export interface ISetDeviceLoaded extends IDeviceAwareAction {
 export interface ISetDeviceProcessing extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_PROCESSING,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     isProcessing: boolean,
     processType?: ProcessType
   }
@@ -98,7 +97,7 @@ export interface IAddDevices extends Action {
 export interface ISetParameters extends IDeviceAwareAction {
   type: ActionType.SET_PARAMETERS,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     parameters: number[]
   }
 }
@@ -106,7 +105,7 @@ export interface ISetParameters extends IDeviceAwareAction {
 export interface ISetMotorConfig extends IDeviceAwareAction {
   type: ActionType.SET_MOTOR_CONFIG,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     config: MotorConfiguration
   }
 }
@@ -114,7 +113,7 @@ export interface ISetMotorConfig extends IDeviceAwareAction {
 export interface ISetBurnedMotorConfig extends IDeviceAwareAction {
   type: ActionType.SET_BURNED_MOTOR_CONFIG,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     config: MotorConfiguration
   }
 }
@@ -129,14 +128,14 @@ export interface ISetMotorConfigParameterOptions {
 export interface ISetMotorConfigParameter extends IDeviceAwareAction {
   type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
   payload: ISetMotorConfigParameterOptions & {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId
   }
 }
 
 export interface ISetParamResponses extends IDeviceAwareAction {
   type: ActionType.SET_SERVER_PARAM_RESPONSE,
   payload: {
-    deviceId: DeviceId,
+    virtualDeviceId: VirtualDeviceId,
     paramResponses: IServerResponse[]
   }
 }
@@ -144,14 +143,14 @@ export interface ISetParamResponses extends IDeviceAwareAction {
 export interface ISaveConfirmation extends IDeviceAwareAction {
   type: ActionType.SAVE_CONFIRMATION,
   payload: {
-    deviceId: DeviceId
+    virtualDeviceId: VirtualDeviceId
   }
 }
 
 export interface IBurnConfirmation extends IDeviceAwareAction {
   type: ActionType.BURN_CONFIRMATION,
   payload: {
-    deviceId: DeviceId
+    virtualDeviceId: VirtualDeviceId
   }
 }
 
@@ -172,7 +171,7 @@ export interface ISetUpdateAvailable extends Action {
 export interface ISelectDevice extends IDeviceAwareAction {
   type: ActionType.SELECT_DEVICE,
   payload: {
-    deviceId: DeviceId
+    virtualDeviceId: VirtualDeviceId
   }
 }
 

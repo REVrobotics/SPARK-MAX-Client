@@ -4,7 +4,7 @@ import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
-import {DeviceId, IApplicationState, ProcessType} from "../store/state";
+import {IApplicationState, ProcessType} from "../store/state";
 import {ConfigParam} from "../models/ConfigParam";
 import PopoverHelp from "../components/PopoverHelp";
 import {
@@ -22,7 +22,6 @@ import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
   getSelectedDeviceBurnedConfig,
-  getSelectedDeviceId,
   getSelectedDeviceMotorConfig,
   getSelectedDeviceParamResponses,
   getSelectedDeviceProcessType,
@@ -31,7 +30,6 @@ import {
 } from "../store/selectors";
 
 interface IProps {
-  deviceId: DeviceId,
   connected: boolean,
   processing: boolean,
   processType?: ProcessType,
@@ -484,7 +482,6 @@ class BasicTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    deviceId: getSelectedDeviceId(state),
     connected: isSelectedDeviceConnected(state),
     processing: isSelectedDeviceInProcessing(state),
     processType: getSelectedDeviceProcessType(state),

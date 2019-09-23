@@ -9,8 +9,8 @@ import {
   setParamResponses,
   updateDeviceProcessStatus
 } from "./atom-actions";
-import {connectUsbDevice, findUsbDevices, selectDevice} from "./connection-actions";
-import {getFirstUsbDeviceId} from "../selectors";
+import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
+import {getFirstHubVirtualDeviceId} from "../selectors";
 import {toDeviceId} from "../state";
 
 export function initApplication(): SparkAction<void> {
@@ -18,12 +18,12 @@ export function initApplication(): SparkAction<void> {
     dispatch(downloadLatestFirmware());
     dispatch(findUsbDevices())
       .then(() => {
-        const usbDevice = getFirstUsbDeviceId(getState());
-        if (usbDevice == null) {
+        const hubVirtualDeviceId = getFirstHubVirtualDeviceId(getState());
+        if (hubVirtualDeviceId == null) {
           return;
         }
-        dispatch(selectDevice(usbDevice));
-        return dispatch(connectUsbDevice(usbDevice));
+        dispatch(selectDevice(hubVirtualDeviceId));
+        return dispatch(connectHubDevice(hubVirtualDeviceId));
       })
       .then(() => dispatch(checkForFirmwareUpdate()));
 

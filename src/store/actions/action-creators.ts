@@ -1,12 +1,12 @@
 import {SparkAction} from "./action-types";
-import {getSelectedDeviceId} from "../selectors";
+import {getSelectedVirtualDeviceId} from "../selectors";
 
 export function forSelectedDevice<A>(action: any) {
   return (...args: any[]): SparkAction<any> =>
     (dispatch, getState) => {
-      const selectedDeviceId = getSelectedDeviceId(getState());
-      if (selectedDeviceId) {
-        return dispatch(action(selectedDeviceId, ...args));
+      const selectedId = getSelectedVirtualDeviceId(getState());
+      if (selectedId) {
+        return dispatch(action(selectedId, ...args));
       }
     };
 }

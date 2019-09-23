@@ -17,7 +17,7 @@ import {
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
-import {DeviceId, IDeviceState, ProcessType} from "../state";
+import {IDeviceState, ProcessType, VirtualDeviceId} from "../state";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
   payload: {
@@ -33,36 +33,38 @@ export const updateGlobalIsProcessing: ActionCreator<ISetGlobalProcessing> = (is
   type: ActionType.SET_GLOBAL_PROCESSING
 });
 
-export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus> = (deviceId: DeviceId,
+export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus> = (virtualDeviceId: VirtualDeviceId,
                                                                                      processStatus: string) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     processStatus,
   },
   type: ActionType.SET_DEVICE_PROCESS_STATUS
 });
 
-export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (deviceId: DeviceId, connected: boolean) => ({
+export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (virtualDeviceId: VirtualDeviceId,
+                                                                       connected: boolean) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     connected
   },
   type: ActionType.SET_CONNECTED_DEVICE
 });
 
-export const setDeviceLoaded: ActionCreator<ISetDeviceLoaded> = (deviceId: DeviceId, loaded: boolean) => ({
+export const setDeviceLoaded: ActionCreator<ISetDeviceLoaded> = (virtualDeviceId: VirtualDeviceId,
+                                                                 loaded: boolean) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     loaded
   },
   type: ActionType.SET_DEVICE_LOADED
 });
 
-export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (deviceId: DeviceId,
+export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (virtualDeviceId: VirtualDeviceId,
                                                                               isProcessing: boolean,
                                                                               processType?: ProcessType) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     isProcessing,
     processType
   },
@@ -76,44 +78,46 @@ export const addDevices: ActionCreator<IAddDevices> = (devices: IDeviceState[]) 
   type: ActionType.ADD_DEVICES
 });
 
-export const setParameters: ActionCreator<ISetParameters> = (deviceId: DeviceId, parameters: number[]) => ({
+export const setParameters: ActionCreator<ISetParameters> = (virtualDeviceId: VirtualDeviceId,
+                                                             parameters: number[]) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     parameters
   },
   type: ActionType.SET_PARAMETERS
 });
 
-export const setMotorConfig: ActionCreator<ISetMotorConfig> = (deviceId: DeviceId, config: MotorConfiguration) => ({
+export const setMotorConfig: ActionCreator<ISetMotorConfig> = (virtualDeviceId: VirtualDeviceId,
+                                                               config: MotorConfiguration) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     config
   },
   type: ActionType.SET_MOTOR_CONFIG
 });
 
-export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (deviceId: DeviceId,
+export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (virtualDeviceId: VirtualDeviceId,
                                                                            config: MotorConfiguration) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     config
   },
   type: ActionType.SET_BURNED_MOTOR_CONFIG
 });
 
-export const setMotorConfigParameter: ActionCreator<ISetMotorConfigParameter> = (deviceId: DeviceId,
+export const setMotorConfigParameter: ActionCreator<ISetMotorConfigParameter> = (virtualDeviceId: VirtualDeviceId,
                                                                                  options: ISetMotorConfigParameterOptions) => ({
   type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
   payload: {
-    deviceId,
+    virtualDeviceId,
     ...options,
   }
 });
 
-export const setParamResponses: ActionCreator<ISetParamResponses> = (deviceId: DeviceId,
+export const setParamResponses: ActionCreator<ISetParamResponses> = (virtualDeviceId: VirtualDeviceId,
                                                                      paramResponses: IServerResponse[]) => ({
   payload: {
-    deviceId,
+    virtualDeviceId,
     paramResponses
   },
   type: ActionType.SET_SERVER_PARAM_RESPONSE

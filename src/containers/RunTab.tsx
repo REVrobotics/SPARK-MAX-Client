@@ -12,9 +12,9 @@ import {
 } from "../store/actions";
 import PopoverHelp from "../components/PopoverHelp";
 import {
-  getSelectedDeviceBurnedConfig, getSelectedDeviceId,
+  getSelectedDeviceBurnedConfig,
   getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
-  isSelectedDeviceConnected
+  isSelectedDeviceConnected, getSelectedDeviceId
 } from "../store/selectors";
 import {fromDeviceId} from "../store/state";
 
