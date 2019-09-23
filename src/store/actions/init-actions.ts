@@ -22,8 +22,8 @@ export function initApplication(): SparkAction<void> {
         if (hubVirtualDeviceId == null) {
           return;
         }
-        dispatch(selectDevice(hubVirtualDeviceId));
-        return dispatch(connectHubDevice(hubVirtualDeviceId));
+        return dispatch(selectDevice(hubVirtualDeviceId))
+          .then(() => dispatch(connectHubDevice(hubVirtualDeviceId)));
       })
       .then(() => dispatch(checkForFirmwareUpdate()));
 
