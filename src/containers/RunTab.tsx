@@ -3,12 +3,12 @@ import ReactEcharts from "echarts-for-react";
 import "echarts/lib/chart/line";
 import * as React from "react";
 import {connect} from "react-redux";
-import {DeviceId, IApplicationState, SparkDispatch} from "../store/types";
+import {DeviceId, IApplicationState} from "../store/state";
 import SparkManager, {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration from "../models/MotorConfiguration";
 import {
   setSelectedDeviceBurnedMotorConfig,
-  setSelectedDeviceMotorConfig
+  setSelectedDeviceMotorConfig, SparkDispatch
 } from "../store/actions";
 import PopoverHelp from "../components/PopoverHelp";
 import {
@@ -16,7 +16,7 @@ import {
   getSelectedDeviceMotorConfig, getSelectedDeviceParamResponses,
   isSelectedDeviceConnected
 } from "../store/selectors";
-import {fromDeviceId} from "../store/reducer";
+import {fromDeviceId} from "../store/state";
 
 interface IProps {
   deviceId: DeviceId,

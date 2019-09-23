@@ -1,10 +1,9 @@
 import {
   ActionType,
-  ConfirmationAnswer,
-  IConfirmationDialogConfig,
   SparkAction
-} from "./types";
-import {deferred, IDeferred} from "../utils/promise-utils";
+} from "./action-types";
+import {deferred, IDeferred} from "../../utils/promise-utils";
+import {ConfirmationAnswer, IConfirmationDialogConfig} from "../state";
 
 let currentDialog: IDeferred<ConfirmationAnswer> | undefined;
 

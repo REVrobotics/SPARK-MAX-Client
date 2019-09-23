@@ -1,4 +1,4 @@
-import {ActionType, DeviceId, SparkAction} from "./types";
+import {createUsbDeviceState, DeviceId, fromDeviceId} from "../state";
 import {
   addDevices,
   addLog,
@@ -9,12 +9,12 @@ import {
   updateDeviceProcessStatus,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus
-} from "./actions";
-import SparkManager from "../managers/SparkManager";
-import {REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {getConnectedDeviceId, getDevice, getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "./selectors";
-import {createUsbDeviceState, fromDeviceId} from "./reducer";
+} from "./atom-actions";
+import SparkManager from "../../managers/SparkManager";
+import {REV_BRUSHLESS} from "../../models/MotorConfiguration";
+import {getConnectedDeviceId, getDevice, getMasterDeviceId, getSelectedDeviceId, isDeviceConnected} from "../selectors";
 import {loadParameters} from "./parameter-actions";
+import {ActionType, SparkAction} from "./action-types";
 
 export function connectUsbDevice(deviceId: DeviceId): SparkAction<Promise<void>> {
   return (dispatch) => {

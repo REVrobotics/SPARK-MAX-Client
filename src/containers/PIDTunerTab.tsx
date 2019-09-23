@@ -1,7 +1,7 @@
 import {Button, FormGroup, NumericInput} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState} from "../store/types";
+import {IApplicationState} from "../store/state";
 import {isSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {

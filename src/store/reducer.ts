@@ -1,16 +1,8 @@
 import {combineReducers, Reducer} from "redux";
 import {keyBy, sortBy} from "lodash";
-import {default as MotorConfiguration, REV_BRUSHLESS} from "../models/MotorConfiguration";
-import {
-  ActionType,
-  ApplicationActions,
-  DeviceId,
-  IApplicationState,
-  IDeviceInfo,
-  IDeviceState, IContextState,
-  IUiState, IDeviceSetState,
-} from "./types";
+import {IApplicationState, IContextState, IDeviceSetState, IDeviceState, IUiState} from "./state";
 import {setField, setFields} from "../utils/object-utils";
+import {ActionType, ApplicationActions} from "./actions";
 
 export const initialState: IApplicationState = {
   context: {
@@ -26,32 +18,6 @@ export const initialState: IApplicationState = {
     confirmationOpened: false
   }
 };
-
-const createDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState => ({
-  deviceId,
-  info,
-  burnedConfig: new MotorConfiguration("REV BRUSHLESS", 1),
-  processStatus: "NOT CONNECTED",
-  currentConfig: REV_BRUSHLESS,
-  isProcessing: false,
-  isLoaded: false,
-  parameters: [],
-  paramResponses: [],
-});
-
-export const createUsbDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState =>
-  createDeviceState(deviceId, info);
-
-export const createCanDeviceState = (deviceId: DeviceId, info: IDeviceInfo, masterDeviceId: number): IDeviceState => ({
-  ...createDeviceState(deviceId, info),
-  masterDeviceId,
-});
-
-export const isUsbDevice = (device: IDeviceState) => !device.masterDeviceId;
-export const isCanDevice = (device: IDeviceState) => !isUsbDevice(device);
-
-export const toDeviceId = (device: string) => Number(device);
-export const fromDeviceId = (deviceId: DeviceId) => String(deviceId);
 
 const contextReducer: Reducer<IContextState> = (state: IContextState = initialState.context,
                                                 action: ApplicationActions): IContextState => {
@@ -72,9 +38,9 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialSt
 const uiReducer: Reducer<IUiState> = (state: IUiState = initialState.ui, action: ApplicationActions): IUiState => {
   switch (action.type) {
     case ActionType.OPEN_CONFIRMATION:
-      return { ...state, confirmation: action.payload, confirmationOpened: true };
+      return {...state, confirmation: action.payload, confirmationOpened: true};
     case ActionType.ANSWER_CONFIRMATION:
-      return { ...state, confirmationOpened: false };
+      return {...state, confirmationOpened: false};
     default:
       return state;
   }

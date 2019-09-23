@@ -4,12 +4,16 @@ import {connect} from "react-redux";
 import {MotorTypeSelect} from "../components/MotorTypeSelect";
 import {IServerResponse} from "../managers/SparkManager";
 import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
-import {DeviceId, IApplicationState, ProcessType, SparkDispatch} from "../store/types";
+import {DeviceId, IApplicationState, ProcessType} from "../store/state";
 import {ConfigParam} from "../models/ConfigParam";
 import PopoverHelp from "../components/PopoverHelp";
 import {
+  burnSelectedDeviceConfiguration,
+  resetSelectedDeviceConfiguration,
+  setSelectedDeviceBooleanParameter,
   setSelectedDeviceBurnedMotorConfig,
   setSelectedDeviceMotorConfig,
+  setSelectedDeviceNumberParameter, SparkDispatch,
   updateSelectedDeviceIsProcessing,
   updateSelectedDeviceProcessStatus
 } from "../store/actions";
@@ -25,10 +29,6 @@ import {
   isSelectedDeviceConnected,
   isSelectedDeviceInProcessing
 } from "../store/selectors";
-import {
-  burnSelectedDeviceConfiguration,
-  resetSelectedDeviceConfiguration, setSelectedDeviceBooleanParameter, setSelectedDeviceNumberParameter
-} from "../store/parameter-actions";
 
 interface IProps {
   deviceId: DeviceId,
@@ -38,13 +38,21 @@ interface IProps {
   motorConfig: MotorConfiguration,
   burnedConfig: MotorConfiguration,
   paramResponses: IServerResponse[],
+
   setCurrentConfig(config: MotorConfiguration): void,
+
   setBurnedConfig(config: MotorConfiguration): void,
+
   updateConnectionStatus(connected: boolean, status: string): void,
+
   setIsConnecting(connecting: boolean): void,
+
   burnConfiguration(): void;
+
   resetConfiguration(): void;
+
   setBooleanParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: boolean): Promise<boolean>;
+
   setNumberParameter(motorField: keyof MotorConfiguration, param: ConfigParam, value: number): Promise<number>;
 }
 
@@ -228,11 +236,14 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!currentError} title={"Smart Current Limit"} content={`Your requested value of ${currentResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${currentResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!currentError} title={"Smart Current Limit"}
+                                content={`Your requested value of ${currentResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${currentResponse.responseValue}.`}/>}
             labelFor="advanced-current-limit"
             className={(currentModified ? "modified" : "") + " form-group-quarter"}
           >
-            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit} onValueChange={this.changeCurrentLimit} min={0} className={currentError ? "field-error" : ""}/>
+            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit}
+                          onValueChange={this.changeCurrentLimit} min={0}
+                          className={currentError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form form-space-between">
@@ -249,7 +260,8 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!encoderCprError} title={"Encoder CPR"} content={`Your requested value of ${encoderCprResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${encoderCprResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!encoderCprError} title={"Encoder CPR"}
+                                content={`Your requested value of ${encoderCprResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${encoderCprResponse.responseValue}.`}/>}
             labelFor="encoder-cpr"
             className={(encoderCprModified ? "modified" : "") + " form-group-quarter"}
           >
@@ -262,62 +274,87 @@ class BasicTab extends React.Component<IProps, IState> {
             />
           </FormGroup>
           <FormGroup
-            label={<PopoverHelp enabled={!deadbandError} title={"PWM Input Deadband"} content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
+            label={<PopoverHelp enabled={!deadbandError} title={"PWM Input Deadband"}
+                                content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
             labelFor="advanced-deadband"
             className={(deadbandModified ? "modified" : "") + " form-group-half"}
           >
-            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01} onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
+            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01}
+                    onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
           </FormGroup>
         </div>
         <div className="form form-top form-space-between">
           <div className="form-column form-column-third no-wrap">
             <h4 className="form-title">Limit Switch</h4>
             <div className="form-control-group">
-              <Switch checked={forwardLimitHardEnabled} disabled={!connected} label="Forward Limit" className={forwardEnabledHardModified ? "modified" : ""} onChange={this.changeForwardLimitHardEnabled} />
-              <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Closed" : "Normally Open"} className={forwardPolarityModified ? "modified" : ""} onChange={this.changeForwardPolarity} />
+              <Switch checked={forwardLimitHardEnabled} disabled={!connected} label="Forward Limit"
+                      className={forwardEnabledHardModified ? "modified" : ""}
+                      onChange={this.changeForwardLimitHardEnabled}/>
+              <Switch checked={forwardPolarity} disabled={!connected}
+                      label={forwardPolarity ? "Normally Closed" : "Normally Open"}
+                      className={forwardPolarityModified ? "modified" : ""} onChange={this.changeForwardPolarity}/>
             </div>
 
             <div className="form-control-group">
-              <Switch checked={reverseLimitHardEnabled} disabled={!connected} label="Reverse Limit" className={reverseEnabledHardModified ? "modified" : ""} onChange={this.changeReverseLimitHardEnabled} />
-              <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Closed" : "Normally Open"} className={reversePolarityModified ? "modified" : ""} onChange={this.changeReversePolarity} />
+              <Switch checked={reverseLimitHardEnabled} disabled={!connected} label="Reverse Limit"
+                      className={reverseEnabledHardModified ? "modified" : ""}
+                      onChange={this.changeReverseLimitHardEnabled}/>
+              <Switch checked={reversePolarity} disabled={!connected}
+                      label={reversePolarity ? "Normally Closed" : "Normally Open"}
+                      className={reversePolarityModified ? "modified" : ""} onChange={this.changeReversePolarity}/>
             </div>
           </div>
           <div className="form-column form-column-third no-wrap">
             <h4 className="form-title">Soft Limits</h4>
 
             <FormGroup className="form-group-fit">
-              <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label="Forward Limit" className={forwardEnabledSoftModified ? "modified" : ""} onChange={this.changeForwardLimitSoftEnabled} />
+              <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label="Forward Limit"
+                      className={forwardEnabledSoftModified ? "modified" : ""}
+                      onChange={this.changeForwardLimitSoftEnabled}/>
             </FormGroup>
             <FormGroup
-              label={<PopoverHelp enabled={!softLimitForwardError} title={"Forward Limit (value)"} content={`Your requested value of ${softLimitForwardResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitForwardResponse.responseValue}.`}/>}
+              label={<PopoverHelp enabled={!softLimitForwardError} title={"Forward Limit (value)"}
+                                  content={`Your requested value of ${softLimitForwardResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitForwardResponse.responseValue}.`}/>}
               labelFor="advanced-current-limit"
               className={softLimitForwardModified ? "modified" : ""}
             >
-              <NumericInput id="advanced-current-limit" disabled={!connected || !forwardLimitSoftEnabled} value={softLimitForward} onValueChange={this.changeForwardLimitSoftValue} min={0} className={softLimitForwardError ? "field-error" : ""}/>
+              <NumericInput id="advanced-current-limit" disabled={!connected || !forwardLimitSoftEnabled}
+                            value={softLimitForward} onValueChange={this.changeForwardLimitSoftValue} min={0}
+                            className={softLimitForwardError ? "field-error" : ""}/>
             </FormGroup>
 
             <FormGroup className="form-group-fit">
-              <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label="Reverse Limit" className={reverseEnabledSoftModified ? "modified" : ""} onChange={this.changeReverseLimitSoftEnabled} />
+              <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label="Reverse Limit"
+                      className={reverseEnabledSoftModified ? "modified" : ""}
+                      onChange={this.changeReverseLimitSoftEnabled}/>
             </FormGroup>
             <FormGroup
-              label={<PopoverHelp enabled={!softLimitForwardError} title={"Reverse Limit (value)"} content={`Your requested value of ${softLimitReverseResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitReverseResponse.responseValue}.`}/>}
+              label={<PopoverHelp enabled={!softLimitForwardError} title={"Reverse Limit (value)"}
+                                  content={`Your requested value of ${softLimitReverseResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${softLimitReverseResponse.responseValue}.`}/>}
               labelFor="advanced-current-limit"
               className={softLimitReverseModified ? "modified" : ""}
             >
-              <NumericInput id="advanced-current-limit" disabled={!connected || !reverseLimitSoftEnabled} value={softLimitReverse} onValueChange={this.changeReverseLimitSoftValue} min={0} className={softLimitReverseError ? "field-error" : ""}/>
+              <NumericInput id="advanced-current-limit" disabled={!connected || !reverseLimitSoftEnabled}
+                            value={softLimitReverse} onValueChange={this.changeReverseLimitSoftValue} min={0}
+                            className={softLimitReverseError ? "field-error" : ""}/>
             </FormGroup>
           </div>
           <div className="form-column form-column-third">
             <h4 className="form-title">Ramp Rate</h4>
             <FormGroup className="form-group-fit">
-              <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
+              <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"}
+                      onChange={this.changeRampRateEnabled}/>
             </FormGroup>
             <FormGroup
-              label={<PopoverHelp enabled={!rampError} title={"Rate (seconds to full speed)"} content={`Your requested value of ${rampResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${rampResponse.responseValue}.`}/>}
+              label={<PopoverHelp enabled={!rampError} title={"Rate (seconds to full speed)"}
+                                  content={`Your requested value of ${rampResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${rampResponse.responseValue}.`}/>}
               labelFor="advanced-output-rate"
               className={rampModified ? "modified" : ""}
             >
-              <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024} className={rampError ? "field-error" : ""}/>
+              <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled}
+                            onFocus={this.provideDefault} onBlur={this.sanitizeValue}
+                            onValueChange={this.changeRampRate} min={0} max={1024}
+                            className={rampError ? "field-error" : ""}/>
             </FormGroup>
           </div>
         </div>

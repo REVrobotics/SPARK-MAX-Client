@@ -1,7 +1,7 @@
 import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
-import {IDeviceState} from "../store/types";
+import {IDeviceState} from "../store/state";
 
 const BpDeviceSelect = Select.ofType<IDeviceState>();
 

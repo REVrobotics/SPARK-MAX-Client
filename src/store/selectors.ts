@@ -1,6 +1,5 @@
 import {find} from "lodash";
-import {DeviceId, IApplicationState} from "./types";
-import {isUsbDevice} from "./reducer";
+import {DeviceId, IApplicationState, isUsbDevice} from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {REV_BRUSHLESS} from "../models/MotorConfiguration";
 

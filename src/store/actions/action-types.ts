@@ -1,9 +1,16 @@
 import {Action} from "redux";
-import MotorConfiguration from "../models/MotorConfiguration";
-import {IServerResponse} from "../managers/SparkManager";
+import MotorConfiguration from "../../models/MotorConfiguration";
+import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
-import {Intent} from "@blueprintjs/core";
-import {ConfigParam} from "../models/ConfigParam";
+import {ConfigParam} from "../../models/ConfigParam";
+import {
+  ConfirmationAnswer,
+  DeviceId,
+  IApplicationState,
+  IConfirmationDialogConfig,
+  IDeviceState,
+  ProcessType
+} from "../state";
 
 export enum ActionType {
   SET_GLOBAL_PROCESS_STATUS = "SET_GLOBAL_PROCESS_STATUS",
@@ -25,57 +32,6 @@ export enum ActionType {
   SELECT_DEVICE = "SELECT_DEVICE",
   OPEN_CONFIRMATION = "OPEN_CONFIRMATION",
   ANSWER_CONFIRMATION = "ANSWER_CONFIRMATION",
-}
-
-export enum ProcessType {
-  Save = "Save",
-  Reset = "Process"
-}
-
-export type DeviceId = number;
-
-export interface IContextState {
-  connectedDeviceId?: DeviceId,
-  selectedDeviceId?: DeviceId,
-  isProcessing: boolean,
-  processStatus: string,
-}
-
-export interface IDeviceSetState {
-  orderedDevices: DeviceId[],
-  devices: { [deviceId: number]: IDeviceState },
-}
-
-export interface IApplicationState {
-  context: IContextState,
-  deviceSet: IDeviceSetState,
-  logs: string[],
-  ui: IUiState;
-}
-
-export interface IDeviceInfo {
-  driverName: string;
-  deviceName: string;
-  updateable: boolean;
-}
-
-export interface IUiState {
-  confirmation?: IConfirmationDialogConfig;
-  confirmationOpened: boolean;
-}
-
-export interface IDeviceState {
-  deviceId: DeviceId;
-  info: IDeviceInfo;
-  masterDeviceId?: number;
-  processStatus: string,
-  isProcessing: boolean,
-  isLoaded: boolean,
-  processType?: ProcessType,
-  parameters: number[],
-  currentConfig: MotorConfiguration,
-  burnedConfig: MotorConfiguration,
-  paramResponses: IServerResponse[]
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -228,18 +184,6 @@ export interface IOpenConfirmation extends Action {
 export interface IAnswerConfirmation extends Action {
   type: ActionType.ANSWER_CONFIRMATION,
   payload: ConfirmationAnswer
-}
-
-export interface IConfirmationDialogConfig {
-  intent: Intent;
-  text: string;
-  yesLabel: string;
-  cancelLabel: string;
-}
-
-export enum ConfirmationAnswer {
-  Yes = "Yes",
-  Cancel = "Cancel"
 }
 
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;

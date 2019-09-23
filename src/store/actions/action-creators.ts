@@ -1,5 +1,5 @@
-import {SparkAction} from "./types";
-import {getSelectedDeviceId} from "./selectors";
+import {SparkAction} from "./action-types";
+import {getSelectedDeviceId} from "../selectors";
 
 export function forSelectedDevice<A>(action: any) {
   return (...args: any[]): SparkAction<any> =>

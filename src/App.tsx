@@ -9,11 +9,10 @@ import FirmwareTab from "./containers/FirmwareTab";
 import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
 // import SettingsTab from "./containers/SettingsTab";
-import {IApplicationState, SparkDispatch} from "./store/types";
+import {IApplicationState} from "./store/state";
 import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
-import {initApplication} from "./store/init-actions";
-import {disconnectCurrentDevice} from "./store/connection-actions";
+import {disconnectCurrentDevice, initApplication, SparkDispatch} from "./store/actions";
 import UiSupport from "./containers/UiSupport";
 
 interface IProps {

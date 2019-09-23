@@ -1,7 +1,7 @@
 import * as React from "react";
-import {ConfirmationAnswer, IApplicationState, IConfirmationDialogConfig, SparkDispatch} from "../store/types";
+import {ConfirmationAnswer, IApplicationState, IConfirmationDialogConfig} from "../store/state";
 import {connect} from "react-redux";
-import {answerConfirmation, closeConfirmation} from "../store/ui-actions";
+import {answerConfirmation, closeConfirmation, SparkDispatch} from "../store/actions";
 import {Alert} from "@blueprintjs/core";
 
 interface IProps {

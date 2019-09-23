@@ -1,17 +1,17 @@
-import {SparkAction} from "./types";
-import SparkManager from "../managers/SparkManager";
-import {REV_BRUSHLESS} from "../models/MotorConfiguration";
-import WebProvider from "../providers/WebProvider";
+import {SparkAction} from "./action-types";
+import SparkManager from "../../managers/SparkManager";
+import {REV_BRUSHLESS} from "../../models/MotorConfiguration";
+import WebProvider from "../../providers/WebProvider";
 import {
   addLog,
   setBurnedMotorConfig, setConnectedDevice,
   setMotorConfig,
   setParamResponses,
   updateDeviceProcessStatus
-} from "./actions";
+} from "./atom-actions";
 import {connectUsbDevice, findUsbDevices, selectDevice} from "./connection-actions";
-import {getFirstUsbDeviceId} from "./selectors";
-import {toDeviceId} from "./reducer";
+import {getFirstUsbDeviceId} from "../selectors";
+import {toDeviceId} from "../state";
 
 export function initApplication(): SparkAction<void> {
   return (dispatch, getState) => {

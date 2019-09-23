@@ -3,19 +3,19 @@ import {Cell, Column, Table, IRegion} from "@blueprintjs/table";
 import * as React from "react";
 import {connect} from "react-redux";
 import {
-  DeviceId, IApplicationState, SparkDispatch,
-} from "../store/types";
+  DeviceId, IApplicationState,
+} from "../store/state";
 import SparkManager from "../managers/SparkManager";
 import {
   addLog,
-  updateSelectedDeviceIsProcessing, updateSelectedDeviceProcessStatus, setSelectedDeviceMotorConfig
+  updateSelectedDeviceIsProcessing, updateSelectedDeviceProcessStatus, setSelectedDeviceMotorConfig, SparkDispatch
 } from "../store/actions";
 import WebProvider from "../providers/WebProvider";
 import MotorConfiguration from "../models/MotorConfiguration";
 import CANScanDetail from "../models/CANScanDetail";
 import { isNullOrUndefined } from "util";
 import {getSelectedDeviceId, isSelectedDeviceConnected} from "../store/selectors";
-import {fromDeviceId} from "../store/reducer";
+import {fromDeviceId} from "../store/state";
 
 interface IProps {
   deviceId: DeviceId,

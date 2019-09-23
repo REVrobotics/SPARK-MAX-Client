@@ -1,5 +1,5 @@
 import {ActionCreator} from "redux";
-import MotorConfiguration from "../models/MotorConfiguration";
+import MotorConfiguration from "../../models/MotorConfiguration";
 import {
   ActionType,
   IAddLog,
@@ -11,14 +11,13 @@ import {
   ISetUpdateAvailable,
   IAddDevices,
   IUpdateDeviceProcessStatus,
-  IDeviceState,
-  DeviceId,
   IUpdateGlobalProcessStatus,
   ISetGlobalProcessing,
-  ProcessType, ISetMotorConfigParameter, ISetMotorConfigParameterOptions, ISetConnectedDevice, ISetDeviceLoaded,
-} from "./types";
-import {IServerResponse} from "../managers/SparkManager";
+  ISetMotorConfigParameter, ISetMotorConfigParameterOptions, ISetConnectedDevice, ISetDeviceLoaded,
+} from "./action-types";
+import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
+import {DeviceId, IDeviceState, ProcessType} from "../state";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
   payload: {

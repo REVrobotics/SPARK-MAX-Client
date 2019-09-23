@@ -1,11 +1,10 @@
 import {identity} from "lodash";
-import {ConfirmationAnswer, DeviceId, ProcessType, SparkAction} from "./types";
+import {SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
-import {getDevice} from "./selectors";
-import MotorConfiguration, {getFromID} from "../models/MotorConfiguration";
-import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import {fromDeviceId} from "./reducer";
-import {delayPromise} from "../utils/promise-utils";
+import {getDevice} from "../selectors";
+import MotorConfiguration, {getFromID} from "../../models/MotorConfiguration";
+import SparkManager, {IServerResponse} from "../../managers/SparkManager";
+import {delayPromise} from "../../utils/promise-utils";
 import {
   addLog,
   setBurnedMotorConfig, setDeviceLoaded,
@@ -14,9 +13,10 @@ import {
   setParamResponses,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
-} from "./actions";
-import {ConfigParam} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+} from "./atom-actions";
+import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {forSelectedDevice} from "./action-creators";
+import {ConfirmationAnswer, DeviceId, fromDeviceId, ProcessType} from "../state";
 
 const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue: (value: number) => T) =>
   (deviceId: DeviceId, motorField: keyof MotorConfiguration, param: ConfigParam, value: T): SparkAction<Promise<T>> =>

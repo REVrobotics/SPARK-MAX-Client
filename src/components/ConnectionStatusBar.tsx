@@ -2,8 +2,8 @@ import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
 import * as classnames from "classnames";
-import {IApplicationState, IDeviceState, SparkDispatch} from "../store/types";
-import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice} from "../store/connection-actions";
+import {IApplicationState, IDeviceState} from "../store/state";
+import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
   getDevicesInOrder,
   getProcessStatus, getSelectedDevice,
