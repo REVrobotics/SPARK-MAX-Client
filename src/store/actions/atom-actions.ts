@@ -1,23 +1,23 @@
 import {ActionCreator} from "redux";
-import MotorConfiguration from "../../models/MotorConfiguration";
 import {
   ActionType,
-  IAddLog,
-  ISetBurnedMotorConfig,
-  ISetDeviceProcessing,
-  ISetMotorConfig,
-  ISetParameters,
-  ISetParamResponses,
-  ISetUpdateAvailable,
   IAddDevices,
+  IAddLog,
+  ISetConnectedDevice,
+  ISetDeviceLoaded,
+  ISetDeviceParameter,
+  ISetDeviceParameterResponse,
+  ISetDeviceProcessing,
+  ISetGlobalProcessing,
+  ISetParameters,
+  ISetUpdateAvailable,
   IUpdateDeviceProcessStatus,
   IUpdateGlobalProcessStatus,
-  ISetGlobalProcessing,
-  ISetMotorConfigParameter, ISetMotorConfigParameterOptions, ISetConnectedDevice, ISetDeviceLoaded,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 import {IDeviceState, ProcessType, VirtualDeviceId} from "../state";
+import {ConfigParam} from "../../models/ConfigParam";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
   payload: {
@@ -87,40 +87,26 @@ export const setParameters: ActionCreator<ISetParameters> = (virtualDeviceId: Vi
   type: ActionType.SET_PARAMETERS
 });
 
-export const setMotorConfig: ActionCreator<ISetMotorConfig> = (virtualDeviceId: VirtualDeviceId,
-                                                               config: MotorConfiguration) => ({
+export const setDeviceParameter: ActionCreator<ISetDeviceParameter> = (virtualDeviceId: VirtualDeviceId,
+                                                                       parameter: ConfigParam,
+                                                                       value: number) => ({
   payload: {
     virtualDeviceId,
-    config
+    parameter,
+    value
   },
-  type: ActionType.SET_MOTOR_CONFIG
+  type: ActionType.SET_DEVICE_PARAMETER,
 });
 
-export const setBurnedMotorConfig: ActionCreator<ISetBurnedMotorConfig> = (virtualDeviceId: VirtualDeviceId,
-                                                                           config: MotorConfiguration) => ({
+export const setDeviceParameterResponse: ActionCreator<ISetDeviceParameterResponse> = (virtualDeviceId: VirtualDeviceId,
+                                                                                       parameter: ConfigParam,
+                                                                                       response: IServerResponse) => ({
   payload: {
     virtualDeviceId,
-    config
+    parameter,
+    response
   },
-  type: ActionType.SET_BURNED_MOTOR_CONFIG
-});
-
-export const setMotorConfigParameter: ActionCreator<ISetMotorConfigParameter> = (virtualDeviceId: VirtualDeviceId,
-                                                                                 options: ISetMotorConfigParameterOptions) => ({
-  type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
-  payload: {
-    virtualDeviceId,
-    ...options,
-  }
-});
-
-export const setParamResponses: ActionCreator<ISetParamResponses> = (virtualDeviceId: VirtualDeviceId,
-                                                                     paramResponses: IServerResponse[]) => ({
-  payload: {
-    virtualDeviceId,
-    paramResponses
-  },
-  type: ActionType.SET_SERVER_PARAM_RESPONSE
+  type: ActionType.SET_DEVICE_PARAMETER_RESPONSE,
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({
@@ -137,7 +123,7 @@ export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAva
   type: ActionType.SET_UPDATE_AVAILABLE
 });
 
-export const setSelectedDeviceMotorConfig = forSelectedDevice(setMotorConfig);
-export const setSelectedDeviceBurnedMotorConfig = forSelectedDevice(setBurnedMotorConfig);
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
 export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceProcessStatus);
+export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
+export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);

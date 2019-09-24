@@ -1,12 +1,9 @@
 import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import {REV_BRUSHLESS} from "../../models/MotorConfiguration";
 import WebProvider from "../../providers/WebProvider";
 import {
   addLog,
-  setBurnedMotorConfig, setConnectedDevice,
-  setMotorConfig,
-  setParamResponses,
+  setConnectedDevice,
   updateDeviceProcessStatus
 } from "./atom-actions";
 import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
@@ -31,9 +28,6 @@ export function initApplication(): SparkAction<void> {
       const deviceId = toDeviceId(device);
       dispatch(updateDeviceProcessStatus(deviceId, "DISCONNECTED"));
       dispatch(setConnectedDevice(deviceId, false));
-      dispatch(setParamResponses(deviceId, []));
-      dispatch(setMotorConfig(deviceId, REV_BRUSHLESS));
-      dispatch(setBurnedMotorConfig(deviceId, REV_BRUSHLESS));
     });
   };
 }

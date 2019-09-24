@@ -1,5 +1,4 @@
 import {Action} from "redux";
-import MotorConfiguration from "../../models/MotorConfiguration";
 import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {ConfigParam} from "../../models/ConfigParam";
@@ -7,7 +6,7 @@ import {
   ConfirmationAnswer,
   IApplicationState,
   IConfirmationDialogConfig,
-  IDeviceState,
+  IDeviceState, IDeviceTransientState,
   ProcessType, VirtualDeviceId
 } from "../state";
 
@@ -31,6 +30,9 @@ export enum ActionType {
   SELECT_DEVICE = "SELECT_DEVICE",
   OPEN_CONFIRMATION = "OPEN_CONFIRMATION",
   ANSWER_CONFIRMATION = "ANSWER_CONFIRMATION",
+  SET_DEVICE_PARAMETER = "SET_DEVICE_PARAMETER",
+  SET_DEVICE_PARAMETER_RESPONSE = "SET_DEVICE_PARAMETER_RESPONSE",
+  SET_TRANSIENT_PARAMETER = "SET_TRANSIENT_PARAMETER",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -102,41 +104,30 @@ export interface ISetParameters extends IDeviceAwareAction {
   }
 }
 
-export interface ISetMotorConfig extends IDeviceAwareAction {
-  type: ActionType.SET_MOTOR_CONFIG,
+export interface ISetDeviceParameter extends IDeviceAwareAction {
+  type: ActionType.SET_DEVICE_PARAMETER,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    config: MotorConfiguration
+    parameter: ConfigParam,
+    value: number,
   }
 }
 
-export interface ISetBurnedMotorConfig extends IDeviceAwareAction {
-  type: ActionType.SET_BURNED_MOTOR_CONFIG,
+export interface ISetDeviceParameterResponse extends IDeviceAwareAction {
+  type: ActionType.SET_DEVICE_PARAMETER_RESPONSE,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    config: MotorConfiguration
+    parameter: ConfigParam,
+    response: IServerResponse,
   }
 }
 
-export interface ISetMotorConfigParameterOptions {
-  configName: keyof MotorConfiguration,
-  configValue: any,
-  configParam: ConfigParam,
-  response: IServerResponse,
-}
-
-export interface ISetMotorConfigParameter extends IDeviceAwareAction {
-  type: ActionType.SET_MOTOR_CONFIG_PARAMETER,
-  payload: ISetMotorConfigParameterOptions & {
-    virtualDeviceId: VirtualDeviceId
-  }
-}
-
-export interface ISetParamResponses extends IDeviceAwareAction {
-  type: ActionType.SET_SERVER_PARAM_RESPONSE,
+export interface ISetTransientParameter extends IDeviceAwareAction {
+  type: ActionType.SET_TRANSIENT_PARAMETER,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    paramResponses: IServerResponse[]
+    field: keyof IDeviceTransientState,
+    value: any,
   }
 }
 
@@ -189,8 +180,9 @@ export type SparkAction<R> = ThunkAction<R, IApplicationState, void, Application
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | IAddDevices | ISelectDevice
-  | ISetParameters | ISetMotorConfig | ISetBurnedMotorConfig | ISetParamResponses | IAddLog | ISetUpdateAvailable
-  | ISetMotorConfigParameter | ISetConnectedDevice | ISetDeviceLoaded
+  | ISetParameters | ISetConnectedDevice | ISetDeviceLoaded
+  | ISetDeviceParameter | ISetDeviceParameterResponse | ISetTransientParameter
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | IOpenConfirmation | IAnswerConfirmation
-  | ISaveConfirmation | IBurnConfirmation;
+  | ISaveConfirmation | IBurnConfirmation
+  | IAddLog;

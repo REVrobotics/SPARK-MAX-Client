@@ -1,7 +1,7 @@
-import MotorConfiguration, {REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {uniqueId} from "lodash";
+import {ConfigParam} from "../models/ConfigParam";
 
 export enum ProcessType {
   Save = "Save",
@@ -20,7 +20,7 @@ export interface IContextState {
 
 export interface IDeviceSetState {
   orderedDevices: VirtualDeviceId[],
-  devices: { [deviceId: string]: IDeviceState },
+  devices: {[deviceId: string]: IDeviceState},
 }
 
 export interface IApplicationState {
@@ -50,10 +50,20 @@ export interface IDeviceState {
   isProcessing: boolean,
   isLoaded: boolean,
   processType?: ProcessType,
-  parameters: number[],
-  currentConfig: MotorConfiguration,
-  burnedConfig: MotorConfiguration,
-  paramResponses: IServerResponse[]
+  transientParameters: IDeviceTransientState;
+  currentParameters: IDeviceParameterState[];
+  burnedParameters: number[];
+}
+
+export interface IDeviceTransientState {
+  rampRateEnabled: boolean;
+}
+
+export interface IDeviceParameterState {
+  value: number;
+  lastResponse?: IServerResponse;
+  warning?: string;
+  error?: string;
 }
 
 export interface IConfirmationDialogConfig {
@@ -62,6 +72,22 @@ export interface IConfirmationDialogConfig {
   yesLabel: string;
   cancelLabel: string;
 }
+
+export interface INumericFieldConstraints {
+  min?: number;
+  max?: number;
+  integral?: boolean;
+}
+
+export type IFieldConstraints = INumericFieldConstraints;
+
+export enum ProfileConfigParam {
+  P, I, D, F
+}
+
+export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
+  rampRateEnabled: false,
+};
 
 export enum ConfirmationAnswer {
   Yes = "Yes",
@@ -72,13 +98,16 @@ const createDeviceState = (fullDeviceId: DeviceId, info: IDeviceInfo): IDeviceSt
   id: uniqueId("device:"),
   fullDeviceId,
   info,
-  burnedConfig: new MotorConfiguration("REV BRUSHLESS", 1),
   processStatus: "NOT CONNECTED",
-  currentConfig: REV_BRUSHLESS,
   isProcessing: false,
   isLoaded: false,
-  parameters: [],
-  paramResponses: [],
+  transientParameters: DEFAULT_TRANSIENT_STATE,
+  currentParameters: [],
+  burnedParameters: [],
+});
+
+export const getTransientState = (config: IDeviceParameterState[]): IDeviceTransientState => ({
+  rampRateEnabled: config[ConfigParam.kRampRate].value > 0,
 });
 
 export const createUsbDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState =>
@@ -99,3 +128,12 @@ export const fromDeviceId = (deviceId: DeviceId) => String(deviceId);
 
 export const getDeviceId = (device: IDeviceState) => device.fullDeviceId;
 export const getVirtualDeviceId = (device: IDeviceState) => device.id;
+
+export const getDeviceCurrentParameters = (device: IDeviceState) => device.currentParameters;
+export const getDeviceBurnedParameters = (device: IDeviceState) => device.burnedParameters;
+
+export const getDeviceParam = (parameters: IDeviceParameterState[], param: ConfigParam) => parameters[param];
+export const getDeviceParamValue = (param: IDeviceParameterState) => param.value;
+
+export const getProfileConfigParam = (profile: number, param: ProfileConfigParam): ConfigParam =>
+  ConfigParam.kP_0 + 8 * profile + param;

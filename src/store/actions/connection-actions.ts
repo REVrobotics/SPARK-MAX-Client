@@ -2,16 +2,13 @@ import {createUsbDeviceState, fromDeviceId, VirtualDeviceId} from "../state";
 import {
   addDevices,
   addLog,
-  setBurnedMotorConfig, setConnectedDevice, setDeviceLoaded,
-  setMotorConfig,
-  setParamResponses,
+  setConnectedDevice, setDeviceLoaded,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus
 } from "./atom-actions";
 import SparkManager from "../../managers/SparkManager";
-import {REV_BRUSHLESS} from "../../models/MotorConfiguration";
 import {
   getConnectedVirtualDeviceId,
   getDevice,
@@ -72,9 +69,6 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
       dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
       dispatch(setDeviceLoaded(hubVirtualDeviceId, false));
       dispatch(setConnectedDevice(hubVirtualDeviceId, false));
-      dispatch(setParamResponses(hubVirtualDeviceId, []));
-      dispatch(setMotorConfig(hubVirtualDeviceId, REV_BRUSHLESS));
-      dispatch(setBurnedMotorConfig(hubVirtualDeviceId, REV_BRUSHLESS));
     }).catch(() => {
       dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
     });

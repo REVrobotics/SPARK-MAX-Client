@@ -1,64 +1,68 @@
-import {identity} from "lodash";
-import {SparkAction} from "./action-types";
+import {ActionType, SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
-import {getDevice, selectDeviceId} from "../selectors";
-import MotorConfiguration, {getFromID} from "../../models/MotorConfiguration";
+import {selectDeviceId, selectDeviceParameterValue} from "../selectors";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
   addLog,
-  setBurnedMotorConfig, setDeviceLoaded,
-  setMotorConfig,
-  setMotorConfigParameter,
-  setParamResponses,
+  setDeviceLoaded,
+  setDeviceParameter,
+  setDeviceParameterResponse,
+  setParameters,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
 } from "./atom-actions";
-import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ConfigParam, SensorType} from "../../models/dto";
 import {forSelectedDevice} from "./action-creators";
-import {ConfirmationAnswer, DeviceId, fromDeviceId, ProcessType, VirtualDeviceId} from "../state";
+import {
+  ConfirmationAnswer,
+  fromDeviceId,
+  IDeviceTransientState,
+  ProcessType,
+  VirtualDeviceId
+} from "../state";
+import {MOTOR_TYPES} from "../dictionaries";
 
-const createTypedSetter = <T>(fromTypedValue: (value: T) => number, toTypedValue: (value: number) => T) =>
-  (virtualDeviceId: VirtualDeviceId, motorField: keyof MotorConfiguration, param: ConfigParam, value: T): SparkAction<Promise<T>> =>
-    (dispatch, getState) => {
-      return SparkManager.setAndGetParameter(
-        fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!),
-        param,
-        fromTypedValue(value))
-        .then((res: IServerResponse) => {
-          const responseValue = toTypedValue(res.responseValue as number);
-          dispatch(setMotorConfigParameter(virtualDeviceId, {
-            configName: motorField,
-            configValue: responseValue,
-            configParam: param,
-            response: res,
-          }));
-          return responseValue;
-        });
-    };
+export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
+                                  param: ConfigParam,
+                                  value: number): SparkAction<Promise<number>> =>
+  (dispatch) => {
+    const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value));
 
-export const setNumberParameter = createTypedSetter<number>(identity, identity);
-export const setBooleanParameter = createTypedSetter<boolean>((value) => value ? 1 : 0, (value) => value === 1);
+    if (param === ConfigParam.kMotorType) {
+      return mainParameter
+        .then(() => dispatch(setSingleParameterValue(virtualDeviceId, ConfigParam.kSensorType, SensorType.HallSensor)));
+    }
+
+    return mainParameter;
+  };
+
+const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
+                                 param: ConfigParam,
+                                 value: number): SparkAction<Promise<number>> =>
+  (dispatch, getState) => {
+    dispatch(setDeviceParameter(virtualDeviceId, param, value));
+
+    return SparkManager.setAndGetParameter(
+      fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!), param, value)
+      .then((res: IServerResponse) => {
+        const responseValue = res.responseValue as number;
+        dispatch(setDeviceParameterResponse(virtualDeviceId, param, res));
+        return responseValue;
+      });
+  };
 
 export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
 
-    const paramResponses: IServerResponse[] = [];
-    for (let i = 0; i < 75; i++) {
-      paramResponses.push({requestValue: "", responseValue: "", status: 0, type: 0});
-    }
-    dispatch(setParamResponses(virtualDeviceId, paramResponses));
-
     return delayPromise(1000)
       .then(() => SparkManager.getConfigFromParams(fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!)))
-      .then((config: MotorConfiguration) => {
+      .then((values) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-        dispatch(setMotorConfig(virtualDeviceId, config));
         dispatch(setDeviceLoaded(virtualDeviceId, true));
-        const burn: MotorConfiguration = new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON());
-        dispatch(setBurnedMotorConfig(virtualDeviceId, burn));
+        dispatch(setParameters(virtualDeviceId, values))
       })
       .catch((error: any) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, "FAILED TO GET PARAMETERS"));
@@ -69,12 +73,12 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
 
 export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    const device = getDevice(getState(), virtualDeviceId);
-    const activeMotorType = getFromID(device.currentConfig.type);
+    const motorType = selectDeviceParameterValue(getState(), virtualDeviceId, ConfigParam.kMotorType);
+    const activeMotorType = MOTOR_TYPES.get(motorType);
 
     return dispatch(showConfirmation({
       intent: "success",
-      text: `Are you sure you want to update the configuration of your SPARK controller to a ${activeMotorType.name} motor?`,
+      text: `Are you sure you want to update the configuration of your SPARK controller to a ${activeMotorType} motor?`,
       yesLabel: "Yes, Update",
       cancelLabel: "Cancel"
     })).then((answer) => {
@@ -88,9 +92,8 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
       return SparkManager.burnFlash(fromDeviceId(deviceId))
         .then(() => delayPromise(1000))
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((config: MotorConfiguration) => {
-            dispatch(setMotorConfig(config));
-            dispatch(setBurnedMotorConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON())));
+          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((values) => {
+            dispatch(setParameters(virtualDeviceId, values));
           }))
         .finally(() => {
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -98,8 +101,8 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
     });
   };
 
-export const resetConfiguration = (deviceId: DeviceId): SparkAction<Promise<void>> =>
-  (dispatch) => {
+export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
     return dispatch(showConfirmation({
       intent: "warning",
       text: "WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?",
@@ -110,27 +113,48 @@ export const resetConfiguration = (deviceId: DeviceId): SparkAction<Promise<void
         return;
       }
 
-      dispatch(updateDeviceIsProcessing(deviceId, true, ProcessType.Reset));
-      dispatch(updateDeviceProcessStatus(deviceId, "RESETTING..."));
+      dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Reset));
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, "RESETTING..."));
+
+      const deviceId = selectDeviceId(getState(), virtualDeviceId)!;
 
       return SparkManager.restoreDefaults(fromDeviceId(deviceId))
         .then(() => {
-          dispatch(updateDeviceProcessStatus(deviceId, "GETTING PARAMETERS..."));
+          dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
           return delayPromise(1000);
         })
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((config: MotorConfiguration) => {
-            dispatch(setMotorConfig(deviceId, config));
-            dispatch(setBurnedMotorConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON())));
+          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((values) => {
+            dispatch(setParameters(virtualDeviceId, values));
           }))
         .finally(() => {
-          dispatch(updateDeviceIsProcessing(deviceId, false));
-          dispatch(updateDeviceProcessStatus(deviceId, "CONNECTED"));
+          dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+          dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
         });
     });
   };
 
-export const setSelectedDeviceNumberParameter = forSelectedDevice(setNumberParameter);
-export const setSelectedDeviceBooleanParameter = forSelectedDevice(setBooleanParameter);
+const setTransientParameter = (virtualDeviceId: VirtualDeviceId,
+                               field: keyof IDeviceTransientState,
+                               value: any): SparkAction<Promise<any>> =>
+  (dispatch) => {
+    dispatch({
+      type: ActionType.SET_TRANSIENT_PARAMETER,
+      payload: {
+        virtualDeviceId,
+        field,
+        value,
+      },
+    });
+    if (field === "rampRateEnabled" && !value) {
+      // If ramp rate is not enabled => reset ramp rate value
+      return dispatch(setParameterValue(virtualDeviceId, ConfigParam.kRampRate, 0));
+    } else {
+      return Promise.resolve();
+    }
+  };
+
+export const setSelectedDeviceParameterValue = forSelectedDevice(setParameterValue);
 export const burnSelectedDeviceConfiguration = forSelectedDevice(burnConfiguration);
 export const resetSelectedDeviceConfiguration = forSelectedDevice(resetConfiguration);
+export const setSelectedDeviceTransientParameter = forSelectedDevice(setTransientParameter);

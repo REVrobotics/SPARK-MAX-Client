@@ -1,7 +1,14 @@
 import {find} from "lodash";
-import {getDeviceId, getVirtualDeviceId, IApplicationState, isHubDevice, VirtualDeviceId} from "./state";
+import {
+  DEFAULT_TRANSIENT_STATE,
+  getDeviceId, getDeviceParam, getDeviceParamValue,
+  getVirtualDeviceId,
+  IApplicationState,
+  isHubDevice,
+  VirtualDeviceId
+} from "./state";
 import {maybeMap} from "../utils/object-utils";
-import {REV_BRUSHLESS} from "../models/MotorConfiguration";
+import {ConfigParam} from "../models/ConfigParam";
 
 /**
  * Returns first USB device
@@ -136,43 +143,41 @@ export const isSelectedDeviceConnected = (state: IApplicationState) => {
 };
 
 /**
- * Returns current {@link MotorConfiguration} for selected device.
- *
+ * Returns current state of parameters for selected device
  * @param state
  */
-export const getSelectedDeviceMotorConfig = (state: IApplicationState) => {
+export const getSelectedDeviceCurrentConfig = (state: IApplicationState) => {
   const selectedDevice = getSelectedDevice(state);
   if (selectedDevice == null) {
-    return REV_BRUSHLESS;
+    return;
   }
-  return selectedDevice.currentConfig;
+  return selectedDevice.currentParameters;
 };
 
 /**
- * Returns burned {@link MotorConfiguration} for selected device.
+ * Returns burned parameters
  *
  * @param state
  */
 export const getSelectedDeviceBurnedConfig = (state: IApplicationState) => {
   const selectedDevice = getSelectedDevice(state);
   if (selectedDevice == null) {
-    return REV_BRUSHLESS;
+    return;
   }
-  return selectedDevice.burnedConfig;
+  return selectedDevice.burnedParameters;
 };
 
 /**
- * Returns last parameter responses for selected device.
+ * Returns value of parameter for the given device
  *
  * @param state
+ * @param virtualDeviceId
+ * @param param
  */
-export const getSelectedDeviceParamResponses = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
-  if (selectedDevice == null) {
-    return [];
-  }
-  return selectedDevice.paramResponses;
-};
+export const selectDeviceParameterValue = (state: IApplicationState,
+                                           virtualDeviceId: VirtualDeviceId,
+                                           param: ConfigParam) =>
+  getDeviceParamValue(getDeviceParam(getDevice(state, virtualDeviceId).currentParameters, param));
 
 /**
  * Returns whether processing status should be shown.
@@ -197,7 +202,6 @@ export const isSelectedDeviceInProcessing = (state: IApplicationState) => {
   return selectedDevice == null ? false : selectedDevice.isProcessing;
 };
 
-
 /**
  * Returns if we have processing for selected device
  * @param state
@@ -205,6 +209,15 @@ export const isSelectedDeviceInProcessing = (state: IApplicationState) => {
 export const getSelectedDeviceProcessType = (state: IApplicationState) => {
   const selectedDevice = getSelectedDevice(state);
   return selectedDevice == null ? undefined : selectedDevice.processType;
+};
+
+/**
+ * Returns transient state for selected device
+ * @param state
+ */
+export const getSelectedDeviceTransientParameters = (state: IApplicationState) => {
+  const selectedDevice = getSelectedDevice(state);
+  return selectedDevice == null ? DEFAULT_TRANSIENT_STATE : selectedDevice.transientParameters;
 };
 
 /**

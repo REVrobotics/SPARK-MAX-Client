@@ -2,15 +2,21 @@ import {combineReducers, Reducer} from "redux";
 import {keyBy, sortBy, values} from "lodash";
 import {
   getDeviceId,
+  getTransientState,
   getVirtualDeviceId,
   IApplicationState,
   IContextState,
+  IDeviceParameterState,
   IDeviceSetState,
   IDeviceState,
   IUiState
 } from "./state";
-import {setField, setFields} from "../utils/object-utils";
+import {setArrayElement, setField, setFields} from "../utils/object-utils";
 import {ActionType, ApplicationActions} from "./actions";
+import {onChangeReducer} from "../utils/reducer-utils";
+import {ConfigParam} from "../models/ConfigParam";
+import {getConfigParamRule} from "./config-param-rules";
+import {ConfigParamMessageSeverity} from "./param-rules/ConfigParamRule";
 
 export const initialState: IApplicationState = {
   context: {
@@ -68,10 +74,9 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
     case ActionType.SET_DEVICE_PROCESS_STATUS:
     case ActionType.SET_DEVICE_PROCESSING:
     case ActionType.SET_PARAMETERS:
-    case ActionType.SET_MOTOR_CONFIG:
-    case ActionType.SET_MOTOR_CONFIG_PARAMETER:
-    case ActionType.SET_BURNED_MOTOR_CONFIG:
-    case ActionType.SET_SERVER_PARAM_RESPONSE:
+    case ActionType.SET_DEVICE_PARAMETER:
+    case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
+    case ActionType.SET_TRANSIENT_PARAMETER:
       return setField(
         state,
         "devices",
@@ -91,24 +96,96 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
       return {...state, processStatus: action.payload.processStatus};
     case ActionType.SET_DEVICE_PROCESSING:
       return {...state, isProcessing: action.payload.isProcessing, processType: action.payload.processType};
-    case ActionType.SET_PARAMETERS:
-      return {...state, parameters: action.payload.parameters};
-    case ActionType.SET_MOTOR_CONFIG:
-      return {...state, currentConfig: action.payload.config};
-    case ActionType.SET_MOTOR_CONFIG_PARAMETER:
+    case ActionType.SET_PARAMETERS: {
+      const parameterStates = action.payload.parameters.map((value) => ({value}));
+
       return {
         ...state,
-        currentConfig: state.currentConfig.clone({
-          [action.payload.configName]: action.payload.configValue,
-        }),
-        paramResponses: setField(state.paramResponses, action.payload.configParam, action.payload.response),
+        transientParameters: getTransientState(parameterStates),
+        currentParameters: parameterStates,
+        burnedParameters: action.payload.parameters,
       };
-    case ActionType.SET_BURNED_MOTOR_CONFIG:
-      return {...state, burnedConfig: action.payload.config};
-    case ActionType.SET_SERVER_PARAM_RESPONSE:
-      return {...state, paramResponses: action.payload.paramResponses};
+    }
+    case ActionType.SET_DEVICE_PARAMETER:
+      return {
+        ...state,
+        currentParameters: setArrayElement(
+          state.currentParameters,
+          action.payload.parameter,
+          (param) => setField(param, "value", action.payload.value)),
+      };
+    case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
+      return {
+        ...state,
+        currentParameters: setArrayElement(
+          state.currentParameters,
+          action.payload.parameter,
+          (param) => setFields(param, {
+            value: action.payload.response.responseValue as number,
+            lastResponse: action.payload.response,
+          })),
+      };
+    case ActionType.SET_TRANSIENT_PARAMETER:
+      return {
+        ...state,
+        transientParameters: setField(state.transientParameters, action.payload.field, action.payload.value),
+      };
     default:
       return state;
+  }
+};
+
+const parameterValidationReducer = (state: IApplicationState, action: ApplicationActions): IApplicationState => {
+  switch (action.type) {
+    case ActionType.SET_DEVICE_PARAMETER:
+    case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
+      return setField(
+        state,
+        "deviceSet",
+        setField(
+          state.deviceSet,
+          "devices",
+          setField(
+            state.deviceSet.devices,
+            action.payload.virtualDeviceId,
+            setField(
+              state.deviceSet.devices[action.payload.virtualDeviceId],
+              "currentParameters",
+              setArrayElement(
+                state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters,
+                action.payload.parameter,
+                validateDeviceParameter(
+                  state,
+                  action.payload.parameter,
+                  state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters[action.payload.parameter]))))));
+    default:
+      return state;
+  }
+};
+
+const validateDeviceParameter = (state: IApplicationState,
+                                 parameter: ConfigParam,
+                                 parameterState: IDeviceParameterState): IDeviceParameterState => {
+  const rule = getConfigParamRule(parameter);
+  const message = rule.validate(state);
+
+  if (message == null) {
+    return setFields(parameterState, {error: undefined, warning: undefined});
+  }
+
+  switch (message.severity) {
+    case ConfigParamMessageSeverity.Error:
+      return setFields(parameterState, {
+        error: message.text,
+        warning: undefined,
+      });
+    case ConfigParamMessageSeverity.Warning:
+      return setFields(parameterState, {
+        error: undefined,
+        warning: message.text,
+      });
+    default:
+      return parameterState;
   }
 };
 
@@ -121,11 +198,14 @@ const logsReducer: Reducer<string[]> = (state: string[] = initialState.logs, act
   }
 };
 
-const reducer = combineReducers({
-  context: contextReducer,
-  deviceSet: deviceSetReducer,
-  logs: logsReducer,
-  ui: uiReducer,
-});
+const reducer = onChangeReducer(
+  combineReducers({
+    context: contextReducer,
+    deviceSet: deviceSetReducer,
+    logs: logsReducer,
+    ui: uiReducer,
+  }),
+  parameterValidationReducer,
+);
 
 export default reducer;

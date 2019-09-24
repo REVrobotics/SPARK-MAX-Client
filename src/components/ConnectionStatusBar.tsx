@@ -1,7 +1,7 @@
 import {Button} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import * as classnames from "classnames";
+import * as classNames from "classnames";
 import {getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
@@ -33,7 +33,7 @@ class ConnectionStatusBar extends React.Component<IProps> {
 
   public render() {
     const {devices, selectedDevice, connectionStatus, connecting, connected, connectable} = this.props;
-    const lampClass = classnames({
+    const lampClass = classNames({
       "status-bar-lamp--connected": connected,
       "status-bar-lamp--disconnected": !connected,
     });
