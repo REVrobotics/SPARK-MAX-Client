@@ -1,7 +1,7 @@
 import {constant, flow} from "lodash";
 import {ConfigParam, ParamStatus} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {getDeviceParamValue, IApplicationState, IDeviceParameterState} from "../state";
-import {getSelectedDeviceBurnedConfig, getSelectedDeviceCurrentConfig} from "../selectors";
+import {querySelectedDeviceBurnedConfig, querySelectedDeviceCurrentConfig} from "../selectors";
 import {getConfigParamRule} from "../config-param-rules";
 import {ConfigParamMessage} from "./ConfigParamRule";
 
@@ -15,11 +15,13 @@ export const configParamAccessor = (parameter: ConfigParam,
   const mapDeviceParam = (config: IDeviceParameterState[]): IDeviceParameterState =>
     getDeviceParamOrDefault(config, parameter);
   const mapDeviceParamValue = flow(mapDeviceParam, getDeviceParamValue);
-  const mapCurrentParam = flow(getSelectedDeviceCurrentConfig, mapDeviceParam);
-  const mapCurrentParamValue = flow(getSelectedDeviceCurrentConfig, mapDeviceParamValue);
+  const mapCurrentParam = flow(querySelectedDeviceCurrentConfig, mapDeviceParam);
+  const mapCurrentParamValue = flow(querySelectedDeviceCurrentConfig, mapDeviceParamValue);
   const mapBurnedParamValue = flow(
-    getSelectedDeviceBurnedConfig,
-    (parameters) => parameters ? parameters[parameter] : getConfigParamRule(parameter).default);
+    querySelectedDeviceBurnedConfig,
+    (parameters) => parameters && parameters[parameter] != null ?
+      parameters[parameter]
+      : getConfigParamRule(parameter).default);
 
   return {
     value: (state: IApplicationState) => mapCurrentParamValue(state),
@@ -77,7 +79,7 @@ export const getDeviceParamValueOrDefault = (config: IDeviceParameterState[]|und
  * @param parameter
  */
 export const getSelectedDeviceParamOrDefault = (state: IApplicationState, parameter: ConfigParam) =>
-  getDeviceParamOrDefault(getSelectedDeviceCurrentConfig(state), parameter);
+  getDeviceParamOrDefault(querySelectedDeviceCurrentConfig(state), parameter);
 
 /**
  * Returns value for selected device if it exists, otherwise returns default value
@@ -86,4 +88,4 @@ export const getSelectedDeviceParamOrDefault = (state: IApplicationState, parame
  * @param parameter
  */
 export const getSelectedDeviceParamValueOrDefault = (state: IApplicationState, parameter: ConfigParam) =>
-  getDeviceParamValueOrDefault(getSelectedDeviceCurrentConfig(state), parameter);
+  getDeviceParamValueOrDefault(querySelectedDeviceCurrentConfig(state), parameter);

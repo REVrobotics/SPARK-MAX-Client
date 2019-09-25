@@ -1,222 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="" />
-    <ignored path="$PROJECT_DIR$/.tmp/" />
-    <ignored path="$PROJECT_DIR$/temp/" />
-    <ignored path="$PROJECT_DIR$/tmp/" />
+    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/fields/SwitchParamField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/fields/SwitchParamField.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/BasicTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/BasicTab.tsx" afterDir="false" />
+    </list>
+    <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea">
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/usb-client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/usb-client.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FUSProjectUsageTrigger">
-    <session id="1540578752">
-      <usages-collector id="statistics.lifecycle.project">
-        <counts>
-          <entry key="project.closed" value="2" />
-          <entry key="project.open.time.6" value="1" />
-          <entry key="project.open.time.7" value="1" />
-          <entry key="project.opened" value="2" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.file.extensions.open">
-        <counts>
-          <entry key="css" value="11" />
-          <entry key="html" value="3" />
-          <entry key="js" value="9" />
-          <entry key="json" value="19" />
-          <entry key="proto" value="4" />
-          <entry key="svg" value="2" />
-          <entry key="ts" value="68" />
-          <entry key="tsx" value="40" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.file.types.open">
-        <counts>
-          <entry key="CSS" value="11" />
-          <entry key="HTML" value="3" />
-          <entry key="JSON" value="17" />
-          <entry key="JavaScript" value="9" />
-          <entry key="PLAIN_TEXT" value="4" />
-          <entry key="SVG" value="2" />
-          <entry key="TypeScript" value="68" />
-          <entry key="TypeScript JSX" value="40" />
-          <entry key="tsconfig" value="2" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.js.language.service.starts">
-        <counts>
-          <entry key="TsLintLanguageService" value="2" />
-          <entry key="TypeScriptServerServiceImpl" value="2" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.file.extensions.edit">
-        <counts>
-          <entry key="html" value="98" />
-          <entry key="json" value="349" />
-          <entry key="ts" value="11426" />
-          <entry key="tsx" value="7075" />
-        </counts>
-      </usages-collector>
-      <usages-collector id="statistics.file.types.edit">
-        <counts>
-          <entry key="HTML" value="98" />
-          <entry key="JSON" value="322" />
-          <entry key="TypeScript" value="11426" />
-          <entry key="TypeScript JSX" value="7075" />
-          <entry key="tsconfig" value="27" />
-        </counts>
-      </usages-collector>
-    </session>
-  </component>
-  <component name="FileEditorManager">
-    <leaf />
-  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="React TypeScript File" />
+        <option value="JavaScript File" />
+        <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
       </list>
     </option>
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>this.props.connected</find>
-      <find>send</find>
-      <find>console</find>
-    </findStrings>
-    <replaceStrings>
-      <replace>connected</replace>
-    </replaceStrings>
+  <component name="Git.Rebase.Settings">
+    <option name="ONTO" value="refs/remotes/origin/incoming" />
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/src/App.css" />
-        <option value="$PROJECT_DIR$/src/index.css" />
-        <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/public/index.html" />
-        <option value="$PROJECT_DIR$/src/store/index.ts" />
-        <option value="$PROJECT_DIR$/src/models/MotorConfiguration.ts" />
-        <option value="$PROJECT_DIR$/src/components/MotorTypeSelect.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/AdvancedTab.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/RunTab.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/PIDTunerTab.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/FirmwareTab.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/HelpTab.tsx" />
-        <option value="$PROJECT_DIR$/public/sparkusb.ts" />
-        <option value="$PROJECT_DIR$/public/commands.proto" />
-        <option value="$PROJECT_DIR$/tsconfig.json" />
-        <option value="$PROJECT_DIR$/tslint.json" />
-        <option value="$PROJECT_DIR$/tsconfig.electron.json" />
-        <option value="$PROJECT_DIR$/public/main/declarations.d.ts" />
-        <option value="$PROJECT_DIR$/public/main/types.ts" />
-        <option value="$PROJECT_DIR$/public/electron.ts" />
-        <option value="$PROJECT_DIR$/src/index.tsx" />
-        <option value="$PROJECT_DIR$/src/store/types.ts" />
-        <option value="$PROJECT_DIR$/src/store/reducer.ts" />
-        <option value="$PROJECT_DIR$/src/managers/SparkManager.ts" />
-        <option value="$PROJECT_DIR$/public/main/sparkusb.ts" />
-        <option value="$PROJECT_DIR$/public/main/sparkusb-server.ts" />
-        <option value="$PROJECT_DIR$/src/store/actions.ts" />
-        <option value="$PROJECT_DIR$/src/App.tsx" />
-        <option value="$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx" />
-        <option value="$PROJECT_DIR$/src/containers/BasicTab.tsx" />
-      </list>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feature/multiple-controllers" />
+      </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
-  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
-  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER">
-    <package-json value="$PROJECT_DIR$/package.json" />
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/.idea/workspace.xml">
+      <ranges>
+        <range start1="5" end1="7" start2="5" end2="6" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
+        <range start1="8" end1="9" start2="7" end2="7" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
+        <range start1="46" end1="67" start2="44" end2="52" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
+        <range start1="129" end1="130" start2="114" end2="115" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
+        <range start1="453" end1="454" start2="438" end2="446" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
+        <range start1="456" end1="483" start2="448" end2="448" changelist="03af2858-2be9-49cf-825f-994109b45799" />
+        <range start1="485" end1="486" start2="450" end2="453" changelist="03af2858-2be9-49cf-825f-994109b45799" />
+        <range start1="487" end1="489" start2="454" end2="458" changelist="03af2858-2be9-49cf-825f-994109b45799" />
+      </ranges>
+    </file>
   </component>
-  <component name="JsGulpfileManager">
-    <detection-done>true</detection-done>
-    <sorting>DEFINITION_ORDER</sorting>
-  </component>
-  <component name="NodeModulesDirectoryManager">
-    <handled-path value="$PROJECT_DIR$/node_modules" />
-  </component>
-  <component name="NodePackageJsonFileManager">
-    <packageJsonPaths>
-      <path value="$PROJECT_DIR$/package.json" />
-    </packageJsonPaths>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="3825" />
-    <option name="y" value="-133" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
-  </component>
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="containers" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="managers" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="usb-client" type="b2602c69:ProjectViewProjectNode" />
-              <item name="usb-client" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="store" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
-  </component>
+  <component name="ProjectId" id="1R4W4wZv1uPYGEvWZ2qLthTwdPA" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="10.15.3" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/store/param-rules" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.tslint" value="project" />
-    <property name="node.js.selected.package.tslint" value="C:\Users\Kyle\Documents\GitHub\usb-client\node_modules\tslint" />
+    <property name="node.js.selected.package.tslint" value="$PROJECT_DIR$/node_modules/tslint" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.TypeScript" />
-    <property name="ts.external.directory.path" value="C:\Users\Kyle\Documents\GitHub\usb-client\node_modules\typescript\lib" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="JavaScript.Libraries" />
+    <property name="ts.external.directory.path" value="D:\workspaces\SPARK-MAX-Client\node_modules\typescript\lib" />
     <property name="typescript-compiler-editor-notification" value="false" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Kyle\Documents\GitHub\usb-client\public\protobuf" />
-      <recent name="C:\Users\Kyle\Documents\GitHub\usb-client\public\main" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Kyle\Documents\GitHub\usb-client\build" />
-      <recent name="C:\Users\Kyle\Documents\GitHub\usb-client\public\css" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\store\param-rules" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\components\fields" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin\test\output" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin\test" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\store" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\containers" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\components" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\components\params" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\store\actions" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -237,13 +104,346 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="" />
+      <changelist id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment="" />
       <created>1534786086048</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1534786086048</updated>
       <workItem from="1534786091760" duration="13096000" />
       <workItem from="1534863831629" duration="23269000" />
+      <workItem from="1568926688449" duration="80704000" />
+      <workItem from="1569329621469" duration="46316000" />
     </task>
+    <task id="LOCAL-00001" summary="Files generated by protoc tool">
+      <created>1568383242240</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1568383242240</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Fix text of validation message">
+      <created>1568388015772</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1568388015772</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Allow to specify program options via command line">
+      <created>1568630616353</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1568630616353</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Allow to specify program options via command line">
+      <created>1568633324936</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1568633324936</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Implement first version of .proto files generation">
+      <created>1568739269316</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1568739269316</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Implement first version of .proto files generation">
+      <created>1568741474472</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1568741474472</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Implement first version of .proto files generation">
+      <created>1568748443737</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1568748443737</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Implement first version of .proto files generation">
+      <created>1568748697585</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1568748697585</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Implement first version of .proto files generation">
+      <created>1568753932626</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1568753932626</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Implement protoc DTO generation plugin">
+      <created>1568795153491</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1568795153491</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Implement protoc DTO generation plugin">
+      <created>1568795299307</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1568795299307</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Implement protoc DTO generation plugin">
+      <created>1568795335259</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1568795335259</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Implement protoc DTO generation plugin">
+      <created>1568807771134</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1568807771134</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Implement protoc DTO generation plugin">
+      <created>1568811916840</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1568811916840</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Implement protoc DTO generation plugin">
+      <created>1568813093396</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1568813093396</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Initial version of refactoring for multiple devices">
+      <created>1568838102176</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1568838102176</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Refactoring to support connection to several devices">
+      <created>1568888945808</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1568888945808</updated>
+    </task>
+    <task id="LOCAL-00018" summary="[REVROBO-7] Implement selection of devices">
+      <created>1568898604646</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1568898604646</updated>
+    </task>
+    <task id="LOCAL-00019" summary="[REVROBO-5] Fix documentation">
+      <created>1568899586037</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1568899586037</updated>
+    </task>
+    <task id="LOCAL-00020" summary="[REVROBO-5] Fix documentation">
+      <created>1568900238750</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1568900238750</updated>
+    </task>
+    <task id="LOCAL-00021" summary="[REVROBO-5] Fix documentation">
+      <created>1568900353552</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1568900353552</updated>
+    </task>
+    <task id="LOCAL-00022" summary="[REVROBO-5] Fix documentation">
+      <created>1568900396211</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1568900396211</updated>
+    </task>
+    <task id="LOCAL-00023" summary="[REVROBO-5] Fix documentation">
+      <created>1568900486187</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1568900486187</updated>
+    </task>
+    <task id="LOCAL-00024" summary="[REVROBO-7] Implement actions for save and burn configuration">
+      <created>1568965901311</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1568965901312</updated>
+    </task>
+    <task id="LOCAL-00025" summary="[REVROBO-7] Implement actions for settings of parameters">
+      <created>1568983724111</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1568983724111</updated>
+    </task>
+    <task id="LOCAL-00026" summary="[REVROBO-7] Implement support of isLoaded flag">
+      <created>1569219766506</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1569219766506</updated>
+    </task>
+    <task id="LOCAL-00027" summary="[REVROBO-7] Refactor file names and locations">
+      <created>1569223308262</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1569223308262</updated>
+    </task>
+    <task id="LOCAL-00028" summary="[REVROBO-7] Refactor file names and locations">
+      <created>1569223937451</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1569223937451</updated>
+    </task>
+    <task id="LOCAL-00029" summary="[REVROBO-7] Introduce virtual device id">
+      <created>1569227881965</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1569227881965</updated>
+    </task>
+    <task id="LOCAL-00030" summary="[REVROBO-7] Implement handling of selection promise">
+      <created>1569229475003</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1569229475003</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Implement support of prod/dev builds">
+      <created>1569233157531</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1569233157532</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Move to react-scripts">
+      <created>1569242551482</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1569242551482</updated>
+    </task>
+    <task id="LOCAL-00033" summary="[REVROBO-7] Block UI on processing activities">
+      <created>1569243504534</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1569243504534</updated>
+    </task>
+    <task id="LOCAL-00034" summary="[REVROBO-7] Block UI on processing activities">
+      <created>1569245529299</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1569245529299</updated>
+    </task>
+    <task id="LOCAL-00035" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569320051595</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1569320051595</updated>
+    </task>
+    <task id="LOCAL-00036" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569357365158</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1569357365158</updated>
+    </task>
+    <task id="LOCAL-00037" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569392863180</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1569392863180</updated>
+    </task>
+    <task id="LOCAL-00038" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569392905167</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1569392905167</updated>
+    </task>
+    <task id="LOCAL-00039" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569395631550</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1569395631550</updated>
+    </task>
+    <task id="LOCAL-00040" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569395878571</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1569395878571</updated>
+    </task>
+    <task id="LOCAL-00041" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569400231889</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1569400231889</updated>
+    </task>
+    <task id="LOCAL-00042" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569404991975</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1569404991975</updated>
+    </task>
+    <task id="LOCAL-00043" summary="[REVROBO-8] Implement rules for motor configuration parameters">
+      <created>1569415845620</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1569415845620</updated>
+    </task>
+    <task id="LOCAL-00044" summary="[REVROBO-8] Get rid of unnecessary code">
+      <created>1569415945994</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1569415945994</updated>
+    </task>
+    <task id="LOCAL-00045" summary="[REVROBO-8] Polish support of config rules">
+      <created>1569420746859</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1569420746859</updated>
+    </task>
+    <task id="LOCAL-00046" summary="[REVROBO-8] Polish support of config rules">
+      <created>1569421166570</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1569421166570</updated>
+    </task>
+    <task id="LOCAL-00047" summary="[REVROBO-8] Polish support of config rules">
+      <created>1569421943141</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1569421943141</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -282,348 +482,101 @@
       </list>
     </option>
   </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="1">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="range">
+                    <value>
+                      <list>
+                        <option value="HEAD..feature/refactor-parameters" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="2">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="range">
+                    <value>
+                      <list>
+                        <option value="HEAD..feature/refactor-parameters" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="3">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="range">
+                    <value>
+                      <list>
+                        <option value="HEAD..feature/separate-build-process" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="OPEN_TABS">
+      <set>
+        <option value="1" />
+        <option value="2" />
+        <option value="3" />
+      </set>
+    </option>
   </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/registerServiceWorker.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/App.test.tsx" />
-    <entry file="file://$PROJECT_DIR$/src/logo.svg" />
-    <entry file="file://$PROJECT_DIR$/node_modules/electron-debug/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-561" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/electron-debug/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="21" column="34" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/css/blueprint-select.css">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/normalize.css/normalize.css">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/css/blueprint-icons.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/index.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="468">
-          <caret line="160" column="1" selection-start-line="160" selection-start-column="1" selection-end-line="160" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/App.css">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/store/index.ts" />
-    <entry file="file://$PROJECT_DIR$/node_modules/@blueprintjs/select/src/components/select/select.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="100" lean-forward="true" selection-start-line="100" selection-end-line="100" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/echarts-for-react/lib/index.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-195" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/RunTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1819">
-          <caret line="107" lean-forward="true" selection-start-line="107" selection-end-line="107" />
-          <folding>
-            <element signature="e#0#79#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/HelpTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-51">
-          <caret line="18" column="49" selection-start-line="18" selection-start-column="49" selection-end-line="18" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/FirmwareTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="32" column="14" lean-forward="true" selection-start-line="32" selection-start-column="14" selection-end-line="32" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/PIDTunerTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="36" selection-start-line="2" selection-start-column="36" selection-end-line="2" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/electron/electron.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="842">
-          <caret line="2950" column="11" selection-start-line="2950" selection-start-column="7" selection-end-line="2950" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tsconfig.prod.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tslint.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="23" selection-start-line="10" selection-start-column="23" selection-end-line="10" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/electron.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-51">
-          <folding>
-            <element signature="e#0#46#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tsconfig.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="18" column="26" selection-start-line="18" selection-start-column="26" selection-end-line="18" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tsconfig.electron.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="13" column="23" selection-start-line="13" selection-start-column="23" selection-end-line="13" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/main/declarations.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="4" lean-forward="true" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/electron.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="16" column="5" lean-forward="true" selection-start-line="16" selection-start-column="5" selection-end-line="16" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/main/sparkusb.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="26" lean-forward="true" selection-start-line="1" selection-start-column="26" selection-end-line="1" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/protobuf/commands.proto">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-306">
-          <caret line="144" column="2" lean-forward="true" selection-start-line="144" selection-start-column="2" selection-end-line="144" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/protobuf/commands.proto">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-374">
-          <caret line="8" column="2" lean-forward="true" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/protobufjs/index.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="197">
-          <caret line="2618" column="31" selection-start-line="2618" selection-start-column="21" selection-end-line="2618" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/electron.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" lean-forward="true" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#0#55#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/manifest.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="7" lean-forward="true" selection-start-line="9" selection-start-column="7" selection-end-line="9" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/css/blueprint.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/css/normalize.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5056">
-          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/main/sparkusb-server.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="19" column="21" selection-start-line="19" selection-start-column="21" selection-end-line="19" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/main/types.ts">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/main/sparkusb.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-          <folding>
-            <element signature="e#0#53#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/store/actions.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
-          <folding>
-            <element signature="e#0#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/store/reducer.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/index.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/store/types.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="588">
-          <caret line="51" column="12" selection-start-line="51" selection-start-column="12" selection-end-line="51" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/AdvancedTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2852">
-          <caret line="170" column="11" lean-forward="true" selection-start-line="170" selection-start-column="11" selection-end-line="170" selection-end-column="11" />
-          <folding>
-            <element signature="e#0#89#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="571">
-          <caret line="85" lean-forward="true" selection-start-line="85" selection-end-line="85" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/managers/SparkManager.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/App.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="32" column="32" selection-start-line="32" selection-start-column="17" selection-end-line="32" selection-end-column="32" />
-          <folding>
-            <element signature="e#0#44#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/MotorConfiguration.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/MotorTypeSelect.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/containers/BasicTab.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="38" lean-forward="true" selection-start-line="38" selection-end-line="38" />
-          <folding>
-            <element signature="e#0#100#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Files generated by protoc tool" />
+    <MESSAGE value="Fix text of validation message" />
+    <MESSAGE value="Allow to specify program options via command line" />
+    <MESSAGE value="Implement first version of .proto files generation" />
+    <MESSAGE value="Implement protoc DTO generation plugin" />
+    <MESSAGE value="Initial version of refactoring for multiple devices" />
+    <MESSAGE value="Refactoring to support connection to several devices" />
+    <MESSAGE value="Implement select for devices" />
+    <MESSAGE value="[REVROBO-7] Implement selection of devices" />
+    <MESSAGE value="[REVROBO-5] Fix documentation" />
+    <MESSAGE value="[REVROBO-7] Implement actions for save and burn configuration" />
+    <MESSAGE value="[REVROBO-7] Implement actions for settings of parameters" />
+    <MESSAGE value="Implement validation for CAN ID field" />
+    <MESSAGE value="[REVROBO-7] Refactor file names and locations" />
+    <MESSAGE value="[REVROBO-7] Introduce virtual device id" />
+    <MESSAGE value="[REVROBO-7] Implement handling of selection promise" />
+    <MESSAGE value="Implement support of prod/dev builds" />
+    <MESSAGE value="Move to react-scripts" />
+    <MESSAGE value="[REVROBO-7] Block UI on processing activities" />
+    <MESSAGE value="[REVROBO-7] Implement support of isLoaded flag" />
+    <MESSAGE value="[REVROBO-8] Implement rules for motor configuration parameters" />
+    <MESSAGE value="[REVROBO-8] Get rid of unnecessary code" />
+    <MESSAGE value="[REVROBO-8] Polish support of config rules" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-8] Polish support of config rules" />
   </component>
 </project>

@@ -19,10 +19,10 @@ import {
 } from "../store/actions";
 import PopoverHelp from "../components/PopoverHelp";
 import {
-  getSelectedDeviceBurnedConfig,
-  getSelectedDeviceCurrentConfig,
-  getSelectedDeviceId,
-  isSelectedDeviceConnected
+  querySelectedDeviceBurnedConfig,
+  querySelectedDeviceCurrentConfig,
+  querySelectedDeviceId,
+  queryIsSelectedDeviceConnected
 } from "../store/selectors";
 import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "../store/param-rules/config-param-helpers";
 import {ConfigParam} from "../models/ConfigParam";
@@ -469,10 +469,10 @@ class RunTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    deviceId: getSelectedDeviceId(state),
-    currentParameters: getSelectedDeviceCurrentConfig(state),
-    burnedParameters: getSelectedDeviceBurnedConfig(state),
-    connected: isSelectedDeviceConnected(state),
+    deviceId: querySelectedDeviceId(state),
+    currentParameters: querySelectedDeviceCurrentConfig(state),
+    burnedParameters: querySelectedDeviceBurnedConfig(state),
+    connected: queryIsSelectedDeviceConnected(state),
   };
 }
 

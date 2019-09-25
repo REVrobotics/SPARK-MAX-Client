@@ -14,7 +14,7 @@ import {
 import WebProvider from "../providers/WebProvider";
 import CANScanDetail from "../models/CANScanDetail";
 import {isNullOrUndefined} from "util";
-import {getSelectedDeviceId, isSelectedDeviceConnected} from "../store/selectors";
+import {querySelectedDeviceId, queryIsSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {
   deviceId: DeviceId,
@@ -394,8 +394,8 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    deviceId: getSelectedDeviceId(state),
-    connected: isSelectedDeviceConnected(state),
+    deviceId: querySelectedDeviceId(state),
+    connected: queryIsSelectedDeviceConnected(state),
   };
 }
 

@@ -11,16 +11,16 @@ import {
 } from "../store/actions";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
-  getSelectedDeviceProcessType, getSelectedDeviceTransientParameters,
-  isSelectedDeviceConnected,
-  isSelectedDeviceInProcessing
+  querySelectedDeviceProcessType, querySelectedDeviceTransientParameters,
+  queryIsSelectedDeviceConnected,
+  queryIsSelectedDeviceInProcessing
 } from "../store/selectors";
 import NumericParamField from "../components/fields/NumericParamField";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
 import {getParameterId, IParamSourceProps} from "../components/param-source";
-import hoc from "./params/hoc";
+import bindConfigRule from "./params/bind-config-rule";
 import SelectParamField from "../components/fields/SelectParamField";
-import {dirtyContainer} from "../components/groups/dirty-container";
+import {withDirty} from "../components/groups/with-dirty";
 import SwitchParamField from "../components/fields/SwitchParamField";
 import SliderParamField from "../components/fields/SliderParamField";
 
@@ -39,16 +39,17 @@ type IBasicSwitchFieldFitGroupProps = IBasicFormGroupProps;
 
 interface IBasicSwitchFieldGroupProps extends IBasicFormGroupProps {
   label: string|((checked: boolean) => string);
+  inverted?: boolean;
 }
 
 interface IBasicSliderFieldGroupProps extends IBasicFormGroupProps {
   stepSize: number;
 }
 
-const DirtySwitchParamField = dirtyContainer(SwitchParamField);
-const DirtyValidationFormGroup = dirtyContainer(ValidationFormGroup);
+const DirtySwitchParamField = withDirty(SwitchParamField);
+const DirtyValidationFormGroup = withDirty(ValidationFormGroup);
 
-const BasicNumericFieldGroup = hoc((props: IBasicNumericFieldGroupProps) => {
+const BasicNumericFieldGroup = bindConfigRule((props: IBasicNumericFieldGroupProps) => {
   const {groupClassName, fieldClassName, ...otherProps} = props;
 
   return (
@@ -58,7 +59,7 @@ const BasicNumericFieldGroup = hoc((props: IBasicNumericFieldGroupProps) => {
   );
 });
 
-const BasicSelectFieldGroup = hoc((props: IBasicSelectFieldGroupProps) => {
+const BasicSelectFieldGroup = bindConfigRule((props: IBasicSelectFieldGroupProps) => {
   const {groupClassName, fieldClassName, placeholder, ...otherProps} = props;
 
   return (
@@ -68,9 +69,9 @@ const BasicSelectFieldGroup = hoc((props: IBasicSelectFieldGroupProps) => {
   );
 });
 
-const BasicSwitchField = hoc(DirtySwitchParamField);
+const BasicSwitchField = bindConfigRule(DirtySwitchParamField);
 
-const BasicSwitchLabelessFieldGroup = hoc((props: IBasicSwitchFieldFitGroupProps) => {
+const BasicSwitchLabelessFieldGroup = bindConfigRule((props: IBasicSwitchFieldFitGroupProps) => {
   const {groupClassName, fieldClassName, title, ...otherProps} = props;
 
   return (
@@ -80,17 +81,17 @@ const BasicSwitchLabelessFieldGroup = hoc((props: IBasicSwitchFieldFitGroupProps
   );
 });
 
-const BasicSwitchFieldGroup = hoc((props: IBasicSwitchFieldGroupProps) => {
-  const {groupClassName, fieldClassName, label, ...otherProps} = props;
+const BasicSwitchFieldGroup = bindConfigRule((props: IBasicSwitchFieldGroupProps) => {
+  const {groupClassName, fieldClassName, label, inverted, ...otherProps} = props;
 
   return (
     <DirtyValidationFormGroup {...otherProps} className={groupClassName}>
-      <SwitchParamField {...otherProps} className={fieldClassName} label={label}/>
+      <SwitchParamField {...otherProps} className={fieldClassName} label={label} inverted={inverted}/>
     </DirtyValidationFormGroup>
   );
 });
 
-const BasicSliderFieldGroup = hoc((props: IBasicSliderFieldGroupProps) => {
+const BasicSliderFieldGroup = bindConfigRule((props: IBasicSliderFieldGroupProps) => {
   const {groupClassName, fieldClassName, stepSize, ...otherProps} = props;
 
   return (
@@ -101,7 +102,7 @@ const BasicSliderFieldGroup = hoc((props: IBasicSliderFieldGroupProps) => {
 });
 
 const polarityLabelFn = (checked: boolean) => checked ? "Normally Closed" : "Normally Open";
-const idleModeLabelFn = (checked: boolean) => checked ? "Brake" : "Coast";
+const idleModeLabelFn = (checked: boolean) => checked ? "Coast" : "Brake";
 
 interface IProps {
   enabled: boolean;
@@ -144,6 +145,7 @@ class BasicTab extends React.Component<IProps> {
           <BasicSwitchFieldGroup parameter={ConfigParam.kIdleMode}
                                  disabled={!enabled}
                                  groupClassName="form-group-quarter"
+                                 inverted={true}
                                  label={idleModeLabelFn}/>
           <BasicNumericFieldGroup parameter={ConfigParam.kSmartCurrentStallLimit}
                                   disabled={!enabled}
@@ -227,9 +229,9 @@ class BasicTab extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    enabled: isSelectedDeviceConnected(state) && !isSelectedDeviceInProcessing(state),
-    processType: getSelectedDeviceProcessType(state),
-    transient: getSelectedDeviceTransientParameters(state),
+    enabled: queryIsSelectedDeviceConnected(state) && !queryIsSelectedDeviceInProcessing(state),
+    processType: querySelectedDeviceProcessType(state),
+    transient: querySelectedDeviceTransientParameters(state),
   };
 }
 

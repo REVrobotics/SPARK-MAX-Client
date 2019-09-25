@@ -1,6 +1,6 @@
 import {ActionType, SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
-import {selectDeviceId, selectDeviceParameterValue} from "../selectors";
+import {queryDeviceId, queryDeviceParameterValue} from "../selectors";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
@@ -44,7 +44,7 @@ const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
     dispatch(setDeviceParameter(virtualDeviceId, param, value));
 
     return SparkManager.setAndGetParameter(
-      fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!), param, value)
+      fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!), param, value)
       .then((res: IServerResponse) => {
         const responseValue = res.responseValue as number;
         dispatch(setDeviceParameterResponse(virtualDeviceId, param, res));
@@ -57,7 +57,7 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
     dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
 
     return delayPromise(1000)
-      .then(() => SparkManager.getConfigFromParams(fromDeviceId(selectDeviceId(getState(), virtualDeviceId)!)))
+      .then(() => SparkManager.getConfigFromParams(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)))
       .then((values) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -73,7 +73,7 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
 
 export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    const motorType = selectDeviceParameterValue(getState(), virtualDeviceId, ConfigParam.kMotorType);
+    const motorType = queryDeviceParameterValue(getState(), virtualDeviceId, ConfigParam.kMotorType);
     const activeMotorType = MOTOR_TYPES.get(motorType);
 
     return dispatch(showConfirmation({
@@ -86,7 +86,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
         return;
       }
 
-      const deviceId = selectDeviceId(getState(), virtualDeviceId)!;
+      const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Save));
       return SparkManager.burnFlash(fromDeviceId(deviceId))
@@ -116,7 +116,7 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Reset));
       dispatch(updateDeviceProcessStatus(virtualDeviceId, "RESETTING..."));
 
-      const deviceId = selectDeviceId(getState(), virtualDeviceId)!;
+      const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
       return SparkManager.restoreDefaults(fromDeviceId(deviceId))
         .then(() => {

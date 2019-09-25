@@ -6,13 +6,18 @@ import {IApplicationState} from "../../store/state";
 import {getConfigParamRule} from "../../store/config-param-rules";
 import {setSelectedDeviceParameterValue, SparkDispatch} from "../../store/actions";
 
-interface IHocProps {
+interface IBindConfigParamProps {
   parameter: ConfigParam;
   disabled?: boolean;
 }
 
-const hoc = (Component: ComponentType<IParamSourceProps>): ComponentType<any> => {
-  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IHocProps) => {
+/**
+ * This HOC binds wrapped component to the requested configuration parameter using corresponding {@link ConfigParamRule}
+ *
+ * @param Component
+ */
+const bindConfigRule = (Component: ComponentType<IParamSourceProps>): ComponentType<any> => {
+  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IBindConfigParamProps) => {
     const rule = getConfigParamRule(parameter);
 
     return {
@@ -30,7 +35,7 @@ const hoc = (Component: ComponentType<IParamSourceProps>): ComponentType<any> =>
     };
   };
 
-  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IHocProps) => {
+  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IBindConfigParamProps) => {
     const rule = getConfigParamRule(parameter);
 
     return {
@@ -42,4 +47,4 @@ const hoc = (Component: ComponentType<IParamSourceProps>): ComponentType<any> =>
   return connect(mapStateToProps, mapDispatchToProps)(Component);
 };
 
-export default hoc;
+export default bindConfigRule;

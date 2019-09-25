@@ -16,7 +16,7 @@ import {ConfigParam} from "../models/ConfigParam";
  * @param orderedDevices
  * @param devices
  */
-export const getFirstHubVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
+export const queryFirstHubVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
   maybeMap(find(orderedDevices.map((id) => devices[id]), isHubDevice), getVirtualDeviceId);
 
 /**
@@ -24,14 +24,14 @@ export const getFirstHubVirtualDeviceId = ({deviceSet: {orderedDevices, devices}
  *
  * @param state
  */
-export const isConnectableToAnyDevice = (state: IApplicationState) => state.deviceSet.orderedDevices.length > 0;
+export const queryIsConnectableToAnyDevice = (state: IApplicationState) => state.deviceSet.orderedDevices.length > 0;
 
 /**
  * Returns ID of selected device
  *
  * @param selectedDeviceId
  */
-export const getSelectedVirtualDeviceId = ({context: {selectedVirtualDeviceId}}: IApplicationState) =>
+export const querySelectedVirtualDeviceId = ({context: {selectedVirtualDeviceId}}: IApplicationState) =>
   selectedVirtualDeviceId;
 
 /**
@@ -39,8 +39,8 @@ export const getSelectedVirtualDeviceId = ({context: {selectedVirtualDeviceId}}:
  *
  * @param state
  */
-export const getSelectedDeviceId = (state: IApplicationState) => {
-  const device = getSelectedDevice(state);
+export const querySelectedDeviceId = (state: IApplicationState) => {
+  const device = querySelectedDevice(state);
   return device ? getDeviceId(device) : undefined;
 };
 
@@ -49,8 +49,8 @@ export const getSelectedDeviceId = (state: IApplicationState) => {
  *
  * @param state
  */
-export const getSelectedDevice = (state: IApplicationState) => {
-  const id = getSelectedVirtualDeviceId(state);
+export const querySelectedDevice = (state: IApplicationState) => {
+  const id = querySelectedVirtualDeviceId(state);
   return id ? state.deviceSet.devices[id] : undefined;
 };
 
@@ -60,7 +60,7 @@ export const getSelectedDevice = (state: IApplicationState) => {
  * @param state
  * @param id
  */
-export const getDevice = (state: IApplicationState, id: VirtualDeviceId) => state.deviceSet.devices[id];
+export const queryDevice = (state: IApplicationState, id: VirtualDeviceId) => state.deviceSet.devices[id];
 
 /**
  * Returns full Device ID for request device
@@ -68,8 +68,8 @@ export const getDevice = (state: IApplicationState, id: VirtualDeviceId) => stat
  * @param state
  * @param id
  */
-export const selectDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
-  const device = getDevice(state, id);
+export const queryDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = queryDevice(state, id);
   return device ? getDeviceId(device) : undefined;
 };
 
@@ -79,7 +79,7 @@ export const selectDeviceId = (state: IApplicationState, id: VirtualDeviceId) =>
  * @param orderedDevices
  * @param devices
  */
-export const getDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
+export const queryDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
   orderedDevices.map((id) => devices[id]);
 
 /**
@@ -90,8 +90,8 @@ export const getDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IAppli
  * @param state
  * @param id
  */
-export const getHubVirtualDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
-  const device = getDevice(state, id);
+export const queryHubVirtualDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = queryDevice(state, id);
   if (isHubDevice(device)) {
     return device.id;
   } else {
@@ -107,12 +107,12 @@ export const getHubVirtualDeviceId = (state: IApplicationState, id: VirtualDevic
  * @param state
  * @param id
  */
-export const isDeviceConnected = (state: IApplicationState, id: VirtualDeviceId) => {
-  const device = getDevice(state, id);
+export const queryIsDeviceConnected = (state: IApplicationState, id: VirtualDeviceId) => {
+  const device = queryDevice(state, id);
   if (isHubDevice(device)) {
     return device.id === state.context.connectedVirtualDeviceId;
   } else {
-    const usbDevice = getDevice(state, device.hubDeviceId!);
+    const usbDevice = queryDevice(state, device.hubDeviceId!);
     return usbDevice.id === state.context.connectedVirtualDeviceId;
   }
 };
@@ -121,33 +121,33 @@ export const isDeviceConnected = (state: IApplicationState, id: VirtualDeviceId)
  * Returns whether any device is connected
  * @param state
  */
-export const isHasConnectedDevice = (state: IApplicationState) => getConnectedVirtualDeviceId(state) != null;
+export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedVirtualDeviceId(state) != null;
 
 /**
  * Returns id of connected device
  * @param state
  */
-export const getConnectedVirtualDeviceId = (state: IApplicationState) => state.context.connectedVirtualDeviceId;
+export const queryConnectedVirtualDeviceId = (state: IApplicationState) => state.context.connectedVirtualDeviceId;
 
 /**
  * Returns whether selected device is in the connected state
  * @param state
  */
-export const isSelectedDeviceConnected = (state: IApplicationState) => {
-  const selectedId = getSelectedVirtualDeviceId(state);
+export const queryIsSelectedDeviceConnected = (state: IApplicationState) => {
+  const selectedId = querySelectedVirtualDeviceId(state);
   if (selectedId == null) {
     return false;
   }
 
-  return isDeviceConnected(state, selectedId);
+  return queryIsDeviceConnected(state, selectedId);
 };
 
 /**
  * Returns current state of parameters for selected device
  * @param state
  */
-export const getSelectedDeviceCurrentConfig = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
+export const querySelectedDeviceCurrentConfig = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
   if (selectedDevice == null) {
     return;
   }
@@ -159,8 +159,8 @@ export const getSelectedDeviceCurrentConfig = (state: IApplicationState) => {
  *
  * @param state
  */
-export const getSelectedDeviceBurnedConfig = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
+export const querySelectedDeviceBurnedConfig = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
   if (selectedDevice == null) {
     return;
   }
@@ -174,31 +174,31 @@ export const getSelectedDeviceBurnedConfig = (state: IApplicationState) => {
  * @param virtualDeviceId
  * @param param
  */
-export const selectDeviceParameterValue = (state: IApplicationState,
-                                           virtualDeviceId: VirtualDeviceId,
-                                           param: ConfigParam) =>
-  getDeviceParamValue(getDeviceParam(getDevice(state, virtualDeviceId).currentParameters, param));
+export const queryDeviceParameterValue = (state: IApplicationState,
+                                          virtualDeviceId: VirtualDeviceId,
+                                          param: ConfigParam) =>
+  getDeviceParamValue(getDeviceParam(queryDevice(state, virtualDeviceId).currentParameters, param));
 
 /**
  * Returns whether processing status should be shown.
  *
  * @param state
  */
-export const isInProcessing = (state: IApplicationState) => {
+export const queryIsInProcessing = (state: IApplicationState) => {
   // Do we have global processing? (for example, searching of devices)
   if (state.context.isProcessing) {
     return true;
   }
 
-  return isSelectedDeviceInProcessing(state);
+  return queryIsSelectedDeviceInProcessing(state);
 };
 
 /**
  * Returns if we have processing for selected device
  * @param state
  */
-export const isSelectedDeviceInProcessing = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
+export const queryIsSelectedDeviceInProcessing = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? false : selectedDevice.isProcessing;
 };
 
@@ -206,8 +206,8 @@ export const isSelectedDeviceInProcessing = (state: IApplicationState) => {
  * Returns if we have processing for selected device
  * @param state
  */
-export const getSelectedDeviceProcessType = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
+export const querySelectedDeviceProcessType = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? undefined : selectedDevice.processType;
 };
 
@@ -215,8 +215,8 @@ export const getSelectedDeviceProcessType = (state: IApplicationState) => {
  * Returns transient state for selected device
  * @param state
  */
-export const getSelectedDeviceTransientParameters = (state: IApplicationState) => {
-  const selectedDevice = getSelectedDevice(state);
+export const querySelectedDeviceTransientParameters = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? DEFAULT_TRANSIENT_STATE : selectedDevice.transientParameters;
 };
 
@@ -225,13 +225,13 @@ export const getSelectedDeviceTransientParameters = (state: IApplicationState) =
  *
  * @param state
  */
-export const getProcessStatus = (state: IApplicationState) => {
+export const queryProcessStatus = (state: IApplicationState) => {
   // Show processStatus if we have global processing. (for example, searching of devices)
   if (state.context.processStatus) {
     return state.context.processStatus;
   }
 
   // Show processStatus if we have processing for selected device
-  const selectedDevice = getSelectedDevice(state);
+  const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? "" : selectedDevice.processStatus;
 };

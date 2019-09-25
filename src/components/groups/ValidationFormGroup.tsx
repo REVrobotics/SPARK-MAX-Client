@@ -8,6 +8,9 @@ interface IProps extends IParamSourceProps {
   children: JSX.Element;
 }
 
+/**
+ * This component serves as wrapper that adds validation logic to the {@link FormGroup}.
+ */
 const ValidationFormGroup = ({parameter, className, title, hasError, errorText, children}: IProps) => {
   return (
     <FormGroup

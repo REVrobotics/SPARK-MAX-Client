@@ -106,9 +106,12 @@ const createDeviceState = (fullDeviceId: DeviceId, info: IDeviceInfo): IDeviceSt
   burnedParameters: [],
 });
 
-export const getTransientState = (config: IDeviceParameterState[]): IDeviceTransientState => ({
-  rampRateEnabled: config[ConfigParam.kRampRate].value > 0,
-});
+export const getTransientState = (config: IDeviceParameterState[]): IDeviceTransientState => {
+  const rampRateParam = config[ConfigParam.kRampRate];
+  return {
+    rampRateEnabled: rampRateParam && rampRateParam.value > 0 || false,
+  };
+};
 
 export const createUsbDeviceState = (deviceId: DeviceId, info: IDeviceInfo): IDeviceState =>
   createDeviceState(deviceId, info);

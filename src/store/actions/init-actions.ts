@@ -7,7 +7,7 @@ import {
   updateDeviceProcessStatus
 } from "./atom-actions";
 import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
-import {getFirstHubVirtualDeviceId} from "../selectors";
+import {queryFirstHubVirtualDeviceId} from "../selectors";
 import {toDeviceId} from "../state";
 
 export function initApplication(): SparkAction<void> {
@@ -15,7 +15,7 @@ export function initApplication(): SparkAction<void> {
     dispatch(downloadLatestFirmware());
     dispatch(findUsbDevices())
       .then(() => {
-        const hubVirtualDeviceId = getFirstHubVirtualDeviceId(getState());
+        const hubVirtualDeviceId = queryFirstHubVirtualDeviceId(getState());
         if (hubVirtualDeviceId == null) {
           return;
         }

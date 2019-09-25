@@ -7,7 +7,11 @@ export type WithProps<P> = P&{
   className?: string;
 };
 
-export function dirtyContainer<P extends WithProps<IParamSourceProps>>(Component: ComponentType<P>): ComponentType<P> {
+/**
+ * This HOC adds class to the wrapped component to highlight it as dirty.
+ * @param Component
+ */
+export function withDirty<P extends WithProps<IParamSourceProps>>(Component: ComponentType<P>): ComponentType<P> {
   return (props: WithProps<P>) => {
     const className = classNames(props.className, {"modified": props.isDirty});
     return <Component {...props} className={className}/>

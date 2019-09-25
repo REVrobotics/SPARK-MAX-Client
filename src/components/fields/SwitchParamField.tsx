@@ -7,15 +7,21 @@ import {IParamSourceProps} from "../param-source";
 interface IProps extends IParamSourceProps {
   className?: string;
   label?: string | ((checked: boolean) => string);
+  inverted?: boolean;
 }
 
-const SwitchParamField = ({label, className, parameter, disabled, value, onValueChange}: IProps) => {
-  const onChange = useCallback((event) => onValueChange(parameter, event.target.checked ? 1 : 0), []);
+const SwitchParamField = ({label, inverted, className, parameter, disabled, value, onValueChange}: IProps) => {
+  const checked = inverted ? 0 : 1;
+  const unchecked = inverted ? 1 : 0;
+
+  const onChange = useCallback(
+    (event) => onValueChange(parameter, event.target.checked ? checked : unchecked),
+    [inverted]);
 
   return (
-    <Switch checked={value === 1}
+    <Switch checked={value === checked}
             disabled={disabled}
-            label={isFunction(label) ? label(value === 1) : label}
+            label={isFunction(label) ? label(value === checked) : label}
             className={className}
             onChange={onChange}/>
   )

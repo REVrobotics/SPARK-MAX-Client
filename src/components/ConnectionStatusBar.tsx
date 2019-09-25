@@ -5,11 +5,11 @@ import * as classNames from "classnames";
 import {getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
-  getDevicesInOrder,
-  getProcessStatus, getSelectedDevice,
-  isConnectableToAnyDevice,
-  isInProcessing,
-  isSelectedDeviceConnected
+  queryDevicesInOrder,
+  queryProcessStatus, querySelectedDevice,
+  queryIsConnectableToAnyDevice,
+  queryIsInProcessing,
+  queryIsSelectedDeviceConnected
 } from "../store/selectors";
 import {DeviceSelect} from "./DeviceSelect";
 
@@ -59,12 +59,12 @@ class ConnectionStatusBar extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    selectedDevice: getSelectedDevice(state),
-    devices: getDevicesInOrder(state),
-    connected: isSelectedDeviceConnected(state),
-    connecting: isInProcessing(state),
-    connectable: isConnectableToAnyDevice(state),
-    connectionStatus: getProcessStatus(state),
+    selectedDevice: querySelectedDevice(state),
+    devices: queryDevicesInOrder(state),
+    connected: queryIsSelectedDeviceConnected(state),
+    connecting: queryIsInProcessing(state),
+    connectable: queryIsConnectableToAnyDevice(state),
+    connectionStatus: queryProcessStatus(state),
   };
 }
 
