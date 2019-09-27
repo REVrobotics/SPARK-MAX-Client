@@ -156,7 +156,7 @@ class HelpTab extends React.Component<IProps, IState> {
     SparkManager.onDownloadProgress(this.onProgressUpdate);
   }
 
-  private onProgressUpdate(event: any, downloadJSON: any) {
+  private onProgressUpdate(downloadJSON: any) {
     this.setState({downloadJSON});
   }
 

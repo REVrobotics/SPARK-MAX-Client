@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { HEADLESS } from './program-args';
+import {setTargetWindow} from "./main/ipc-main-calls";
 
 let mainWindow: Electron.BrowserWindow;
 
@@ -36,6 +37,8 @@ function createWindow() {
     show: false,
     width: 600
   });
+
+  setTargetWindow(mainWindow.webContents);
 
   // Node module that handles all of our native firmware file download requests. It is initialized here.
   require('electron-dl')();

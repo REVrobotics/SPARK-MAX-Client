@@ -1,5 +1,6 @@
 import {ConfigParam} from "../models/ConfigParam";
-import {ListRequestDto, ListResponseDto} from "../models/dto";
+import {ListRequestDto, ListResponseDto, ParameterResponseDto} from "../models/dto";
+import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -91,42 +92,15 @@ class SparkManager {
   }
 
   public listDevices(request: ListRequestDto): Promise<ListResponseDto> {
-    return new Promise<ListResponseDto>((resolve, reject) => {
-      ipcRenderer.once("list-device-response", (event: any, error: any, response: ListResponseDto) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("list-device", request);
-    });
+    return sendTwoWay("list-device", request);
   }
 
   public connect(device: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("connect-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("connect", device)
-    });
+    return sendTwoWay("connect", device);
   }
 
   public disconnect(device: string): Promise<string> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("disconnect-response", (event: any, error: any, disconnectedDevice: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(disconnectedDevice);
-        }
-      });
-      ipcRenderer.send("disconnect", device);
-    });
+    return sendTwoWay("disconnect", device);
   }
 
   public downloadFile(url: string) {
@@ -183,8 +157,12 @@ class SparkManager {
     });
   }
 
-  public onDisconnect(f: (device: string) => void): void {
-    ipcRenderer.on("disconnect-response", (err: Error, device: string) => f(device));
+  public onDisconnect(f: (device: string) => void): () => void {
+    return onCallback("disconnect", (err: Error, device: string) => f(device));
+  }
+
+  public onHeartbeat(listener: (error: any, response: any) => void): () => void {
+    return onCallback("heartbeat", listener);
   }
 
   public getConfigFromParams(device: string): Promise<number[]> {
@@ -201,36 +179,19 @@ class SparkManager {
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
   public setSetpoint(setpoint: number) {
-    ipcRenderer.send("set-setpoint", setpoint);
+    return sendOneWay("set-setpoint", setpoint);
   }
 
-  public enableHeartbeat(interval: number, listener?: (event: any, error: any, response: any) => void) {
-    if (typeof listener !== "undefined") {
-      ipcRenderer.on("enable-heartbeat-response", listener);
-    }
-    ipcRenderer.send("enable-heartbeat", interval);
+  public enableHeartbeat(interval: number) {
+    sendOneWay("enable-heartbeat", interval);
   }
 
   public disableHeartbeat(listener?: (event: any, error: any, response: any) => void) {
-    ipcRenderer.once("disable-heartbeat-response", (event: any, error: any, response: any) => {
-      if (typeof listener !== "undefined") {
-        ipcRenderer.removeListener("enable-heartbeat-response", listener);
-      }
-    });
-    ipcRenderer.send("disable-heartbeat");
+    sendOneWay("disable-heartbeat");
   }
 
   public burnFlash(device: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("burn-flash-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(error);
-        }
-      });
-      ipcRenderer.send("burn-flash", device);
-    });
+    return sendTwoWay("burn-flash", device);
   }
 
   public async setAndGetParameter(device: string,
@@ -242,46 +203,19 @@ class SparkManager {
   }
 
   private getParameter(device: string, id: number): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      ipcRenderer.once("get-param-" + id + "-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response.value);
-        }
-      });
-      ipcRenderer.send("get-param", device, id);
-    });
+    return sendTwoWay<ParameterResponseDto>("get-param", device, id).then((response) => Number(response.value));
   }
 
   private getParameterList(device: string): Promise<number[]> {
-    return new Promise<number[]>((resolve, reject) => {
-      ipcRenderer.once("get-param-list-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("get-param-list", device);
-    });
+    return sendTwoWay("get-param-list", device);
   }
 
   public showInfoBox(title: string, message: string) {
-    ipcRenderer.send("show-info", title, message);
+    sendOneWay("show-info", title, message);
   }
 
   private setParameter(device: string, id: number, value: number | string | boolean): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      ipcRenderer.once("set-param-" + id + "-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("set-param", device, id, value);
-    });
+    return sendTwoWay("set-param", device, id, value);
   }
 }
 

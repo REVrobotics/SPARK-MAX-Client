@@ -8,13 +8,16 @@ import App from './App';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import reducer from "./store/reducer";
+import actionSchedule from "./store/actions/action-schedule";
+import {sendTwoWay} from "./managers/ipc-renderer-calls";
+import {reduxScheduler} from "./utils/redux-scheduler";
 
 const composeEnhancers = composeWithDevTools({});
 
-const applicationStore = createStore(reducer, composeEnhancers(applyMiddleware(thunk)));
+const applicationStore = createStore(reducer, composeEnhancers(applyMiddleware(reduxScheduler(actionSchedule), thunk)));
 // read value passed from the main process
 const electron = (window as any).require("electron");
-const {ipcRenderer, remote} = electron;
+const {remote} = electron;
 const headless = !remote.getGlobal("remote");
 
 if (headless) {
@@ -26,7 +29,7 @@ if (headless) {
   );
   registerServiceWorker();
 } else {
-  ipcRenderer.on("start-server-response", (event: any, error: any) => {
+  sendTwoWay("start-server").then(() => {
     ReactDOM.render(
       <Provider store={applicationStore}>
         <App/>
@@ -35,6 +38,4 @@ if (headless) {
     );
     registerServiceWorker();
   });
-
-  ipcRenderer.send("start-server");
 }

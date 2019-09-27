@@ -16,9 +16,6 @@ interface IProps extends IParamSourceProps {
   placeholder?: string;
 }
 
-const findOptionText = (options: IDictionaryWord[], value: any) =>
-  maybeMap(find(options, {id: value}), getWordText);
-
 const optionRenderer = (option: IDictionaryWord, itemProps: IItemRendererProps) => {
   return (
     <MenuItem
@@ -32,15 +29,18 @@ const optionRenderer = (option: IDictionaryWord, itemProps: IItemRendererProps) 
 const SelectParamField = ({className, parameter, disabled, value, options, placeholder, onValueChange}: IProps) => {
   const onChange = useCallback((item) => onValueChange(parameter, item.id), []);
 
+  const selectedOption = find(options, {id: value});
+
   return (
     <DictionarySelect className={className}
                   items={options || NO_OPTIONS}
                   disabled={disabled}
                   filterable={false}
+                  activeItem={selectedOption}
                   itemRenderer={optionRenderer} onItemSelect={onChange}>
       <Button fill={true}
               disabled={disabled}
-              text={value != null ? findOptionText(options || NO_OPTIONS, value) : placeholder}
+              text={value != null ? maybeMap(selectedOption, getWordText) : placeholder}
               rightIcon="double-caret-vertical"/>
     </DictionarySelect>
   )

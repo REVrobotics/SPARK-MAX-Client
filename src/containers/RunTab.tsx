@@ -52,6 +52,7 @@ interface IState {
 
 class RunTab extends React.Component<IProps, IState> {
   private _ticks: number;
+  private stopHeartbeat: () => void;
 
   constructor(props: IProps) {
     super(props);
@@ -115,9 +116,13 @@ class RunTab extends React.Component<IProps, IState> {
     if (runBtn !== null) {
       runBtn.addEventListener("mousedown", this.preventFocus);
     }
+
+    this.stopHeartbeat = SparkManager.onHeartbeat(this.receiveHeartbeat);
   }
 
   public componentWillUnmount() {
+    this.stopHeartbeat();
+
     window.removeEventListener("keydown", this.listenForEmergencyStop);
     if (this.state.running) {
       SparkManager.disableHeartbeat(this.receiveHeartbeat);
@@ -372,7 +377,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private run() {
     this.setState({running: true, output: 0.0});
-    SparkManager.enableHeartbeat(20, this.receiveHeartbeat);
+    SparkManager.enableHeartbeat(20);
     SparkManager.setSetpoint(0.0);
   }
 
@@ -381,7 +386,7 @@ class RunTab extends React.Component<IProps, IState> {
     SparkManager.disableHeartbeat(this.receiveHeartbeat);
   }
 
-  private receiveHeartbeat(event: any, error: any, response: any) {
+  private receiveHeartbeat() {
     // TODO - Eventually graph all of this.
     if (this._ticks > 50) {
       this._ticks = 0;

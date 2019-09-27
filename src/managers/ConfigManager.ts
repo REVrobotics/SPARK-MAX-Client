@@ -1,4 +1,4 @@
-const ipcRenderer = (window as any).require("electron").ipcRenderer;
+import {sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 
 class ConfigManager {
   public static getInstance(): ConfigManager {
@@ -11,72 +11,27 @@ class ConfigManager {
   private static _instance: ConfigManager;
 
   private constructor() {
-    ipcRenderer.send("config-init");
+    sendOneWay("config-init");
   }
 
   public getString(path: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      ipcRenderer.once("config-get-response", (event: any, error: any, response: string) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("config-get", path);
-    });
+    return sendTwoWay("config-get", path);
   }
 
   public getNumber(path: string): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      ipcRenderer.send("config-get-response", (event: any, error: any, response: number) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("config-get", path);
-    });
+    return sendTwoWay("config-get", path);
   }
 
   public getAll(): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      ipcRenderer.send("config-get-all-response", (event: any, error: any, response: number) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("config-get-all");
-    });
+    return sendTwoWay("config-get-all");
   }
 
   public set(path: string, value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("config-set-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("config-set", path, value);
-    });
+    return sendTwoWay("config-set", path, value);
   }
 
   public setAll(value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("config-set-all-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("config-set-all", value);
-    });
+    return sendTwoWay("config-set-all", value);
   }
 
 }
