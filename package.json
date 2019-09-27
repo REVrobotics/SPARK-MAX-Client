@@ -40,16 +40,17 @@
   "scripts": {
     "react": "cross-env BROWSER=none react-scripts-ts start",
     "desktop": "npm run build-desktop && electron build/electron.js",
-    "start": "concurrently \"npm run react\" \"npm run desktop\"",
-    "start:grpc": "concurrently \"npm run react\" \"npm run desktop -- --grpc --remote --port=3005\"",
+    "start": "cross-env NODE_ENV=development concurrently \"npm run react\" \"npm run desktop\"",
+    "start:grpc": "cross-env NODE_ENV=development concurrently \"npm run react\" \"npm run desktop -- --grpc --remote --port=3005\"",
     "build": "react-scripts-ts build",
-    "build-desktop": "tsc -p tsconfig.electron.json",
-    "predist": "gulp enterProd && npm run build && npm run build-desktop",
+    "build-desktop": "webpack --config scripts/webpack.main.js",
+    "predist": "cross-env NODE_ENV=production npm run build && cross-env NODE_ENV=production npm run build-desktop",
     "dist": "electron-builder",
-    "prerelease-win": "gulp enterProd && npm run build && npm run build-desktop",
-    "release-win": "gulp enterProd && electron-builder --win -p always",
+    "prerelease-win": "cross-env NODE_ENV=production npm run build && cross-env NODE_ENV=production npm run build-desktop",
+    "release-win": "cross-env NODE_ENV=production electron-builder --win -p always",
     "postinstall": "electron-builder install-app-deps",
-    "proto-gen": "node scripts/proto-gen/proto-gen.js"
+    "gen:proto": "node scripts/proto-gen/proto-gen.js",
+    "gen:license": "node scripts/license-gen.js"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.7.1",
@@ -60,6 +61,7 @@
     "@types/react-redux": "^6.0.14",
     "@types/zeromq": "^4.6.2",
     "concurrently": "^4.1.1",
+    "copy-webpack-plugin": "^4.6.0",
     "cross-env": "^6.0.0",
     "electron": "^3.1.13",
     "electron-builder": "^20.44.4",
@@ -71,7 +73,8 @@
     "grpc-tools": "^1.8.0",
     "grpc_tools_node_protoc_ts": "^2.5.4",
     "gulp": "^4.0.2",
-    "typescript": "^3.5.3"
+    "typescript": "^3.5.3",
+    "webpack-node-externals": "^1.7.2"
   },
   "build": {
     "appId": "org.revrobotics.sparkmax.client",

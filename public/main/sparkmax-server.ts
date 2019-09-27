@@ -29,8 +29,9 @@ import {Message} from "google-protobuf";
 // tslint:disable
 const queue = require("better-queue");
 
-const PROTO_BUFFERS_TYPES = path.join(__dirname, "../protobuf/SPARK-MAX-Types.proto");
-const PROTO_BUFFERS_COMMANDS = path.join(__dirname, "../protobuf/SPARK-MAX-Commands.proto");
+// all URLs should be relative ./build directory
+const PROTO_BUFFERS_TYPES = path.join(__dirname, "./protobuf/SPARK-MAX-Types.proto");
+const PROTO_BUFFERS_COMMANDS = path.join(__dirname, "./protobuf/SPARK-MAX-Commands.proto");
 
 function wrapIntoGrpcCallback<TMessage extends Message, TDto>(cb: Function = noop,
                                                                  map: (msg: TMessage) => TDto): (err: any, response: any) => void {

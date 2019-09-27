@@ -11,7 +11,6 @@ const {download} = require('electron-dl');
 const opn = require("opn");
 
 const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
-const isProd = false;
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
 
@@ -22,7 +21,8 @@ let setpoint: number = 0;
 let currentDevice: string = "";
 let firmwareID: any = null;
 
-const dllFolder = isProd ? "../../../../" : "../../bin/";
+// all URLs should be relative ./build directory
+const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
 
 ipcMain.on("start-server", (event: any, port: any) => {
   if (!port) {
