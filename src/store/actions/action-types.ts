@@ -33,6 +33,7 @@ export enum ActionType {
   SET_DEVICE_PARAMETER = "SET_DEVICE_PARAMETER",
   SET_DEVICE_PARAMETER_RESPONSE = "SET_DEVICE_PARAMETER_RESPONSE",
   SET_TRANSIENT_PARAMETER = "SET_TRANSIENT_PARAMETER",
+  RECALCULATE_DEVICE_ID = "RECALCULATE_DEVICE_ID"
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -119,6 +120,14 @@ export interface ISetDeviceParameterResponse extends IDeviceAwareAction {
     virtualDeviceId: VirtualDeviceId,
     parameter: ConfigParam,
     response: IServerResponse,
+    updateValue: boolean,
+  }
+}
+
+export interface IRecalculateDeviceId extends IDeviceAwareAction {
+  type: ActionType.RECALCULATE_DEVICE_ID,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
   }
 }
 
@@ -181,7 +190,7 @@ export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationAc
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | IAddDevices | ISelectDevice
   | ISetParameters | ISetConnectedDevice | ISetDeviceLoaded
-  | ISetDeviceParameter | ISetDeviceParameterResponse | ISetTransientParameter
+  | ISetDeviceParameter | ISetDeviceParameterResponse | ISetTransientParameter | IRecalculateDeviceId
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation

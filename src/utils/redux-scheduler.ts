@@ -36,6 +36,8 @@ export interface ISchedule {
 
   wait(predicate: (task: IScheduledTask) => boolean): Promise<void>;
 
+  waitOnLock(task: IScheduledTask): Promise<void>;
+
   cancel(task: IScheduledTask): void;
 }
 
@@ -173,20 +175,22 @@ export const asDebounce = (toKey: (task: IScheduledTask) => string,
   const keyToTimeout: {[key: string]: {timeout: any, task: IScheduledTask}} = {};
 
   return (schedule, task, next) => {
-    const key = toKey(task);
+    schedule.waitOnLock(task).then(() => {
+      const key = toKey(task);
 
-    const entry = keyToTimeout[key];
-    if (entry != null) {
-      schedule.cancel(entry.task);
-      clearTimeout(entry.timeout);
-    }
-    keyToTimeout[key] = {
-      timeout: setTimeout(() => {
-        delete keyToTimeout[key];
-        next();
-      }, ms),
-      task,
-    };
+      const entry = keyToTimeout[key];
+      if (entry != null) {
+        schedule.cancel(entry.task);
+        clearTimeout(entry.timeout);
+      }
+      keyToTimeout[key] = {
+        timeout: setTimeout(() => {
+          delete keyToTimeout[key];
+          next();
+        }, ms),
+        task,
+      };
+    });
   };
 };
 
@@ -197,8 +201,9 @@ export const asExclusive = (exclude: (test: IScheduledTask, current: IScheduledT
     // Block all new actions
     const unlock = schedule.lock(isNextTask);
 
+    return schedule.waitOnLock(task)
     // Wait for all current actions
-    schedule.wait(isPreviousTask)
+      .then(() => schedule.wait(isPreviousTask))
       .then(next)
       .finally(unlock);
   };
@@ -208,38 +213,40 @@ export const asLeastCommits = (toKey: (task: IScheduledTask) => string): Schedul
   const keyToNextTask: {[key: string]: {nextTask?: IScheduledTask; next?: () => void}} = {};
 
   return (schedule, task, next) => {
-    const key = toKey(task);
-    let entry = keyToNextTask[key];
+    schedule.waitOnLock(task).then(() => {
+      const key = toKey(task);
+      let entry = keyToNextTask[key];
 
-    // If entry exists, then some task is running
-    if (entry) {
-      // Cancel old "next task"
-      if (entry.nextTask) {
-        schedule.cancel(entry.nextTask);
-      }
-
-      // Set current task as the next one
-      entry.nextTask = task;
-      entry.next = next;
-    } else {
-      // Create entry to indicate that some task is running
-      keyToNextTask[key] = entry = {};
-
-      const onRunNextTask = () => {
-        if (entry.next && entry.nextTask) {
-          entry.nextTask.onFulfilled(onRunNextTask);
-          entry.next();
-          entry.next = undefined;
-          entry.nextTask = undefined;
-        } else {
-          delete keyToNextTask[key];
+      // If entry exists, then some task is running
+      if (entry) {
+        // Cancel old "next task"
+        if (entry.nextTask) {
+          schedule.cancel(entry.nextTask);
         }
-      };
 
-      task.onFulfilled(onRunNextTask);
+        // Set current task as the next one
+        entry.nextTask = task;
+        entry.next = next;
+      } else {
+        // Create entry to indicate that some task is running
+        keyToNextTask[key] = entry = {};
 
-      next();
-    }
+        const onRunNextTask = () => {
+          if (entry.next && entry.nextTask) {
+            entry.nextTask.onFulfilled(onRunNextTask);
+            entry.next();
+            entry.next = undefined;
+            entry.nextTask = undefined;
+          } else {
+            delete keyToNextTask[key];
+          }
+        };
+
+        task.onFulfilled(onRunNextTask);
+
+        next();
+      }
+    });
   };
 };
 
@@ -286,25 +293,20 @@ export const reduxScheduler: (config: IScheduleConfig) => Middleware = (config) 
         // Create new task for this action
         const task = schedule.newTask(action.selector, action.parameters);
 
-        // Guarantee that other tasks do not lock this one task
-        return schedule.waitOnLock(task).then(() => {
-          // Run this task
-          processor(schedule, task, () => {
-            try {
-              // On task completion, back control to scheduler
-              return when(next(action.action)).then(
-                (value) => schedule.resolve(task, value),
-                (reason) => schedule.reject(task, reason));
-            } catch (err) {
-              schedule.reject(task, err);
-              return Promise.reject();
-            }
-          });
-          return taskToPromise(task);
-        }).catch((err) => {
-          console.error(err);
-          return Promise.reject(err);
+        // Run this task
+        processor(schedule, task, () => {
+          try {
+            // On task completion, back control to scheduler
+            return when(next(action.action)).then(
+              (value) => schedule.resolve(task, value),
+              (reason) => schedule.reject(task, reason));
+          } catch (err) {
+            schedule.reject(task, err);
+            return Promise.reject();
+          }
         });
+
+        return taskToPromise(task);
       } else {
         return next(action.action);
       }

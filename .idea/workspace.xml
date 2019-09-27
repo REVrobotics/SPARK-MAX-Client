@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="">
+    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-8] I">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/fields/SwitchParamField.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/fields/SwitchParamField.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/BasicTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/BasicTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/main/sparkmax.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/main/sparkmax.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/action-schedule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/action-schedule.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/action-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/action-types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/atom-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/atom-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/reducer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/redux-scheduler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/redux-scheduler.ts" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea">
       <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/usb-client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/usb-client.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,20 +44,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
-  <component name="LineStatusTrackerManager">
-    <file path="$PROJECT_DIR$/.idea/workspace.xml">
-      <ranges>
-        <range start1="5" end1="7" start2="5" end2="6" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
-        <range start1="8" end1="9" start2="7" end2="7" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
-        <range start1="46" end1="67" start2="44" end2="52" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
-        <range start1="129" end1="130" start2="114" end2="115" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
-        <range start1="453" end1="454" start2="438" end2="446" changelist="da57b9fc-0ed1-4d33-829e-6c14709c4161" />
-        <range start1="456" end1="483" start2="448" end2="448" changelist="03af2858-2be9-49cf-825f-994109b45799" />
-        <range start1="485" end1="486" start2="450" end2="453" changelist="03af2858-2be9-49cf-825f-994109b45799" />
-        <range start1="487" end1="489" start2="454" end2="458" changelist="03af2858-2be9-49cf-825f-994109b45799" />
-      </ranges>
-    </file>
-  </component>
   <component name="ProjectId" id="1R4W4wZv1uPYGEvWZ2qLthTwdPA" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
@@ -79,11 +70,11 @@
       <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin\test" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\workspaces\SPARK-MAX-Client\public\main\context" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\store" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\containers" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\components" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\components\params" />
-      <recent name="D:\workspaces\SPARK-MAX-Client\src\store\actions" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -112,35 +103,7 @@
       <workItem from="1534786091760" duration="13096000" />
       <workItem from="1534863831629" duration="23269000" />
       <workItem from="1568926688449" duration="80704000" />
-      <workItem from="1569329621469" duration="46316000" />
-    </task>
-    <task id="LOCAL-00001" summary="Files generated by protoc tool">
-      <created>1568383242240</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1568383242240</updated>
-    </task>
-    <task id="LOCAL-00002" summary="Fix text of validation message">
-      <created>1568388015772</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1568388015772</updated>
-    </task>
-    <task id="LOCAL-00003" summary="Allow to specify program options via command line">
-      <created>1568630616353</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1568630616353</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Allow to specify program options via command line">
-      <created>1568633324936</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1568633324936</updated>
+      <workItem from="1569329621469" duration="108746000" />
     </task>
     <task id="LOCAL-00005" summary="Implement first version of .proto files generation">
       <created>1568739269316</created>
@@ -443,42 +406,61 @@
       <option name="project" value="LOCAL" />
       <updated>1569421943141</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="[REVROBO-8] Polish support of config rules">
+      <created>1569422523791</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1569422523791</updated>
+    </task>
+    <task id="LOCAL-00049" summary="[REVROBO-8] Refactor main &amp; renderer process communications">
+      <created>1569490378612</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1569490378612</updated>
+    </task>
+    <task id="LOCAL-00050" summary="[REVROBO-8] Refactor main &amp; renderer process communications">
+      <created>1569491499393</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1569491499394</updated>
+    </task>
+    <task id="LOCAL-00051" summary="[REVROBO-8] Refactor main &amp; renderer process communications">
+      <created>1569493752113</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1569493752113</updated>
+    </task>
+    <task id="LOCAL-00052" summary="[REVROBO-7] Implement resource management in main process and fix problems with IPC calls">
+      <created>1569573688912</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1569573688912</updated>
+    </task>
+    <task id="LOCAL-00053" summary="[REVROBO-7] Queue device actions in renderer process to avoid problems with device id">
+      <created>1569573720704</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1569573720704</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
-  </component>
-  <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="36365000" />
-  </component>
-  <component name="ToolWindowManager">
-    <frame x="3832" y="-133" width="1936" height="1176" extended-state="6" />
-    <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24973656" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="npm" order="2" side_tool="true" />
-      <window_info id="Favorites" order="3" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="TypeScript" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50105375" side_tool="true" weight="0.329718" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49894625" visible="true" weight="0.29174665" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
-    <option name="exactExcludedFiles">
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
       <list>
-        <option value="$PROJECT_DIR$/build/electron.js.map" />
-        <option value="$PROJECT_DIR$/build/electron.js" />
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
       </list>
     </option>
   </component>
@@ -554,8 +536,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Files generated by protoc tool" />
-    <MESSAGE value="Fix text of validation message" />
     <MESSAGE value="Allow to specify program options via command line" />
     <MESSAGE value="Implement first version of .proto files generation" />
     <MESSAGE value="Implement protoc DTO generation plugin" />
@@ -577,6 +557,10 @@
     <MESSAGE value="[REVROBO-8] Implement rules for motor configuration parameters" />
     <MESSAGE value="[REVROBO-8] Get rid of unnecessary code" />
     <MESSAGE value="[REVROBO-8] Polish support of config rules" />
-    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-8] Polish support of config rules" />
+    <MESSAGE value="[REVROBO-8] Refactor main &amp; renderer process communications" />
+    <MESSAGE value="[REVROBO-8] I" />
+    <MESSAGE value="[REVROBO-7] Implement resource management in main process and fix problems with IPC calls" />
+    <MESSAGE value="[REVROBO-7] Queue device actions in renderer process to avoid problems with device id" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-7] Queue device actions in renderer process to avoid problems with device id" />
   </component>
 </project>

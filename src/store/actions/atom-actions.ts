@@ -2,7 +2,7 @@ import {ActionCreator} from "redux";
 import {
   ActionType,
   IAddDevices,
-  IAddLog,
+  IAddLog, IRecalculateDeviceId,
   ISetConnectedDevice,
   ISetDeviceLoaded,
   ISetDeviceParameter,
@@ -100,13 +100,22 @@ export const setDeviceParameter: ActionCreator<ISetDeviceParameter> = (virtualDe
 
 export const setDeviceParameterResponse: ActionCreator<ISetDeviceParameterResponse> = (virtualDeviceId: VirtualDeviceId,
                                                                                        parameter: ConfigParam,
-                                                                                       response: IServerResponse) => ({
+                                                                                       response: IServerResponse,
+                                                                                       updateValue: boolean) => ({
   payload: {
     virtualDeviceId,
     parameter,
-    response
+    response,
+    updateValue,
   },
   type: ActionType.SET_DEVICE_PARAMETER_RESPONSE,
+});
+
+export const recalculateDeviceId: ActionCreator<IRecalculateDeviceId> = (virtualDeviceId: VirtualDeviceId) => ({
+  payload: {
+    virtualDeviceId,
+  },
+  type: ActionType.RECALCULATE_DEVICE_ID,
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({

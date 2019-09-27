@@ -9,6 +9,7 @@ import {ListRequestDto} from "../proto-gen";
 import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall} from "./ipc-main-calls";
 import {SparkmaxContext} from "./context/SparkmaxContext";
 import {timerResourceFactory} from "./context/TimerResource";
+import {ConfigParam} from "../proto-gen/SPARK-MAX-Types_dto_pb";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
@@ -21,6 +22,12 @@ const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
 let usbProc: ChildProcess|null = null;
 let setpoint: number = 0;
 let firmwareID: any = null;
+
+const getDeviceIdWithNewCanId = (device: string, canId: number) => {
+  const deviceId = parseInt(device, 16);
+  // tslint:disable-next-line:no-bitwise
+  return ((deviceId & 0xffff00) | (canId & 0xff)).toString(16);
+};
 
 const pingResourceFactory = timerResourceFactory((device) =>
     new Promise((resolve) => {
@@ -118,14 +125,36 @@ onTwoWayCall("disconnect", (cb, device: string) => {
 });
 
 onTwoWayCall("set-param", (cb, device: string, parameter: number, value: any) => {
-  server.setParameter({root: {device}, value, parameter}, (err: any, response: any) => {
-    if (err) {
-      cb(err);
-      return;
-    }
+  let afterSetParam: Promise<any>;
 
-    setTimeout(() => cb(null, response));
+  const setParameter = () => new Promise((resolve, reject) => {
+    server.setParameter({root: {device}, value, parameter}, (err: any, response: any) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(response);
+    });
   });
+
+  if (parameter === ConfigParam.kCanID) {
+    // If we set CanId field we have to pause all background activities,
+    // and resume them later with the new CanId
+    afterSetParam = context.pause()
+      .then(() => setParameter())
+      .then((response) => {
+        context.changeDeviceId(getDeviceIdWithNewCanId(device, value));
+        return response;
+      })
+      .finally(() => context.resume());
+  } else {
+    afterSetParam = setParameter();
+  }
+
+  afterSetParam
+    .then((response) => cb(null, response))
+    .catch((reason) => cb(reason));
 });
 
 onTwoWayCall("get-param", (cb, device: string, parameter: any) => {

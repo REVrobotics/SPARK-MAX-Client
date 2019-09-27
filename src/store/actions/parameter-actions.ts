@@ -4,7 +4,7 @@ import {queryDeviceId, queryDeviceParameterValue} from "../selectors";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
-  addLog,
+  addLog, recalculateDeviceId,
   setDeviceLoaded,
   setDeviceParameter,
   setDeviceParameterResponse,
@@ -21,6 +21,17 @@ import {onSchedule} from "../../utils/redux-scheduler";
 export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
                                   param: ConfigParam,
                                   value: number): SparkAction<Promise<number>> =>
+  (dispatch) => {
+    // Change device parameter value immediately for better UX
+    dispatch(setDeviceParameter(virtualDeviceId, param, value));
+
+    // Set value for requested and all dependent parameters
+    return dispatch(setParameterValueWithDependencies(virtualDeviceId, param, value));
+  };
+
+const setParameterValueWithDependencies = (virtualDeviceId: VirtualDeviceId,
+                                           param: ConfigParam,
+                                           value: number): SparkAction<Promise<number>> =>
   onSchedule("set-parameter", virtualDeviceId, param, (dispatch, getState) => {
     const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value));
 
@@ -35,7 +46,6 @@ export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
           }
         });
     }
-
     return mainParameter;
   });
 
@@ -49,7 +59,10 @@ const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
       fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!), param, value)
       .then((res: IServerResponse) => {
         const responseValue = res.responseValue as number;
-        dispatch(setDeviceParameterResponse(virtualDeviceId, param, res));
+        dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
+        if (param === ConfigParam.kCanID) {
+          dispatch(recalculateDeviceId(virtualDeviceId));
+        }
         return responseValue;
       });
   };

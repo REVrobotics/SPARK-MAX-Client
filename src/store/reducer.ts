@@ -1,7 +1,8 @@
 import {combineReducers, Reducer} from "redux";
 import {keyBy, sortBy, values} from "lodash";
 import {
-  getDeviceId,
+  DeviceId,
+  getDeviceId, getDeviceParamValue,
   getTransientState,
   getVirtualDeviceId,
   IApplicationState,
@@ -17,6 +18,9 @@ import {onChangeReducer} from "../utils/reducer-utils";
 import {ConfigParam} from "../models/ConfigParam";
 import {getConfigParamRule} from "./config-param-rules";
 import {ConfigParamMessageSeverity} from "./param-rules/ConfigParamRule";
+
+// tslint:disable-next-line:no-bitwise
+const getDeviceIdWithNewCanId = (device: DeviceId, newCanId: number) => (0xffff00 & device) | (newCanId & 0xff);
 
 export const initialState: IApplicationState = {
   context: {
@@ -76,6 +80,7 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
     case ActionType.SET_PARAMETERS:
     case ActionType.SET_DEVICE_PARAMETER:
     case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
+    case ActionType.RECALCULATE_DEVICE_ID:
     case ActionType.SET_TRANSIENT_PARAMETER:
       return setField(
         state,
@@ -121,7 +126,7 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
           state.currentParameters,
           action.payload.parameter,
           (param) => setFields(param, {
-            value: action.payload.response.responseValue as number,
+            value: action.payload.updateValue ? action.payload.response.responseValue as number : param.value,
             lastResponse: action.payload.response,
           })),
       };
@@ -130,6 +135,10 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
         ...state,
         transientParameters: setField(state.transientParameters, action.payload.field, action.payload.value),
       };
+    case ActionType.RECALCULATE_DEVICE_ID: {
+      const canId = getDeviceParamValue(state.currentParameters[ConfigParam.kCanID])
+      return setField(state, "fullDeviceId", getDeviceIdWithNewCanId(state.fullDeviceId, canId));
+    }
     default:
       return state;
   }
