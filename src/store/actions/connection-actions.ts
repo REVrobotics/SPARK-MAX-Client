@@ -19,6 +19,7 @@ import {
 } from "../selectors";
 import {loadParameters} from "./parameter-actions";
 import {ActionType, SparkAction} from "./action-types";
+import {onSchedule} from "../../utils/redux-scheduler";
 
 export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -46,7 +47,6 @@ export function connectToSelectedDevice(): SparkAction<Promise<void>> {
       return Promise.resolve();
     }
 
-
     const hubDeviceId = queryHubVirtualDeviceId(getState(), deviceId);
 
     return dispatch(disconnectCurrentDevice())
@@ -54,25 +54,31 @@ export function connectToSelectedDevice(): SparkAction<Promise<void>> {
   };
 }
 
+export function disconnectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> {
+  return onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
+    dispatch(updateDeviceIsProcessing(true));
+    return SparkManager.disconnect(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)).then(() => {
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
+      dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+      dispatch(setDeviceLoaded(virtualDeviceId, false));
+      dispatch(setConnectedDevice(virtualDeviceId, false));
+      dispatch(setParameters(virtualDeviceId, []));
+    }).catch(() => {
+      dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+    });
+  });
+};
+
 export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
   return (dispatch, getState) => {
-    const deviceId = queryConnectedVirtualDeviceId(getState());
-    if (deviceId == null) {
+    const virtualDeviceId = queryConnectedVirtualDeviceId(getState());
+    if (virtualDeviceId == null) {
       return Promise.resolve();
     }
 
-    const hubVirtualDeviceId = queryHubVirtualDeviceId(getState(), deviceId);
+    const hubVirtualDeviceId = queryHubVirtualDeviceId(getState(), virtualDeviceId);
 
-    dispatch(updateDeviceIsProcessing(true));
-    return SparkManager.disconnect(fromDeviceId(queryDeviceId(getState(), hubVirtualDeviceId)!)).then(() => {
-      dispatch(updateDeviceProcessStatus(hubVirtualDeviceId, "DISCONNECTED"));
-      dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
-      dispatch(setDeviceLoaded(hubVirtualDeviceId, false));
-      dispatch(setConnectedDevice(hubVirtualDeviceId, false));
-      dispatch(setParameters(hubVirtualDeviceId, []));
-    }).catch(() => {
-      dispatch(updateDeviceIsProcessing(hubVirtualDeviceId, false));
-    });
+    return dispatch(disconnectHubDevice(hubVirtualDeviceId));
   };
 }
 

@@ -12,30 +12,32 @@ import {
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
 } from "./atom-actions";
-import {ConfigParam, SensorType} from "../../models/dto";
+import {ConfigParam, MotorType, SensorType} from "../../models/dto";
 import {forSelectedDevice} from "./action-creators";
-import {
-  ConfirmationAnswer,
-  fromDeviceId,
-  IDeviceTransientState,
-  ProcessType,
-  VirtualDeviceId
-} from "../state";
+import {ConfirmationAnswer, fromDeviceId, IDeviceTransientState, ProcessType, VirtualDeviceId} from "../state";
 import {MOTOR_TYPES} from "../dictionaries";
+import {onSchedule} from "../../utils/redux-scheduler";
 
 export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
                                   param: ConfigParam,
                                   value: number): SparkAction<Promise<number>> =>
-  (dispatch) => {
+  onSchedule("set-parameter", virtualDeviceId, param, (dispatch, getState) => {
     const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value));
 
     if (param === ConfigParam.kMotorType) {
       return mainParameter
-        .then(() => dispatch(setSingleParameterValue(virtualDeviceId, ConfigParam.kSensorType, SensorType.HallSensor)));
+        .then((mainValue) => {
+          const motorType = queryDeviceParameterValue(getState(), virtualDeviceId, param);
+          if (motorType === MotorType.Brushless) {
+            return dispatch(setSingleParameterValue(virtualDeviceId, ConfigParam.kSensorType, SensorType.HallSensor));
+          } else {
+            return Promise.resolve<number>(mainValue);
+          }
+        });
     }
 
     return mainParameter;
-  };
+  });
 
 const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
                                  param: ConfigParam,
@@ -53,7 +55,7 @@ const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
   };
 
 export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
-  (dispatch, getState) => {
+  onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
     dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
 
     return delayPromise(1000)
@@ -69,10 +71,10 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
       });
-  };
+  });
 
 export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
-  (dispatch, getState) => {
+  onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
     const motorType = queryDeviceParameterValue(getState(), virtualDeviceId, ConfigParam.kMotorType);
     const activeMotorType = MOTOR_TYPES.get(motorType);
 
@@ -99,10 +101,10 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         });
     });
-  };
+  });
 
 export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
-  (dispatch, getState) => {
+  onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
     return dispatch(showConfirmation({
       intent: "warning",
       text: "WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?",
@@ -132,7 +134,7 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
           dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
         });
     });
-  };
+  });
 
 const setTransientParameter = (virtualDeviceId: VirtualDeviceId,
                                field: keyof IDeviceTransientState,

@@ -1,6 +1,6 @@
 import {find} from "lodash";
 import {
-  DEFAULT_TRANSIENT_STATE,
+  DEFAULT_TRANSIENT_STATE, DeviceId,
   getDeviceId, getDeviceParam, getDeviceParamValue,
   getVirtualDeviceId,
   IApplicationState,
@@ -53,6 +53,14 @@ export const querySelectedDevice = (state: IApplicationState) => {
   const id = querySelectedVirtualDeviceId(state);
   return id ? state.deviceSet.devices[id] : undefined;
 };
+
+/**
+ * Returns device by its device ID
+ * @param state
+ * @param id
+ */
+export const queryDeviceByDeviceId = (state: IApplicationState, id: DeviceId) =>
+  find(state.deviceSet.devices, (device) => getDeviceId(device) === id);
 
 /**
  * Returns device by ID

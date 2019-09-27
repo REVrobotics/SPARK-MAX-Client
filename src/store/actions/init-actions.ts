@@ -7,8 +7,8 @@ import {
   updateDeviceProcessStatus
 } from "./atom-actions";
 import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
-import {queryFirstHubVirtualDeviceId} from "../selectors";
-import {toDeviceId} from "../state";
+import {queryDeviceByDeviceId, queryFirstHubVirtualDeviceId} from "../selectors";
+import {getVirtualDeviceId, toDeviceId} from "../state";
 
 export function initApplication(): SparkAction<void> {
   return (dispatch, getState) => {
@@ -24,10 +24,13 @@ export function initApplication(): SparkAction<void> {
       })
       .then(() => dispatch(checkForFirmwareUpdate()));
 
-    SparkManager.onDisconnect((device) => {
-      const deviceId = toDeviceId(device);
-      dispatch(updateDeviceProcessStatus(deviceId, "DISCONNECTED"));
-      dispatch(setConnectedDevice(deviceId, false));
+    SparkManager.onDisconnect((deviceId) => {
+      const device = queryDeviceByDeviceId(getState(), toDeviceId(deviceId));
+      if (device) {
+        const virtualDeviceId = getVirtualDeviceId(device);
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
+        dispatch(setConnectedDevice(virtualDeviceId, false));
+      }
     });
   };
 }
