@@ -2,12 +2,9 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { HEADLESS } from './program-args';
 
-// const isProd = process.env.NODE_ENV === "production";
-const isProd = false;
-
 let mainWindow: Electron.BrowserWindow;
 
-if (!isProd) {
+if (process.env.NODE_ENV !== "production") {
   require("electron-debug")({showDevTools: true});
 }
 
@@ -39,7 +36,7 @@ function createWindow() {
    * In production, we want to load a different index.html file as well as initialize the update-electron-app module.
    * During development, we want the spare electron-debug window as well as to load the react development server.
    */
-  if (isProd) {
+  if (process.env.NODE_ENV === "production") {
     mainWindow.loadFile(path.join(__dirname, "./index.html"));
 
     const {autoUpdater} = require("electron-updater");
