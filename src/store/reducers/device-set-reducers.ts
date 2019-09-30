@@ -1,79 +1,29 @@
-import {combineReducers, Reducer} from "redux";
-import {keyBy, sortBy, values} from "lodash";
+import {keyBy, values, sortBy} from "lodash";
+import {Reducer} from "redux";
 import {
   DeviceId,
   getDeviceId,
   getDeviceParamValue,
   getTransientState,
-  getVirtualDeviceId,
-  IApplicationState,
-  IContextState,
-  IDeviceParameterState,
+  getVirtualDeviceId, IApplicationState, IDeviceParameterState,
   IDeviceSetState,
-  IDeviceState,
-  IUiState
-} from "./state";
-import {removeFields, setArrayElement, setField, setFields} from "../utils/object-utils";
-import {ActionType, ApplicationActions} from "./actions";
-import {onChangeReducer} from "../utils/reducer-utils";
-import {ConfigParam} from "../models/ConfigParam";
-import {getConfigParamRule} from "./config-param-rules";
-import {ConfigParamMessageSeverity} from "./param-rules/ConfigParamRule";
+  IDeviceState
+} from "../state";
+import {ActionType, ApplicationActions} from "../actions";
+import {removeFields, setArrayElement, setField, setFields} from "../../utils/object-utils";
+import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {getConfigParamRule} from "../config-param-rules";
+import {ConfigParamMessageSeverity} from "../param-rules/ConfigParamRule";
+
+const initialDeviceSetState: IDeviceSetState = {
+  orderedDevices: [],
+  devices: {},
+};
 
 // tslint:disable-next-line:no-bitwise
 const getDeviceIdWithNewCanId = (device: DeviceId, newCanId: number) => (0xffff00 & device) | (newCanId & 0xff);
 
-export const initialState: IApplicationState = {
-  context: {
-    isProcessing: false,
-    processStatus: "",
-  },
-  deviceSet: {
-    orderedDevices: [],
-    devices: {},
-  },
-  logs: [],
-  ui: {
-    confirmationOpened: false
-  }
-};
-
-const contextReducer: Reducer<IContextState> = (state: IContextState = initialState.context,
-                                                action: ApplicationActions): IContextState => {
-  switch (action.type) {
-    case ActionType.SET_SELECTED_DEVICE:
-      return setField(state, "selectedVirtualDeviceId", action.payload.virtualDeviceId);
-    case ActionType.REPLACE_DEVICES: {
-      // Ensure that selected device id always points out to the existing device
-      if (state.selectedVirtualDeviceId && action.payload.replaceIds.includes(state.selectedVirtualDeviceId)) {
-        return setField(state, "selectedVirtualDeviceId", getVirtualDeviceId(action.payload.device));
-      } else {
-        return state;
-      }
-    }
-    case ActionType.SET_CONNECTED_DEVICE:
-      return setField(state, "connectedVirtualDeviceId", action.payload.connected ? action.payload.virtualDeviceId : undefined);
-    case ActionType.SET_GLOBAL_PROCESS_STATUS:
-      return setField(state, "processStatus", action.payload.processStatus);
-    case ActionType.SET_GLOBAL_PROCESSING:
-      return setField(state, "isProcessing", action.payload.isProcessing);
-    default:
-      return state;
-  }
-};
-
-const uiReducer: Reducer<IUiState> = (state: IUiState = initialState.ui, action: ApplicationActions): IUiState => {
-  switch (action.type) {
-    case ActionType.OPEN_CONFIRMATION:
-      return {...state, confirmation: action.payload, confirmationOpened: true};
-    case ActionType.ANSWER_CONFIRMATION:
-      return {...state, confirmationOpened: false};
-    default:
-      return state;
-  }
-};
-
-const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = initialState.deviceSet,
+const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = initialDeviceSetState,
                                                     action: ApplicationActions): IDeviceSetState => {
   switch (action.type) {
     case ActionType.ADD_DEVICES: {
@@ -105,13 +55,13 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
         "devices",
         setField(state.devices,
           action.payload.virtualDeviceId,
-          deviceReducer(state.devices[action.payload.virtualDeviceId], action)));
+          deviceSetReducers(state.devices[action.payload.virtualDeviceId], action)));
     default:
       return state;
   }
 };
 
-const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: ApplicationActions): IDeviceState => {
+const deviceSetReducers: Reducer<IDeviceState> = (state: IDeviceState, action: ApplicationActions): IDeviceState => {
   switch (action.type) {
     case ActionType.SET_DEVICE_LOADED:
       return {...state, isLoaded: action.payload.loaded};
@@ -154,7 +104,7 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
         transientParameters: setField(state.transientParameters, action.payload.field, action.payload.value),
       };
     case ActionType.RECALCULATE_DEVICE_ID: {
-      const canId = getDeviceParamValue(state.currentParameters[ConfigParam.kCanID])
+      const canId = getDeviceParamValue(state.currentParameters[ConfigParam.kCanID]);
       return setFields(state, {
         fullDeviceId: getDeviceIdWithNewCanId(state.fullDeviceId, canId),
         uniqueId: 0,
@@ -233,23 +183,5 @@ const validateDeviceParameter = (state: IApplicationState,
   }
 };
 
-const logsReducer: Reducer<string[]> = (state: string[] = initialState.logs, action: ApplicationActions): string[] => {
-  switch (action.type) {
-    case ActionType.ADD_LOG:
-      return [...state, action.payload.log];
-    default:
-      return state;
-  }
-};
-
-const reducer = onChangeReducer(
-  combineReducers({
-    context: contextReducer,
-    deviceSet: deviceSetReducer,
-    logs: logsReducer,
-    ui: uiReducer,
-  }),
-  parameterValidationReducer,
-);
-
-export default reducer;
+export { parameterValidationReducer };
+export default deviceSetReducer;
