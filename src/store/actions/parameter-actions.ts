@@ -1,10 +1,11 @@
 import {ActionType, SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
-import {queryDeviceId, queryDeviceParameterValue} from "../selectors";
+import {queryDevice, queryDeviceId, queryDeviceParameterValue, queryHasDeviceParameterError} from "../selectors";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
-  addLog, recalculateDeviceId,
+  addLog,
+  recalculateDeviceId,
   setDeviceLoaded,
   setDeviceParameter,
   setDeviceParameterResponse,
@@ -14,7 +15,14 @@ import {
 } from "./atom-actions";
 import {ConfigParam, MotorType, SensorType} from "../../models/dto";
 import {forSelectedDevice} from "./action-creators";
-import {ConfirmationAnswer, fromDeviceId, IDeviceTransientState, ProcessType, VirtualDeviceId} from "../state";
+import {
+  ConfirmationAnswer,
+  fromDeviceId,
+  IDeviceTransientState,
+  isDeviceNotConfigured,
+  ProcessType,
+  VirtualDeviceId
+} from "../state";
 import {MOTOR_TYPES} from "../dictionaries";
 import {onSchedule} from "../../utils/redux-scheduler";
 
@@ -26,14 +34,16 @@ export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
     dispatch(setDeviceParameter(virtualDeviceId, param, value));
 
     // Set value for requested and all dependent parameters
-    return dispatch(setParameterValueWithDependencies(virtualDeviceId, param, value));
+    return dispatch(scheduleSetParameterValue(virtualDeviceId, param, value));
   };
 
-const setParameterValueWithDependencies = (virtualDeviceId: VirtualDeviceId,
-                                           param: ConfigParam,
-                                           value: number): SparkAction<Promise<number>> =>
+const scheduleSetParameterValue = (virtualDeviceId: VirtualDeviceId,
+                                   param: ConfigParam,
+                                   value: number): SparkAction<Promise<number>> =>
   onSchedule("set-parameter", virtualDeviceId, param, (dispatch, getState) => {
-    const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value));
+    // It is supposed that device parameter value was already changed, this way we pass the last parameter as false
+    // This is done only for better UX
+    const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value, false));
 
     if (param === ConfigParam.kMotorType) {
       return mainParameter
@@ -51,20 +61,43 @@ const setParameterValueWithDependencies = (virtualDeviceId: VirtualDeviceId,
 
 const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
                                  param: ConfigParam,
-                                 value: number): SparkAction<Promise<number>> =>
+                                 value: number,
+                                 // should we set parameter value or value was already set
+                                 withInitialSet: boolean = true): SparkAction<Promise<number>> =>
   (dispatch, getState) => {
-    dispatch(setDeviceParameter(virtualDeviceId, param, value));
+    if (withInitialSet) {
+      dispatch(setDeviceParameter(virtualDeviceId, param, value));
+    }
 
-    return SparkManager.setAndGetParameter(
-      fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!), param, value)
-      .then((res: IServerResponse) => {
-        const responseValue = res.responseValue as number;
-        dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
-        if (param === ConfigParam.kCanID) {
+    // If value is invalid we should not send it into the device
+    if (queryHasDeviceParameterError(getState(), virtualDeviceId, param)) {
+      return Promise.resolve(value);
+    }
+
+    const device = queryDevice(getState(), virtualDeviceId);
+
+    const deviceId = fromDeviceId(device.fullDeviceId);
+
+    if (isDeviceNotConfigured(device) && param === ConfigParam.kCanID) {
+      return SparkManager.idAssignment(value, device.uniqueId)
+        .then(() => {
+          // Generate server response, because validation logic can rely on response
+          const res: IServerResponse = { status: 0, type: 1, requestValue: value, responseValue: value };
+          dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, true));
           dispatch(recalculateDeviceId(virtualDeviceId));
-        }
-        return responseValue;
-      });
+          return value;
+        });
+    } else {
+      return SparkManager.setAndGetParameter(deviceId, param, value)
+        .then((res: IServerResponse) => {
+          const responseValue = res.responseValue as number;
+          dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
+          if (param === ConfigParam.kCanID) {
+            dispatch(recalculateDeviceId(virtualDeviceId));
+          }
+          return responseValue;
+        });
+    }
   };
 
 export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>

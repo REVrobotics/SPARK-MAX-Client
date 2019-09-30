@@ -2,7 +2,9 @@ import {isFunction} from "lodash";
 
 export interface IDeferred<T> {
   promise: Promise<T>;
+
   resolve(value: T): void;
+
   reject(error?: any): void;
 }
 
@@ -40,4 +42,11 @@ export function when(value: any): IThenable {
   } else {
     return Promise.resolve(value);
   }
+}
+
+export function logError<T>(reason: any): Promise<T> {
+  if (reason instanceof Error) {
+    console.error(reason);
+  }
+  return Promise.reject(reason);
 }

@@ -1,9 +1,12 @@
-import {find} from "lodash";
+import {filter, find, first} from "lodash";
 import {
-  DEFAULT_TRANSIENT_STATE, DeviceId,
-  getDeviceId, getDeviceParam, getDeviceParamValue,
-  getVirtualDeviceId,
-  IApplicationState,
+  DEFAULT_TRANSIENT_STATE,
+  DeviceId, getDeviceCommittedCanId,
+  getDeviceId,
+  getDeviceParam,
+  getDeviceParamValue,
+  getVirtualDeviceId, hasDeviceParamError,
+  IApplicationState, isDeviceInvalid, isDeviceNotConfigured,
   isHubDevice,
   VirtualDeviceId
 } from "./state";
@@ -16,8 +19,8 @@ import {ConfigParam} from "../models/ConfigParam";
  * @param orderedDevices
  * @param devices
  */
-export const queryFirstHubVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
-  maybeMap(find(orderedDevices.map((id) => devices[id]), isHubDevice), getVirtualDeviceId);
+export const queryFirstVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
+  maybeMap(first(orderedDevices.map((id) => devices[id])), getVirtualDeviceId);
 
 /**
  * Returns true if at least one device exist, otherwise false
@@ -69,6 +72,22 @@ export const queryDeviceByDeviceId = (state: IApplicationState, id: DeviceId) =>
  * @param id
  */
 export const queryDevice = (state: IApplicationState, id: VirtualDeviceId) => state.deviceSet.devices[id];
+
+/**
+ * Returns all connected devices (through USB and CAN bus)
+ * @param state
+ */
+export const queryConnectedDevices = (state: IApplicationState) =>
+  filter(state.deviceSet.devices, (device) => queryIsDeviceConnected(state, getVirtualDeviceId(device)));
+
+/**
+ * Returns all devices having given Can ID
+ *
+ * @param state
+ * @param canId
+ */
+export const queryConnectedDevicesByCanId = (state: IApplicationState, canId: number) =>
+  queryConnectedDevices(state).filter((device) => getDeviceCommittedCanId(device) === canId);
 
 /**
  * Returns full Device ID for request device
@@ -176,6 +195,18 @@ export const querySelectedDeviceBurnedConfig = (state: IApplicationState) => {
 };
 
 /**
+ * Returns whether parameter has invalid value or does not
+ *
+ * @param state
+ * @param virtualDeviceId
+ * @param param
+ */
+export const queryHasDeviceParameterError = (state: IApplicationState,
+                                             virtualDeviceId: VirtualDeviceId,
+                                             param: ConfigParam) =>
+  hasDeviceParamError(getDeviceParam(queryDevice(state, virtualDeviceId).currentParameters, param));
+
+/**
  * Returns value of parameter for the given device
  *
  * @param state
@@ -202,12 +233,39 @@ export const queryIsInProcessing = (state: IApplicationState) => {
 };
 
 /**
+ * Returns if device configuration is invalid. Device is invalid iff it has error for CAN ID parameter.
+ * @param state
+ */
+export const queryIsSelectedDeviceInvalid = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  return selectedDevice == null ? false : isDeviceInvalid(selectedDevice);
+};
+
+/**
+ * Returns if device is not configured.
+ * @param state
+ */
+export const queryIsSelectedDeviceNotConfigured = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  return selectedDevice == null ? false : isDeviceNotConfigured(selectedDevice);
+};
+
+/**
  * Returns if we have processing for selected device
  * @param state
  */
 export const queryIsSelectedDeviceInProcessing = (state: IApplicationState) => {
   const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? false : selectedDevice.isProcessing;
+};
+
+/**
+ * Returns if we parameters were loaded
+ * @param state
+ */
+export const queryIsSelectedDeviceLoaded = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  return selectedDevice == null ? false : selectedDevice.isLoaded;
 };
 
 /**

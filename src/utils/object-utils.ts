@@ -1,4 +1,4 @@
-import {constant, isFunction} from "lodash";
+import {constant, isFunction, omit} from "lodash";
 
 export function setField<T, K extends keyof T>(entity: T, field: K, value: T[K]): T {
   if (entity[field] === value) {
@@ -10,6 +10,18 @@ export function setField<T, K extends keyof T>(entity: T, field: K, value: T[K])
 
 export function setFields<T>(entity: T, values: Partial<{[P in keyof T]: T[P]}>): T {
   return Object.keys(values).reduce((lastEntity, key) => setField(lastEntity, key as keyof T, values[key]), entity);
+}
+
+export function removeField<T extends object, P extends keyof T>(entity: T, key: P): Omit<T, P> {
+  if (entity.hasOwnProperty(key)) {
+    return omit(entity, key);
+  } else {
+    return entity;
+  }
+}
+
+export function removeFields<T extends object, P extends keyof T>(entity: T, keys: P[]): Omit<T, P> {
+  return keys.reduce((lastEntity, key) => removeField(lastEntity, key), entity);
 }
 
 export function maybeMap<T, R>(entity: T | undefined | null, map: (entity: T) => R): R | undefined | null {

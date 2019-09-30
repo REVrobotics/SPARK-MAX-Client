@@ -23,7 +23,8 @@ class SparkManager {
 
   private static _instance: SparkManager;
 
-  private constructor() {}
+  private constructor() {
+  }
 
   public onDownloadProgress(listener: (event: any, downloadJSON: any) => void) {
     ipcRenderer.on("install-progress", listener);
@@ -66,7 +67,7 @@ class SparkManager {
 
   public discoverAndConnect(): Promise<string> {
     return this.listUsbDevices()
-      .then(({ deviceList }) => deviceList)
+      .then(({deviceList}) => deviceList)
       .then((devices: string[]) => {
         if (devices.length > 0) {
           return this.connect(devices[0])
@@ -84,11 +85,15 @@ class SparkManager {
   }
 
   public listUsbDevices(): Promise<ListResponseDto> {
-    return this.listDevices({ all: false });
+    return this.listDevices({all: false});
+  }
+
+  public listCanDevices(deviceId: string): Promise<ListResponseDto> {
+    return this.listDevices({all: true, root: {device: deviceId}})
   }
 
   public listAllDevices(): Promise<string[]> {
-    return this.listDevices({ all: true }).then(({ deviceList }) => deviceList);
+    return this.listDevices({all: true}).then(({deviceList}) => deviceList);
   }
 
   public listDevices(request: ListRequestDto): Promise<ListResponseDto> {
@@ -192,6 +197,10 @@ class SparkManager {
 
   public burnFlash(device: string): Promise<any> {
     return sendTwoWay("burn-flash", device);
+  }
+
+  public idAssignment(canId: number, uniqueId: number): Promise<any> {
+    return sendTwoWay("id-assignment", canId, uniqueId);
   }
 
   public async setAndGetParameter(device: string,

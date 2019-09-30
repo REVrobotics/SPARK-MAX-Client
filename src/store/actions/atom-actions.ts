@@ -2,14 +2,14 @@ import {ActionCreator} from "redux";
 import {
   ActionType,
   IAddDevices,
-  IAddLog, IRecalculateDeviceId,
+  IAddLog, IRecalculateDeviceId, IReplaceDevices,
   ISetConnectedDevice,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
   ISetDeviceProcessing,
   ISetGlobalProcessing,
-  ISetParameters,
+  ISetParameters, ISetSelectedDevice,
   ISetUpdateAvailable,
   IUpdateDeviceProcessStatus,
   IUpdateGlobalProcessStatus,
@@ -73,9 +73,18 @@ export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (vi
 
 export const addDevices: ActionCreator<IAddDevices> = (devices: IDeviceState[]) => ({
   payload: {
-    devices
+    devices,
   },
   type: ActionType.ADD_DEVICES
+});
+
+export const replaceDevices: ActionCreator<IReplaceDevices> = (device: IDeviceState,
+                                                               replaceIds: VirtualDeviceId[]) => ({
+  payload: {
+    device,
+    replaceIds,
+  },
+  type: ActionType.REPLACE_DEVICES
 });
 
 export const setParameters: ActionCreator<ISetParameters> = (virtualDeviceId: VirtualDeviceId,
@@ -116,6 +125,13 @@ export const recalculateDeviceId: ActionCreator<IRecalculateDeviceId> = (virtual
     virtualDeviceId,
   },
   type: ActionType.RECALCULATE_DEVICE_ID,
+});
+
+export const setSelectedDevice: ActionCreator<ISetSelectedDevice> = (virtualDeviceId: VirtualDeviceId) => ({
+  payload: {
+    virtualDeviceId,
+  },
+  type: ActionType.SET_SELECTED_DEVICE,
 });
 
 export const addLog: ActionCreator<IAddLog> = (log: string) => ({

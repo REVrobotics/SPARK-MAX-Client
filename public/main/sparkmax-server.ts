@@ -4,7 +4,8 @@ import {load, Root} from "protobufjs";
 import {socket, Socket} from "zeromq";
 import {credentials} from "grpc";
 import {
-  burnRequestFromDto, burnResponseToDto,
+  burnRequestFromDto,
+  burnResponseToDto,
   connectRequestFromDto,
   connectResponseToDto,
   disconnectRequestFromDto,
@@ -12,11 +13,19 @@ import {
   factoryResetRequestFromDto,
   firmwareRequestFromDto,
   firmwareResponseToDto,
-  getParameterRequestFromDto, ListRequestDto,
+  getParameterRequestFromDto,
+  IdAssignmentRequestDto,
+  idAssignmentRequestFromDto,
+  ListRequestDto,
   listRequestFromDto,
-  listResponseToDto, parameterListRequestFromDto, parameterListResponse, parameterListResponseToDto, parameterResponse,
+  listResponseToDto,
+  parameterListRequestFromDto,
+  parameterListResponse,
+  parameterListResponseToDto,
+  parameterResponse,
   parameterResponseToDto,
-  pingRequestFromDto, pingResponseToDto,
+  pingRequestFromDto,
+  pingResponseToDto,
   rootResponseToDto,
   setParameterRequestFromDto,
   setpointRequestFromDto,
@@ -197,6 +206,14 @@ class SparkServer {
       this.grpcClient.setParameter(setParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, parameterResponseToDto));
     } else {
       this.sendCommand("setParameter", "parameter", paramCommand, cb);
+    }
+  }
+
+  public idAssignment(request: IdAssignmentRequestDto, cb?: Function) {
+    if (this.isGrpc) {
+      return this.grpcClient.iDAssignment(idAssignmentRequestFromDto(request), wrapIntoGrpcCallback(cb, rootResponseToDto));
+    } else {
+      throw new Error("This command is not supported by zeromq client");
     }
   }
 

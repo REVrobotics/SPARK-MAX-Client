@@ -11,9 +11,13 @@ import {
 } from "../store/actions";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
-  querySelectedDeviceProcessType, querySelectedDeviceTransientParameters,
+  querySelectedDeviceProcessType,
+  querySelectedDeviceTransientParameters,
   queryIsSelectedDeviceConnected,
-  queryIsSelectedDeviceInProcessing
+  queryIsSelectedDeviceInProcessing,
+  queryIsSelectedDeviceLoaded,
+  queryIsSelectedDeviceInvalid,
+  queryIsSelectedDeviceNotConfigured
 } from "../store/selectors";
 import NumericParamField from "../components/fields/NumericParamField";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
@@ -106,6 +110,7 @@ const idleModeLabelFn = (checked: boolean) => checked ? "Coast" : "Brake";
 
 interface IProps {
   enabled: boolean;
+  blocked: boolean;
   processType?: ProcessType;
   transient: IDeviceTransientState;
 
@@ -122,7 +127,11 @@ class BasicTab extends React.Component<IProps> {
   };
 
   public render() {
-    const {enabled, processType, transient: {rampRateEnabled}} = this.props;
+    const {enabled, blocked, processType, transient: {rampRateEnabled}} = this.props;
+
+    const canEditCanId = enabled;
+    const canEditOtherFields = enabled && !blocked;
+    const canSave = enabled && !blocked;
 
     return (
       <div>
@@ -132,34 +141,34 @@ class BasicTab extends React.Component<IProps> {
             labelFor="configuration-id"
             className="form-group-half"
           >
-            <ConfigurationSelect disabled={!enabled}/>
+            <ConfigurationSelect disabled={!canEditOtherFields}/>
           </FormGroup>
           <BasicNumericFieldGroup parameter={ConfigParam.kCanID}
-                                  disabled={!enabled}
+                                  disabled={!canEditCanId}
                                   groupClassName="form-group-quarter"/>
         </div>
         <div className="form">
           <BasicSelectFieldGroup parameter={ConfigParam.kMotorType}
-                                 disabled={!enabled}
+                                 disabled={!canEditOtherFields}
                                  groupClassName="form-group-half"/>
           <BasicSwitchFieldGroup parameter={ConfigParam.kIdleMode}
-                                 disabled={!enabled}
+                                 disabled={!canEditOtherFields}
                                  groupClassName="form-group-quarter"
                                  inverted={true}
                                  label={idleModeLabelFn}/>
           <BasicNumericFieldGroup parameter={ConfigParam.kSmartCurrentStallLimit}
-                                  disabled={!enabled}
+                                  disabled={!canEditOtherFields}
                                   groupClassName="form-group-quarter no-wrap"/>
         </div>
         <div className="form form-space-between">
           <BasicSelectFieldGroup parameter={ConfigParam.kSensorType}
-                                 disabled={!enabled}
+                                 disabled={!canEditOtherFields}
                                  groupClassName="form-group-quarter"/>
           <BasicNumericFieldGroup parameter={ConfigParam.kEncoderCountsPerRev}
-                                  disabled={!enabled}
+                                  disabled={!canEditOtherFields}
                                   groupClassName="form-group-quarter"/>
           <BasicSliderFieldGroup parameter={ConfigParam.kInputDeadband}
-                                 disabled={!enabled}
+                                 disabled={!canEditOtherFields}
                                  groupClassName="form-group-half"
                                  stepSize={0.01}/>
         </div>
@@ -168,19 +177,19 @@ class BasicTab extends React.Component<IProps> {
             <h4 className="form-title">Limit Switch</h4>
             <div className="form-control-group">
               <BasicSwitchField parameter={ConfigParam.kHardLimitFwdEn}
-                                disabled={!enabled}
+                                disabled={!canEditOtherFields}
                                 label="Forward Limit"/>
               <BasicSwitchField parameter={ConfigParam.kLimitSwitchFwdPolarity}
-                                disabled={!enabled}
+                                disabled={!canEditOtherFields}
                                 label={polarityLabelFn}/>
             </div>
 
             <div className="form-control-group">
               <BasicSwitchField parameter={ConfigParam.kHardLimitRevEn}
-                                disabled={!enabled}
+                                disabled={!canEditOtherFields}
                                 label="Reverse Limit"/>
               <BasicSwitchField parameter={ConfigParam.kLimitSwitchRevPolarity}
-                                disabled={!enabled}
+                                disabled={!canEditOtherFields}
                                 label={polarityLabelFn}/>
             </div>
           </div>
@@ -188,33 +197,33 @@ class BasicTab extends React.Component<IProps> {
             <h4 className="form-title">Soft Limits</h4>
 
             <BasicSwitchLabelessFieldGroup parameter={ConfigParam.kSoftLimitFwdEn}
-                                           disabled={!enabled}
+                                           disabled={!canEditOtherFields}
                                            groupClassName="form-group-fit"/>
             <BasicNumericFieldGroup parameter={ConfigParam.kSoftLimitFwd}
-                                    disabled={!enabled}/>
+                                    disabled={!canEditOtherFields}/>
 
             <BasicSwitchLabelessFieldGroup parameter={ConfigParam.kSoftLimitRevEn}
-                                           disabled={!enabled}
+                                           disabled={!canEditOtherFields}
                                            groupClassName="form-group-fit"/>
             <BasicNumericFieldGroup parameter={ConfigParam.kSoftLimitRev}
-                                    disabled={!enabled}/>
+                                    disabled={!canEditOtherFields}/>
           </div>
           <div className="form-column form-column-third">
             <h4 className="form-title">Ramp Rate</h4>
             <FormGroup className="form-group-fit" labelFor="rampRateEnabled">
               <Switch id="rampRateEnabled"
                       checked={rampRateEnabled}
-                      disabled={!enabled}
+                      disabled={!canEditOtherFields}
                       label={rampRateEnabled ? "Enabled" : "Disabled"}
                       onChange={this.onChangeRampRateEnabled}/>
             </FormGroup>
             <BasicNumericFieldGroup parameter={ConfigParam.kRampRate}
-                                    disabled={!enabled || !rampRateEnabled}/>
+                                    disabled={!canEditOtherFields || !rampRateEnabled}/>
           </div>
         </div>
         <div className="form update-container">
           <Button className="rev-btn"
-                  disabled={!enabled || processType === ProcessType.Reset}
+                  disabled={!canSave || processType === ProcessType.Reset}
                   loading={processType === ProcessType.Save}
                   onClick={this.props.burnConfiguration}>Save Configuration</Button>
           <Button className="bad-btn"
@@ -229,7 +238,10 @@ class BasicTab extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    enabled: queryIsSelectedDeviceConnected(state) && !queryIsSelectedDeviceInProcessing(state),
+    enabled: queryIsSelectedDeviceConnected(state)
+      && !queryIsSelectedDeviceInProcessing(state)
+      && queryIsSelectedDeviceLoaded(state),
+    blocked: queryIsSelectedDeviceInvalid(state) || queryIsSelectedDeviceNotConfigured(state),
     processType: querySelectedDeviceProcessType(state),
     transient: querySelectedDeviceTransientParameters(state),
   };

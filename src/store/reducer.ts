@@ -2,7 +2,8 @@ import {combineReducers, Reducer} from "redux";
 import {keyBy, sortBy, values} from "lodash";
 import {
   DeviceId,
-  getDeviceId, getDeviceParamValue,
+  getDeviceId,
+  getDeviceParamValue,
   getTransientState,
   getVirtualDeviceId,
   IApplicationState,
@@ -12,7 +13,7 @@ import {
   IDeviceState,
   IUiState
 } from "./state";
-import {setArrayElement, setField, setFields} from "../utils/object-utils";
+import {removeFields, setArrayElement, setField, setFields} from "../utils/object-utils";
 import {ActionType, ApplicationActions} from "./actions";
 import {onChangeReducer} from "../utils/reducer-utils";
 import {ConfigParam} from "../models/ConfigParam";
@@ -40,8 +41,16 @@ export const initialState: IApplicationState = {
 const contextReducer: Reducer<IContextState> = (state: IContextState = initialState.context,
                                                 action: ApplicationActions): IContextState => {
   switch (action.type) {
-    case ActionType.SELECT_DEVICE:
+    case ActionType.SET_SELECTED_DEVICE:
       return setField(state, "selectedVirtualDeviceId", action.payload.virtualDeviceId);
+    case ActionType.REPLACE_DEVICES: {
+      // Ensure that selected device id always points out to the existing device
+      if (state.selectedVirtualDeviceId && action.payload.replaceIds.includes(state.selectedVirtualDeviceId)) {
+        return setField(state, "selectedVirtualDeviceId", getVirtualDeviceId(action.payload.device));
+      } else {
+        return state;
+      }
+    }
     case ActionType.SET_CONNECTED_DEVICE:
       return setField(state, "connectedVirtualDeviceId", action.payload.connected ? action.payload.virtualDeviceId : undefined);
     case ActionType.SET_GLOBAL_PROCESS_STATUS:
@@ -69,6 +78,15 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
   switch (action.type) {
     case ActionType.ADD_DEVICES: {
       const devices = setFields(state.devices, keyBy(action.payload.devices, getVirtualDeviceId));
+      return setFields(state, {
+        devices,
+        orderedDevices: sortBy(values(devices), getDeviceId).map(getVirtualDeviceId),
+      });
+    }
+    case ActionType.REPLACE_DEVICES: {
+      const mainDeviceId = getVirtualDeviceId(action.payload.device);
+      const withoutCanDevices = removeFields(state.devices, action.payload.replaceIds);
+      const devices = setField(withoutCanDevices, mainDeviceId as any, action.payload.device);
       return setFields(state, {
         devices,
         orderedDevices: sortBy(values(devices), getDeviceId).map(getVirtualDeviceId),
@@ -137,7 +155,10 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
       };
     case ActionType.RECALCULATE_DEVICE_ID: {
       const canId = getDeviceParamValue(state.currentParameters[ConfigParam.kCanID])
-      return setField(state, "fullDeviceId", getDeviceIdWithNewCanId(state.fullDeviceId, canId));
+      return setFields(state, {
+        fullDeviceId: getDeviceIdWithNewCanId(state.fullDeviceId, canId),
+        uniqueId: 0,
+      });
     }
     default:
       return state;
@@ -148,6 +169,21 @@ const parameterValidationReducer = (state: IApplicationState, action: Applicatio
   switch (action.type) {
     case ActionType.SET_DEVICE_PARAMETER:
     case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
+    case ActionType.SET_PARAMETERS: {
+      const currentParameters = state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters;
+      let validatedParameters;
+      if (action.type === ActionType.SET_PARAMETERS) {
+        validatedParameters = currentParameters.map((parameter, i) => validateDeviceParameter(state, i, parameter));
+      } else {
+        validatedParameters = setArrayElement(
+          currentParameters,
+          action.payload.parameter,
+          validateDeviceParameter(
+            state,
+            action.payload.parameter,
+            currentParameters[action.payload.parameter]));
+      }
+
       return setField(
         state,
         "deviceSet",
@@ -160,13 +196,8 @@ const parameterValidationReducer = (state: IApplicationState, action: Applicatio
             setField(
               state.deviceSet.devices[action.payload.virtualDeviceId],
               "currentParameters",
-              setArrayElement(
-                state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters,
-                action.payload.parameter,
-                validateDeviceParameter(
-                  state,
-                  action.payload.parameter,
-                  state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters[action.payload.parameter]))))));
+              validatedParameters))));
+    }
     default:
       return state;
   }
@@ -176,6 +207,10 @@ const validateDeviceParameter = (state: IApplicationState,
                                  parameter: ConfigParam,
                                  parameterState: IDeviceParameterState): IDeviceParameterState => {
   const rule = getConfigParamRule(parameter);
+  if (rule == null) {
+    return parameterState;
+  }
+
   const message = rule.validate(state);
 
   if (message == null) {

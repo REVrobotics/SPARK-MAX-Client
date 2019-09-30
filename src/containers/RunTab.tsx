@@ -24,7 +24,11 @@ import {
   querySelectedDeviceId,
   queryIsSelectedDeviceConnected
 } from "../store/selectors";
-import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "../store/param-rules/config-param-helpers";
+import {
+  getDeviceBurnedParamOrDefault,
+  getDeviceParamOrDefault,
+  getDeviceParamValueOrDefault
+} from "../store/param-rules/config-param-helpers";
 import {ConfigParam} from "../models/ConfigParam";
 
 interface IProps {
@@ -160,10 +164,10 @@ class RunTab extends React.Component<IProps, IState> {
     const currentD = getDeviceParamOrDefault(currentParameters, dParam);
     const currentF = getDeviceParamOrDefault(currentParameters, fParam);
 
-    const burnedP = burnedParameters[pParam];
-    const burnedI = burnedParameters[iParam];
-    const burnedD = burnedParameters[dParam];
-    const burnedF = burnedParameters[fParam];
+    const burnedP = getDeviceBurnedParamOrDefault(burnedParameters, pParam);
+    const burnedI = getDeviceBurnedParamOrDefault(burnedParameters, iParam);
+    const burnedD = getDeviceBurnedParamOrDefault(burnedParameters, dParam);
+    const burnedF = getDeviceBurnedParamOrDefault(burnedParameters, fParam);
 
     const pMod: boolean = currentP.value !== burnedP;
     const pRes = currentP.lastResponse;

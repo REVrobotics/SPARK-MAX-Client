@@ -2,6 +2,7 @@ import {ChildProcess, execFile} from "child_process";
 import {app, BrowserWindow, dialog, DownloadItem, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import * as util from "util";
 
 import SparkServer from "./sparkmax-server";
 import {HOST, PORT, USE_GRPC} from "../program-args";
@@ -127,32 +128,37 @@ onTwoWayCall("disconnect", (cb, device: string) => {
 onTwoWayCall("set-param", (cb, device: string, parameter: number, value: any) => {
   let afterSetParam: Promise<any>;
 
-  const setParameter = () => new Promise((resolve, reject) => {
-    server.setParameter({root: {device}, value, parameter}, (err: any, response: any) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      resolve(response);
-    });
-  });
+  const setParameter = util.promisify(server.setParameter).bind(server);
 
   if (parameter === ConfigParam.kCanID) {
     // If we set CanId field we have to pause all background activities,
     // and resume them later with the new CanId
     afterSetParam = context.pause()
-      .then(() => setParameter())
-      .then((response) => {
-        context.changeDeviceId(getDeviceIdWithNewCanId(device, value));
-        return response;
-      })
+      .then(() => setParameter({root: {device}, value, parameter}))
+      .then((response) =>
+        context.changeDeviceId(getDeviceIdWithNewCanId(device, value))
+          .then(() => response))
       .finally(() => context.resume());
   } else {
     afterSetParam = setParameter();
   }
 
   afterSetParam
+    .then((response) => cb(null, response))
+    .catch((reason) => cb(reason));
+});
+
+onTwoWayCall("id-assignment", (cb, canId: number, uniqueId: number) => {
+  const idAssignment = util.promisify(server.idAssignment).bind(server);
+
+  const afterIdAssignment = context.pause()
+    .then(() => idAssignment({uniqueId, canId}))
+    .then((response) =>
+      context.changeDeviceId(getDeviceIdWithNewCanId(context.currentDevice!, canId))
+        .then(() => response))
+    .finally(() => context.resume());
+
+  afterIdAssignment
     .then((response) => cb(null, response))
     .catch((reason) => cb(reason));
 });

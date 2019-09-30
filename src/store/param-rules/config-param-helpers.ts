@@ -72,6 +72,9 @@ export const getDeviceParamValueOrDefault = (config: IDeviceParameterState[]|und
   return state ? state.value : getConfigParamRule(parameter).default;
 };
 
+export const getDeviceBurnedParamOrDefault = (config: number[]|undefined, parameter: ConfigParam) =>
+  config && config[parameter] || getConfigParamRule(parameter).default;
+
 /**
  * Returns state of parameter for selected device if it exists, otherwise returns default state
  *

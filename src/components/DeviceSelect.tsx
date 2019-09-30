@@ -1,12 +1,10 @@
 import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
-import {DeviceId, getVirtualDeviceId, IDeviceState} from "../store/state";
+import {getCanIdFromDeviceId, getVirtualDeviceId, IDeviceState} from "../store/state";
 
 const BpDeviceSelect = Select.ofType<IDeviceState>();
 
-// tslint:disable-next-line:no-bitwise
-const getCanIdFromDeviceId = (device: DeviceId) => 0xff & device;
 const getDeviceText = (device: IDeviceState) =>
   `ID ${getCanIdFromDeviceId(device.fullDeviceId)} ${device.info.deviceName}`;
 

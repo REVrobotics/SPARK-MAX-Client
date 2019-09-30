@@ -1,8 +1,16 @@
-import {createUsbDeviceState, fromDeviceId, VirtualDeviceId} from "../state";
+import {first} from "lodash";
+import {
+  createCanDeviceState,
+  createHubDeviceState,
+  fromDeviceId,
+  getVirtualDeviceId,
+  setVirtualDeviceId,
+  VirtualDeviceId
+} from "../state";
 import {
   addDevices,
-  addLog,
-  setConnectedDevice, setDeviceLoaded, setParameters,
+  addLog, replaceDevices,
+  setConnectedDevice, setDeviceLoaded, setParameters, setSelectedDevice,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus,
   updateGlobalIsProcessing,
@@ -15,18 +23,40 @@ import {
   queryHubVirtualDeviceId,
   querySelectedVirtualDeviceId,
   queryIsDeviceConnected,
-  queryDeviceId
+  queryDeviceId, queryConnectedDevices
 } from "../selectors";
 import {loadParameters} from "./parameter-actions";
-import {ActionType, SparkAction} from "./action-types";
+import {SparkAction} from "./action-types";
 import {onSchedule} from "../../utils/redux-scheduler";
+import {logError} from "../../utils/promise-utils";
 
 export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
     dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTING..."));
     dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
 
-    return SparkManager.connect(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!))
+    const deviceId = fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!);
+
+    return SparkManager.connect(deviceId)
+      .then(() =>
+        // After device is connected, scan its CAN bus
+        SparkManager.listCanDevices(deviceId)
+          .catch((err) => {
+            // Common error handling, catch clause here below will process error
+            SparkManager.disconnect(deviceId);
+            return Promise.reject(err);
+          }))
+      .then(({extendedList}) => {
+        // Here we need only SPARK MAX controllers
+        const sparkMaxDevices = extendedList.filter((extended) => extended.updateable);
+        // Generate device state for each device
+        const canDevices = sparkMaxDevices.map((extended) => createCanDeviceState(extended, virtualDeviceId));
+        // We assume that first device is the device we tried to connect
+        // We have to assign correct id (that was used initially)
+        const firstCanDevice = canDevices.slice(0, 1).map((device) => setVirtualDeviceId(device, virtualDeviceId));
+        dispatch(addDevices(firstCanDevice.concat(canDevices.slice(1))));
+      })
+      .catch(logError)
       .catch((error: any) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTION FAILED"));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -56,16 +86,28 @@ export function connectToSelectedDevice(): SparkAction<Promise<void>> {
 
 export function disconnectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> {
   return onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
-    dispatch(updateDeviceIsProcessing(true));
-    return SparkManager.disconnect(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)).then(() => {
-      dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
-      dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-      dispatch(setDeviceLoaded(virtualDeviceId, false));
-      dispatch(setConnectedDevice(virtualDeviceId, false));
-      dispatch(setParameters(virtualDeviceId, []));
-    }).catch(() => {
-      dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-    });
+    dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
+    return SparkManager.disconnect(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!))
+      .then(() =>
+        SparkManager.listUsbDevices()
+        // TODO: select disconnected USB device based on descriptor
+          .then(({extendedList}) => first(extendedList)!))
+      .then((disconnectedDevice) => {
+        // Remove all CAN devices connected to hub device
+        // As we do not know what device is a hub, we just replace current one by hub device state
+        const device = setVirtualDeviceId(createHubDeviceState(disconnectedDevice), virtualDeviceId);
+        const deviceIdsToReplace = queryConnectedDevices(getState()).map(getVirtualDeviceId);
+        dispatch(replaceDevices(device, deviceIdsToReplace));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
+        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+        dispatch(setDeviceLoaded(virtualDeviceId, false));
+        dispatch(setConnectedDevice(virtualDeviceId, false));
+        dispatch(setParameters(virtualDeviceId, []));
+      })
+      .catch(logError)
+      .catch(() => {
+        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
+      });
   });
 };
 
@@ -88,16 +130,12 @@ export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Prom
 
     const isConnected = queryIsDeviceConnected(getState(), virtualDeviceId);
 
+    dispatch(setSelectedDevice(virtualDeviceId));
+
     // load parameters if device is connected and parameters was not loaded
-    const parametersLoaded = isConnected && !device.isLoaded ?
+    return isConnected && !device.isLoaded ?
       dispatch(loadParameters(virtualDeviceId))
       : Promise.resolve();
-
-    return parametersLoaded
-      .then(() => dispatch({
-        payload: { virtualDeviceId },
-        type: ActionType.SELECT_DEVICE,
-      }));
   };
 
 export function findUsbDevices(): SparkAction<Promise<void>> {
@@ -109,11 +147,7 @@ export function findUsbDevices(): SparkAction<Promise<void>> {
       .then(({deviceList, extendedList}) => {
         dispatch(updateGlobalProcessStatus(deviceList.length ? "" : "NO DEVICES FOUND"));
         dispatch(updateGlobalIsProcessing(false));
-        dispatch(addDevices(extendedList.map((extended) => createUsbDeviceState(extended.deviceId!, {
-          deviceName: extended.deviceName!,
-          driverName: extended.driverName!,
-          updateable: extended.updateable!,
-        }))));
+        dispatch(addDevices(extendedList.map((extended) => createHubDeviceState(extended))));
       })
       .catch(() => {
         dispatch(updateGlobalProcessStatus("SEARCH FAILED"));

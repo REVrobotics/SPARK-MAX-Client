@@ -1,3 +1,4 @@
+import {without} from "lodash";
 import {ConfigParam, IdleMode, MotorType, SensorType} from "../models/dto";
 import {ConfigParamMessage, IConfigParamRule} from "./param-rules/ConfigParamRule";
 import {configParamAccessor, getSelectedDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
@@ -5,6 +6,12 @@ import {createNumericRule} from "./param-rules/NumericParamRule";
 import {createSelectRule} from "./param-rules/SelectParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
 import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
+import {queryConnectedDevicesByCanId, querySelectedDevice} from "./selectors";
+import {substitute} from "../utils/string-utils";
+
+const MESSAGE_CAN_0 = "For proper operation of the SPARK MAX, please change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.";
+const MESSAGE_NOT_CONFIGURED_DEVICE = "To work with SPARK MAX controller, configure it by setting unique CAN ID on the bus";
+const MESSAGE_NOT_UNIQUE_CAN_ID = "Device having id $id already exists. Assign unique CAN ID, please";
 
 const RULES: {[param: number]: IConfigParamRule} = {
   [ConfigParam.kCanID]: createNumericRule({
@@ -17,9 +24,18 @@ const RULES: {[param: number]: IConfigParamRule} = {
     },
     ...configParamAccessor(
       ConfigParam.kCanID,
-      (value) => value === 0 ?
-        ConfigParamMessage.error("For proper operation of the SPARK MAX, please change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.")
-        : undefined),
+      (value, state) => {
+        const device = querySelectedDevice(state)!;
+        if (value === 0 && device.uniqueId !== 0) {
+          return ConfigParamMessage.error(MESSAGE_NOT_CONFIGURED_DEVICE);
+        } else if (without(queryConnectedDevicesByCanId(state, value), device).length > 0) {
+          return ConfigParamMessage.error(substitute(MESSAGE_NOT_UNIQUE_CAN_ID, {id: String(value)}));
+        } else if (value === 0) {
+          return ConfigParamMessage.warning(MESSAGE_CAN_0);
+        } else {
+          return;
+        }
+      }),
   }),
   [ConfigParam.kMotorType]: createSelectRule({
     default: MotorType.Brushless,
