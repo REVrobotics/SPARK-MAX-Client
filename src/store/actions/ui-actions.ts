@@ -7,6 +7,22 @@ import {ConfirmationAnswer, IConfirmationDialogConfig} from "../state";
 
 let currentDialog: IDeferred<ConfirmationAnswer> | undefined;
 
+/**
+ * Show confirmation using provided config.
+ * When this action is dispatched, it returns {@link Promise}
+ * which is resolved as soon as user makes a choice in the dialog.
+ *
+ * {@link Promise} is resolved with value of {@link ConfirmationAnswer} type.
+ * ```ts
+ * const promise = dispatch(showConfirmation(...));
+ * promise.then((answer) => {
+ *   if (answer === ConfirmationAnswer.Yes) {
+ *     ...
+ *   }
+ * });
+ * ```
+ * @param config
+ */
 export const showConfirmation = (config: IConfirmationDialogConfig): SparkAction<Promise<ConfirmationAnswer>> =>
   (dispatch) => {
     if (currentDialog) {

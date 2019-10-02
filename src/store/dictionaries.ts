@@ -6,6 +6,10 @@ export interface IDictionaryWord {
   text: string;
 }
 
+/**
+ * Dictionary describes immutable and ordered set of `id`/`text` entries.
+ * Typically, it is used to represent entries in select, like sensor types, motor types, etc.
+ */
 export class Dictionary {
   public static from(words: IDictionaryWord[]): Dictionary {
     return new Dictionary(words);
@@ -18,16 +22,24 @@ export class Dictionary {
     this.index = keyBy(words as any[], ({id}) => id);
   }
 
+  /**
+   * Returns ordered entries
+   */
   public seq(): IDictionaryWord[] {
     return this.words;
   }
 
+  /**
+   * Returns text of entry by the given ID
+   */
   public get(id: any): IDictionaryWord {
     return this.index[id];
   }
 }
 
 export const getWordText = (option: IDictionaryWord) => option.text;
+
+// Some dictionaries defines here
 
 export const MOTOR_TYPES = Dictionary.from([
   {id: MotorType.Brushless, text: "Brushless"},

@@ -1,3 +1,8 @@
+/**
+ * This file defines the simplest actions (atom actions).
+ * These actions should not rely on some middleware and use only redux out-of-the box capabilities.
+ */
+
 import {ActionCreator} from "redux";
 import {
   ActionType,

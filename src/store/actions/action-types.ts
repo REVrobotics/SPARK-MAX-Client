@@ -1,3 +1,7 @@
+/**
+ * This file defines types of all application actions
+ */
+
 import {Action} from "redux";
 import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
@@ -10,6 +14,9 @@ import {
   ProcessType, VirtualDeviceId
 } from "../state";
 
+/**
+ * Each action (atom action) should have its own unique ActionType
+ */
 export enum ActionType {
   SET_GLOBAL_PROCESS_STATUS = "SET_GLOBAL_PROCESS_STATUS",
   SET_GLOBAL_PROCESSING = "SET_GLOBAL_PROCESSING",
