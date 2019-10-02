@@ -4,8 +4,24 @@ import {
 } from "./action-types";
 import {deferred, IDeferred} from "../../utils/promise-utils";
 import {ConfirmationAnswer, IConfirmationDialogConfig} from "../state";
+import {Intent, Toaster} from "@blueprintjs/core";
 
 let currentDialog: IDeferred<ConfirmationAnswer> | undefined;
+let toaster: Toaster;
+
+export const setToasterRef = (t: Toaster) => {
+  toaster = t;
+};
+
+export const showToast = (intent: Intent, text: string) =>
+  toaster.show({
+    intent,
+    message: text,
+  });
+
+export const showToastSuccess = (text: string) => showToast(Intent.SUCCESS, text);
+export const showToastError = (text: string) => showToast(Intent.DANGER, text);
+export const showToastWarning = (text: string) => showToast(Intent.WARNING, text);
 
 /**
  * Show confirmation using provided config.

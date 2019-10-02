@@ -79,14 +79,70 @@ export interface IDeviceSetState {
   devices: { [deviceId: string]: IDeviceState },
 }
 
+export interface INetworkState {
+  devices: INetworkDevice[];
+  outputText: string[];
+  firmwareLoading: boolean;
+  firmwareLoadingProgress: number,
+  firmwareLoadingText: string,
+  scanInProgress: boolean;
+  lastFirmwareLoadingMessage: string;
+}
+
+export interface IFirmwareState {
+  loading: boolean;
+  loadError: boolean;
+  config: any;
+}
+
+export enum FirmwareTag {
+  RecoveryUpdateRequired = "Recovery Update Required",
+  Latest = "Latest",
+  Previous = "Previous",
+}
+
+export interface IFirmwareEntry {
+  spec: FirmwareTag;
+  version: string;
+  url: string;
+  md5: string;
+  sha1: string;
+}
+
 /**
  * Whole application state
  */
 export interface IApplicationState {
   context: IContextState,
   deviceSet: IDeviceSetState,
+  network: INetworkState,
+  firmware: IFirmwareState;
   logs: string[],
   ui: IUiState;
+}
+
+export enum NetworkDeviceStatus {
+  Unknown,
+  NotUpdateable,
+  NotConfigured,
+  RequiresRecoveryMode,
+  RecoveryMode,
+  Updateable,
+  Error,
+}
+
+export interface INetworkDevice {
+  selected: boolean;
+  deviceId: DeviceId;
+  uniqueId: number;
+  interfaceName: string;
+  driverName: string;
+  deviceName: string;
+  updateable: boolean;
+  firmwareVersion: string;
+  loading: boolean;
+  status: NetworkDeviceStatus;
+  error?: string;
 }
 
 /**
@@ -100,11 +156,21 @@ export interface IDeviceInfo {
   updateable: boolean;
 }
 
+export enum TabId {
+  Basic = "main-tab-basic",
+  Advanced = "main-tab-advanced",
+  Run = "main-tab-run",
+  Network = "main-tab-network",
+  Help = "main-tab-help",
+  About = "main-tab-about",
+}
+
 /**
  * State of shared UI components.
  * This state is necessary to support common application flows: confirmations, notifications, etc.
  */
 export interface IUiState {
+  selectedTabId: TabId;
   /**
    * Properties for confirmation dialog.
    */
@@ -390,3 +456,40 @@ export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(
  */
 // tslint:disable-next-line:no-bitwise
 export const getCanIdFromDeviceId = (device: DeviceId) => device % 100;
+
+export const getNetworkDeviceId = (device: INetworkDevice) => device.deviceId;
+
+export const createNetworkDevice = (extended: ExtendedListResponseDto): INetworkDevice => {
+  let status: NetworkDeviceStatus;
+
+  if (extended.uniqueId) {
+    status = NetworkDeviceStatus.NotConfigured;
+  } else if (!extended.updateable) {
+    status = NetworkDeviceStatus.NotUpdateable
+  } else {
+    status = NetworkDeviceStatus.Unknown;
+  }
+
+  return {
+    deviceId: extended.deviceId!,
+    uniqueId: extended.uniqueId!,
+    deviceName: extended.deviceName!,
+    interfaceName: extended.interfaceName!,
+    driverName: extended.driverName!,
+    firmwareVersion: "",
+    status,
+    updateable: !!extended.updateable,
+    loading: !!extended.updateable,
+    selected: status === NetworkDeviceStatus.NotConfigured,
+  };
+};
+
+export const isNetworkDeviceUpdateable = (device: INetworkDevice) => device.updateable;
+export const isNetworkDeviceNeedFirmwareVersion = (device: INetworkDevice) => device.updateable && device.uniqueId === 0;
+export const isNetworkDeviceReadyToUpdate = (device: INetworkDevice) =>
+  device.status === NetworkDeviceStatus.Updateable;
+export const isNetworkDeviceLoading = (device: INetworkDevice) => device.loading;
+export const isNetworkDeviceError = (device: INetworkDevice) => device.status === NetworkDeviceStatus.Error;
+export const isNetworkDeviceSelectable = (device: INetworkDevice) =>
+  !device.loading && device.status === NetworkDeviceStatus.Updateable;
+export const isNetworkDeviceSelected = (device: INetworkDevice) => device.selected;

@@ -1,8 +1,8 @@
 import * as React from "react";
 import {ConfirmationAnswer, IApplicationState, IConfirmationDialogConfig} from "../store/state";
 import {connect} from "react-redux";
-import {answerConfirmation, closeConfirmation, SparkDispatch} from "../store/actions";
-import {Alert} from "@blueprintjs/core";
+import {answerConfirmation, closeConfirmation, setToasterRef, SparkDispatch} from "../store/actions";
+import {Alert, Toaster} from "@blueprintjs/core";
 
 interface IProps {
   confirmation?: IConfirmationDialogConfig;
@@ -29,7 +29,12 @@ class UiSupport extends React.Component<IProps> {
       >{confirmation.text}</Alert>;
     }
 
-    return <React.Fragment>{ confirmationOpened ? alert : null}</React.Fragment>;
+    return (
+      <>
+        <Toaster ref={setToasterRef}/>
+        { confirmationOpened ? alert : null}
+      </>
+    );
   }
 }
 

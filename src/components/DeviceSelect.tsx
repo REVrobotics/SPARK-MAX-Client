@@ -21,6 +21,7 @@ const renderer = (device: IDeviceState, itemProps: IItemRendererProps) => {
 
 interface IProps {
   className: string;
+  disabled: boolean;
   devices: IDeviceState[]
   selected?: IDeviceState;
 
@@ -29,9 +30,10 @@ interface IProps {
   onSelect(device: IDeviceState): void;
 }
 
-export const DeviceSelect: React.FC<IProps> = ({className, devices, selected, onOpened, onClosed, onSelect}) => {
-  const disabled = devices.length <= 1;
-
+export const DeviceSelect: React.FC<IProps> = ({
+                                                 className, devices, disabled, selected,
+                                                 onOpened, onClosed, onSelect,
+                                               }) => {
   const popoverProps = useMemo(() => ({ onOpened, onClosed }), []);
 
   return (

@@ -12,6 +12,9 @@ import actionSchedule from "./store/actions/action-schedule";
 import {sendTwoWay} from "./managers/ipc-renderer-calls";
 import {reduxScheduler} from "./utils/redux-scheduler";
 
+// TODO: Mocked calls should be included only in dev environment
+require("./managers/mocked-calls");
+
 const composeEnhancers = composeWithDevTools({});
 
 const applicationStore = createStore(

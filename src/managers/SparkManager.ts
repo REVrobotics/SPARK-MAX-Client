@@ -1,5 +1,5 @@
 import {ConfigParam} from "../models/ConfigParam";
-import {ListRequestDto, ListResponseDto, ParameterResponseDto} from "../models/dto";
+import {FirmwareResponseDto, ListRequestDto, ListResponseDto} from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
@@ -97,8 +97,8 @@ class SparkManager {
     return this.listDevices({all: true, root: {device: deviceId}})
   }
 
-  public listAllDevices(): Promise<string[]> {
-    return this.listDevices({all: true}).then(({deviceList}) => deviceList);
+  public listAllDevices(): Promise<ListResponseDto> {
+    return this.listDevices({all: true});
   }
 
   public listDevices(request: ListRequestDto): Promise<ListResponseDto> {
@@ -113,8 +113,8 @@ class SparkManager {
     return sendTwoWay("disconnect", device);
   }
 
-  public downloadFile(url: string) {
-    ipcRenderer.send("download", url);
+  public downloadFile(url: string): Promise<string> {
+    return sendTwoWay("download", url);
   }
 
   public restoreDefaults(device: string): Promise<any> {
@@ -131,40 +131,19 @@ class SparkManager {
   }
 
   public requestFirmware(): Promise<any[]> {
-    return new Promise<any[]>((resolve, reject) => {
-      ipcRenderer.once("request-firmware-response", (event: any, paths: any[]) => {
-        resolve(paths);
-      });
-      ipcRenderer.send("request-firmware");
-    });
+    return sendTwoWay("request-firmware");
   }
 
-  public getFirmware(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      ipcRenderer.once("get-firmware-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("get-firmware");
-    });
+  public getFirmware(device: string): Promise<FirmwareResponseDto> {
+    return sendTwoWay("get-firmware", device);
   }
 
-  public loadFirmware(filename: string, listener: (event: any, error: any, response: any) => void): Promise<any> {
-    return new Promise<any[]>((resolve, reject) => {
-      ipcRenderer.on("load-firmware-response", listener);
-      ipcRenderer.once("load-firmware-finish", (event: any, error: any, response: any) => {
-        ipcRenderer.removeListener("load-firmware-response", listener);
-        if (error && !response.updateCompletedSuccessfully) {
-          reject({error, response});
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("load-firmware", filename);
-    });
+  public loadFirmware(filename: string, devicesToUpdate: string[]): Promise<FirmwareResponseDto> {
+    return sendTwoWay("load-firmware", filename, devicesToUpdate);
+  }
+
+  public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {
+    onCallback("load-firmware-progress", listener);
   }
 
   public onDisconnect(f: (device: string) => void): () => void {
@@ -217,7 +196,7 @@ class SparkManager {
   }
 
   private getParameter(device: string, id: number): Promise<number> {
-    return sendTwoWay<ParameterResponseDto>("get-param", device, id).then((response) => Number(response.value));
+    return sendTwoWay("get-param", device, id).then((response) => Number(response.value));
   }
 
   private getParameterList(device: string): Promise<number[]> {

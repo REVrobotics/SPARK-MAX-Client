@@ -11,6 +11,7 @@ import {
 } from "../store/actions";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
+  queryIsFirmwareLoading,
   queryIsSelectedDeviceBlocked,
   queryIsSelectedDeviceConnected,
   queryIsSelectedDeviceInProcessing,
@@ -258,7 +259,8 @@ export function mapStateToProps(state: IApplicationState) {
   return {
     enabled: queryIsSelectedDeviceConnected(state)
       && !queryIsSelectedDeviceInProcessing(state)
-      && queryIsSelectedDeviceLoaded(state),
+      && queryIsSelectedDeviceLoaded(state)
+      && !queryIsFirmwareLoading(state),
     blocked: queryIsSelectedDeviceBlocked(state),
     processType: querySelectedDeviceProcessType(state),
     transient: querySelectedDeviceTransientParameters(state),

@@ -7,21 +7,21 @@ import {ActionCreator} from "redux";
 import {
   ActionType,
   IAddDevices,
-  IAddLog, IRecalculateDeviceId, IReplaceDevices,
-  ISetConnectedDevice,
+  IAddLog, IConsoleOutput, ISetLastFirmwareLoadingMessage, IRecalculateDeviceId, IReplaceDevices,
+  ISetConnectedDevice, ISetConsoleOutput,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
-  ISetDeviceProcessing,
-  ISetGlobalProcessing,
+  ISetDeviceProcessing, ISetFirmwareDownloaded, ISetFirmwareDownloadError, ISetFirmwareDownloading, ISetFirmwareLoading,
+  ISetGlobalProcessing, ISetNetworkDevices, ISetNetworkScanInProgress,
   ISetParameters, ISetSelectedDevice,
   ISetUpdateAvailable,
-  IUpdateDeviceProcessStatus,
-  IUpdateGlobalProcessStatus,
+  IUpdateDeviceProcessStatus, IUpdateFirmwareLoadingProgress,
+  IUpdateGlobalProcessStatus, IUpdateNetworkDevice, ISetSelectedTab,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
-import {IDeviceState, ProcessType, VirtualDeviceId} from "../state";
+import {DeviceId, IDeviceState, INetworkDevice, ProcessType, TabId, VirtualDeviceId} from "../state";
 import {ConfigParam} from "../../models/ConfigParam";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
@@ -146,11 +146,80 @@ export const addLog: ActionCreator<IAddLog> = (log: string) => ({
   type: ActionType.ADD_LOG
 });
 
+export const setNetworkDevices: ActionCreator<ISetNetworkDevices> = (devices: INetworkDevice[]) => ({
+  payload: {
+    devices,
+  },
+  type: ActionType.SET_NETWORK_DEVICES,
+});
+
+export const updateNetworkDevice: ActionCreator<IUpdateNetworkDevice> = (deviceId: DeviceId,
+                                                                         update: Partial<INetworkDevice>) => ({
+  payload: {
+    deviceId,
+    update,
+  },
+  type: ActionType.UPDATE_NETWORK_DEVICE,
+});
+
+export const setNetworkScanInProgress: ActionCreator<ISetNetworkScanInProgress> = (scanInProgress: boolean) => ({
+  payload: {
+    scanInProgress,
+  },
+  type: ActionType.SET_NETWORK_SCAN_IN_PROGRESS,
+});
+
+export const setFirmwareDownloading: ActionCreator<ISetFirmwareDownloading> = () => ({
+  payload: {},
+  type: ActionType.SET_FIRMWARE_DOWNLOADING,
+});
+
+export const setFirmwareDownloaded: ActionCreator<ISetFirmwareDownloaded> = (config: any) => ({
+  payload: {config},
+  type: ActionType.SET_FIRMWARE_DOWNLOADED,
+});
+
+export const setFirmwareDownloadError: ActionCreator<ISetFirmwareDownloadError> = () => ({
+  payload: {},
+  type: ActionType.SET_FIRMWARE_DOWNLOAD_ERROR,
+});
+
+export const setFirmwareLoading: ActionCreator<ISetFirmwareLoading> = (loading: boolean) => ({
+  payload: {loading},
+  type: ActionType.SET_FIRMWARE_LOADING,
+});
+
+export const consoleOutput: ActionCreator<IConsoleOutput> = (text: string) => ({
+  payload: {text},
+  type: ActionType.CONSOLE_OUTPUT,
+});
+
+export const setConsoleOutput: ActionCreator<ISetConsoleOutput> = (text: string[]) => ({
+  payload: {text},
+  type: ActionType.SET_CONSOLE_OUTPUT,
+});
+
+export const updateFirmwareLoadingProgress: ActionCreator<IUpdateFirmwareLoadingProgress> = (progress: number,
+                                                                                             text: string) => ({
+  payload: {progress, text},
+  type: ActionType.UPDATE_FIRMWARE_LOADING_PROGRESS,
+});
+
+export const setLastFirmwareLoadingMessage: ActionCreator<ISetLastFirmwareLoadingMessage> = (message: string) => ({
+  payload: {message},
+  type: ActionType.SET_LAST_FIRMWARE_LOADING_MESSAGE,
+});
+
 export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAvailable: boolean) => ({
   payload: {
     updateAvailable
   },
   type: ActionType.SET_UPDATE_AVAILABLE
+});
+
+export const setSelectedTab = (tab: TabId): ISetSelectedTab => ({
+  payload: { tab },
+  type: ActionType.SET_SELECTED_TAB,
 });
 
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);

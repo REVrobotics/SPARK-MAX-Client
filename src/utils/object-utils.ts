@@ -1,4 +1,4 @@
-import {constant, isFunction, omit} from "lodash";
+import {constant, findIndex, isFunction, omit} from "lodash";
 
 /**
  * Immutable setter of object field.
@@ -60,4 +60,16 @@ export function setArrayElement<T>(array: T[], index: number, value: T | ((value
   }
 
   return array.slice(0, index).concat([newValue]).concat(array.slice(index + 1));
+}
+
+export function setArrayElementBy<T, K>(array: T[], toKey: (value: T) => K, key: K, value: T | ((value: T) => T)): T[] {
+  const index = findIndex(array, (item) => toKey(item) === key);
+  return setArrayElement(array, index, value);
+}
+
+export function setArrayElementWith<T>(array: T[],
+                                       predicate: (value: T) => boolean,
+                                       value: T | ((value: T) => T)): T[] {
+  const index = findIndex(array, predicate);
+  return setArrayElement(array, index, value);
 }

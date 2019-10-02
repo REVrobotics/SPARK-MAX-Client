@@ -6,7 +6,7 @@
 import {filter, find, first} from "lodash";
 import {
   DEFAULT_TRANSIENT_STATE,
-  DeviceId,
+  DeviceId, FirmwareTag,
   getDeviceBlockedReason,
   getDeviceCommittedCanId,
   getDeviceId,
@@ -14,7 +14,7 @@ import {
   getDeviceParamValue,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState,
+  IApplicationState, IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
   isDeviceNotConfigured,
@@ -23,6 +23,8 @@ import {
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {ConfigParam} from "../models/ConfigParam";
+
+export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
 /**
  * Returns ID of the first USB device
@@ -288,3 +290,40 @@ export const queryProcessStatus = (state: IApplicationState) => {
   const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? "" : selectedDevice.processStatus;
 };
+
+/**
+ * Returns state of network tab
+ *
+ * @param state
+ */
+export const queryNetwork = (state: IApplicationState) => state.network;
+export const queryNetworkDevices = (state: IApplicationState) => state.network.devices;
+export const queryConsoleOutput = (state: IApplicationState) => state.network.outputText;
+export const queryLastFirmwareLoadingMessage = (state: IApplicationState) => state.network.lastFirmwareLoadingMessage;
+
+export const queryIsFirmwareDownloaded = (state: IApplicationState) => queryFirmwareConfig(state) != null;
+export const queryIsFirmwareDownloading = (state: IApplicationState) => state.firmware.loading;
+export const queryFirmwareDownloadError = (state: IApplicationState) => state.firmware.loadError;
+export const queryFirmwareConfig = (state: IApplicationState) => state.firmware.config;
+export const queryLatestFirmwareVersion = (state: IApplicationState) => {
+  const firmware = queryFirmwareByTag(state, FirmwareTag.Latest);
+  return firmware ? firmware.version : undefined;
+};
+
+export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): IFirmwareEntry|undefined => {
+  const config = queryFirmwareConfig(state);
+
+  if (config == null || config.firmware == null) {
+    return;
+  }
+
+  for (const firmware of config.firmware) {
+    if (firmware.spec === tag) {
+      return firmware;
+    }
+  }
+
+  return;
+};
+
+export const queryIsFirmwareLoading = (state: IApplicationState) => state.firmware.loading;

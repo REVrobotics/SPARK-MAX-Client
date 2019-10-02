@@ -1,14 +1,13 @@
 import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import WebProvider from "../../providers/WebProvider";
-import {
-  addLog,
-  setConnectedDevice,
-  updateDeviceProcessStatus
-} from "./atom-actions";
+import {setConnectedDevice, setSelectedTab, updateDeviceProcessStatus} from "./atom-actions";
 import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
 import {queryDeviceByDeviceId, queryFirstVirtualDeviceId} from "../selectors";
-import {getVirtualDeviceId, toDeviceId} from "../state";
+import {ConfirmationAnswer, getVirtualDeviceId, TabId, toDeviceId} from "../state";
+import {downloadLatestFirmware} from "./firmware-actions";
+import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./network-actions";
+import {showConfirmation} from "./ui-actions";
+import {Intent} from "@blueprintjs/core";
 
 export function initApplication(): SparkAction<void> {
   return (dispatch, getState) => {
@@ -20,9 +19,9 @@ export function initApplication(): SparkAction<void> {
           return;
         }
         return dispatch(selectDevice(virtualDeviceId))
-          .then(() => dispatch(connectHubDevice(virtualDeviceId)));
-      })
-      .then(() => dispatch(checkForFirmwareUpdate()));
+          .then(() => dispatch(connectHubDevice(virtualDeviceId)))
+          .then(() => dispatch(checkForFirmwareUpdate()));
+      });
 
     SparkManager.onDisconnect((deviceId) => {
       const device = queryDeviceByDeviceId(getState(), toDeviceId(deviceId));
@@ -32,62 +31,32 @@ export function initApplication(): SparkAction<void> {
         dispatch(setConnectedDevice(virtualDeviceId, false));
       }
     });
+
+    SparkManager.onLoadFirmwareProgress((error, response) =>
+      dispatch(updateLoadFirmwareProgress(error, response)));
   };
 }
 
 function checkForFirmwareUpdate(): SparkAction<void> {
   return (dispatch) => {
-    SparkManager.getFirmware().then((versionJSON: any) => {
-      if (versionJSON.version && versionJSON.version.length > 0) {
-        const version = versionJSON.version.substring(1, versionJSON.version.length);
-        WebProvider.get("content/sw/max/sparkmax-gui-cfg.json").then((firmwareJSON: any) => {
-          // const firmwareJSON: any = TEST_JSON;
-          if (firmwareJSON.firmware) {
-            for (const firmware of firmwareJSON.firmware) {
-              if (firmware.spec === "Latest") {
-                if (isOldFirmware(version, firmware.version)) {
-                  SparkManager.showInfoBox("SPARK MAX Firmware", `Your motor controller is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Firmware' tab.`);
-                }
-              }
-            }
-          }
-        }).catch((error: any) => {
-          dispatch(addLog(error));
-        });
-      }
-    });
-  };
-}
-
-function isOldFirmware(current: string, other: string): boolean {
-  const curVer = current.toString().split(".");
-  const othVer = other.toString().split(".");
-
-  for (let i = 0; i < (Math.max(curVer.length, othVer.length)); i++) {
-
-    if (Number(curVer[i]) < Number(othVer[i])) {
-      return true;
-    }
-
-    if (curVer[i] !== othVer[i]) {
-      break;
-    }
-  }
-  return false;
-}
-
-function downloadLatestFirmware(): SparkAction<void> {
-  return (dispatch) => {
-    WebProvider.get("content/sw/max/sparkmax-gui-cfg.json").then((firmwareJSON: any) => {
-      if (firmwareJSON.firmware) {
-        for (const firmware of firmwareJSON.firmware) {
-          if (firmware.spec === "Latest") {
-            SparkManager.downloadFile(firmware.url);
-          }
+    dispatch(downloadLatestFirmware())
+      .then(() => dispatch(findObsoletedDevice()))
+      .then((hasObsoletedDevice) => {
+        if (!hasObsoletedDevice) {
+          return ConfirmationAnswer.Cancel;
         }
-      }
-    }).catch((error: any) => {
-      dispatch(addLog(error));
-    });
+        return dispatch(showConfirmation({
+          intent: Intent.WARNING,
+          text: `One of your motor controllers is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Firmware' tab.`,
+          yesLabel: "Open Network Tab & Scan Bus",
+          cancelLabel: "Close",
+        }));
+      })
+      .then((answer) => {
+        if (answer === ConfirmationAnswer.Yes) {
+          dispatch(setSelectedTab(TabId.Network));
+          dispatch(scanCanBus());
+        }
+      });
   };
 }

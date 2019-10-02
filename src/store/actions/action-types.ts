@@ -7,11 +7,11 @@ import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {ConfigParam} from "../../models/ConfigParam";
 import {
-  ConfirmationAnswer,
+  ConfirmationAnswer, DeviceId,
   IApplicationState,
   IConfirmationDialogConfig,
-  IDeviceState, IDeviceTransientState,
-  ProcessType, VirtualDeviceId
+  IDeviceState, IDeviceTransientState, INetworkDevice,
+  ProcessType, TabId, VirtualDeviceId
 } from "../state";
 
 /**
@@ -36,12 +36,24 @@ export enum ActionType {
   ADD_LOG = "ADD_LOG",
   SET_UPDATE_AVAILABLE = "SET_UPDATE_AVAILABLE",
   SET_SELECTED_DEVICE = "SELECT_DEVICE",
+  SET_SELECTED_TAB = "SET_SELECTED_TAB",
   OPEN_CONFIRMATION = "OPEN_CONFIRMATION",
   ANSWER_CONFIRMATION = "ANSWER_CONFIRMATION",
   SET_DEVICE_PARAMETER = "SET_DEVICE_PARAMETER",
   SET_DEVICE_PARAMETER_RESPONSE = "SET_DEVICE_PARAMETER_RESPONSE",
   SET_TRANSIENT_PARAMETER = "SET_TRANSIENT_PARAMETER",
-  RECALCULATE_DEVICE_ID = "RECALCULATE_DEVICE_ID"
+  RECALCULATE_DEVICE_ID = "RECALCULATE_DEVICE_ID",
+  SET_NETWORK_DEVICES = "SET_NETWORK_DEVICES",
+  UPDATE_NETWORK_DEVICE = "UPDATE_NETWORK_DEVICE",
+  SET_NETWORK_SCAN_IN_PROGRESS = "SET_NETWORK_SCAN_IN_PROGRESS",
+  SET_FIRMWARE_LOADING = "SET_FIRMWARE_LOADING",
+  CONSOLE_OUTPUT = "CONSOLE_OUTPUT",
+  SET_CONSOLE_OUTPUT = "SET_CONSOLE_OUTPUT",
+  UPDATE_FIRMWARE_LOADING_PROGRESS = "UPDATE_FIRMWARE_LOADING_PROGRESS",
+  SET_LAST_FIRMWARE_LOADING_MESSAGE = "SET_LAST_FIRMWARE_LOADING_MESSAGE",
+  SET_FIRMWARE_DOWNLOADING = "SET_FIRMWARE_DOWNLOADING",
+  SET_FIRMWARE_DOWNLOAD_ERROR = "SET_FIRMWARE_DOWNLOAD_ERROR",
+  SET_FIRMWARE_DOWNLOADED = "SET_FIRMWARE_DOWNLOADED",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -198,6 +210,13 @@ export interface ISelectDevice extends IDeviceAwareAction {
   }
 }
 
+export interface ISetSelectedTab extends Action {
+  type: ActionType.SET_SELECTED_TAB,
+  payload: {
+    tab: TabId
+  }
+}
+
 export interface IOpenConfirmation extends Action {
   type: ActionType.OPEN_CONFIRMATION,
   payload: IConfirmationDialogConfig
@@ -208,6 +227,81 @@ export interface IAnswerConfirmation extends Action {
   payload: ConfirmationAnswer
 }
 
+export interface ISetNetworkDevices extends Action {
+  type: ActionType.SET_NETWORK_DEVICES,
+  payload: {
+    devices: INetworkDevice[]
+  }
+}
+
+export interface IUpdateNetworkDevice extends Action {
+  type: ActionType.UPDATE_NETWORK_DEVICE,
+  payload: {
+    deviceId: DeviceId,
+    update: Partial<INetworkDevice>
+  }
+}
+
+export interface ISetNetworkScanInProgress extends Action {
+  type: ActionType.SET_NETWORK_SCAN_IN_PROGRESS,
+  payload: {
+    scanInProgress: boolean
+  }
+}
+
+export interface ISetFirmwareLoading extends Action {
+  type: ActionType.SET_FIRMWARE_LOADING,
+  payload: {
+    loading: boolean
+  },
+}
+
+export interface IConsoleOutput extends Action {
+  type: ActionType.CONSOLE_OUTPUT,
+  payload: {
+    text: string
+  }
+}
+
+export interface ISetConsoleOutput extends Action {
+  type: ActionType.SET_CONSOLE_OUTPUT,
+  payload: {
+    text: string[]
+  }
+}
+
+export interface IUpdateFirmwareLoadingProgress {
+  type: ActionType.UPDATE_FIRMWARE_LOADING_PROGRESS,
+  payload: {
+    progress: number,
+    text: string
+  }
+}
+
+export interface ISetLastFirmwareLoadingMessage {
+  type: ActionType.SET_LAST_FIRMWARE_LOADING_MESSAGE,
+  payload: {
+    message: string
+  }
+}
+
+export interface ISetFirmwareDownloading extends Action {
+  type: ActionType.SET_FIRMWARE_DOWNLOADING,
+  payload: {}
+}
+
+export interface ISetFirmwareDownloaded extends Action {
+  type: ActionType.SET_FIRMWARE_DOWNLOADED,
+  payload: {
+    config: any
+  }
+}
+
+export interface ISetFirmwareDownloadError extends Action {
+  type: ActionType.SET_FIRMWARE_DOWNLOAD_ERROR,
+  payload: {}
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -216,7 +310,10 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetParameters | ISetConnectedDevice | ISetDeviceLoaded | ISetSelectedDevice
   | ISetDeviceParameter | ISetDeviceParameterResponse | ISetTransientParameter | IRecalculateDeviceId
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
+  | ISetNetworkDevices | IUpdateNetworkDevice | ISetNetworkScanInProgress | IConsoleOutput | ISetConsoleOutput
+  | IUpdateFirmwareLoadingProgress | ISetLastFirmwareLoadingMessage | ISetFirmwareLoading
+  | ISetFirmwareDownloading | ISetFirmwareDownloaded | ISetFirmwareDownloadError
   | IAddDevices | IReplaceDevices
-  | IOpenConfirmation | IAnswerConfirmation
+  | ISetSelectedTab | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
   | IAddLog;

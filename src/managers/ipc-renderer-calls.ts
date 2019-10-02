@@ -13,6 +13,7 @@
  */
 
 import {uniqueId} from "lodash";
+import {decorateCallback, decorateOneWay, decorateTwoWay} from "./mock-renderer-calls";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 
@@ -47,27 +48,27 @@ ipcRenderer.on("two-way:response", (event: any, reqId: string, err: any, respons
 /**
  * Sends one-way request
  */
-export const sendOneWay = (name: string, ...args: any[]) => ipcRenderer.send(`one-way:${name}`, ...args);
+export const sendOneWay = decorateOneWay((name: string, ...args: any[]) => ipcRenderer.send(`one-way:${name}`, ...args));
 
 /**
  * Sends two-way request and returns {@link Promise} which resolved/rejected as soon as we get feedback.
  */
-export const sendTwoWay = <T>(name: string, ...args: any[]) => new Promise<T>((resolve, reject) => {
+export const sendTwoWay = decorateTwoWay((name: string, ...args: any[]) => new Promise((resolve, reject) => {
   // Each two way request has unique id to make possible associate response with this one request
   const reqId = uniqueId("req:");
   ipcRenderer.send(`two-way:${name}`, reqId, ...args);
   // Add request to set of pending requests
   pendingTwoWayRequests[reqId] = {name, resolve, reject};
-});
+}));
 
 /**
  * Registers callback to be called as soon as server send notification.
  *
  * @return returns function. When this function is called we stop to listen for server notification.
  */
-export const onCallback = (name: string, cb: (...args: any[]) => void) => {
+export const onCallback = decorateCallback((name: string, cb: (...args: any[]) => void) => {
   const eventName = `callback:${name}`;
   const listener = (event: any, ...args: any[]) => cb(...args);
   ipcRenderer.on(eventName, listener);
   return () => ipcRenderer.removeListener(eventName, listener);
-};
+});
