@@ -7,21 +7,63 @@
 #status-bar {
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 5px 7px 5px 7px;
     background-color: orange;
     color: #ffffff;
 }
 
+#status-bar-lamp {
+    min-width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.87);
+    border-radius: 10px;
+}
+#status-bar-lamp.status-bar-lamp--connected {
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(41,236,43,1) 17%)
+}
+
+#status-bar-lamp.status-bar-lamp--disconnected {
+    background: radial-gradient(circle, rgba(255,255,255,1) -5%, rgba(236,83,41,1) 24%);
+}
+
 #status-bar-status {
+    overflow: hidden;
+    flex: 1;
     height: 100%;
-    width: 75%;
+    text-overflow: ellipsis;
+}
+
+#status-bar-driver-name {
+    margin-right: 5px;
+}
+
+.status-bar-device-selector {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 15px 0 15px;
+    min-width: 200px;
+    max-width: 200px;
+}
+
+.status-bar-device-selector .bp3-popover-target {
+    width: 100%;
+}
+
+.status-bar-device-selector .bp3-button {
+    justify-content: space-between;
+}
+
+.status-bar-device-selector .bp3-button-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #status-bar-button {
     height: 100%;
-    width: 25%;
+    min-width: 15%;
 }
 
 #firmware-console {

@@ -1,6 +1,7 @@
-import {app, ipcMain} from "electron";
+import {app} from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import {onTwoWayCall} from "./ipc-main-calls";
 
 const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
 const configPath = path.join(appDataPath, "config.json");
@@ -21,35 +22,35 @@ fs.mkdir(appDataPath, {recursive: true}, (dirError: any) => {
   }
 });
 
-ipcMain.on("config-get", (event: any, pathName: string) => {
+onTwoWayCall("config-get", (cb, pathName) => {
   const filePath = path.join(appDataPath, "config.json");
   fs.readFile(filePath, (readErr, data) => {
     if (readErr) {
-      event.sender.send("config-get-response", readErr, null);
+      cb(readErr);
     } else {
       const storeJSON = JSON.parse(data.toString());
-      event.sender.send("config-get-response", null, storeJSON[pathName]);
+      cb(null, storeJSON[pathName]);
     }
   });
 });
 
-ipcMain.on("config-get-all", (event: any) => {
+onTwoWayCall("config-get-all", (cb) => {
   const filePath = path.join(appDataPath, "config.json");
   fs.readFile(filePath, (readErr, data) => {
     if (readErr) {
-      event.sender.send("config-get-all-response", readErr, null);
+      cb(readErr);
     } else {
       const storeJSON = JSON.parse(data.toString());
-      event.sender.send("config-get-all-response", null, storeJSON);
+      cb(null, storeJSON);
     }
   });
 });
 
-ipcMain.on("config-set", (event: any, pathName: string, value: any) => {
+onTwoWayCall("config-set", (cb, pathName, value) => {
   const filePath = path.join(appDataPath, "config.json");
   fs.readFile(filePath, (readErr, data) => {
     if (readErr) {
-      event.sender.send("config-set-response", readErr, null);
+      cb(readErr);
     } else {
       const storeJSON = JSON.parse(data.toString());
       if (typeof storeJSON[pathName] === "undefined") {
@@ -58,22 +59,22 @@ ipcMain.on("config-set", (event: any, pathName: string, value: any) => {
       storeJSON[pathName] = value;
       fs.writeFile(filePath, JSON.stringify(storeJSON), (writeErr) => {
         if (writeErr) {
-          event.sender.send("config-set-response", writeErr, null);
+          cb(writeErr);
         } else {
-          event.sender.send("config-set-response", null, storeJSON);
+          cb(null, storeJSON);
         }
       });
     }
   });
 });
 
-ipcMain.on("config-set-all", (event: any, value: any) => {
+onTwoWayCall("config-set-all", (cb, value) => {
   const filePath = path.join(appDataPath, "config.json");
   fs.writeFile(filePath, JSON.stringify(value), (writeErr) => {
     if (writeErr) {
-      event.sender.send("config-set-all-response", writeErr, null);
+      cb(writeErr);
     } else {
-      event.sender.send("config-set-all-response", null, value);
+      cb(null, value);
     }
   });
 });

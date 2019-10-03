@@ -1,6 +1,6 @@
 import {Alert, Button, Dialog, ProgressBar} from "@blueprintjs/core";
 import * as React from "react";
-import {IApplicationState} from "../store/types";
+import {IApplicationState} from "../store/state";
 import {connect} from "react-redux";
 import SparkManager from "../managers/SparkManager";
 
@@ -156,7 +156,7 @@ class HelpTab extends React.Component<IProps, IState> {
     SparkManager.onDownloadProgress(this.onProgressUpdate);
   }
 
-  private onProgressUpdate(event: any, downloadJSON: any) {
+  private onProgressUpdate(downloadJSON: any) {
     this.setState({downloadJSON});
   }
 

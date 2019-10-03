@@ -1,29 +1,32 @@
 import {Button, Dialog, ProgressBar} from "@blueprintjs/core";
-import {Cell, Column, Table, IRegion} from "@blueprintjs/table";
+import {Cell, Column, IRegion, Table} from "@blueprintjs/table";
 import * as React from "react";
 import {connect} from "react-redux";
-import {
-  ApplicationActions, IAddLog,
-  IApplicationState,
-  ISetConnectedDevice,
-  ISetIsConnecting, ISetMotorConfig,
-  IUpdateConnectionStatus
-} from "../store/types";
+import {DeviceId, fromDeviceId, IApplicationState,} from "../store/state";
 import SparkManager from "../managers/SparkManager";
-import {Dispatch} from "redux";
-import {addLog, setConnectedDevice, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
+import {
+  addLog,
+  setSelectedDeviceParameters,
+  SparkDispatch,
+  updateSelectedDeviceIsProcessing,
+  updateSelectedDeviceProcessStatus
+} from "../store/actions";
 import WebProvider from "../providers/WebProvider";
-import MotorConfiguration from "../models/MotorConfiguration";
 import CANScanDetail from "../models/CANScanDetail";
-import { isNullOrUndefined } from "util";
+import {isNullOrUndefined} from "util";
+import {querySelectedDeviceId, queryIsSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {
+  deviceId: DeviceId,
   connected: boolean,
-  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
-  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
-  setConnectedDevice: (device: string) => ISetConnectedDevice,
-  setCurrentConfig: (cofig: MotorConfiguration) => ISetMotorConfig,
-  addLog: (log: string) => IAddLog
+
+  setIsConnecting(connecting: boolean): void,
+
+  updateConnectionStatus(connected: boolean, status: string): void,
+
+  setParameters(parameters: number[]): void,
+
+  addLog(log: string): void
 }
 
 interface IState {
@@ -31,7 +34,7 @@ interface IState {
   firmwarePath: string,
   outputText: string[],
   loadingFirmware: boolean,
-  recoveryRequired: boolean,  
+  recoveryRequired: boolean,
   isOpen: boolean,
   updateProgress: number,
   updateText: string,
@@ -50,7 +53,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
       firmwarePath: "",
       outputText: ["[INFO] Please connect to a device to see it's firmware."],
       loadingFirmware: false,
-      recoveryRequired: false,      
+      recoveryRequired: false,
       isOpen: false,
       updateProgress: 0,
       updateText: "",
@@ -65,7 +68,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
     this._lastMessage = "";
   }
-  
+
   public componentDidMount(): void {
     if (this.props.connected) {
       this.setState({
@@ -79,7 +82,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
         });
         this.scrollToBottom();
       });
-    }    
+    }
   }
 
   public componentDidUpdate(prevProps: Readonly<IProps>): void {
@@ -92,43 +95,45 @@ class FirmwareTab extends React.Component<IProps, IState> {
     const {outputText, firmwareVersion, loadingFirmware, recoveryRequired} = this.state;
     return (
       <div>
-        <Dialog isOpen={this.state.isOpen} 
-          onClose={this.closeDialog}>
+        <Dialog isOpen={this.state.isOpen}
+                onClose={this.closeDialog}>
 
-        <div id="firmware-console">
-          {outputText.map((line, index) => {
-            return <p key={index}>{line}</p>;
-          })}
-        </div>
+          <div id="firmware-console">
+            {outputText.map((line, index) => {
+              return <p key={index}>{line}</p>;
+            })}
+          </div>
 
         </Dialog>
         <div>
-        <Table enableMultipleSelection={false}
-               enableColumnResizing={false}
-               enableRowResizing={false}
-               numRows={10}
-               columnWidths={[75, 150, 150, 75]}
-               onSelection={this.handleCellClick}>
+          <Table enableMultipleSelection={false}
+                 enableColumnResizing={false}
+                 enableRowResizing={false}
+                 numRows={10}
+                 columnWidths={[75, 150, 150, 75]}
+                 onSelection={this.handleCellClick}>
 
-            <Column name="Interface" cellRenderer={this.interfaceColumnRenderer} />
-            <Column name="Device" cellRenderer={this.deviceColumnRenderer} />
-            <Column name="Firmware" cellRenderer={this.firmwareColumnRenderer} />
-            <Column name="Update" cellRenderer={this.updateColumnRenderer} />
-        </Table>
-        </div>        
-        <span><Button className="rev-btn" onClick={this.scanDevices} loading={this.state.scanInProgress}>Scan Bus</Button></span>
-        <br />
+            <Column name="Interface" cellRenderer={this.interfaceColumnRenderer}/>
+            <Column name="Device" cellRenderer={this.deviceColumnRenderer}/>
+            <Column name="Firmware" cellRenderer={this.firmwareColumnRenderer}/>
+            <Column name="Update" cellRenderer={this.updateColumnRenderer}/>
+          </Table>
+        </div>
+        <span><Button className="rev-btn" onClick={this.scanDevices}
+                      loading={this.state.scanInProgress}>Scan Bus</Button></span>
+        <br/>
 
-      <div id="firmware-bar">
-            <span>Current Firmware: {firmwareVersion}</span>
-            <span><Button className="rev-btn" loading={loadingFirmware} onClick={recoveryRequired ? this.loadFirmware : this.openFileDialog}>{recoveryRequired ? "Continue" : "Load Firmware"}</Button></span>
-      </div>
-        <br />
+        <div id="firmware-bar">
+          <span>Current Firmware: {firmwareVersion}</span>
+          <span><Button className="rev-btn" loading={loadingFirmware}
+                        onClick={recoveryRequired ? this.loadFirmware : this.openFileDialog}>{recoveryRequired ? "Continue" : "Load Firmware"}</Button></span>
+        </div>
+        <br/>
         <div>
           <ProgressBar value={this.state.updateProgress}/>
           <span>{this.state.updateText}</span>
         </div>
-        <br />              
+        <br/>
         <span><Button className="rev-btn" onClick={this.handleConsoleClick}>
           {this.state.isOpen ? "Hide" : "Show"} Console
           </Button>
@@ -146,7 +151,8 @@ class FirmwareTab extends React.Component<IProps, IState> {
   };
 
   private firmwareColumnRenderer = (rowIndex: number) => {
-    return <Cell loading={this.state.loadingCANFirmware}>{`${this.state.deviceList[rowIndex] ? this.state.deviceList[rowIndex].firmware : ""}`}</Cell>
+    return <Cell
+      loading={this.state.loadingCANFirmware}>{`${this.state.deviceList[rowIndex] ? this.state.deviceList[rowIndex].firmware : ""}`}</Cell>
   };
 
   private buildUpdateString = (detail: CANScanDetail) => {
@@ -173,7 +179,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
     return <Cell interactive={true}
                  tooltip={`${this.buildUpdateTooltip(this.state.deviceList[rowIndex])}`}
                  onKeyDown={this.handleConsoleClick}>{`${this.buildUpdateString(this.state.deviceList[rowIndex])}`}
-                 </Cell>
+    </Cell>
   };
 
   private handleCellClick = (region: IRegion[]) => {
@@ -185,27 +191,27 @@ class FirmwareTab extends React.Component<IProps, IState> {
     const tmp = this.state.deviceList
     tmp[region[0].rows[0]].selected = !tmp[region[0].rows[0]].selected;
 
-    this.setState({deviceList: tmp })
+    this.setState({deviceList: tmp})
   };
 
   private handleConsoleClick = () => {
-    this.setState({ isOpen: !this.state.isOpen });
+    this.setState({isOpen: !this.state.isOpen});
   }
 
   private scanDevices = () => {
     this.setState({scanInProgress: true, loadingCANFirmware: false});
-    SparkManager.listDevices().then(value => {
+    SparkManager.listAllDevices().then(value => {
       const deviceDetails = new Array<CANScanDetail>();
 
       this.setState({loadingCANFirmware: true});
 
-      value.forEach( (deviceString) => {
+      value.forEach((deviceString) => {
         deviceDetails.push(new CANScanDetail(deviceString, "Device Name", "Firmware String", false));
       });
 
-      this.setState({ deviceList: deviceDetails, scanInProgress: false, loadingCANFirmware: false });
-      
-    }).catch( () => {
+      this.setState({deviceList: deviceDetails, scanInProgress: false, loadingCANFirmware: false});
+
+    }).catch(() => {
       this.setState({deviceList: [], scanInProgress: false, loadingCANFirmware: false});
     });
   }
@@ -302,10 +308,9 @@ class FirmwareTab extends React.Component<IProps, IState> {
         SparkManager.discoverAndConnect().then((device: string) => {
           this.props.updateConnectionStatus(true, "CONNECTED");
           this.props.setIsConnecting(false);
-          this.props.setConnectedDevice(device);
           setTimeout(() => {
-            SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-              this.props.setCurrentConfig(config);
+            SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((values) => {
+              this.props.setParameters(values);
               SparkManager.getFirmware().then((response: any) => {
                 this.setState({firmwareVersion: response.version});
               });
@@ -334,10 +339,11 @@ class FirmwareTab extends React.Component<IProps, IState> {
         updatedOutput.pop();
         const percentComplete: number = parseFloat(response.updateStagePercent.toFixed(3));
 
-        this.setState({updateProgress: percentComplete, 
-                       updateText: `${response.updateStageMessage} - (${(percentComplete * 100).toFixed(1)}%)`
-                      });
-        
+        this.setState({
+          updateProgress: percentComplete,
+          updateText: `${response.updateStageMessage} - (${(percentComplete * 100).toFixed(1)}%)`
+        });
+
         updatedOutput.push(`[INFO] (${(percentComplete * 100).toFixed(1)}%) ${response.updateStageMessage}`);
       } else if (typeof response.updateStageMessage !== "undefined") {
         if (this._lastMessage !== response.updateStageMessage) {
@@ -365,13 +371,13 @@ class FirmwareTab extends React.Component<IProps, IState> {
     const curVer = current.toString().split(".");
     const othVer = other.toString().split(".");
 
-    for(let i = 0; i < (Math.max(curVer.length, othVer.length)); i++){
+    for (let i = 0; i < (Math.max(curVer.length, othVer.length)); i++) {
 
-      if(Number(curVer[i]) < Number(othVer[i])){
+      if (Number(curVer[i]) < Number(othVer[i])) {
         return true;
       }
 
-      if(curVer[i] !== othVer[i]){
+      if (curVer[i] !== othVer[i]) {
         break;
       }
     }
@@ -388,17 +394,18 @@ class FirmwareTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    deviceId: querySelectedDeviceId(state),
+    connected: queryIsSelectedDeviceConnected(state),
   };
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    setIsConnecting: (connecting: boolean) => dispatch(updateSelectedDeviceIsProcessing(connecting)),
+    updateConnectionStatus: (connected: boolean, status: string) =>
+      dispatch(updateSelectedDeviceProcessStatus(connected, status)),
     addLog: (log: string) => dispatch(addLog(log)),
-    setConnectedDevice: (device: string) => dispatch(setConnectedDevice(device)),
-    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
+    setParameters: (parameters: number[]) => dispatch(setSelectedDeviceParameters(parameters)),
   };
 }
 

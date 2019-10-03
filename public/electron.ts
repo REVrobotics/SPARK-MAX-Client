@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { HEADLESS } from './program-args';
+import {setTargetWindow} from "./main/ipc-main-calls";
 
 let mainWindow: Electron.BrowserWindow;
 
@@ -16,6 +17,14 @@ if (process.env.NODE_ENV !== "production") {
  * multiple times to create multiple windows.
  */
 function createWindow() {
+  if (process.env.NODE_ENV !== "production") {
+    // install React and Redux dev tools for dev mode
+    const {default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = require("electron-devtools-installer");
+    Promise.all([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].map((extension) =>
+      installExtension(extension)
+        .then((name: string) => console.log(`Added Extension: ${name}`))
+        .catch((err: any) => console.log('An error occurred: ', err))));
+  }
 
   /*
    * Main window dimensions, properties, and launch icon. All properties can be found at
@@ -28,6 +37,8 @@ function createWindow() {
     show: false,
     width: 600
   });
+
+  setTargetWindow(mainWindow.webContents);
 
   // Node module that handles all of our native firmware file download requests. It is initialized here.
   require('electron-dl')();

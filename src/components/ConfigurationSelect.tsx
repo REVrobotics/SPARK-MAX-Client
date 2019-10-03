@@ -1,28 +1,27 @@
 import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
-import MotorConfiguration, {REV_BRUSHED, REV_BRUSHLESS} from "../models/MotorConfiguration";
 import {noop} from "../utils/function-utils";
 
 // Currently code in this file is more a stub than a final solution
 
-const MotorConfigurationSelect = Select.ofType<MotorConfiguration>();
+const MotorConfigurationSelect = Select.ofType<any>();
 
-const defaultItems: MotorConfiguration[] = [REV_BRUSHLESS, REV_BRUSHED];
+const defaultItems: any[] = [];
 
-const renderer = (motor: MotorConfiguration, itemProps: IItemRendererProps) => {
+const renderer = (configuration: any, itemProps: IItemRendererProps) => {
   return (
     <MenuItem
       active={itemProps.modifiers.active}
-      key={motor.name}
+      key={configuration.name}
       onClick={itemProps.handleClick}
-      text={motor.name}
+      text={configuration.name}
     />
   );
 };
 
 interface IProps {
-  connected: boolean
+  disabled: boolean
 }
 
 export const ConfigurationSelect: React.FC<IProps> = (props) => {

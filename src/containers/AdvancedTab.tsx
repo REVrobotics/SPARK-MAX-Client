@@ -1,7 +1,8 @@
 import * as React from "react";
 import {connect} from "react-redux";
-import {ApplicationActions, IApplicationState} from "../store/types";
+import {IApplicationState} from "../store/state";
 import {Dispatch} from "redux";
+import {ApplicationActions} from "../store/actions";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {

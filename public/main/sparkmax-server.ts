@@ -4,7 +4,8 @@ import {load, Root} from "protobufjs";
 import {socket, Socket} from "zeromq";
 import {credentials} from "grpc";
 import {
-  burnRequestFromDto, burnResponseToDto,
+  burnRequestFromDto,
+  burnResponseToDto,
   connectRequestFromDto,
   connectResponseToDto,
   disconnectRequestFromDto,
@@ -13,10 +14,18 @@ import {
   firmwareRequestFromDto,
   firmwareResponseToDto,
   getParameterRequestFromDto,
+  IdAssignmentRequestDto,
+  idAssignmentRequestFromDto,
+  ListRequestDto,
   listRequestFromDto,
-  listResponseToDto, parameterListRequestFromDto, parameterListResponse, parameterListResponseToDto, parameterResponse,
+  listResponseToDto,
+  parameterListRequestFromDto,
+  parameterListResponse,
+  parameterListResponseToDto,
+  parameterResponse,
   parameterResponseToDto,
-  pingRequestFromDto, pingResponseToDto,
+  pingRequestFromDto,
+  pingResponseToDto,
   rootResponseToDto,
   setParameterRequestFromDto,
   setpointRequestFromDto,
@@ -103,7 +112,7 @@ class SparkServer {
     this.cmdQueue.push({id: "init"});
   }
 
-  private sendCommand(lookupType: any, responseType: any, msg: string, cb?: Function) {
+  private sendCommand(lookupType: any, responseType: any, msg: any, cb?: Function) {
     /*Queue the attached request
     * Priority:
     *   - Connect (also flush queue)
@@ -155,11 +164,10 @@ class SparkServer {
     }
   }
 
-  public list(listCommand: any, cb?: Function) {
+  public list(listCommand: ListRequestDto, cb?: Function) {
     if (this.isGrpc) {
       this.grpcClient.list(listRequestFromDto(listCommand), wrapIntoGrpcCallback(cb, listResponseToDto));
     } else {
-      listCommand.ctrl = 1;
       this.sendCommand("list", "list", listCommand, cb);
     }
   }
@@ -198,6 +206,14 @@ class SparkServer {
       this.grpcClient.setParameter(setParameterRequestFromDto(paramCommand), wrapIntoGrpcCallback(cb, parameterResponseToDto));
     } else {
       this.sendCommand("setParameter", "parameter", paramCommand, cb);
+    }
+  }
+
+  public idAssignment(request: IdAssignmentRequestDto, cb?: Function) {
+    if (this.isGrpc) {
+      return this.grpcClient.iDAssignment(idAssignmentRequestFromDto(request), wrapIntoGrpcCallback(cb, rootResponseToDto));
+    } else {
+      throw new Error("This command is not supported by zeromq client");
     }
   }
 

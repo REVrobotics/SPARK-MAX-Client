@@ -19,6 +19,7 @@
     "@types/yargs": "^13.0.2",
     "axios": "^0.18.1",
     "better-queue": "^3.8.10",
+    "classnames": "^2.2.6",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.15-beta.0",
     "electron-dl": "^1.14.0",
@@ -34,6 +35,8 @@
     "react-redux": "^6.0.1",
     "react-scripts-ts": "3.1.0",
     "redux": "^4.0.4",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-thunk": "^2.3.0",
     "yargs": "^14.0.0",
     "zeromq": "^5.1.0"
   },
@@ -53,6 +56,7 @@
     "gen:license": "node scripts/license-gen.js"
   },
   "devDependencies": {
+    "@types/classnames": "^2.2.9",
     "@types/google-protobuf": "^3.7.1",
     "@types/node": "^10.14.15",
     "@types/opn": "^5.5.0",
@@ -66,6 +70,7 @@
     "electron": "^3.1.13",
     "electron-builder": "^20.44.4",
     "electron-debug": "^2.2.0",
+    "electron-devtools-installer": "^2.2.4",
     "find-config": "^1.0.0",
     "find-root": "^1.1.0",
     "fs-extra": "^8.1.0",

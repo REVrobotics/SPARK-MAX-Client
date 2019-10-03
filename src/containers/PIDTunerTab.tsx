@@ -1,7 +1,8 @@
 import {Button, FormGroup, NumericInput} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState} from "../store/types";
+import {IApplicationState} from "../store/state";
+import {queryIsSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {
   connected: boolean
@@ -103,7 +104,7 @@ class PIDTunerTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: queryIsSelectedDeviceConnected(state),
   };
 }
 
