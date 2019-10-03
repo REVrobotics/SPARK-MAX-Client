@@ -2,7 +2,7 @@ import {find} from "lodash";
 import {Button, MenuItem} from "@blueprintjs/core";
 import * as React from "react";
 import {useCallback} from "react";
-import {IParamSourceProps} from "../param-source";
+import {IConfigParamProps} from "../config-param-props";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import {maybeMap} from "../../utils/object-utils";
 import {getWordText, IDictionaryWord} from "../../store/dictionaries";
@@ -11,7 +11,7 @@ const DictionarySelect = Select.ofType<IDictionaryWord>();
 
 const NO_OPTIONS: IDictionaryWord[] = [];
 
-interface IProps extends IParamSourceProps {
+interface IProps extends IConfigParamProps {
   className?: string;
   placeholder?: string;
 }

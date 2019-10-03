@@ -6,8 +6,6 @@ export interface IBooleanRuleOptions {
   default: number;
 
   isDisabled?(ctx: IConfigParamContext): boolean;
-
-  isDirty?(ctx: IConfigParamContext): boolean;
 }
 
 export const createBooleanRule = (param: ConfigParam, options: IBooleanRuleOptions): IConfigParamRule => ({

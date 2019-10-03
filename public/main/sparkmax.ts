@@ -44,7 +44,7 @@ const pingResourceFactory = timerResourceFactory((device) =>
           }
         }
         if (doDisconnect) {
-          context.disconnectHubDevice();
+          context.disconnectDevice();
 
           server.disconnect({device, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
             console.log("Disconnected " + device + " from the SPARK server");
@@ -100,7 +100,7 @@ onTwoWayCall("connect", (cb, device: string) => {
     if (err) {
       cb(err);
     } else {
-      context.connectHubDevice(device);
+      context.connectDevice(device);
       cb(null, response);
     }
   });
@@ -118,7 +118,7 @@ onTwoWayCall("disconnect", (cb, device: string) => {
           context.resume();
           cb(err);
         } else {
-          context.disconnectHubDevice();
+          context.disconnectDevice();
           cb(null, device);
         }
       });
@@ -264,7 +264,7 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
       server.firmware({filename}, (error: any, response: any) => {
         if (response.updateStarted && response.updateStarted === true) {
           console.log("Disconnecting on " + context.currentDevice);
-          context.disconnectHubDevice();
+          context.disconnectDevice();
           server.disconnect({device: context.currentDevice});
         }
         event.sender.send("load-firmware-response", error, response);

@@ -7,7 +7,7 @@ import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
 import {configParamNames, getConfigParamType} from "../models/ConfigParam";
 
 /**
- * Generate rules for ALL parameters.
+ * Generated rules for ALL parameters.
  * Here we rely on definitions generated based on proto files.
  */
 const GENERATED_RULES = configParamNames.map((name) => {
@@ -41,7 +41,7 @@ const GENERATED_RULES = configParamNames.map((name) => {
 });
 
 /**
- * Override rules for some parameters.
+ * Overridden rules for some parameters.
  * Sometimes type information (uint32, int32, float32, bool) is not enough to generate all constraints.
  * For example, kCanID has type uint32, but should allow only 0-62 values.
  */

@@ -2,9 +2,9 @@ import {NumericInput} from "@blueprintjs/core";
 import * as React from "react";
 import {useCallback} from "react";
 import {INumericFieldConstraints, MessageSeverity} from "../../store/state";
-import {getParameterId, IParamSourceProps} from "../param-source";
+import {getParameterId, IConfigParamProps} from "../config-param-props";
 
-interface IProps extends IParamSourceProps {
+interface IProps extends IConfigParamProps {
   className?: string;
   constraints?: INumericFieldConstraints;
 }

@@ -21,14 +21,14 @@ import {
 } from "../store/selectors";
 import NumericParamField from "../components/fields/NumericParamField";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
-import {getParameterId, IParamSourceProps} from "../components/param-source";
-import bindRamConfigRule from "./params/bind-ram-config-rule";
+import {getParameterId, IConfigParamProps} from "../components/config-param-props";
+import bindRamConfigRule from "../hocs/bind-ram-config-rule";
 import SelectParamField from "../components/fields/SelectParamField";
-import {withDirty} from "../components/groups/with-dirty";
+import {withDirty} from "../hocs/with-dirty";
 import SwitchParamField from "../components/fields/SwitchParamField";
 import SliderParamField from "../components/fields/SliderParamField";
 
-interface IBasicFormGroupProps extends IParamSourceProps {
+interface IBasicFormGroupProps extends IConfigParamProps {
   groupClassName?: string;
   fieldClassName?: string;
 }

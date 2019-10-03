@@ -12,6 +12,10 @@ export interface IResource {
   destroy(): Promise<void>|undefined;
 }
 
+/**
+ * This class tracks connected device and associated resources.
+ * It transparently manages associated resources: allocate and release them.
+ */
 export class SparkmaxContext {
   private device?: string;
   private permanentResources: IResource[] = [];
@@ -19,29 +23,44 @@ export class SparkmaxContext {
   private paused: boolean = false;
   private pausePromise: Promise<void>|undefined;
 
+  /**
+   * Creates context with provided resources.
+   * Resources will be instantiated as soon as some device is connected.
+   */
   constructor(private permanentResourceFactories: ResourceFactory[] = []) {
   }
 
+  /**
+   * Returns current device ID
+   */
   get currentDevice(): string|undefined {
     return this.device;
   }
 
-  public connectHubDevice(device: string): Promise<void> {
+  /**
+   * Connects given device
+   */
+  public connectDevice(device: string): Promise<void> {
     if (this.device === device) {
       return Promise.resolve();
     }
 
-    return this.disconnectHubDevice().then(() => {
+    // If device is changed, release old resources and allocate a new one
+    return this.disconnectDevice().then(() => {
       this.device = device;
       this.permanentResources = this.permanentResourceFactories.map((factory) => factory(device));
     });
   }
 
-  public disconnectHubDevice(): Promise<void> {
+  /**
+   * Disconnects from current device
+   */
+  public disconnectDevice(): Promise<void> {
     if (this.device == null) {
       return Promise.resolve();
     }
 
+    // Release old resources
     const promise = Promise.all(this.getAllResources().map((resource) => resource.destroy()).filter(Boolean))
       .then(noop);
 
@@ -54,6 +73,9 @@ export class SparkmaxContext {
     return promise;
   }
 
+  /**
+   * Creates new temporary resource for connected device
+   */
   public newDeviceResource(name: string, factory: ResourceFactory): void {
     if (this.temporaryResources[name]) {
       throw new Error(`Resource already started under name '${name}'`)
@@ -67,6 +89,9 @@ export class SparkmaxContext {
     }
   }
 
+  /**
+   * Release temporary resource by name
+   */
   public releaseDeviceResource(name: string): Promise<void> {
     let promise: Promise<void>|undefined;
 
@@ -78,10 +103,19 @@ export class SparkmaxContext {
     return promise || Promise.resolve();
   }
 
+  /**
+   * Returns true if temporary resource exists, otherwise false.
+   */
   public isResourceExist(name: string): boolean {
     return this.temporaryResources[name] != null;
   }
 
+  /**
+   * Pauses all resources.
+   *
+   * This action is not immediate, because we can have some processing in progress.
+   * This way, we wait until this processing is completed.
+   */
   public pause(): Promise<void> {
     if (this.paused) {
       return this.pausePromise as Promise<void>;
@@ -94,6 +128,9 @@ export class SparkmaxContext {
     return this.pausePromise;
   }
 
+  /**
+   * Resume resources after pause.
+   */
   public resume(): void {
     if (!this.paused) {
       return;
@@ -104,13 +141,21 @@ export class SparkmaxContext {
     this.pausePromise = undefined;
   }
 
+  /**
+   * Changes device id. This operation pauses and resumes context
+   * @param device
+   */
   public changeDeviceId(device: string): Promise<void> {
     if (this.device === device) {
       return Promise.resolve();
     }
 
+    if (!this.paused) {
+      throw new Error("Device ID can be changed only when context is paused");
+    }
+
     // wait until all resources complete current processing
-    return this.pause().then(() => {
+    return this.pausePromise!.then(() => {
       // change owner of each resource (if it is supported)
       this.getAllResources().forEach((resource) => {
         if (resource.setOwner) {
@@ -119,10 +164,12 @@ export class SparkmaxContext {
           throw new Error("One of device resources does not support changing of ownership");
         }
       });
-      this.resume();
     });
   }
 
+  /**
+   * Returns all current resources
+   */
   private getAllResources(): IResource[] {
     return this.permanentResources.concat(values(this.temporaryResources));
   }

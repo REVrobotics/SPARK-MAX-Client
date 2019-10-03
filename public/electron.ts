@@ -17,8 +17,8 @@ if (process.env.NODE_ENV !== "production") {
  * multiple times to create multiple windows.
  */
 function createWindow() {
-  if (!isProd) {
-    // install React and Redux dev tools for in mode
+  if (process.env.NODE_ENV !== "production") {
+    // install React and Redux dev tools for dev mode
     const {default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = require("electron-devtools-installer");
     Promise.all([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].map((extension) =>
       installExtension(extension)

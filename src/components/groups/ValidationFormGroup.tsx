@@ -1,17 +1,17 @@
 import {FormGroup} from "@blueprintjs/core";
 import PopoverHelp from "../PopoverHelp";
 import * as React from "react";
-import {getParameterId, IParamSourceProps} from "../param-source";
+import {getParameterId, IConfigParamProps} from "../config-param-props";
 import {MessageSeverity} from "../../store/state";
 
-interface IProps extends IParamSourceProps {
+interface IProps extends IConfigParamProps {
   title?: string
   className?: string;
   children: JSX.Element;
 }
 
 /**
- * This component serves as wrapper that adds validation logic to the {@link FormGroup}.
+ * This component render {@link FormGroup} with validation popover.
  */
 const ValidationFormGroup = ({parameter, className, title, message, children}: IProps) => {
   const noMessage = !message;

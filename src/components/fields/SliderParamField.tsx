@@ -3,9 +3,9 @@ import * as classNames from "classnames";
 import * as React from "react";
 import {useCallback} from "react";
 import {INumericFieldConstraints, MessageSeverity} from "../../store/state";
-import {IParamSourceProps} from "../param-source";
+import {IConfigParamProps} from "../config-param-props";
 
-interface IProps extends IParamSourceProps {
+interface IProps extends IConfigParamProps {
   className?: string;
   constraints?: INumericFieldConstraints;
   stepSize?: number;

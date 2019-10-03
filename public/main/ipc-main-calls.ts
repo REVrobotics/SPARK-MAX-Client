@@ -1,3 +1,7 @@
+/**
+ * This file supports separation of calls (look in ipc-renderer-calls.ts) in the main process.
+ */
+
 import {ipcMain} from "electron";
 import WebContents = Electron.WebContents;
 

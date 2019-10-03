@@ -1,25 +1,25 @@
-import {IParamSourceProps} from "../../components/param-source";
+import {IConfigParamProps} from "../components/config-param-props";
 import {ComponentType} from "react";
-import {ConfigParam} from "../../models/ConfigParam";
+import {ConfigParam} from "../models/ConfigParam";
 import {connect} from "react-redux";
-import {IApplicationState} from "../../store/state";
-import {getConfigParamRule} from "../../store/config-param-rules";
-import {setSelectedDeviceParameterValue, SparkDispatch} from "../../store/actions";
-import {createRamConfigParamContext, getRamConfigParamRule} from "../../store/ram-config-param-rules";
-import {querySelectedDeviceBurnedConfig} from "../../store/selectors";
+import {IApplicationState} from "../store/state";
+import {getConfigParamRule} from "../store/config-param-rules";
+import {setSelectedDeviceParameterValue, SparkDispatch} from "../store/actions";
+import {createRamConfigParamContext, getRamConfigParamRule} from "../store/ram-config-param-rules";
+import {querySelectedDeviceBurnedConfig} from "../store/selectors";
 
-interface IBindConfigParamProps {
+interface IBindRamConfigParamProps {
   parameter: ConfigParam;
   disabled?: boolean;
 }
 
 /**
- * This HOC binds wrapped component to the requested configuration parameter using corresponding {@link ConfigParamRule}
+ * This HOC binds wrapped component to the requested parameter
  *
  * @param Component
  */
-const bindRamConfigRule = (Component: ComponentType<IParamSourceProps>): ComponentType<any> => {
-  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IBindConfigParamProps) => {
+const bindRamConfigRule = (Component: ComponentType<IConfigParamProps>): ComponentType<any> => {
+  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IBindRamConfigParamProps) => {
     const rule = getRamConfigParamRule(parameter);
     const ctx = createRamConfigParamContext(state);
     const value = rule.getValue(ctx);
@@ -37,7 +37,7 @@ const bindRamConfigRule = (Component: ComponentType<IParamSourceProps>): Compone
     };
   };
 
-  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IBindConfigParamProps) => {
+  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IBindRamConfigParamProps) => {
     const rule = getConfigParamRule(parameter);
 
     return {
