@@ -1,12 +1,12 @@
 import * as React from "react";
 import {Icon, Popover} from "@blueprintjs/core";
-import {ConfigParamMessageSeverity} from "../store/param-rules/ConfigParamRule";
+import {MessageSeverity} from "../store/state";
 
 interface IProps {
   content: string | JSX.Element,
   title: string,
   enabled?: boolean
-  severity?: ConfigParamMessageSeverity;
+  severity?: MessageSeverity;
 }
 
 class PopoverHelp extends React.Component<IProps> {
@@ -17,7 +17,7 @@ class PopoverHelp extends React.Component<IProps> {
   public render() {
     const {content, severity, enabled, title} = this.props;
     const disabled = typeof enabled !== "undefined" ? enabled : false;
-    const icon = severity === ConfigParamMessageSeverity.Error ? "error" : "help";
+    const icon = severity === MessageSeverity.Error ? "error" : "help";
 
     return (
       <div className="popover-container">

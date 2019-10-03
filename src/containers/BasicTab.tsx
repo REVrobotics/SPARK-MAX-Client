@@ -22,7 +22,7 @@ import {
 import NumericParamField from "../components/fields/NumericParamField";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
 import {getParameterId, IParamSourceProps} from "../components/param-source";
-import bindConfigRule from "./params/bind-config-rule";
+import bindRamConfigRule from "./params/bind-ram-config-rule";
 import SelectParamField from "../components/fields/SelectParamField";
 import {withDirty} from "../components/groups/with-dirty";
 import SwitchParamField from "../components/fields/SwitchParamField";
@@ -39,7 +39,9 @@ interface IBasicSelectFieldGroupProps extends IBasicFormGroupProps {
   placeholder?: string;
 }
 
-type IBasicSwitchFieldFitGroupProps = IBasicFormGroupProps;
+interface IBasicSwitchFieldFitGroupProps extends IBasicFormGroupProps {
+  title?: string;
+}
 
 interface IBasicSwitchFieldGroupProps extends IBasicFormGroupProps {
   label: string|((checked: boolean) => string);
@@ -50,32 +52,49 @@ interface IBasicSliderFieldGroupProps extends IBasicFormGroupProps {
   stepSize: number;
 }
 
+const BASIC_PARAM_TITLES = {
+  [ConfigParam.kCanID]: "CAN ID",
+  [ConfigParam.kMotorType]: "Select Motor Type",
+  [ConfigParam.kSensorType]: "Sensor Type",
+  [ConfigParam.kIdleMode]: "Idle Mode",
+  [ConfigParam.kInputDeadband]: "PWM Input Deadband",
+  [ConfigParam.kRampRate]: "Rate (seconds to full speed)",
+  [ConfigParam.kSmartCurrentStallLimit]: "Smart Current Limit",
+  [ConfigParam.kEncoderCountsPerRev]: "Encoder CPR",
+  [ConfigParam.kHardLimitFwdEn]: "Forward Limit",
+  [ConfigParam.kHardLimitRevEn]: "Reverse Limit",
+  [ConfigParam.kSoftLimitFwdEn]: "Forward Limit",
+  [ConfigParam.kSoftLimitRevEn]: "Reverse Limit",
+  [ConfigParam.kSoftLimitFwd]: "Forward Limit (value)",
+  [ConfigParam.kSoftLimitRev]: "Reverse Limit (value)",
+};
+
 const DirtySwitchParamField = withDirty(SwitchParamField);
 const DirtyValidationFormGroup = withDirty(ValidationFormGroup);
 
-const BasicNumericFieldGroup = bindConfigRule((props: IBasicNumericFieldGroupProps) => {
+const BasicNumericFieldGroup = bindRamConfigRule((props: IBasicNumericFieldGroupProps) => {
   const {groupClassName, fieldClassName, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
       <NumericParamField {...otherProps} className={fieldClassName}/>
     </DirtyValidationFormGroup>
   );
 });
 
-const BasicSelectFieldGroup = bindConfigRule((props: IBasicSelectFieldGroupProps) => {
+const BasicSelectFieldGroup = bindRamConfigRule((props: IBasicSelectFieldGroupProps) => {
   const {groupClassName, fieldClassName, placeholder, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
       <SelectParamField {...otherProps} placeholder={placeholder} className={fieldClassName}/>
     </DirtyValidationFormGroup>
   );
 });
 
-const BasicSwitchField = bindConfigRule(DirtySwitchParamField);
+const BasicSwitchField = bindRamConfigRule(DirtySwitchParamField);
 
-const BasicSwitchLabelessFieldGroup = bindConfigRule((props: IBasicSwitchFieldFitGroupProps) => {
+const BasicSwitchLabelessFieldGroup = bindRamConfigRule((props: IBasicSwitchFieldFitGroupProps) => {
   const {groupClassName, fieldClassName, title, ...otherProps} = props;
 
   return (
@@ -85,21 +104,21 @@ const BasicSwitchLabelessFieldGroup = bindConfigRule((props: IBasicSwitchFieldFi
   );
 });
 
-const BasicSwitchFieldGroup = bindConfigRule((props: IBasicSwitchFieldGroupProps) => {
+const BasicSwitchFieldGroup = bindRamConfigRule((props: IBasicSwitchFieldGroupProps) => {
   const {groupClassName, fieldClassName, label, inverted, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
       <SwitchParamField {...otherProps} className={fieldClassName} label={label} inverted={inverted}/>
     </DirtyValidationFormGroup>
   );
 });
 
-const BasicSliderFieldGroup = bindConfigRule((props: IBasicSliderFieldGroupProps) => {
+const BasicSliderFieldGroup = bindRamConfigRule((props: IBasicSliderFieldGroupProps) => {
   const {groupClassName, fieldClassName, stepSize, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
       <SliderParamField {...otherProps} className={fieldClassName} stepSize={stepSize}/>
     </DirtyValidationFormGroup>
   );

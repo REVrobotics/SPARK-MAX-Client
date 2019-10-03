@@ -1,45 +1,27 @@
 import {constant, identity, stubFalse} from "lodash";
-import {IApplicationState} from "../state";
-import {ConfigParamMessage, IConfigParamRule} from "./ConfigParamRule";
-import {EMPTY_DEPENDENCIES, EMPTY_TEXT, VALIDATE_SUCCESS} from "./config-param-helpers";
+import {IConfigParamContext, IConfigParamRule, VALIDATE_SUCCESS} from "./ConfigParamRule";
 import {IDictionaryWord} from "../dictionaries";
+import {ConfigParam} from "../../models/ConfigParam";
+import {Message} from "../state";
 
 export interface ISelectRuleOptions {
   default: any;
-  title: string;
   options: IDictionaryWord[];
 
-  value(state: IApplicationState): number;
+  isDisabled?(ctx: IConfigParamContext): boolean;
 
-  isDisabled?(state: IApplicationState): boolean;
+  validate?(ctx: IConfigParamContext): Message | undefined;
 
-  isDirty?(state: IApplicationState): boolean;
-
-  validate?(state: IApplicationState): ConfigParamMessage|undefined;
-
-  hasError?(state: IApplicationState): boolean;
-
-  getErrorText?(state: IApplicationState): string|undefined;
-
-  hasWarning?(state: IApplicationState): boolean;
-
-  getWarningText?(state: IApplicationState): string|undefined;
+  getMessage?(ctx: IConfigParamContext): Message | undefined;
 }
 
-export const createSelectRule = (options: ISelectRuleOptions,
-                                 dependencies?: (state: IApplicationState) => any[]): IConfigParamRule => ({
+export const createSelectRule = (param: ConfigParam, options: ISelectRuleOptions): IConfigParamRule => ({
+  id: param,
   default: options.default,
-  getTitle: constant(options.title),
-  getConstraints: constant(undefined),
-  getValue: options.value,
-  getDependencies: dependencies || EMPTY_DEPENDENCIES,
+  getValue: (ctx) => ctx.getParameter(param),
   isDisabled: options.isDisabled || stubFalse,
-  isDirty: options.isDirty || stubFalse,
   validate: options.validate || VALIDATE_SUCCESS,
-  hasError: options.hasError || stubFalse,
-  getErrorText: options.getErrorText || EMPTY_TEXT,
-  hasWarning: options.hasWarning || stubFalse,
-  getWarningText: options.getWarningText || EMPTY_TEXT,
+  getMessage: options.getMessage || VALIDATE_SUCCESS,
   toRawValue: identity,
   fromRawValue: identity,
   getOptions: constant(options.options),

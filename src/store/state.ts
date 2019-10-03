@@ -166,13 +166,9 @@ export interface IDeviceParameterState {
    */
   lastResponse?: IServerResponse;
   /**
-   * Any warning message associated with the parameter
+   * Any message associated with the parameter
    */
-  warning?: string;
-  /**
-   * Any error message associated with the parameter
-   */
-  error?: string;
+  message?: Message;
 }
 
 /**
@@ -210,6 +206,27 @@ export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
 export enum ConfirmationAnswer {
   Yes = "Yes",
   Cancel = "Cancel"
+}
+
+export enum MessageSeverity {
+  Error = "Error",
+  Warning = "Warning"
+}
+
+/**
+ * Message encapsulates some validation result having severity and text
+ */
+export class Message {
+  public static error(text: string): Message {
+    return new Message(MessageSeverity.Error, text);
+  }
+
+  public static warning(text: string): Message {
+    return new Message(MessageSeverity.Warning, text);
+  }
+
+  private constructor(readonly severity: MessageSeverity, readonly text: string) {
+  }
 }
 
 /**
@@ -309,7 +326,8 @@ export const getDeviceParamValue = (param: IDeviceParameterState) => param.value
 /**
  * Returns whether parameter state has error or do not
  */
-export const hasDeviceParamError = (param: IDeviceParameterState) => param.error != null;
+export const hasDeviceParamError = (param: IDeviceParameterState) =>
+  param.message ? param.message.severity === MessageSeverity.Error : false;
 /**
  * Returns actual CAN ID of the given device.
  * Value stored in kCanID field can be invalid by some reason (only on UI).

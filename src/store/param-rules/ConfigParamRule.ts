@@ -1,52 +1,84 @@
-import {IApplicationState, IFieldConstraints} from "../state";
+import {constant, isFunction, keyBy} from "lodash";
+import {IFieldConstraints, Message} from "../state";
 import {IDictionaryWord} from "../dictionaries";
+import {ConfigParam, configParamValues} from "../../models/ConfigParam";
+
+export interface IConfigParamContext {
+  getParameter(param: ConfigParam): number;
+}
 
 export interface IConfigParamRule {
-  readonly default?: any;
+  id: ConfigParam;
+  default?: any;
+  constraints?: IFieldConstraints;
 
-  getTitle(state: IApplicationState): string;
+  isDisabled(context: IConfigParamContext): boolean;
 
-  isDirty(state: IApplicationState): boolean;
+  validate(context: IConfigParamContext): Message|undefined;
 
-  isDisabled(state: IApplicationState): boolean;
+  getMessage(context: IConfigParamContext): Message|undefined;
 
-  validate(state: IApplicationState): ConfigParamMessage|undefined;
+  getValue(context: IConfigParamContext): number;
 
-  getConstraints(state: IApplicationState): IFieldConstraints|undefined;
-
-  getValue(state: IApplicationState): number;
-
-  getDependencies(state: IApplicationState): any[];
-
-  hasError(state: IApplicationState): boolean;
-
-  getErrorText(state: IApplicationState): string|undefined;
-
-  hasWarning(state: IApplicationState): boolean;
-
-  getWarningText(state: IApplicationState): string|undefined;
-
-  getOptions(state: IApplicationState): IDictionaryWord[];
+  getOptions(context: IConfigParamContext): IDictionaryWord[];
 
   fromRawValue(raw: number): any;
 
   toRawValue(typed: any): number;
 }
 
-export enum ConfigParamMessageSeverity {
-  Error = "Error",
-  Warning = "Warning"
+export type IConfigParamRuleRegistry = (param: ConfigParam) => IConfigParamRule;
+
+export interface IConfigParamRuleRegistryPatch {
+  visit(accept: (id: ConfigParam) => void): void;
+  map(rule: IConfigParamRule): IConfigParamRule;
 }
 
-export class ConfigParamMessage {
-  public static error(text: string): ConfigParamMessage {
-    return new ConfigParamMessage(ConfigParamMessageSeverity.Error, text);
-  }
+export const EMPTY_OPTIONS = constant([]);
+export const VALIDATE_SUCCESS = constant(undefined);
 
-  public static warning(text: string): ConfigParamMessage {
-    return new ConfigParamMessage(ConfigParamMessageSeverity.Warning, text);
-  }
+export const getConfigParamRuleId = (rule: IConfigParamRule) => rule.id;
 
-  private constructor(readonly severity: ConfigParamMessageSeverity, readonly text: string) {
-  }
+export const createRuleRegistry = (rules: IConfigParamRule[]): IConfigParamRuleRegistry => {
+  const ruleById = keyBy(rules, getConfigParamRuleId);
+  return (id) => ruleById[id];
+};
+
+export const overrideRuleRegistry = (registry: IConfigParamRuleRegistry,
+                                     overriddenRules: IConfigParamRule[]): IConfigParamRuleRegistry => {
+  const overriddenRuleById = keyBy(overriddenRules, getConfigParamRuleId);
+  return (id) => overriddenRuleById[id] || registry(id);
+};
+
+export const mapRuleRegistry = (registry: IConfigParamRuleRegistry,
+                                patches: IConfigParamRuleRegistryPatch[]): IConfigParamRuleRegistry => {
+  const ruleById = {};
+
+  patches.forEach((patch) => {
+    patch.visit((id) => {
+      const rule = registry(id);
+      const mappedRule = patch.map(rule);
+      if (mappedRule !== rule) {
+        ruleById[id] = mappedRule;
+      }
+    });
+  });
+
+  return (id) => ruleById[id] || registry(id);
+};
+
+export function mapRule(id: ConfigParam,
+                        map: (rule: IConfigParamRule) => IConfigParamRule): IConfigParamRuleRegistryPatch;
+
+export function mapRule(map: (rule: IConfigParamRule) => IConfigParamRule): IConfigParamRuleRegistryPatch;
+
+export function mapRule(idOrMap: ConfigParam | ((rule: IConfigParamRule) => IConfigParamRule),
+                        optionalMap?: (rule: IConfigParamRule) => IConfigParamRule): IConfigParamRuleRegistryPatch {
+  const map: any = optionalMap || idOrMap;
+  const paramsToVisit = isFunction(idOrMap) ? configParamValues : [idOrMap as number];
+
+  return {
+    visit: (accept) => paramsToVisit.forEach(accept),
+    map,
+  };
 }

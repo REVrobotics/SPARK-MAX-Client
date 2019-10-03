@@ -5,6 +5,8 @@ import {connect} from "react-redux";
 import {IApplicationState} from "../../store/state";
 import {getConfigParamRule} from "../../store/config-param-rules";
 import {setSelectedDeviceParameterValue, SparkDispatch} from "../../store/actions";
+import {createRamConfigParamContext, getRamConfigParamRule} from "../../store/ram-config-param-rules";
+import {querySelectedDeviceBurnedConfig} from "../../store/selectors";
 
 interface IBindConfigParamProps {
   parameter: ConfigParam;
@@ -16,22 +18,22 @@ interface IBindConfigParamProps {
  *
  * @param Component
  */
-const bindConfigRule = (Component: ComponentType<IParamSourceProps>): ComponentType<any> => {
+const bindRamConfigRule = (Component: ComponentType<IParamSourceProps>): ComponentType<any> => {
   const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IBindConfigParamProps) => {
-    const rule = getConfigParamRule(parameter);
+    const rule = getRamConfigParamRule(parameter);
+    const ctx = createRamConfigParamContext(state);
+    const value = rule.getValue(ctx);
+
+    const burnedParameters = querySelectedDeviceBurnedConfig(state);
 
     return {
       parameter,
-      title: rule.getTitle(state),
-      constraints: rule.getConstraints(state),
-      value: rule.fromRawValue(rule.getValue(state)),
-      disabled: disabled || rule.isDisabled(state),
-      isDirty: rule.isDirty(state),
-      hasError: rule.hasError(state),
-      errorText: rule.getErrorText(state),
-      hasWarning: rule.hasWarning(state),
-      warningText: rule.getWarningText(state),
-      options: rule.getOptions(state),
+      constraints: rule.constraints,
+      value: rule.fromRawValue(value),
+      disabled: disabled || rule.isDisabled(ctx),
+      isDirty: burnedParameters && burnedParameters[parameter] != null ? burnedParameters[parameter] !== value : false,
+      message: rule.getMessage(ctx),
+      options: rule.getOptions(ctx),
     };
   };
 
@@ -47,4 +49,4 @@ const bindConfigRule = (Component: ComponentType<IParamSourceProps>): ComponentT
   return connect(mapStateToProps, mapDispatchToProps)(Component);
 };
 
-export default bindConfigRule;
+export default bindRamConfigRule;

@@ -1,276 +1,229 @@
-import {without} from "lodash";
-import {ConfigParam, IdleMode, MotorType, SensorType} from "../models/dto";
-import {ConfigParamMessage, IConfigParamRule} from "./param-rules/ConfigParamRule";
-import {configParamAccessor, getSelectedDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
+import {ConfigParam, MotorType, ParamType, SensorType} from "../models/dto";
+import {createRuleRegistry, overrideRuleRegistry} from "./param-rules/ConfigParamRule";
 import {createNumericRule} from "./param-rules/NumericParamRule";
 import {createSelectRule} from "./param-rules/SelectParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
 import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
-import {queryConnectedDevicesByCanId, querySelectedDevice} from "./selectors";
-import {substitute} from "../utils/string-utils";
+import {configParamNames, getConfigParamType} from "../models/ConfigParam";
 
-const MESSAGE_CAN_0 = "For proper operation of the SPARK MAX, please change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.";
-const MESSAGE_NOT_CONFIGURED_DEVICE = "To work with SPARK MAX controller, configure it by setting unique CAN ID on the bus";
-const MESSAGE_NOT_UNIQUE_CAN_ID = "Device having id $id already exists. Assign unique CAN ID, please";
+/**
+ * Generate rules for ALL parameters.
+ * Here we rely on definitions generated based on proto files.
+ */
+const GENERATED_RULES = configParamNames.map((name) => {
+  const type = getConfigParamType(name);
+  const param = ConfigParam[name];
 
-const RULES: {[param: number]: IConfigParamRule} = {
-  [ConfigParam.kCanID]: createNumericRule({
+  switch (type) {
+    case ParamType.int32:
+      return createNumericRule(param, {
+        default: 0,
+      });
+    case ParamType.uint32:
+      return createNumericRule(param, {
+        default: 0,
+        constraints: {
+          min: 0,
+          integral: true,
+        }
+      });
+    case ParamType.float32:
+      return createNumericRule(param, {
+        default: 0,
+      });
+    case ParamType.bool:
+      return createBooleanRule(param, {
+        default: 0,
+      });
+    default:
+      throw new Error(`Unknown type of parameter '${name}': ${type}`);
+  }
+});
+
+/**
+ * Override rules for some parameters.
+ * Sometimes type information (uint32, int32, float32, bool) is not enough to generate all constraints.
+ * For example, kCanID has type uint32, but should allow only 0-62 values.
+ */
+const OVERRIDDEN_RULES = [
+  createNumericRule(ConfigParam.kCanID, {
     default: 0,
-    title: "CAN ID",
     constraints: {
       min: 1,
       max: 62,
       integral: true,
     },
-    ...configParamAccessor(
-      ConfigParam.kCanID,
-      (value, state) => {
-        const device = querySelectedDevice(state)!;
-        if (value === 0 && device.uniqueId !== 0) {
-          return ConfigParamMessage.error(MESSAGE_NOT_CONFIGURED_DEVICE);
-        } else if (without(queryConnectedDevicesByCanId(state, value), device).length > 0) {
-          return ConfigParamMessage.error(substitute(MESSAGE_NOT_UNIQUE_CAN_ID, {id: String(value)}));
-        } else if (value === 0) {
-          return ConfigParamMessage.warning(MESSAGE_CAN_0);
-        } else {
-          return;
-        }
-      }),
   }),
-  [ConfigParam.kMotorType]: createSelectRule({
+  createSelectRule(ConfigParam.kMotorType, {
     default: MotorType.Brushless,
-    title: "Select Motor Type",
     options: MOTOR_TYPES.seq(),
-    ...configParamAccessor(ConfigParam.kMotorType),
   }),
-  [ConfigParam.kSensorType]: createSelectRule({
+  createSelectRule(ConfigParam.kSensorType, {
     default: SensorType.HallSensor,
-    title: "Sensor Type",
     options: SENSOR_TYPES.seq(),
-    ...configParamAccessor(ConfigParam.kSensorType),
-    isDisabled: (state) => getSelectedDeviceParamValueOrDefault(state, ConfigParam.kMotorType) === MotorType.Brushless,
+    isDisabled: (ctx) => ctx.getParameter(ConfigParam.kMotorType) === MotorType.Brushless,
   }),
-  [ConfigParam.kIdleMode]: createBooleanRule({
-    default: IdleMode.Coast,
-    title: "Idle Mode",
-    ...configParamAccessor(ConfigParam.kIdleMode),
-  }),
-  [ConfigParam.kInputDeadband]: createNumericRule({
+  createNumericRule(ConfigParam.kInputDeadband, {
     default: 0,
-    title: "PWM Input Deadband",
     constraints: {
       min: 0,
       max: 0.3,
     },
-    ...configParamAccessor(ConfigParam.kInputDeadband),
   }),
-  [ConfigParam.kRampRate]: createNumericRule({
+  createNumericRule(ConfigParam.kRampRate, {
     default: 0,
-    title: "Rate (seconds to full speed)",
     constraints: {
       min: 0,
       max: 1024,
       integral: true,
     },
-    ...configParamAccessor(ConfigParam.kRampRate),
   }),
-  [ConfigParam.kSmartCurrentStallLimit]: createNumericRule({
+  createNumericRule(ConfigParam.kSmartCurrentStallLimit, {
     default: 80,
-    title: "Smart Current Limit",
     constraints: {
       min: 0,
       integral: true,
     },
-    ...configParamAccessor(ConfigParam.kSmartCurrentStallLimit),
   }),
-  [ConfigParam.kEncoderCountsPerRev]: createNumericRule({
+  createNumericRule(ConfigParam.kEncoderCountsPerRev, {
     default: 4096,
-    title: "Encoder CPR",
     constraints: {
       min: 1,
       integral: true,
     },
-    ...configParamAccessor(ConfigParam.kEncoderCountsPerRev),
-    isDisabled: (state) => {
-      const motorType = getSelectedDeviceParamValueOrDefault(state, ConfigParam.kMotorType);
-      const sensorType = getSelectedDeviceParamValueOrDefault(state, ConfigParam.kSensorType);
+    isDisabled: (ctx) => {
+      const motorType = ctx.getParameter(ConfigParam.kMotorType);
+      const sensorType = ctx.getParameter(ConfigParam.kSensorType);
       return motorType === MotorType.Brushless || sensorType !== SensorType.Encoder;
     }
   }),
-  [ConfigParam.kHardLimitFwdEn]: createBooleanRule({
+  createNumericRule(ConfigParam.kSoftLimitFwd, {
     default: 0,
-    title: "Forward Limit",
-    ...configParamAccessor(ConfigParam.kHardLimitFwdEn),
-  }),
-  [ConfigParam.kHardLimitRevEn]: createBooleanRule({
-    default: 0,
-    title: "Reverse Limit",
-    ...configParamAccessor(ConfigParam.kHardLimitRevEn),
-  }),
-  [ConfigParam.kLimitSwitchFwdPolarity]: createBooleanRule({
-    default: 0,
-    ...configParamAccessor(ConfigParam.kLimitSwitchFwdPolarity),
-  }),
-  [ConfigParam.kLimitSwitchRevPolarity]: createBooleanRule({
-    default: 0,
-    ...configParamAccessor(ConfigParam.kLimitSwitchRevPolarity),
-  }),
-  [ConfigParam.kSoftLimitFwdEn]: createBooleanRule({
-    default: 0,
-    title: "Forward Limit",
-    ...configParamAccessor(ConfigParam.kSoftLimitFwdEn),
-  }),
-  [ConfigParam.kSoftLimitRevEn]: createBooleanRule({
-    default: 0,
-    title: "Reverse Limit",
-    ...configParamAccessor(ConfigParam.kSoftLimitRevEn),
-  }),
-  [ConfigParam.kSoftLimitFwd]: createNumericRule({
-    default: 0,
-    title: "Forward Limit (value)",
     constraints: {
       min: 0,
     },
-    ...configParamAccessor(ConfigParam.kSoftLimitFwd),
-    isDisabled: (state) => !getSelectedDeviceParamValueOrDefault(state, ConfigParam.kSoftLimitFwdEn),
+    isDisabled: (ctx) => !ctx.getParameter(ConfigParam.kSoftLimitFwdEn),
   }),
-  [ConfigParam.kSoftLimitRev]: createNumericRule({
+  createNumericRule(ConfigParam.kSoftLimitRev, {
     default: 0,
-    title: "Reverse Limit (value)",
     constraints: {
       min: 0,
     },
-    ...configParamAccessor(ConfigParam.kSoftLimitRev),
-    isDisabled: (state) => !getSelectedDeviceParamValueOrDefault(state, ConfigParam.kSoftLimitRevEn),
+    isDisabled: (ctx) => !ctx.getParameter(ConfigParam.kSoftLimitRevEn),
   }),
-  [ConfigParam.kP_0]: createNumericRule({
+  createNumericRule(ConfigParam.kP_0, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kP_0),
   }),
-  [ConfigParam.kI_0]: createNumericRule({
+  createNumericRule(ConfigParam.kP_1, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kI_0),
   }),
-  [ConfigParam.kD_0]: createNumericRule({
+  createNumericRule(ConfigParam.kP_2, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kD_0),
   }),
-  [ConfigParam.kF_0]: createNumericRule({
+  createNumericRule(ConfigParam.kP_3, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kF_0),
   }),
-  [ConfigParam.kP_1]: createNumericRule({
+  createNumericRule(ConfigParam.kI_0, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kP_1),
   }),
-  [ConfigParam.kI_1]: createNumericRule({
+  createNumericRule(ConfigParam.kI_1, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kI_1),
   }),
-  [ConfigParam.kD_1]: createNumericRule({
+  createNumericRule(ConfigParam.kI_2, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kD_1),
   }),
-  [ConfigParam.kF_1]: createNumericRule({
+  createNumericRule(ConfigParam.kI_3, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kF_1),
   }),
-  [ConfigParam.kP_2]: createNumericRule({
+  createNumericRule(ConfigParam.kD_0, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kP_2),
   }),
-  [ConfigParam.kI_2]: createNumericRule({
+  createNumericRule(ConfigParam.kD_1, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kI_2),
   }),
-  [ConfigParam.kD_2]: createNumericRule({
+  createNumericRule(ConfigParam.kD_2, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kD_2),
   }),
-  [ConfigParam.kF_2]: createNumericRule({
+  createNumericRule(ConfigParam.kD_3, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kF_2),
   }),
-  [ConfigParam.kP_3]: createNumericRule({
+  createNumericRule(ConfigParam.kF_0, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kP_3),
   }),
-  [ConfigParam.kI_3]: createNumericRule({
+  createNumericRule(ConfigParam.kF_1, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kI_3),
   }),
-  [ConfigParam.kD_3]: createNumericRule({
+  createNumericRule(ConfigParam.kF_2, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kD_3),
   }),
-  [ConfigParam.kF_3]: createNumericRule({
+  createNumericRule(ConfigParam.kF_3, {
     default: 0,
     constraints: {
       min: 0,
       max: 3,
     },
-    ...configParamAccessor(ConfigParam.kF_3),
   }),
-};
+];
 
-export const getConfigParamRule = (parameter: ConfigParam) => RULES[parameter];
+export const getGeneratedConfigParamRule = createRuleRegistry(GENERATED_RULES);
+export const getConfigParamRule = overrideRuleRegistry(getGeneratedConfigParamRule, OVERRIDDEN_RULES);

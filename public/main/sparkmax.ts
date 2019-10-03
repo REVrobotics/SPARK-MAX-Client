@@ -140,7 +140,7 @@ onTwoWayCall("set-param", (cb, device: string, parameter: number, value: any) =>
           .then(() => response))
       .finally(() => context.resume());
   } else {
-    afterSetParam = setParameter();
+    afterSetParam = setParameter({root: {device}, value, parameter});
   }
 
   afterSetParam

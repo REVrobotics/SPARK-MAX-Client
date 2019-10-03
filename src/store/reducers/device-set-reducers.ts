@@ -13,7 +13,7 @@ import {ActionType, ApplicationActions} from "../actions";
 import {removeFields, setArrayElement, setField, setFields} from "../../utils/object-utils";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {getConfigParamRule} from "../config-param-rules";
-import {ConfigParamMessageSeverity} from "../param-rules/ConfigParamRule";
+import {createRamConfigParamContext, IRamConfigParamContext} from "../ram-config-param-rules";
 
 const initialDeviceSetState: IDeviceSetState = {
   orderedDevices: [],
@@ -120,16 +120,18 @@ const parameterValidationReducer = (state: IApplicationState, action: Applicatio
     case ActionType.SET_DEVICE_PARAMETER:
     case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
     case ActionType.SET_PARAMETERS: {
+      const ctx = createRamConfigParamContext(state);
+
       const currentParameters = state.deviceSet.devices[action.payload.virtualDeviceId].currentParameters;
       let validatedParameters;
       if (action.type === ActionType.SET_PARAMETERS) {
-        validatedParameters = currentParameters.map((parameter, i) => validateDeviceParameter(state, i, parameter));
+        validatedParameters = currentParameters.map((parameter, i) => validateDeviceParameter(ctx, i, parameter));
       } else {
         validatedParameters = setArrayElement(
           currentParameters,
           action.payload.parameter,
           validateDeviceParameter(
-            state,
+            ctx,
             action.payload.parameter,
             currentParameters[action.payload.parameter]));
       }
@@ -153,7 +155,7 @@ const parameterValidationReducer = (state: IApplicationState, action: Applicatio
   }
 };
 
-const validateDeviceParameter = (state: IApplicationState,
+const validateDeviceParameter = (ctx: IRamConfigParamContext,
                                  parameter: ConfigParam,
                                  parameterState: IDeviceParameterState): IDeviceParameterState => {
   const rule = getConfigParamRule(parameter);
@@ -161,26 +163,7 @@ const validateDeviceParameter = (state: IApplicationState,
     return parameterState;
   }
 
-  const message = rule.validate(state);
-
-  if (message == null) {
-    return setFields(parameterState, {error: undefined, warning: undefined});
-  }
-
-  switch (message.severity) {
-    case ConfigParamMessageSeverity.Error:
-      return setFields(parameterState, {
-        error: message.text,
-        warning: undefined,
-      });
-    case ConfigParamMessageSeverity.Warning:
-      return setFields(parameterState, {
-        error: undefined,
-        warning: message.text,
-      });
-    default:
-      return parameterState;
-  }
+  return setField(parameterState, "message", rule.validate(ctx));
 };
 
 export { parameterValidationReducer };
