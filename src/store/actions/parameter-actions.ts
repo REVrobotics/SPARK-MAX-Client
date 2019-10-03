@@ -126,7 +126,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
 
     return dispatch(showConfirmation({
       intent: "success",
-      text: `Are you sure you want to update the configuration of your SPARK controller to a ${activeMotorType} motor?`,
+      text: `Are you sure you want to update the configuration of your SPARK controller to a ${activeMotorType.text} motor?`,
       yesLabel: "Yes, Update",
       cancelLabel: "Cancel"
     })).then((answer) => {
