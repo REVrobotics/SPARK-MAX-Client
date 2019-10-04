@@ -144,6 +144,24 @@ export interface IFirmwareEntry {
 }
 
 /**
+ * Device configuration holds values for some devices parameters.
+ * This structure is used by persistent configuration and motor types feature.
+ */
+export interface IDeviceConfiguration {
+  id: string;
+  name: string;
+  parameters: Array<number|undefined>;
+}
+
+export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
+
+export const DEFAULT_DEVICE_CONFIGURATION: IDeviceConfiguration = {
+  id: DEFAULT_DEVICE_CONFIGURATION_ID,
+  name: "In RAM",
+  parameters: [],
+};
+
+/**
  * Whole application state
  */
 export interface IApplicationState {
@@ -153,6 +171,7 @@ export interface IApplicationState {
   firmware: IFirmwareState;
   logs: string[],
   ui: IUiState;
+  configurations: IDeviceConfiguration[],
 }
 
 /**
@@ -275,6 +294,7 @@ export interface IDeviceState {
  */
 export interface IDeviceTransientState {
   rampRateEnabled: boolean;
+  configurationId: string;
 }
 
 /**
@@ -335,6 +355,7 @@ export enum ProfileConfigParam {
 
 export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
   rampRateEnabled: false,
+  configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
 };
 
 export enum ConfirmationAnswer {
@@ -391,6 +412,7 @@ const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => (
 export const getTransientState = (config: IDeviceParameterState[]): IDeviceTransientState => {
   const rampRateParam = config[ConfigParam.kRampRate];
   return {
+    configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
     rampRateEnabled: rampRateParam && rampRateParam.value > 0 || false,
   };
 };
@@ -574,3 +596,8 @@ export const isNetworkDeviceSelectable = (device: INetworkDevice) =>
  * Returns whether given device is selected to update
  */
 export const isNetworkDeviceSelected = (device: INetworkDevice) => device.selected;
+
+export const getDeviceConfigurationId = (config: IDeviceConfiguration) => config.id;
+export const getDeviceConfigurationName = (config: IDeviceConfiguration) => config.name;
+export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
+  getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID;

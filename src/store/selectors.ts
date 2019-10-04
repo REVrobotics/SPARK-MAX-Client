@@ -5,6 +5,7 @@
 
 import {filter, find, first} from "lodash";
 import {
+  DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
   DeviceId, FirmwareTag,
   getDeviceBlockedReason,
@@ -358,3 +359,26 @@ export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): 
  * Returns if firmware is updated currently.
  */
 export const queryIsFirmwareLoading = (state: IApplicationState) => state.firmware.loading;
+
+export const querySelectedConfigurationId = (state: IApplicationState) =>
+  querySelectedDeviceTransientParameters(state).configurationId;
+
+export const querySelectedConfiguration = (state: IApplicationState) => {
+  const id = querySelectedConfigurationId(state);
+  return queryConfiguration(state, id);
+};
+
+export const queryConfiguration = (state: IApplicationState, id: string) => find(queryConfigurations(state), {id});
+export const queryConfigurations = (state: IApplicationState) => state.configurations;
+export const queryIsSelectedConfigurationDirty = (state: IApplicationState) => {
+  const configurationId = querySelectedConfigurationId(state);
+  // Dirty flag makes sense only for device with loaded parameters and non-default configuration
+  if (configurationId === DEFAULT_DEVICE_CONFIGURATION_ID || !queryIsSelectedDeviceLoaded(state)) {
+    return false;
+  } else {
+    const configuration = queryConfiguration(state, configurationId)!;
+    const deviceParameters = querySelectedDeviceCurrentConfig(state)!;
+    return configuration.parameters.some((value, param) =>
+      getDeviceParamValue(getDeviceParam(deviceParameters, param)) !== value);
+  }
+};

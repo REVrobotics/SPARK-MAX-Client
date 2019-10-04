@@ -236,23 +236,23 @@ input:checked ~ .bp3-control-indicator {
     background-color: orange !important;
 }
 
-.bp3-numeric-input > .bp3-input-group > input {
+.numeric-form-field .bp3-input-group > input {
     max-width: 100%;
 }
 
-.bp3-numeric-input > .bp3-input-group{
+.numeric-form-field .bp3-input-group {
     width: calc(100% - 30px);
 }
 
-.bp3-numeric-input > .bp3-input-group .bp3-fixed {
+.numeric-form-field .bp3-input-group .bp3-fixed {
     width: 30px;
 }
 
-.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target {
+.select-form-field .bp3-popover-target {
     width: 100%;
 }
 
-.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target > div > button {
+.select-form-field .bp3-popover-target > div > button {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -494,6 +494,22 @@ label.modified::after {
 
 .text-center {
     text-align: center;
+}
+
+.mr-5 {
+    margin-right: 5px;
+}
+
+.mr-10 {
+    margin-right: 10px;
+}
+
+.persistent-select__menu {
+    min-width: 110px;
+}
+
+.persistent-select__main-btn {
+    width: 80px;
 }
 
 .network-table {

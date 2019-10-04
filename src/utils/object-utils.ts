@@ -79,3 +79,7 @@ export function setArrayElementWith<T>(array: T[],
   const index = findIndex(array, predicate);
   return setArrayElement(array, index, value);
 }
+
+export function coalesce<T, O extends T>(value: T | null | undefined, otherwise: O): T {
+  return value == null ? otherwise : value;
+}
