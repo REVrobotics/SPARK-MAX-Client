@@ -19,6 +19,7 @@ interface IProps extends IConfigParamProps {
 const optionRenderer = (option: IDictionaryWord, itemProps: IItemRendererProps) => {
   return (
     <MenuItem
+      active={itemProps.modifiers.active}
       key={option.id}
       onClick={itemProps.handleClick}
       text={option.text}

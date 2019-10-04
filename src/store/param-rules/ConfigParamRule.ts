@@ -57,7 +57,7 @@ export const mapRuleRegistry = (registry: IConfigParamRuleRegistry,
   patches.forEach((patch) => {
     patch.visit((id) => {
       const rule = registry(id);
-      const mappedRule = patch.map(rule);
+      const mappedRule = patch.map(ruleById[id] || rule);
       if (mappedRule !== rule) {
         ruleById[id] = mappedRule;
       }

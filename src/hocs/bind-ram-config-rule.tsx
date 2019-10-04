@@ -3,7 +3,6 @@ import {ComponentType} from "react";
 import {ConfigParam} from "../models/ConfigParam";
 import {connect} from "react-redux";
 import {IApplicationState} from "../store/state";
-import {getConfigParamRule} from "../store/config-param-rules";
 import {setSelectedDeviceParameterValue, SparkDispatch} from "../store/actions";
 import {createRamConfigParamContext, getRamConfigParamRule} from "../store/ram-config-param-rules";
 import {querySelectedDeviceBurnedConfig} from "../store/selectors";
@@ -38,7 +37,7 @@ const bindRamConfigRule = (Component: ComponentType<IConfigParamProps>): Compone
   };
 
   const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IBindRamConfigParamProps) => {
-    const rule = getConfigParamRule(parameter);
+    const rule = getRamConfigParamRule(parameter);
 
     return {
       onValueChange: (_: ConfigParam, value: any) =>
