@@ -1,4 +1,4 @@
-import {ActionType, SparkAction} from "./action-types";
+import {SparkAction} from "./action-types";
 import {showConfirmation} from "./ui-actions";
 import {queryDevice, queryDeviceId, queryDeviceParameterValue, queryHasDeviceParameterError} from "../selectors";
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
@@ -10,6 +10,7 @@ import {
   setDeviceParameter,
   setDeviceParameterResponse,
   setParameters,
+  setOnlyTransientParameter,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
 } from "./atom-actions";
@@ -43,14 +44,15 @@ const scheduleSetParameterValue = (virtualDeviceId: VirtualDeviceId,
   onSchedule("set-parameter", virtualDeviceId, param, (dispatch, getState) => {
     // It is supposed that device parameter value was already changed, this way we pass the last parameter as false
     // This is done only for better UX
-    const mainParameter = dispatch(setSingleParameterValue(virtualDeviceId, param, value, false));
+    const mainParameter = dispatch(setOnlyParameterValue(virtualDeviceId, param, value, false));
 
+    // TODO: refactor to use getDependentParams and restore
     if (param === ConfigParam.kMotorType) {
       return mainParameter
         .then((mainValue) => {
           const motorType = queryDeviceParameterValue(getState(), virtualDeviceId, param);
           if (motorType === MotorType.Brushless) {
-            return dispatch(setSingleParameterValue(virtualDeviceId, ConfigParam.kSensorType, SensorType.HallSensor));
+            return dispatch(setOnlyParameterValue(virtualDeviceId, ConfigParam.kSensorType, SensorType.HallSensor));
           } else {
             return Promise.resolve<number>(mainValue);
           }
@@ -59,19 +61,26 @@ const scheduleSetParameterValue = (virtualDeviceId: VirtualDeviceId,
     return mainParameter;
   });
 
-const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
-                                 param: ConfigParam,
-                                 value: number,
-                                 // should we set parameter value or value was already set
-                                 withInitialSet: boolean = true): SparkAction<Promise<number>> =>
+export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
+                                      param: ConfigParam,
+                                      newValue: number,
+                                      // should we set parameter value or value was already set
+                                      withInitialSet: boolean = true): SparkAction<Promise<number>> =>
   (dispatch, getState) => {
     if (withInitialSet) {
-      dispatch(setDeviceParameter(virtualDeviceId, param, value));
+      const currentValue = queryDeviceParameterValue(getState(), virtualDeviceId, param);
+
+      // Do nothing if value was not changed
+      if (currentValue === newValue) {
+        return Promise.resolve(currentValue);
+      }
+
+      dispatch(setDeviceParameter(virtualDeviceId, param, newValue));
     }
 
     // If value is invalid we should not send it into the device
     if (queryHasDeviceParameterError(getState(), virtualDeviceId, param)) {
-      return Promise.resolve(value);
+      return Promise.resolve(newValue);
     }
 
     const device = queryDevice(getState(), virtualDeviceId);
@@ -79,16 +88,16 @@ const setSingleParameterValue = (virtualDeviceId: VirtualDeviceId,
     const deviceId = fromDeviceId(device.fullDeviceId);
 
     if (isDeviceNotConfigured(device) && param === ConfigParam.kCanID) {
-      return SparkManager.idAssignment(value, device.uniqueId)
+      return SparkManager.idAssignment(newValue, device.uniqueId)
         .then(() => {
           // Generate server response, because validation logic can rely on response
-          const res: IServerResponse = { status: 0, type: 1, requestValue: value, responseValue: value };
+          const res: IServerResponse = {status: 0, type: 1, requestValue: newValue, responseValue: newValue};
           dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, true));
           dispatch(recalculateDeviceId(virtualDeviceId));
-          return value;
+          return newValue;
         });
     } else {
-      return SparkManager.setAndGetParameter(deviceId, param, value)
+      return SparkManager.setAndGetParameter(deviceId, param, newValue)
         .then((res: IServerResponse) => {
           const responseValue = res.responseValue as number;
           dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
@@ -184,18 +193,11 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
     });
   });
 
-const setTransientParameter = (virtualDeviceId: VirtualDeviceId,
-                               field: keyof IDeviceTransientState,
-                               value: any): SparkAction<Promise<any>> =>
+export const setTransientParameter = (virtualDeviceId: VirtualDeviceId,
+                                      field: keyof IDeviceTransientState,
+                                      value: any): SparkAction<Promise<any>> =>
   (dispatch) => {
-    dispatch({
-      type: ActionType.SET_TRANSIENT_PARAMETER,
-      payload: {
-        virtualDeviceId,
-        field,
-        value,
-      },
-    });
+    dispatch(setOnlyTransientParameter(virtualDeviceId, field, value));
     if (field === "rampRateEnabled" && !value) {
       // If ramp rate is not enabled => reset ramp rate value
       return dispatch(setParameterValue(virtualDeviceId, ConfigParam.kRampRate, 0));

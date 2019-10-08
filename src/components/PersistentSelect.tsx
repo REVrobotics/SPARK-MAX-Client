@@ -34,10 +34,15 @@ interface IProps<T> {
   onSaveAs(item: T): void;
 
   onRemove(item: T): void;
+
+  onRestore(item: T): void;
 }
 
 function PersistentSelect<T>(props: IProps<T>) {
-  const {selected, modifiable, isDirty, getKey, getText, items, disabled, onRename, onSave, onSaveAs, onRemove, onSelect} = props;
+  const {
+    selected, modifiable, isDirty, getKey, getText, items, disabled,
+    onRename, onSave, onSaveAs, onRemove, onRestore, onSelect,
+  } = props;
 
   const canChange = coalesce(modifiable, true);
 
@@ -46,6 +51,7 @@ function PersistentSelect<T>(props: IProps<T>) {
   const save = useCallback(() => onSave(selected), [selected]);
   const saveAs = useCallback(() => onSaveAs(selected), [selected]);
   const remove = useCallback(() => onRemove(selected), [selected]);
+  const restore = useCallback(() => onRestore(selected), [selected]);
 
   return (
     <div className="flex-row">
@@ -73,6 +79,8 @@ function PersistentSelect<T>(props: IProps<T>) {
                   <MenuItem text="Rename..." onClick={rename}/>
                   <MenuDivider/>
                   <MenuItem text="Remove" onClick={remove}/>
+                  <MenuDivider/>
+                  <MenuItem text="Restore" onClick={restore}/>
                 </Menu>
               </Popover>
             </>

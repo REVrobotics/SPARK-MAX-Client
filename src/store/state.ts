@@ -4,18 +4,20 @@
 
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
-import {uniqueId} from "lodash";
-import {ConfigParam} from "../models/ConfigParam";
+import {find, keyBy, uniqueId} from "lodash";
+import {ConfigParam, configParamNames} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
 import {ReactNode} from "react";
+import {IRawDeviceConfigDto} from "../models/device-config";
 
 /**
  * Allows to track type of current processing, like saving or resetting
  */
 export enum ProcessType {
   Save = "Save",
-  Reset = "Reset"
+  Reset = "Reset",
+  SetConfiguration = "SetConfiguration"
 }
 
 /**
@@ -150,7 +152,8 @@ export interface IFirmwareEntry {
 export interface IDeviceConfiguration {
   id: string;
   name: string;
-  parameters: Array<number|undefined>;
+  parameters: Array<number | undefined>;
+  raw: IRawDeviceConfigDto;
 }
 
 export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
@@ -159,6 +162,7 @@ export const DEFAULT_DEVICE_CONFIGURATION: IDeviceConfiguration = {
   id: DEFAULT_DEVICE_CONFIGURATION_ID,
   name: "In RAM",
   parameters: [],
+  raw: undefined as any,
 };
 
 /**
@@ -243,6 +247,7 @@ export interface IUiState {
    */
   confirmation?: IConfirmationDialogConfig;
   confirmationOpened: boolean;
+  messageQueue?: IMessageQueueConfig;
 }
 
 export interface IDeviceState {
@@ -336,6 +341,17 @@ export interface IConfirmationDialogConfig {
 }
 
 /**
+ * State of message queue.
+ * Message queue represents long list of messages displayed for user.
+ * It is display as soon as it has at least one message
+ */
+export interface IMessageQueueConfig {
+  title: string;
+  body: string;
+  messages: string[];
+}
+
+/**
  * Constraints used by numeric fields
  */
 export interface INumericFieldConstraints {
@@ -344,7 +360,11 @@ export interface INumericFieldConstraints {
   integral?: boolean;
 }
 
-export type IFieldConstraints = INumericFieldConstraints;
+export interface IEnumFieldConstraints {
+  values: number[];
+}
+
+export type IFieldConstraints = INumericFieldConstraints | IEnumFieldConstraints;
 
 /**
  * Values used in control loop
@@ -364,6 +384,7 @@ export enum ConfirmationAnswer {
 }
 
 export enum MessageSeverity {
+  Info = "Info",
   Error = "Error",
   Warning = "Warning"
 }
@@ -372,12 +393,20 @@ export enum MessageSeverity {
  * Message encapsulates some validation result having severity and text
  */
 export class Message {
-  public static error(text: string): Message {
+  public static create(severity: MessageSeverity, text: string): Message {
     return new Message(MessageSeverity.Error, text);
   }
 
+  public static info(text: string): Message {
+    return Message.create(MessageSeverity.Info, text);
+  }
+
+  public static error(text: string): Message {
+    return Message.create(MessageSeverity.Error, text);
+  }
+
   public static warning(text: string): Message {
-    return new Message(MessageSeverity.Warning, text);
+    return Message.create(MessageSeverity.Warning, text);
   }
 
   private constructor(readonly severity: MessageSeverity, readonly text: string) {
@@ -601,3 +630,29 @@ export const getDeviceConfigurationId = (config: IDeviceConfiguration) => config
 export const getDeviceConfigurationName = (config: IDeviceConfiguration) => config.name;
 export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
   getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID;
+
+export const eqDeviceConfigurationName = (a: string, b: string) => a.toLowerCase().trim() === b.toLowerCase().trim();
+
+export const findDeviceConfigurationByName = (configs: IDeviceConfiguration[],
+                                              name: string,
+                                              excludeId?: string): IDeviceConfiguration | undefined => {
+  const found = find(
+    configs,
+    (configuration) =>
+      configuration.id !== DEFAULT_DEVICE_CONFIGURATION_ID && eqDeviceConfigurationName(configuration.name, name));
+  return found && found.id !== excludeId ? found : undefined;
+};
+
+export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceConfiguration => {
+  const dtoParamById = keyBy(dto.parameters, (param) => param.id);
+
+  return {
+    id: dto.fileName,
+    name: dto.name,
+    parameters: configParamNames.map((name) => {
+      const param = dtoParamById[name];
+      return param ? param.value : undefined;
+    }),
+    raw: dto,
+  };
+};

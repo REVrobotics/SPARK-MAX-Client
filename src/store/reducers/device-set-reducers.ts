@@ -52,6 +52,7 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
     case ActionType.SET_DEVICE_PARAMETER_RESPONSE:
     case ActionType.RECALCULATE_DEVICE_ID:
     case ActionType.SET_TRANSIENT_PARAMETER:
+    case ActionType.RESET_TRANSIENT_STATE:
       return setField(
         state,
         "devices",
@@ -104,6 +105,14 @@ const deviceSetReducers: Reducer<IDeviceState> = (state: IDeviceState, action: A
       return {
         ...state,
         transientParameters: setField(state.transientParameters, action.payload.field, action.payload.value),
+      };
+    case ActionType.RESET_TRANSIENT_STATE:
+      return {
+        ...state,
+        transientParameters: setFields(state.transientParameters, {
+          ...getTransientState(state.currentParameters),
+          configurationId: state.transientParameters.configurationId,
+        }),
       };
     case ActionType.RECALCULATE_DEVICE_ID: {
       const canId = getDeviceParamValue(state.currentParameters[ConfigParam.kCanID]);

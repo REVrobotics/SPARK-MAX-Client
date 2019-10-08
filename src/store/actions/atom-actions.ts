@@ -7,21 +7,52 @@ import {ActionCreator} from "redux";
 import {
   ActionType,
   IAddDevices,
-  IAddLog, IConsoleOutput, ISetLastFirmwareLoadingMessage, IRecalculateDeviceId, IReplaceDevices,
-  ISetConnectedDevice, ISetConsoleOutput,
+  IAddLog,
+  IConsoleOutput,
+  ISetLastFirmwareLoadingMessage,
+  IRecalculateDeviceId,
+  IReplaceDevices,
+  ISetConnectedDevice,
+  ISetConsoleOutput,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
-  ISetDeviceProcessing, ISetFirmwareDownloaded, ISetFirmwareDownloadError, ISetFirmwareDownloading, ISetFirmwareLoading,
-  ISetGlobalProcessing, ISetNetworkDevices, ISetNetworkScanInProgress,
-  ISetParameters, ISetSelectedDevice,
+  ISetDeviceProcessing,
+  ISetFirmwareDownloaded,
+  ISetFirmwareDownloadError,
+  ISetFirmwareDownloading,
+  ISetFirmwareLoading,
+  ISetGlobalProcessing,
+  ISetNetworkDevices,
+  ISetNetworkScanInProgress,
+  ISetParameters,
+  ISetSelectedDevice,
   ISetUpdateAvailable,
-  IUpdateDeviceProcessStatus, IUpdateFirmwareLoadingProgress,
-  IUpdateGlobalProcessStatus, IUpdateNetworkDevice, ISetSelectedTab,
+  IUpdateDeviceProcessStatus,
+  IUpdateFirmwareLoadingProgress,
+  IUpdateGlobalProcessStatus,
+  IUpdateNetworkDevice,
+  ISetSelectedTab,
+  ISetConfigurations,
+  IAddConfiguration,
+  IUpdateConfiguration,
+  IRemoveConfiguration,
+  IInitMessageQueue,
+  IResetMessageQueue,
+  IAddToMessageQueue,
+  ISetTransientParameter, IResetTransientState,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
-import {DeviceId, IDeviceState, INetworkDevice, ProcessType, TabId, VirtualDeviceId} from "../state";
+import {
+  DeviceId,
+  IDeviceConfiguration,
+  IDeviceState, IDeviceTransientState, IMessageQueueConfig,
+  INetworkDevice,
+  ProcessType,
+  TabId,
+  VirtualDeviceId
+} from "../state";
 import {ConfigParam} from "../../models/ConfigParam";
 
 export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
@@ -38,8 +69,8 @@ export const updateGlobalIsProcessing: ActionCreator<ISetGlobalProcessing> = (is
   type: ActionType.SET_GLOBAL_PROCESSING
 });
 
-export const updateDeviceProcessStatus: ActionCreator<IUpdateDeviceProcessStatus> = (virtualDeviceId: VirtualDeviceId,
-                                                                                     processStatus: string) => ({
+export const updateDeviceProcessStatus = (virtualDeviceId: VirtualDeviceId,
+                                          processStatus: string): IUpdateDeviceProcessStatus => ({
   payload: {
     virtualDeviceId,
     processStatus,
@@ -65,9 +96,9 @@ export const setDeviceLoaded: ActionCreator<ISetDeviceLoaded> = (virtualDeviceId
   type: ActionType.SET_DEVICE_LOADED
 });
 
-export const updateDeviceIsProcessing: ActionCreator<ISetDeviceProcessing> = (virtualDeviceId: VirtualDeviceId,
-                                                                              isProcessing: boolean,
-                                                                              processType?: ProcessType) => ({
+export const updateDeviceIsProcessing = (virtualDeviceId: VirtualDeviceId,
+                                         isProcessing: boolean,
+                                         processType?: ProcessType): ISetDeviceProcessing => ({
   payload: {
     virtualDeviceId,
     isProcessing,
@@ -110,6 +141,24 @@ export const setDeviceParameter: ActionCreator<ISetDeviceParameter> = (virtualDe
     value
   },
   type: ActionType.SET_DEVICE_PARAMETER,
+});
+
+export const setOnlyTransientParameter = (virtualDeviceId: VirtualDeviceId,
+                                          field: keyof IDeviceTransientState,
+                                          value: any): ISetTransientParameter => ({
+  payload: {
+    virtualDeviceId,
+    field,
+    value
+  },
+  type: ActionType.SET_TRANSIENT_PARAMETER,
+});
+
+export const resetTransientState = (virtualDeviceId: VirtualDeviceId): IResetTransientState => ({
+  payload: {
+    virtualDeviceId,
+  },
+  type: ActionType.RESET_TRANSIENT_STATE,
 });
 
 export const setDeviceParameterResponse: ActionCreator<ISetDeviceParameterResponse> = (virtualDeviceId: VirtualDeviceId,
@@ -220,6 +269,52 @@ export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAva
 export const setSelectedTab = (tab: TabId): ISetSelectedTab => ({
   payload: { tab },
   type: ActionType.SET_SELECTED_TAB,
+});
+
+export const setConfigurations = (configurations: IDeviceConfiguration[]): ISetConfigurations => ({
+  payload: {
+    configurations,
+  },
+  type: ActionType.SET_CONFIGURATIONS
+});
+
+export const addConfiguration = (configuration: IDeviceConfiguration): IAddConfiguration => ({
+  payload: {
+    configuration,
+  },
+  type: ActionType.ADD_CONFIGURATION
+});
+
+export const updateConfiguration = (id: string,
+                                    configuration: Partial<IDeviceConfiguration>): IUpdateConfiguration => ({
+  payload: {
+    id,
+    configuration,
+  },
+  type: ActionType.UPDATE_CONFIGURATION
+});
+
+export const removeConfiguration = (id: string): IRemoveConfiguration => ({
+  payload: {
+    id,
+  },
+  type: ActionType.REMOVE_CONFIGURATION
+});
+
+export const initMessageQueue = (config: IMessageQueueConfig): IInitMessageQueue => ({
+  payload: config,
+  type: ActionType.INIT_MESSAGE_QUEUE,
+});
+
+export const resetMessageQueue = (): IResetMessageQueue => ({
+  type: ActionType.RESET_MESSAGE_QUEUE,
+});
+
+export const addToMessageQueue = (messages: string[]): IAddToMessageQueue => ({
+  payload: {
+    messages
+  },
+  type: ActionType.ADD_TO_MESSAGE_QUEUE,
 });
 
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);

@@ -20,6 +20,7 @@ import {
   isDeviceInvalid,
   isDeviceNotConfigured,
   isHubDevice,
+  ProcessType,
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
@@ -376,9 +377,21 @@ export const queryIsSelectedConfigurationDirty = (state: IApplicationState) => {
   if (configurationId === DEFAULT_DEVICE_CONFIGURATION_ID || !queryIsSelectedDeviceLoaded(state)) {
     return false;
   } else {
+    const device = querySelectedDevice(state)!;
+    // Do not check parameters while we are in process of setting
+    if (device.processType === ProcessType.SetConfiguration) {
+      return false;
+    }
+    const deviceParameters = device.currentParameters;
     const configuration = queryConfiguration(state, configurationId)!;
-    const deviceParameters = querySelectedDeviceCurrentConfig(state)!;
     return configuration.parameters.some((value, param) =>
-      getDeviceParamValue(getDeviceParam(deviceParameters, param)) !== value);
+      value != null && getDeviceParamValue(getDeviceParam(deviceParameters, param)) !== value);
   }
+};
+
+export const queryMessageQueueConfig = (state: IApplicationState) => state.ui.messageQueue;
+
+export const queryIsMessageQueueOpened = (state: IApplicationState) => {
+  const { messageQueue } = state.ui;
+  return messageQueue ? messageQueue.messages.length > 0 : false;
 };

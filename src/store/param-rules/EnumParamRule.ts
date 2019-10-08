@@ -1,12 +1,15 @@
 import {constant, identity, stubFalse} from "lodash";
-import {IConfigParamContext, IConfigParamRule, VALIDATE_SUCCESS} from "./ConfigParamRule";
+import {ConfigParamRuleType, IConfigParamContext, IConfigParamRule, VALIDATE_SUCCESS} from "./ConfigParamRule";
 import {IDictionaryWord} from "../dictionaries";
 import {ConfigParam} from "../../models/ConfigParam";
 import {Message} from "../state";
 
-export interface ISelectRuleOptions {
+export interface IEnumRuleOptions {
   default: any;
+  values: number[];
   options: IDictionaryWord[];
+
+  restore?(ctx: IConfigParamContext): number;
 
   isDisabled?(ctx: IConfigParamContext): boolean;
 
@@ -15,10 +18,13 @@ export interface ISelectRuleOptions {
   getMessage?(ctx: IConfigParamContext): Message | undefined;
 }
 
-export const createSelectRule = (param: ConfigParam, options: ISelectRuleOptions): IConfigParamRule => ({
+export const createEnumRule = (param: ConfigParam, options: IEnumRuleOptions): IConfigParamRule => ({
   id: param,
+  type: ConfigParamRuleType.Enum,
   default: options.default,
+  constraints: {values: options.values},
   getValue: (ctx) => ctx.getParameter(param),
+  restore: options.restore,
   isDisabled: options.isDisabled || stubFalse,
   validate: options.validate || VALIDATE_SUCCESS,
   getMessage: options.getMessage || VALIDATE_SUCCESS,

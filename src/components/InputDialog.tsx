@@ -1,6 +1,8 @@
-import {Button, Classes, Dialog, FormGroup} from "@blueprintjs/core";
+import {Button, Classes, Dialog, FormGroup, InputGroup, Intent} from "@blueprintjs/core";
 import * as React from "react";
-import {useCallback, useState} from "react";
+import {FormEvent, useCallback, useState} from "react";
+import Focus from "./Focus";
+import {useRefPipe} from "../utils/react-utils";
 
 interface IProps {
   title: string;
@@ -10,6 +12,7 @@ interface IProps {
   okLabel: string;
   cancelLabel: string;
   isOpened: boolean;
+  validate?: (input: string) => string | undefined;
 
   onOk(newInput: string): void;
 
@@ -17,25 +20,59 @@ interface IProps {
 }
 
 const InputDialog = (props: IProps) => {
-  const {input, maxLength, message, title, isOpened, okLabel, cancelLabel, onOk, onCancel} = props;
+  const {input, maxLength, message, title, validate, isOpened, okLabel, cancelLabel, onOk, onCancel} = props;
 
   const [newInput, setNewInput] = useState(input);
-  const ok = useCallback(() => onOk(newInput), [newInput]);
+  const ok = useCallback((event?: FormEvent) => {
+    if (event) {
+      event.preventDefault();
+    }
+    onOk(newInput);
+  }, [newInput]);
   const change = useCallback((event) => setNewInput(event.target.value), []);
 
+  const isInputEmpty = !newInput;
+  let validationError: string | undefined;
+  if (isInputEmpty) {
+    validationError = "Name cannot be empty";
+  } else if (validate) {
+    validationError = validate(newInput);
+  }
+  const isInputInvalid = validationError != null;
+
+  const intent = isInputInvalid ? Intent.DANGER : undefined;
+
+  const [pipe, setRef] = useRefPipe<any>();
+
   return (
-    <Dialog isOpen={isOpened} title={title}>
-      <div className={Classes.DIALOG_BODY}>
-        <FormGroup label={message} labelFor="input">
-          <input id="input" type="text" maxLength={maxLength} className={Classes.INPUT} onChange={change}/>
-        </FormGroup>
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          <Button text={okLabel} onClick={ok}/>
-          <Button text={cancelLabel} onClick={onCancel}/>
+    <Dialog isOpen={isOpened} onClose={onCancel} title={title}  style={{width: "300px"}}>
+      <form onSubmit={ok}>
+        <div className={Classes.DIALOG_BODY}>
+          <FormGroup className="form-group--with-errors"
+                     label={message}
+                     labelFor="input"
+                     labelInfo="(required)"
+                     intent={intent}
+                     helperText={validationError}>
+            <Focus pipe={pipe} select={true}>
+              <InputGroup id="input"
+                          type="text"
+                          inputRef={setRef}
+                          intent={intent}
+                          value={newInput}
+                          maxLength={maxLength}
+                          className="full-width"
+                          onChange={change}/>
+            </Focus>
+          </FormGroup>
         </div>
-      </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <Button className="rev-btn" type="submit" disabled={isInputInvalid} text={okLabel} onClick={ok}/>
+            <Button minimal={true} text={cancelLabel} onClick={onCancel}/>
+          </div>
+        </div>
+      </form>
     </Dialog>
   )
 };

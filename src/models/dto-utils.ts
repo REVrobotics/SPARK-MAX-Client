@@ -1,3 +1,4 @@
+import {negate} from "lodash";
 import {RootResponseDto} from "../../public/proto-gen";
 
 type ResponseWithError = RootResponseDto | {root?: RootResponseDto};
@@ -33,3 +34,8 @@ export const getErrorText = (response?: ResponseWithError): string => {
 
   return root && root.error || "";
 };
+
+const isDigitOnlyKey = (key: string) => /^\d+$/.test(key);
+
+export const enumValues = (enumDef: any) => Object.keys(enumDef).filter(isDigitOnlyKey).map(Number);
+export const enumNames = (enumDef: any) => Object.keys(enumDef).filter(negate(isDigitOnlyKey));

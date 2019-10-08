@@ -31,7 +31,7 @@ import {
   setpointRequestFromDto,
   setpointResponseToDto,
   sparkMaxServerClient
-} from "../proto-gen";
+} from "../../proto-gen";
 import {Message} from "google-protobuf";
 
 // until better-queue gets a types definition

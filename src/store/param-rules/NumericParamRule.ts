@@ -1,11 +1,19 @@
 import {identity, stubFalse} from "lodash";
 import {INumericFieldConstraints, Message} from "../state";
-import {EMPTY_OPTIONS, IConfigParamContext, IConfigParamRule, VALIDATE_SUCCESS} from "./ConfigParamRule";
+import {
+  ConfigParamRuleType,
+  EMPTY_OPTIONS,
+  IConfigParamContext,
+  IConfigParamRule,
+  VALIDATE_SUCCESS
+} from "./ConfigParamRule";
 import {ConfigParam} from "../../models/ConfigParam";
 
 export interface INumericRuleOptions {
   default: number;
   constraints?: INumericFieldConstraints;
+
+  restore?(ctx: IConfigParamContext): number;
 
   isDisabled?(ctx: IConfigParamContext): boolean;
 
@@ -16,9 +24,11 @@ export interface INumericRuleOptions {
 
 export const createNumericRule = (param: ConfigParam, options: INumericRuleOptions): IConfigParamRule => ({
   id: param,
+  type: ConfigParamRuleType.Numeric,
   default: options.default,
   constraints: options.constraints,
   getValue: (ctx) => ctx.getParameter(param),
+  restore: options.restore,
   isDisabled: options.isDisabled || stubFalse,
   validate: options.validate || VALIDATE_SUCCESS,
   getMessage: options.getMessage || VALIDATE_SUCCESS,

@@ -204,6 +204,13 @@
     margin-top: 10px;
 }
 
+/*
+ * Adds space before labelInfo in FormGroup
+ */
+.bp3-label > .bp3-text-muted {
+    margin-left: 5px;
+}
+
 .bp3-tabs {
     padding: 0 10px 0 10px;
 }
@@ -262,14 +269,14 @@ input:checked ~ .bp3-control-indicator {
     padding: 0 10px 0 10px;
 }
 
-.bp3-dialog-body {
+.log-container {
     background-color: #cfcfcf;
     font-family: Consolas, sans-serif;
     margin: 10px;
     padding: 8px;
 }
 
-.bp3-dialog-body > p {
+.log-container > p {
     margin: 0;
 }
 
@@ -343,6 +350,10 @@ h4.form-title {
     width: 20%;
 }
 
+.form-group--with-errors {
+    height: 76px;
+}
+
 .bp3-form-group.form-group-fit {
     margin: 0;
 }
@@ -364,12 +375,12 @@ h4.form-title {
     height: 325px !important;
 }
 
-.rev-btn {
+.rev-btn:not(:disabled) {
     color: #ffffff !important;
     background: #e48d00 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
 
-.bad-btn {
+.bad-btn:not(:disabled) {
     color: #ffffff !important;
     background: #e41b11 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
@@ -420,6 +431,14 @@ h4.form-title {
 .modified > label > span:first-child::after,
 label.modified::after {
     content: '*';
+}
+
+.bp3-button.modified {
+    font-weight: bold;
+}
+
+.bp3-button.modified .bp3-button-text::after {
+    content: " *";
 }
 
 .field-error > .bp3-input-group > input {
@@ -488,6 +507,10 @@ label.modified::after {
     flex: 1;
 }
 
+.full-width {
+    width: 100%;
+}
+
 .page {
     height: 100%;
 }
@@ -502,6 +525,15 @@ label.modified::after {
 
 .mr-10 {
     margin-right: 10px;
+}
+
+.bp3-button.link-button {
+    padding: 0;
+}
+
+.bp3-button.link-button:hover {
+    text-decoration: underline;
+    background: none;
 }
 
 .persistent-select__menu {
@@ -531,4 +563,24 @@ button.link {
     0%   { opacity: 1; }
     40%  { opacity: 0; }
     80%  { opacity: 1; }
+}
+
+.message-queue {
+    max-height: 90vh;
+    padding-bottom: 10px;
+}
+
+.message-queue__console {
+    padding: 0 10px;
+    margin-top: 10px;
+    overflow: auto;
+
+    font-family: Consolas, sans-serif;
+    font-size: 13px;
+    color: white;
+    background: rgba(0, 0, 0, 0.87);
+}
+
+.message-queue__console pre {
+    white-space: pre-line;
 }

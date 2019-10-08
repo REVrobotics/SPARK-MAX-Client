@@ -5,10 +5,13 @@ import {
 import {deferred, IDeferred} from "../../utils/promise-utils";
 import {ConfirmationAnswer, IAlertDialogConfig, IConfirmationDialogConfig} from "../state";
 import {Intent, Toaster} from "@blueprintjs/core";
+import {resetMessageQueue} from "./atom-actions";
+import {queryIsMessageQueueOpened} from "../selectors";
 
 let currentConfirmation: IDeferred<ConfirmationAnswer> | undefined;
 let currentAlert: IDeferred<void> | undefined;
 let toaster: Toaster;
+let waitForMessageQueue: IDeferred<any> | undefined;
 
 export const setToasterRef = (t: Toaster) => {
   toaster = t;
@@ -117,3 +120,25 @@ export const closeConfirmation = (): SparkAction<void> =>
     currentConfirmation.reject();
     currentConfirmation = undefined;
   };
+
+export const whenMessageQueueClosed = (): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    if (queryIsMessageQueueOpened(getState())) {
+      if (waitForMessageQueue == null) {
+        waitForMessageQueue = deferred();
+      }
+      return waitForMessageQueue.promise;
+    } else {
+      return Promise.resolve();
+    }
+  };
+
+export const closeMessageQueue = (): SparkAction<void> => (dispatch, getState) => {
+  if (queryIsMessageQueueOpened(getState())) {
+    dispatch(resetMessageQueue());
+    if (waitForMessageQueue) {
+      waitForMessageQueue.resolve(undefined);
+      waitForMessageQueue = undefined;
+    }
+  }
+};

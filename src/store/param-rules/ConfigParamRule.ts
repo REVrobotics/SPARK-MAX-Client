@@ -7,20 +7,25 @@ export interface IConfigParamContext {
   getParameter(param: ConfigParam): number;
 }
 
+export enum ConfigParamRuleType { Boolean, Numeric, Enum }
+
 export interface IConfigParamRule {
   id: ConfigParam;
   default?: any;
   constraints?: IFieldConstraints;
+  type: ConfigParamRuleType;
 
   isDisabled(context: IConfigParamContext): boolean;
 
-  validate(context: IConfigParamContext): Message|undefined;
+  validate(context: IConfigParamContext): Message | undefined;
 
-  getMessage(context: IConfigParamContext): Message|undefined;
+  getMessage(context: IConfigParamContext): Message | undefined;
 
   getValue(context: IConfigParamContext): number;
 
   getOptions(context: IConfigParamContext): IDictionaryWord[];
+
+  restore?(context: IConfigParamContext): number;
 
   fromRawValue(raw: number): any;
 
@@ -29,8 +34,11 @@ export interface IConfigParamRule {
 
 export type IConfigParamRuleRegistry = (param: ConfigParam) => IConfigParamRule;
 
+export type ConfigParamRuleValidator = (context: IConfigParamContext) => Message | undefined;
+
 export interface IConfigParamRuleRegistryPatch {
   visit(accept: (id: ConfigParam) => void): void;
+
   map(rule: IConfigParamRule): IConfigParamRule;
 }
 
@@ -56,8 +64,8 @@ export const mapRuleRegistry = (registry: IConfigParamRuleRegistry,
 
   patches.forEach((patch) => {
     patch.visit((id) => {
-      const rule = registry(id);
-      const mappedRule = patch.map(ruleById[id] || rule);
+      const rule = ruleById[id] || registry(id);
+      const mappedRule = patch.map(rule);
       if (mappedRule !== rule) {
         ruleById[id] = mappedRule;
       }
@@ -82,3 +90,25 @@ export function mapRule(idOrMap: ConfigParam | ((rule: IConfigParamRule) => ICon
     map,
   };
 }
+
+export const mergeValidator = (rule: IConfigParamRule,
+                               validator?: ConfigParamRuleValidator): IConfigParamRule => {
+  if (validator == null) {
+    return rule;
+  }
+
+  const validate = (context: IFileConfigParamContext) => {
+    // Run default validation flow
+    const message = rule.validate(context);
+    if (message) {
+      return message;
+    }
+
+    return validator(context);
+  };
+
+  return {
+    ...rule,
+    validate,
+  };
+};

@@ -1,7 +1,7 @@
-import {ConfigParam, MotorType, ParamType, SensorType} from "../models/dto";
+import {ConfigParam, enumValues, MotorType, ParamType, SensorType} from "../models/dto";
 import {createRuleRegistry, overrideRuleRegistry} from "./param-rules/ConfigParamRule";
 import {createNumericRule} from "./param-rules/NumericParamRule";
-import {createSelectRule} from "./param-rules/SelectParamRule";
+import {createEnumRule} from "./param-rules/EnumParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
 import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
 import {configParamNames, getConfigParamType} from "../models/ConfigParam";
@@ -54,14 +54,26 @@ const OVERRIDDEN_RULES = [
       integral: true,
     },
   }),
-  createSelectRule(ConfigParam.kMotorType, {
+  createEnumRule(ConfigParam.kMotorType, {
     default: MotorType.Brushless,
     options: MOTOR_TYPES.seq(),
+    values: enumValues(MotorType),
+    restore: (ctx) => {
+      const motorType = ctx.getParameter(ConfigParam.kMotorType);
+      const sensorType = ctx.getParameter(ConfigParam.kSensorType);
+      return sensorType === SensorType.HallSensor ? motorType : MotorType.Brushed;
+    },
   }),
-  createSelectRule(ConfigParam.kSensorType, {
+  createEnumRule(ConfigParam.kSensorType, {
     default: SensorType.HallSensor,
     options: SENSOR_TYPES.seq(),
+    values: enumValues(SensorType),
     isDisabled: (ctx) => ctx.getParameter(ConfigParam.kMotorType) === MotorType.Brushless,
+    restore: (ctx) => {
+      const sensorType = ctx.getParameter(ConfigParam.kSensorType);
+      const motorType = ctx.getParameter(ConfigParam.kMotorType);
+      return motorType === MotorType.Brushless ? SensorType.HallSensor : sensorType;
+    },
   }),
   createNumericRule(ConfigParam.kInputDeadband, {
     default: 0,

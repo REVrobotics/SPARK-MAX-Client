@@ -9,8 +9,8 @@ import {ConfigParam} from "../../models/ConfigParam";
 import {
   ConfirmationAnswer, DeviceId, IAlertDialogConfig,
   IApplicationState,
-  IConfirmationDialogConfig,
-  IDeviceState, IDeviceTransientState, INetworkDevice,
+  IConfirmationDialogConfig, IDeviceConfiguration,
+  IDeviceState, IDeviceTransientState, IMessageQueueConfig, INetworkDevice,
   ProcessType, TabId, VirtualDeviceId
 } from "../state";
 
@@ -44,6 +44,7 @@ export enum ActionType {
   SET_DEVICE_PARAMETER = "SET_DEVICE_PARAMETER",
   SET_DEVICE_PARAMETER_RESPONSE = "SET_DEVICE_PARAMETER_RESPONSE",
   SET_TRANSIENT_PARAMETER = "SET_TRANSIENT_PARAMETER",
+  RESET_TRANSIENT_STATE = "RESET_TRANSIENT_STATE",
   RECALCULATE_DEVICE_ID = "RECALCULATE_DEVICE_ID",
   SET_NETWORK_DEVICES = "SET_NETWORK_DEVICES",
   UPDATE_NETWORK_DEVICE = "UPDATE_NETWORK_DEVICE",
@@ -58,10 +59,13 @@ export enum ActionType {
   SET_FIRMWARE_DOWNLOADED = "SET_FIRMWARE_DOWNLOADED",
 
   SET_CONFIGURATIONS = "SET_CONFIGURATIONS",
-  SELECT_CONFIGURATION = "CONFIGURATION_SELECT",
   ADD_CONFIGURATION = "ADD_CONFIGURATION",
   UPDATE_CONFIGURATION = "UPDATE_CONFIGURATION",
   REMOVE_CONFIGURATION = "REMOVE_CONFIGURATION",
+
+  INIT_MESSAGE_QUEUE = "INIT_MESSAGE_QUEUE",
+  RESET_MESSAGE_QUEUE = "RESET_MESSAGE_QUEUE",
+  ADD_TO_MESSAGE_QUEUE = "ADD_TO_MESSAGE_QUEUE",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -180,6 +184,13 @@ export interface ISetTransientParameter extends IDeviceAwareAction {
     virtualDeviceId: VirtualDeviceId,
     field: keyof IDeviceTransientState,
     value: any,
+  }
+}
+
+export interface IResetTransientState extends IDeviceAwareAction {
+  type: ActionType.RESET_TRANSIENT_STATE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
   }
 }
 
@@ -319,18 +330,66 @@ export interface ISetFirmwareDownloadError extends Action {
   payload: {}
 }
 
+export interface ISetConfigurations extends Action {
+  type: ActionType.SET_CONFIGURATIONS,
+  payload: {
+    configurations: IDeviceConfiguration[],
+  },
+}
+
+export interface IAddConfiguration extends Action {
+  type: ActionType.ADD_CONFIGURATION,
+  payload: {
+    configuration: IDeviceConfiguration,
+  },
+}
+
+export interface IUpdateConfiguration extends Action {
+  type: ActionType.UPDATE_CONFIGURATION,
+  payload: {
+    id: string,
+    configuration: Partial<IDeviceConfiguration>,
+  },
+}
+
+export interface IRemoveConfiguration extends Action {
+  type: ActionType.REMOVE_CONFIGURATION,
+  payload: {
+    id: string,
+  },
+}
+
+export interface IInitMessageQueue extends Action {
+  type: ActionType.INIT_MESSAGE_QUEUE,
+  payload: IMessageQueueConfig,
+}
+
+export interface IResetMessageQueue extends Action {
+  type: ActionType.RESET_MESSAGE_QUEUE,
+}
+
+export interface IAddToMessageQueue extends Action {
+  type: ActionType.ADD_TO_MESSAGE_QUEUE,
+  payload: {
+    messages: string[],
+  },
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | ISelectDevice
 
   | ISetParameters | ISetConnectedDevice | ISetDeviceLoaded | ISetSelectedDevice
-  | ISetDeviceParameter | ISetDeviceParameterResponse | ISetTransientParameter | IRecalculateDeviceId
+  | ISetDeviceParameter | ISetDeviceParameterResponse | IRecalculateDeviceId
+  | ISetTransientParameter | IResetTransientState
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | ISetNetworkDevices | IUpdateNetworkDevice | ISetNetworkScanInProgress | IConsoleOutput | ISetConsoleOutput
   | IUpdateFirmwareLoadingProgress | ISetLastFirmwareLoadingMessage | ISetFirmwareLoading
   | ISetFirmwareDownloading | ISetFirmwareDownloaded | ISetFirmwareDownloadError
+  | ISetConfigurations | IAddConfiguration | IRemoveConfiguration | IUpdateConfiguration
   | IAddDevices | IReplaceDevices
+  | IInitMessageQueue | IResetMessageQueue | IAddToMessageQueue
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
   | IAddLog;
