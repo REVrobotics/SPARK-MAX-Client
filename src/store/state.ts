@@ -358,4 +358,4 @@ export const isDeviceNotConfigured = (device: IDeviceState) => device.uniqueId >
  * Returns CAN ID encoded in device ID.
  */
 // tslint:disable-next-line:no-bitwise
-export const getCanIdFromDeviceId = (device: DeviceId) => 0xff & device;
+export const getCanIdFromDeviceId = (device: DeviceId) => device % 100;

@@ -24,10 +24,10 @@ let usbProc: ChildProcess|null = null;
 let setpoint: number = 0;
 let firmwareID: any = null;
 
-const getDeviceIdWithNewCanId = (device: string, canId: number) => {
-  const deviceId = parseInt(device, 16);
-  // tslint:disable-next-line:no-bitwise
-  return ((deviceId & 0xffff00) | (canId & 0xff)).toString(16);
+const getDeviceIdWithNewCanId = (device: string, newCanId: number) => {
+  const deviceId = Number(device);
+  const oldCanId = deviceId % 100;
+  return ((deviceId - oldCanId) + newCanId).toString();
 };
 
 const pingResourceFactory = timerResourceFactory((device) =>
@@ -46,7 +46,7 @@ const pingResourceFactory = timerResourceFactory((device) =>
         if (doDisconnect) {
           context.disconnectDevice();
 
-          server.disconnect({device, keepalive: false}, (disconnectErr: any, disconnectResponse: any) => {
+          server.disconnect({device}, (disconnectErr: any, disconnectResponse: any) => {
             console.log("Disconnected " + device + " from the SPARK server");
             notifyCallback(getTargetWindow(), "disconnect", disconnectErr, device);
             resolve();
@@ -96,6 +96,7 @@ ipcMain.on("kill-server", () => {
 
 onTwoWayCall("connect", (cb, device: string) => {
   console.log("Attempting to connect on " + device + "...");
+  // If device is already connected, just return it
   server.connect({device}, (err: any, response: any) => {
     if (err) {
       cb(err);

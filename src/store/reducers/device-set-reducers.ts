@@ -20,7 +20,10 @@ const initialDeviceSetState: IDeviceSetState = {
 };
 
 // tslint:disable-next-line:no-bitwise
-const getDeviceIdWithNewCanId = (device: DeviceId, newCanId: number) => (0xffff00 & device) | (newCanId & 0xff);
+const getDeviceIdWithNewCanId = (deviceId: DeviceId, newCanId: number) => {
+  const oldCanId = deviceId % 100;
+  return (deviceId - oldCanId) + newCanId;
+};
 
 const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = initialDeviceSetState,
                                                     action: ApplicationActions): IDeviceSetState => {

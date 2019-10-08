@@ -85,7 +85,12 @@ class SparkManager {
   }
 
   public listUsbDevices(): Promise<ListResponseDto> {
-    return this.listDevices({all: false});
+    // TODO: As temporary solution we take the first one device as USB device.
+    //       In future this logic will be changed to use descriptors
+    return this.listDevices({all: true}).then((response) => ({
+      ...response,
+      extendedList: response.extendedList.slice(0, 1),
+    }));
   }
 
   public listCanDevices(deviceId: string): Promise<ListResponseDto> {
