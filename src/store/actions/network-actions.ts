@@ -5,8 +5,8 @@ import {
   FirmwareTag,
   fromDeviceId,
   getNetworkDeviceId,
-  isNetworkDeviceSelected,
   isNetworkDeviceNeedFirmwareVersion,
+  isNetworkDeviceSelected,
   NetworkDeviceStatus
 } from "../state";
 import {SparkAction} from "./action-types";
@@ -27,12 +27,18 @@ import {concatMapPromises, logError} from "../../utils/promise-utils";
 import {
   queryConsoleOutput,
   queryFirmwareByTag,
-  queryLastFirmwareLoadingMessage,
+  queryLastFirmwareLoadingMessage, queryNetworkDevice,
   queryNetworkDevices
 } from "../selectors";
 import {compareVersions} from "../../utils/string-utils";
 import {FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
-import {showToastError, showToastSuccess} from "./ui-actions";
+import {showAlert, showToastError, showToastSuccess} from "./ui-actions";
+import {Intent} from "@blueprintjs/core";
+import {
+  isNetworkDeviceNeedsHelpText,
+  renderAllNetworkDevicesHelpText,
+  renderNetworkDeviceHelpText
+} from "./actions-rendered-content";
 
 export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
   return (dispatch, getState) => {
@@ -194,6 +200,19 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
         dispatch(setNetworkScanInProgress(false));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(""));
+      })
+      .then(() => {
+        const devices = queryNetworkDevices(getState()).filter(isNetworkDeviceNeedsHelpText);
+
+        if (devices.length === 0) {
+          return;
+        }
+
+        return dispatch(showAlert({
+          content: renderAllNetworkDevicesHelpText(devices),
+          intent: Intent.WARNING,
+          okLabel: "OK",
+        }));
       });
   };
 };
@@ -225,3 +244,18 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
 export const selectNetworkDevice = (id: DeviceId, selected: boolean): SparkAction<void> => {
   return (dispatch) => dispatch(updateNetworkDevice(id, {selected}));
 };
+
+export const showNetworkDeviceHelp = (id: DeviceId): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    const device = queryNetworkDevice(getState(), id);
+
+    if (device == null) {
+      return Promise.resolve();
+    }
+
+    return dispatch(showAlert({
+      content: renderNetworkDeviceHelpText(device),
+      intent: Intent.WARNING,
+      okLabel: "OK",
+    }));
+  };

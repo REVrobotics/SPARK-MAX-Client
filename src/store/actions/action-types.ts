@@ -7,7 +7,7 @@ import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {ConfigParam} from "../../models/ConfigParam";
 import {
-  ConfirmationAnswer, DeviceId,
+  ConfirmationAnswer, DeviceId, IAlertDialogConfig,
   IApplicationState,
   IConfirmationDialogConfig,
   IDeviceState, IDeviceTransientState, INetworkDevice,
@@ -39,6 +39,8 @@ export enum ActionType {
   SET_SELECTED_TAB = "SET_SELECTED_TAB",
   OPEN_CONFIRMATION = "OPEN_CONFIRMATION",
   ANSWER_CONFIRMATION = "ANSWER_CONFIRMATION",
+  OPEN_ALERT = "OPEN_ALERT",
+  CLOSE_ALERT = "CLOSE_ALERT",
   SET_DEVICE_PARAMETER = "SET_DEVICE_PARAMETER",
   SET_DEVICE_PARAMETER_RESPONSE = "SET_DEVICE_PARAMETER_RESPONSE",
   SET_TRANSIENT_PARAMETER = "SET_TRANSIENT_PARAMETER",
@@ -227,6 +229,15 @@ export interface IAnswerConfirmation extends Action {
   payload: ConfirmationAnswer
 }
 
+export interface IOpenAlert extends Action {
+  type: ActionType.OPEN_ALERT,
+  payload: IAlertDialogConfig
+}
+
+export interface ICloseAlert extends Action {
+  type: ActionType.CLOSE_ALERT,
+}
+
 export interface ISetNetworkDevices extends Action {
   type: ActionType.SET_NETWORK_DEVICES,
   payload: {
@@ -314,6 +325,6 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | IUpdateFirmwareLoadingProgress | ISetLastFirmwareLoadingMessage | ISetFirmwareLoading
   | ISetFirmwareDownloading | ISetFirmwareDownloaded | ISetFirmwareDownloadError
   | IAddDevices | IReplaceDevices
-  | ISetSelectedTab | IOpenConfirmation | IAnswerConfirmation
+  | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
   | IAddLog;

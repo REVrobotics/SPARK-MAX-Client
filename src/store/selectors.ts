@@ -11,7 +11,7 @@ import {
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue,
+  getDeviceParamValue, getNetworkDeviceId,
   getVirtualDeviceId,
   hasDeviceParamError,
   IApplicationState, IFirmwareEntry,
@@ -298,6 +298,8 @@ export const queryProcessStatus = (state: IApplicationState) => {
  */
 export const queryNetwork = (state: IApplicationState) => state.network;
 export const queryNetworkDevices = (state: IApplicationState) => state.network.devices;
+export const queryNetworkDevice = (state: IApplicationState, id: DeviceId) =>
+  find(state.network.devices, (device) => getNetworkDeviceId(device) === id);
 export const queryConsoleOutput = (state: IApplicationState) => state.network.outputText;
 export const queryLastFirmwareLoadingMessage = (state: IApplicationState) => state.network.lastFirmwareLoadingMessage;
 

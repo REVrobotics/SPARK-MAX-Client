@@ -1,38 +1,40 @@
-// mockTwoWayCall("list-device", ({original}, request) => original().then((response: ListResponseDto): ListResponseDto => {
-//   if (request.all) {
-//     if (request.root && request.root.device !== "20501") {
-//       return {
-//         driverList: response.driverList,
-//         deviceList: response.deviceList.slice(0, 1).concat(response.deviceList.slice(2)),
-//         extendedList: response.extendedList.slice(0, 1).concat(response.extendedList.slice(2))
-//           .map((device, i) => ({...device, interfaceName: "CAN", uniqueId: i + 1})),
-//       };
-//     }
-//     return {
-//       ...response,
-//       extendedList: response.extendedList.map((device) => ({...device, interfaceName: "CAN"}))
-//     };
-//   } else {
-//     return {
-//       driverList: response.driverList,
-//       deviceList: response.deviceList.slice(0, 2),
-//       extendedList: response.extendedList.slice(0, 2).map((device) => ({...device, interfaceName: "CAN"})),
-//     };
-//   }
-// }));
-//
+import {mockTwoWayCall} from "./mock-renderer-calls";
+import {ListResponseDto} from "../../public/proto-gen";
+import {delayPromise} from "../utils/promise-utils";
+
+mockTwoWayCall("list-device", ({original}, request) => original().then((response: ListResponseDto): ListResponseDto => {
+  if (request.all) {
+    return {
+      ...response,
+      extendedList: response.extendedList
+        .concat(response.extendedList.slice(1).map((item) => ({
+          ...item,
+          deviceId: 20500,
+          uniqueId: 1,
+        })))
+        .concat(response.extendedList.slice(1).map((item) => ({
+          ...item,
+          deviceId: 20523,
+          uniqueId: 0,
+        }))),
+    };
+  } else {
+    return response;
+  }
+}));
+
 // mockTwoWayCall("id-assignment", () => Promise.resolve());
-//
-// mockTwoWayCall("get-firmware", (ctx, device) => {
-//   if (device === "20501") {
-//     return ctx.original();
-//   } else {
-//     return delayPromise(500).then(() => ({
-//       version: "V1.3.3"
-//     }));
-//   }
-// });
-//
+
+mockTwoWayCall("get-firmware", (ctx, device) => {
+  if (device === "20523") {
+    return delayPromise(500).then(() => ({
+      version: "V1.0.0"
+    }));
+  } else {
+    return ctx.original();
+  }
+});
+
 // mockTwoWayCall("load-firmware", () => {
 //   mockNotifyScenario("load-firmware-progress", {
 //     500: [null, {updateStarted: true}],

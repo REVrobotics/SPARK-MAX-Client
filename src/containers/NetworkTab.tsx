@@ -1,7 +1,7 @@
 import {Button, Checkbox, Icon, ProgressBar} from "@blueprintjs/core";
 import {Cell, Column, ICellRenderer, Table} from "@blueprintjs/table";
 import * as React from "react";
-import {useCallback} from "react";
+import {ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
 import {
   DeviceId,
@@ -13,7 +13,14 @@ import {
   isNetworkDeviceSelectable,
   NetworkDeviceStatus,
 } from "../store/state";
-import {addLog, requestFirmwareLoad, scanCanBus, selectNetworkDevice, SparkDispatch} from "../store/actions";
+import {
+  addLog,
+  requestFirmwareLoad,
+  scanCanBus,
+  selectNetworkDevice,
+  showNetworkDeviceHelp,
+  SparkDispatch
+} from "../store/actions";
 import {
   queryFirmwareDownloadError,
   queryIsFirmwareDownloading,
@@ -41,6 +48,8 @@ interface IProps {
   scanCanBus(): void;
 
   selectDevice(id: DeviceId, selected: boolean): void;
+
+  showDeviceHelp(id: DeviceId): void;
 }
 
 interface INetworkDeviceSelectorProps {
@@ -58,6 +67,19 @@ const NetworkDeviceSelector = (props: INetworkDeviceSelectorProps) => {
 
   return <Checkbox checked={selected} disabled={disabled} onChange={onChange}/>;
 };
+
+interface INetworkDeviceHowToProps {
+  deviceId: DeviceId;
+  onOpen(id: DeviceId): void;
+}
+
+const NetworkDeviceHowTo = (props: INetworkDeviceHowToProps) => {
+  const { deviceId, onOpen } = props;
+
+  const open = useCallback(() => onOpen(deviceId), []);
+
+  return <button className="link" onClick={open}>How to</button>;
+}
 
 class NetworkTab extends React.Component<IProps> {
   public render() {
@@ -93,7 +115,6 @@ class NetworkTab extends React.Component<IProps> {
           <span><Button className="rev-btn"
                         loading={firmwareLoading || firmwareDownloading}
                         disabled={!connected}
-            // onClick={recoveryRequired ? this.loadFirmware : this.openFileDialog}>{recoveryRequired ? "Continue" : "Load Firmware"}</Button></span>
                         onClick={this.props.requestFirmwareLoad}>{"Load Firmware"}</Button></span>
         </div>
         <br/>
@@ -110,13 +131,20 @@ class NetworkTab extends React.Component<IProps> {
   private updateColumnRenderer = (rowIndex: number) => {
     const {firmwareLoading, devices} = this.props;
     const device = devices[rowIndex];
-    return (
-      <Cell tooltip={this.buildUpdateTooltip(device)}
-            className="text-center">
+    const content = device.status === NetworkDeviceStatus.RequiresRecoveryMode ?
+      (
+        <NetworkDeviceHowTo deviceId={getNetworkDeviceId(device)} onOpen={this.props.showDeviceHelp}/>
+      )
+      : (
         <NetworkDeviceSelector deviceId={getNetworkDeviceId(device)}
                                selected={device.selected}
                                disabled={firmwareLoading || !isNetworkDeviceSelectable(device)}
                                onSelected={this.props.selectDevice}/>
+      );
+    return (
+      <Cell tooltip={this.buildUpdateTooltip(device)}
+            className="text-center">
+        {content}
       </Cell>
     );
   };
@@ -134,12 +162,31 @@ class NetworkTab extends React.Component<IProps> {
   private firmwareColumnRenderer = (rowIndex: number) => {
     const device = this.props.devices[rowIndex];
     const isError = isNetworkDeviceError(device);
-    return <Cell loading={isNetworkDeviceLoading(device)} tooltip={isError ? device.error : ""}>
-      <>
-        {isError ? <Icon icon="warning-sign" intent="danger"/> : null}
-        {isError ? ` ${device.error}` : device.firmwareVersion}
-      </>
-    </Cell>
+
+    let content: ReactNode;
+    if (isError) {
+      content = (
+        <>
+          <Icon icon="warning-sign" intent="danger"/>
+          &nbsp;device.error
+        </>
+      );
+    } else if (device.status === NetworkDeviceStatus.NotConfigured) {
+      content = (
+        <>
+          <Icon icon="warning-sign" intent="warning"/>
+          &nbsp;Not Configured
+        </>
+      );
+    } else {
+      content = device.firmwareVersion;
+    }
+
+    return (
+      <Cell loading={isNetworkDeviceLoading(device)} tooltip={isError ? device.error : ""}>
+        {content}
+      </Cell>
+    );
   };
 
   private buildUpdateTooltip = (device: INetworkDevice) => {
@@ -184,6 +231,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     requestFirmwareLoad: () => dispatch(requestFirmwareLoad()),
     addLog: (log: string) => dispatch(addLog(log)),
     selectDevice: (id: DeviceId, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
+    showDeviceHelp: (id: DeviceId) => dispatch(showNetworkDeviceHelp(id)),
   };
 }
 

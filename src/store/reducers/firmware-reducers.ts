@@ -20,7 +20,7 @@ const firmwareReducer = (state: IFirmwareState = initialFirmwareState,
         loadError: false,
       });
     case ActionType.SET_FIRMWARE_DOWNLOAD_ERROR:
-      return setField(state, "loadError", true);
+      return setFields(state, { loadError: true, loading: false});
     default:
       return state;
   }

@@ -8,6 +8,7 @@ import {uniqueId} from "lodash";
 import {ConfigParam} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
+import {ReactNode} from "react";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -174,6 +175,11 @@ export interface IUiState {
   /**
    * Properties for confirmation dialog.
    */
+  alert?: IAlertDialogConfig;
+  alertOpened: boolean;
+  /**
+   * Properties for confirmation dialog.
+   */
   confirmation?: IConfirmationDialogConfig;
   confirmationOpened: boolean;
 }
@@ -245,6 +251,16 @@ export interface IDeviceParameterState {
    * Any message associated with the parameter
    */
   message?: Message;
+}
+
+/**
+ * Configuration of confirmation dialog
+ */
+export interface IAlertDialogConfig {
+  intent: Intent;
+  text?: string;
+  content?: ReactNode;
+  okLabel: string;
 }
 
 /**
@@ -479,7 +495,7 @@ export const createNetworkDevice = (extended: ExtendedListResponseDto): INetwork
     firmwareVersion: "",
     status,
     updateable: !!extended.updateable,
-    loading: !!extended.updateable,
+    loading: !!extended.updateable && status !== NetworkDeviceStatus.NotConfigured,
     selected: status === NetworkDeviceStatus.NotConfigured,
   };
 };

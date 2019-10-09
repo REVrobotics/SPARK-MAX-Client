@@ -501,6 +501,16 @@ label.modified::after {
     height: 250px;
 }
 
+button.link {
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 @keyframes blink {
     0%   { opacity: 1; }
     40%  { opacity: 0; }
