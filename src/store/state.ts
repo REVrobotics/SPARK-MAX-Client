@@ -4,8 +4,8 @@
 
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
-import {find, keyBy, uniqueId} from "lodash";
-import {ConfigParam, configParamNames} from "../models/ConfigParam";
+import {find, keyBy, sortBy, uniqueId} from "lodash";
+import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
 import {ReactNode} from "react";
@@ -633,6 +633,16 @@ export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
 
 export const eqDeviceConfigurationName = (a: string, b: string) => a.toLowerCase().trim() === b.toLowerCase().trim();
 
+export const newDeviceConfiguration = (config: IDeviceConfiguration): IDeviceConfiguration => ({
+  ...config,
+  id: "",
+  raw: {
+    ...config.raw,
+    fileName: "",
+    filePath: "",
+  },
+});
+
 export const findDeviceConfigurationByName = (configs: IDeviceConfiguration[],
                                               name: string,
                                               excludeId?: string): IDeviceConfiguration | undefined => {
@@ -656,3 +666,26 @@ export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceCon
     raw: dto,
   };
 };
+
+export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
+                                               device: IDeviceState,
+                                               newName?: string): IRawDeviceConfigDto => {
+  const parameterValues = device.currentParameters.map(getDeviceParamValue);
+  const rawParamById = keyBy(basic.parameters, (param) => param.id);
+
+  return {
+    ...basic,
+    name: newName ? newName : basic.name,
+    parameters: parameterValues
+      .map((value, param) => {
+        const id = getConfigParamName(param);
+        const rawParam = rawParamById[id];
+        return rawParam ? { ...rawParam, value } : { id, value };
+      })
+      .filter((_, param) => param !== ConfigParam.kCanID),
+  };
+};
+
+export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
+  sortBy(configurations, (config) =>
+    getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID ? `0:${config.name}` : `1:${config.name}`);

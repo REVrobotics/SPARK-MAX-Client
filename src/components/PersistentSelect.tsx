@@ -1,5 +1,6 @@
 import {Button, ButtonGroup, Menu, MenuDivider, MenuItem, Popover, PopoverPosition} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
+import classNames from "classnames";
 import * as React from "react";
 import {useCallback} from "react";
 import {coalesce} from "../utils/object-utils";
@@ -61,7 +62,7 @@ function PersistentSelect<T>(props: IProps<T>) {
               items={items}
               itemRenderer={itemRenderer}
               onItemSelect={onSelect}>
-        <Button className={isDirty ? "modified" : ""}
+        <Button className={classNames("no-wrap", {"modified": isDirty})}
                 fill={true}
                 disabled={disabled}
                 text={selected ? getText(selected) : ""}

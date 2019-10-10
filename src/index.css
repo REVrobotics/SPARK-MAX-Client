@@ -519,6 +519,11 @@ label.modified::after {
     text-align: center;
 }
 
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .mr-5 {
     margin-right: 5px;
 }

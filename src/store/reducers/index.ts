@@ -6,7 +6,7 @@ import uiReducer from "./ui-reducers";
 import deviceSetReducer, {parameterValidationReducer} from "./device-set-reducers";
 import networkReducer from "./network-reducers";
 import firmwareReducer from "./firmware-reducers";
-import configurationsReducer from "./configuration-reducers";
+import configurationsReducer, {deviceConfigurationReducer} from "./configuration-reducers";
 
 const rootReducer = onChangeReducer(
   combineReducers({
@@ -19,6 +19,7 @@ const rootReducer = onChangeReducer(
     configurations: configurationsReducer,
   }),
   parameterValidationReducer,
+  deviceConfigurationReducer,
 );
 
 export default rootReducer;

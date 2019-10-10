@@ -14,7 +14,7 @@ import {ReactNode, useCallback, useState} from "react";
 import {SparkDispatch} from "../store/actions";
 import {
   applyConfigurationForSelectedDevice,
-  removeConfiguration,
+  destroyConfiguration,
   renameConfiguration,
   saveConfiguration,
   saveConfigurationAs,
@@ -52,12 +52,18 @@ const ConfigurationSelect = (props: IProps) => {
 
   const isModifiable = selected ? !isDefaultDeviceConfiguration(selected) : false;
 
-  const rename = useCallback((newName) => onRename(selected, newName), [selected]);
+  const rename = useCallback((newName) => {
+    setRenameOpened(false);
+    onRename(selected, newName);
+  }, [selected]);
 
   const [saveAsOpened, setSaveAsOpened] = useState(false);
   const openSaveAsDialog = useCallback(() => setSaveAsOpened(true), []);
   const closeSaveAsDialog = useCallback(() => setSaveAsOpened(false), []);
-  const saveAs = useCallback((name) => onSaveAs(selected, name), [selected]);
+  const saveAs = useCallback((name) => {
+    setSaveAsOpened(false);
+    onSaveAs(selected, name);
+  }, [selected]);
   const validateNameForSaveAs = useCallback((name) => {
     if (findDeviceConfigurationByName(configurations, name)) {
       return "Name is not unique";
@@ -138,7 +144,7 @@ function mapDispatchToProps(dispatch: SparkDispatch) {
     onRename: (item: IDeviceConfiguration, newName: string) => dispatch(renameConfiguration(item, newName)),
     onSave: (item: IDeviceConfiguration) => dispatch(saveConfiguration(item)),
     onSaveAs: (item: IDeviceConfiguration, name: string) => dispatch(saveConfigurationAs(item, name)),
-    onRemove: (item: IDeviceConfiguration) => dispatch(removeConfiguration(item)),
+    onRemove: (item: IDeviceConfiguration) => dispatch(destroyConfiguration(item)),
     onRestore: (item: IDeviceConfiguration) => dispatch(applyConfigurationForSelectedDevice(item)),
   };
 }

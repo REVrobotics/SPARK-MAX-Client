@@ -2,8 +2,10 @@ import {flatMap, noop, partition, uniq} from "lodash";
 import {
   ConfirmationAnswer,
   deviceConfigurationFromDto,
+  deviceToDeviceConfigurationDto,
   getDeviceConfigurationId,
   IDeviceConfiguration,
+  newDeviceConfiguration,
   ProcessType,
   VirtualDeviceId
 } from "../state";
@@ -14,10 +16,15 @@ import {showConfirmation} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import DeviceConfigManager from "../../managers/DeviceConfigManager";
 import {
-  addToMessageQueue, resetTransientState,
+  addConfiguration,
+  addToMessageQueue,
+  removeConfiguration,
+  resetTransientState,
   setConfigurations,
   setOnlyTransientParameter,
-  updateDeviceIsProcessing, updateDeviceProcessStatus,
+  updateConfiguration,
+  updateDeviceIsProcessing,
+  updateDeviceProcessStatus,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus
 } from "./atom-actions";
@@ -27,7 +34,7 @@ import {concatMapPromises} from "../../utils/promise-utils";
 import {getDependentParams} from "../../models/ConfigParam";
 import {getConfigParamRule} from "../config-param-rules";
 import {createRamConfigParamContext} from "../ram-config-param-rules";
-import {queryDeviceParameterValue} from "../selectors";
+import {queryDeviceParameterValue, querySelectedDevice} from "../selectors";
 
 export const loadConfigurations = (): SparkAction<Promise<any>> => {
   return (dispatch) => {
@@ -52,7 +59,7 @@ export const loadConfigurations = (): SparkAction<Promise<any>> => {
 };
 
 export const selectConfiguration = (virtualDeviceId: VirtualDeviceId,
-                                   configuration: IDeviceConfiguration): SparkAction<Promise<any>> => {
+                                    configuration: IDeviceConfiguration): SparkAction<Promise<any>> => {
   return (dispatch) => {
     dispatch(setOnlyTransientParameter(virtualDeviceId, "configurationId", getDeviceConfigurationId(configuration)));
     return dispatch(applyConfiguration(virtualDeviceId, configuration));
@@ -60,7 +67,7 @@ export const selectConfiguration = (virtualDeviceId: VirtualDeviceId,
 };
 
 export const applyConfiguration = (virtualDeviceId: VirtualDeviceId,
-                                    configuration: IDeviceConfiguration): SparkAction<Promise<any>> => {
+                                   configuration: IDeviceConfiguration): SparkAction<Promise<any>> => {
   return (dispatch, getState) => {
     dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.SetConfiguration));
     dispatch(updateDeviceProcessStatus(virtualDeviceId, "SETTING CONFIGURATION..."));
@@ -105,13 +112,22 @@ export const applyConfiguration = (virtualDeviceId: VirtualDeviceId,
   }
 };
 
-export const renameConfiguration = (item: IDeviceConfiguration, name: string): SparkAction<Promise<any>> => {
+const persistConfiguration = (config: IDeviceConfiguration,
+                              newName?: string): SparkAction<Promise<IDeviceConfiguration>> => {
   return (dispatch, getState) => {
-    return Promise.resolve();
-  }
+    const device = querySelectedDevice(getState())!;
+    const dto = deviceToDeviceConfigurationDto(config.raw, device, newName);
+    const op = getDeviceConfigurationId(config) ? DeviceConfigManager.save(dto) : DeviceConfigManager.create(dto);
+    return op.then(deviceConfigurationFromDto);
+  };
 };
 
-export const saveConfiguration = (item: IDeviceConfiguration): SparkAction<Promise<any>> => {
+export const renameConfiguration = (config: IDeviceConfiguration, newName: string): SparkAction<Promise<any>> =>
+  (dispatch) =>
+    dispatch(persistConfiguration(config, newName))
+      .then((newConfig) => dispatch(updateConfiguration(getDeviceConfigurationId(newConfig), newConfig)));
+
+export const saveConfiguration = (config: IDeviceConfiguration): SparkAction<Promise<void>> => {
   return (dispatch, getState) => {
     return dispatch(showConfirmation({
       yesLabel: "Yes",
@@ -120,23 +136,40 @@ export const saveConfiguration = (item: IDeviceConfiguration): SparkAction<Promi
       text: "Do you want to overwrite existing configuration?",
     })).then((answer) => {
       if (answer === ConfirmationAnswer.Yes) {
-        console.log("save");
+        return dispatch(persistConfiguration(config))
+          .then((newConfig) => dispatch(updateConfiguration(getDeviceConfigurationId(newConfig), newConfig)))
+          .then(noop);
+      } else {
+        return Promise.resolve();
       }
     });
   }
 };
 
-export const saveConfigurationAs = (item: IDeviceConfiguration, name: string): SparkAction<Promise<any>> => {
-  return (dispatch, getState) => {
-    return Promise.resolve();
-  }
-};
+export const saveConfigurationAs = (config: IDeviceConfiguration, name: string): SparkAction<Promise<any>> =>
+  (dispatch) => {
+    return dispatch(persistConfiguration(newDeviceConfiguration(config), name))
+      .then((newConfig) => dispatch(addConfiguration(newConfig)));
+  };
 
-export const removeConfiguration = (item: IDeviceConfiguration): SparkAction<Promise<any>> => {
-  return (dispatch, getState) => {
-    return Promise.resolve();
-  }
-};
+export const destroyConfiguration = (config: IDeviceConfiguration): SparkAction<Promise<any>> =>
+  (dispatch) => {
+    return dispatch(showConfirmation({
+      yesLabel: "Yes",
+      cancelLabel: "No",
+      intent: Intent.SUCCESS,
+      text: "Do you want to remove this configuration?",
+    })).then((answer) => {
+      if (answer !== ConfirmationAnswer.Yes) {
+        return;
+      }
+
+      const id = getDeviceConfigurationId(config);
+      return DeviceConfigManager.remove(id)
+        .then(() => dispatch(removeConfiguration(id)))
+        .then(noop);
+    });
+  };
 
 export const selectConfigurationForSelectedDevice = forSelectedDevice(selectConfiguration);
 export const applyConfigurationForSelectedDevice = forSelectedDevice(applyConfiguration);

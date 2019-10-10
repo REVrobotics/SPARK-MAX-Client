@@ -19,9 +19,9 @@ const getDeviceConfigPath = (name: string) => path.join(deviceConfigPath, name);
 
 const getFileNameFromPath = (filePath: string) => path.basename(filePath);
 
-const deviceConfigToJson = (config: any) => JSON.stringify(omit(config, "filePath", "fileName", "error"));
+const deviceConfigToJson = (config: any) => JSON.stringify(omit(config, "filePath", "fileName", "error"), null, 2);
 
-const nameToFsName = (name: string) => deburr(name).replace(/\s/, "");
+const nameToFsName = (name: string) => deburr(name).toLowerCase().replace(/\s+/g, "-");
 
 const jsonToDeviceConfig = (filePath: string, json: string) => {
   const fileName = getFileNameFromPath(filePath);
@@ -79,7 +79,7 @@ function generateUniqueFileName(name: string) {
   const fsName = nameToFsName(name);
 
   const tryName = (index: number): Promise<string> => {
-    const nameToFind = index ? `${fsName}-${index}` : fsName;
+    const nameToFind = index ? `${fsName}-${index}.json` : `${fsName}.json`;
     return existsFsEntry(getDeviceConfigPath(nameToFind))
       .then((exists) => exists ? tryName(index + 1) : nameToFind);
   };
