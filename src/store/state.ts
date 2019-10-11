@@ -18,6 +18,14 @@ export enum ProcessType {
 }
 
 /**
+ * The reason device is blocked
+ */
+export enum DeviceBlockedReason {
+  NotConfigured = "NotConfigured",
+  Invalid = "Invalid",
+}
+
+/**
  * Unfortunately, device does not have any field that can be used as unique and permanent ID across all devices.
  * That is why client application generates virtual id for each device.
  */
@@ -85,6 +93,8 @@ export interface IApplicationState {
  * Short information about device
  */
 export interface IDeviceInfo {
+  deviceId: number;
+  interfaceName: string;
   driverName: string;
   deviceName: string;
   updateable: boolean;
@@ -237,6 +247,8 @@ const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => (
   fullDeviceId: extended.deviceId!,
   uniqueId: extended.uniqueId!,
   info: {
+    deviceId: extended.deviceId!,
+    interfaceName: extended.interfaceName!,
     deviceName: extended.deviceName!,
     driverName: extended.driverName!,
     updateable: extended.updateable!,
@@ -353,6 +365,25 @@ export const isDeviceInvalid = (device: IDeviceState) => {
  * Device is considered not-configured iff it has uniqueId != 0.
  */
 export const isDeviceNotConfigured = (device: IDeviceState) => device.uniqueId > 0;
+
+/**
+ * Returns the reason for device to be blocked, otherwise `undefined`.
+ * @param device
+ */
+export const getDeviceBlockedReason = (device: IDeviceState) => {
+  if (isDeviceInvalid(device)) {
+    return DeviceBlockedReason.Invalid;
+  }
+  if (isDeviceNotConfigured(device)) {
+    return DeviceBlockedReason.NotConfigured;
+  }
+  return;
+};
+
+/**
+ * Returns whether device is blocked. Device is blocked when it is not configured or invalid.
+ */
+export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(device) != null;
 
 /**
  * Returns CAN ID encoded in device ID.

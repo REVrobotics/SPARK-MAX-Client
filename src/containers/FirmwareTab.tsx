@@ -306,7 +306,7 @@ class FirmwareTab extends React.Component<IProps, IState> {
         this.setState({loadingFirmware: false, updateProgress: 0, updateText: ""});
         this.scrollToBottom();
         SparkManager.discoverAndConnect().then((device: string) => {
-          this.props.updateConnectionStatus(true, "CONNECTED");
+          this.props.updateConnectionStatus(true, "");
           this.props.setIsConnecting(false);
           setTimeout(() => {
             SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((values) => {

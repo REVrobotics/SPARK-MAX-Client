@@ -1,17 +1,21 @@
-import {Button} from "@blueprintjs/core";
+import classNames from "classnames";
+import {Button, Icon, Intent, Popover, PopoverInteractionKind, PopoverPosition} from "@blueprintjs/core";
 import * as React from "react";
+import {useCallback, useState} from "react";
 import {connect} from "react-redux";
-import * as classNames from "classnames";
-import {getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
+import {DeviceBlockedReason, getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
-  queryDevicesInOrder,
-  queryProcessStatus, querySelectedDevice,
+  queryDevicesInOrder, queryHasGlobalError,
   queryIsConnectableToAnyDevice,
   queryIsInProcessing,
-  queryIsSelectedDeviceConnected
+  queryIsSelectedDeviceConnected,
+  queryProcessStatus,
+  querySelectedDevice,
+  querySelectedDeviceBlockedReason
 } from "../store/selectors";
 import {DeviceSelect} from "./DeviceSelect";
+import {InfoIcon} from "../icons";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -20,48 +24,130 @@ interface IProps {
   connecting: boolean,
   connected: boolean,
   connectable: boolean,
+  hasGlobalError: boolean;
+  blockedReason?: DeviceBlockedReason;
 
-  connect(): void;
-  disconnect(): void;
-  selectDevice(device: IDeviceState): void;
+  onConnect(): void;
+
+  onDisconnect(): void;
+
+  onSelectDevice(device: IDeviceState): void;
 }
 
-class ConnectionStatusBar extends React.Component<IProps> {
-  constructor(props: IProps) {
-    super(props);
+const getBlockedReasonText = (reason: DeviceBlockedReason) => {
+  switch (reason) {
+    case DeviceBlockedReason.NotConfigured:
+      return "Not Configured";
+    case DeviceBlockedReason.Invalid:
+      return "CAN ID overlaps with other device on a bus"
   }
+};
 
-  public render() {
-    const {devices, selectedDevice, connectionStatus, connecting, connected, connectable} = this.props;
-    const lampClass = classNames({
-      "status-bar-lamp--connected": connected,
-      "status-bar-lamp--disconnected": !connected,
-    });
-    return (
-      <div id="status-bar" className="no-wrap">
-        <div id="status-bar-lamp" className={lampClass}/>
-        <div id="status-bar-driver-name">{selectedDevice ? selectedDevice.info.driverName : ""}</div>
-        <div id="status-bar-status">{connectionStatus}</div>
-        <DeviceSelect className="status-bar-device-selector"
-                      devices={devices}
-                      selected={selectedDevice}
-                      onSelect={this.props.selectDevice}/>
-        <div id="status-bar-button">
-          <Button fill={true} disabled={!connectable || connecting} loading={connecting}
-                  onClick={connected ? this.props.disconnect : this.props.connect}>
-            {connected ? "Disconnect" : "Connect"}
-          </Button>
-        </div>
+const ConnectionStatusBar = (props: IProps) => {
+  const {
+    devices, selectedDevice, blockedReason, connecting, connectionStatus, connected, connectable, hasGlobalError,
+    onConnect, onDisconnect, onSelectDevice,
+  } = props;
+
+  const displayGlobalError = connectionStatus ? false : hasGlobalError;
+
+  const [isSelectOpened, setSelectOpened] = useState(false);
+  const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
+  const onDeviceSelectClosed = useCallback(() => setSelectOpened(false), []);
+
+  const statusBarConnectionClass = classNames("status-bar__connection", {
+    "status-bar__connection--connected": connected,
+    "status-bar__connection--disconnected": !connected,
+  });
+
+  const deviceInfo = selectedDevice ?
+    <div className="device-info">
+      <div className="device-info__line">
+        <div className="device-info__line-title">Interface</div>
+        {selectedDevice.info.interfaceName}
       </div>
-    );
-  }
-}
+      <div className="device-info__line">
+        <div className="device-info__line-title">Device ID</div>
+        {selectedDevice.fullDeviceId}
+      </div>
+      <div className="device-info__line">
+        <div className="device-info__line-title">Device Name</div>
+        {selectedDevice.info.deviceName}
+      </div>
+      <div className="device-info__line">
+        <div className="device-info__line-title">Driver Name</div>
+        {selectedDevice.info.driverName}
+      </div>
+      <div className="device-info__line">
+        <div className="device-info__line-title">Status</div>
+        {connected ? "Connected" : "Not Connected"}
+        {
+          blockedReason ?
+            (
+              <>
+                ,
+                <div className="device-info__blocked-reason">
+                  {getBlockedReasonText(blockedReason)}
+                </div>
+              </>
+            )
+            : null
+        }
+      </div>
+    </div>
+    : null;
+  return (
+    <div id="status-bar" className="no-wrap">
+      <Popover canEscapeKeyClose={false}
+               position={PopoverPosition.BOTTOM_LEFT}
+               interactionKind={PopoverInteractionKind.HOVER}
+               disabled={!selectedDevice || isSelectOpened}>
+        <div className="status-bar__info">
+          <InfoIcon size={28}/>
+          <div className={statusBarConnectionClass}/>
+          {
+            blockedReason ?
+              <Icon icon="error" iconSize={14} intent={Intent.DANGER} className="status-bar__error"/>
+              : null
+          }
+        </div>
+        {deviceInfo}
+      </Popover>
+      <DeviceSelect className="status-bar__device-selector"
+                    devices={devices}
+                    selected={selectedDevice}
+                    onSelect={onSelectDevice}
+                    onOpened={onDeviceSelectOpened}
+                    onClosed={onDeviceSelectClosed}/>
+      <div className={classNames("status-bar__status", {"status-bar__status--global-error": displayGlobalError})}>
+        {
+          displayGlobalError ?
+            (
+              <>
+                <Icon icon="warning-sign" intent={Intent.DANGER}/>
+                Some devices have issues
+              </>
+            )
+            : connectionStatus
+        }
+      </div>
+      <div className="status-bar__button">
+        <Button fill={true} disabled={!connectable || connecting} loading={connecting}
+                onClick={connected ? onDisconnect : onConnect}>
+          {connected ? "Disconnect" : "Connect"}
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export function mapStateToProps(state: IApplicationState) {
   return {
     selectedDevice: querySelectedDevice(state),
     devices: queryDevicesInOrder(state),
     connected: queryIsSelectedDeviceConnected(state),
+    hasGlobalError: queryHasGlobalError(state),
+    blockedReason: querySelectedDeviceBlockedReason(state),
     connecting: queryIsInProcessing(state),
     connectable: queryIsConnectableToAnyDevice(state),
     connectionStatus: queryProcessStatus(state),
@@ -70,9 +156,9 @@ export function mapStateToProps(state: IApplicationState) {
 
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    connect: () => dispatch(connectToSelectedDevice()),
-    disconnect: () => dispatch(disconnectCurrentDevice()),
-    selectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
+    onConnect: () => dispatch(connectToSelectedDevice()),
+    onDisconnect: () => dispatch(disconnectCurrentDevice()),
+    onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
   };
 }
 

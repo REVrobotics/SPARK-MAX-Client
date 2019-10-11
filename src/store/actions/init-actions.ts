@@ -28,7 +28,7 @@ export function initApplication(): SparkAction<void> {
       const device = queryDeviceByDeviceId(getState(), toDeviceId(deviceId));
       if (device) {
         const virtualDeviceId = getVirtualDeviceId(device);
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         dispatch(setConnectedDevice(virtualDeviceId, false));
       }
     });

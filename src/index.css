@@ -14,56 +14,110 @@
     color: #ffffff;
 }
 
-#status-bar-lamp {
-    min-width: 20px;
-    height: 20px;
+.status-bar__info {
+    position: relative;
+    top: 2px;
     margin-right: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.87);
-    border-radius: 10px;
-}
-#status-bar-lamp.status-bar-lamp--connected {
-    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(41,236,43,1) 17%)
+    color: rgba(0, 0, 0, 0.54);
+    cursor: pointer;
 }
 
-#status-bar-lamp.status-bar-lamp--disconnected {
-    background: radial-gradient(circle, rgba(255,255,255,1) -5%, rgba(236,83,41,1) 24%);
+.status-bar__connection {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    border: 1px solid white;
+    border-radius: 5px;
 }
 
-#status-bar-status {
-    overflow: hidden;
-    flex: 1;
-    height: 100%;
-    text-overflow: ellipsis;
+.status-bar__connection--connected {
+    background: green;
 }
 
-#status-bar-driver-name {
-    margin-right: 5px;
+.status-bar__connection--disconnected {
+    background: red;
 }
 
-.status-bar-device-selector {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0 15px 0 15px;
+.status-bar__error {
+    position: absolute;
+    right: -4px;
+    top: -4px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid white;
+    border-radius: 7px;
+
+    background: white;
+    fill: #c23030;
+}
+
+.status-bar__device-selector {
     min-width: 200px;
     max-width: 200px;
 }
 
-.status-bar-device-selector .bp3-popover-target {
+.status-bar__device-selector .bp3-popover-target {
     width: 100%;
 }
 
-.status-bar-device-selector .bp3-button {
+.status-bar__device-selector .bp3-button {
     justify-content: space-between;
 }
 
-.status-bar-device-selector .bp3-button-text {
+.status-bar__device-selector .bp3-button-text {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-#status-bar-button {
+.status-bar__status {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    flex: 1;
+}
+
+.status-bar__status > .bp3-icon {
+    height: 18px;
+    margin-right: 5px;
+}
+
+.status-bar__status--global-error {
+    color: #c23030;
+    fill: #c23030;
+    font-weight: 600;
+}
+
+.status-bar__button {
     height: 100%;
     min-width: 15%;
+}
+
+.device-info {
+    padding: 15px;
+}
+
+.device-info__line {
+    display: flex;
+    flex-direction: row;
+    line-height: 20px;
+}
+
+.device-info__line-title {
+    font-size: 0.9em;
+    width: 100px;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.device-info__line-title::after {
+    content: ":";
+}
+
+.device-info__blocked-reason {
+    margin-left: 5px;
+    color: red;
+    font-weight: bold;
 }
 
 #firmware-console {
@@ -365,6 +419,12 @@ label.modified::after {
     z-index: 99;
     max-width: 250px;
     background-color: #ffffff;
+}
+
+.max-icon > svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
 }
 
 @keyframes blink {
