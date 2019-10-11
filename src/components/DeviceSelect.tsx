@@ -7,7 +7,7 @@ import {useMemo} from "react";
 const BpDeviceSelect = Select.ofType<IDeviceState>();
 
 const getDeviceText = (device: IDeviceState) =>
-  `ID ${getCanIdFromDeviceId(device.fullDeviceId)} ${device.info.deviceName}`;
+  `${tt("lbl_id")} ${getCanIdFromDeviceId(device.fullDeviceId)} ${device.info.deviceName}`;
 
 const renderer = (device: IDeviceState, itemProps: IItemRendererProps) => {
   return (
@@ -45,7 +45,7 @@ export const DeviceSelect: React.FC<IProps> = ({
                     itemRenderer={renderer} onItemSelect={onSelect}>
       <Button fill={true}
               disabled={disabled}
-              text={selected ? getDeviceText(selected) : "NO DEVICES"}
+              text={selected ? getDeviceText(selected) : tt("lbl_no_devices_uc")}
               rightIcon="double-caret-vertical"/>
     </BpDeviceSelect>
   );

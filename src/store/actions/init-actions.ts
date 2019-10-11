@@ -18,8 +18,8 @@ function loadApplicationData(): SparkAction<Promise<any>> {
     // Initialize message queue.
     // Anyway message queue is displayed ONLY when it has some messages associated
     dispatch(initMessageQueue({
-      title: "Problems During Startup",
-      body: "During application startup some application settings were invalid.",
+      title: tt("lbl_problems_during_startup"),
+      body: tt("msg_startup_problems"),
       messages: [],
     }));
 
@@ -70,9 +70,9 @@ function checkForFirmwareUpdate(): SparkAction<void> {
         }
         return dispatch(showConfirmation({
           intent: Intent.WARNING,
-          text: `One of your motor controllers is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Firmware' tab.`,
-          yesLabel: "Open Network Tab & Scan Bus",
-          cancelLabel: "Close",
+          text: tt("msg_controller_has_old_firmware"),
+          yesLabel: tt("lbl_update_old_firmware"),
+          cancelLabel: tt("lbl_close"),
         }));
       })
       .then((answer) => {

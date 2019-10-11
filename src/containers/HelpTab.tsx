@@ -3,6 +3,7 @@ import * as React from "react";
 import {IApplicationState} from "../store/state";
 import {connect} from "react-redux";
 import SparkManager from "../managers/SparkManager";
+import {troubleshootContent} from "../mls/content";
 
 interface IProps {
   logs: string[]
@@ -50,69 +51,69 @@ class HelpTab extends React.Component<IProps, IState> {
       <div>
         <Alert
           isOpen={updateAlertOpen}
-          cancelButtonText={"Cancel"}
-          confirmButtonText={updateAvailable ? "Yes, Update" : "Okay"}
+          cancelButtonText={tt("lbl_cancel")}
+          confirmButtonText={updateAvailable ? tt("lbl_yes_update") : tt("lbl_cancel")}
           intent="success"
           onCancel={this.closeUpdateAlert}
           onClose={this.closeUpdateAlert}
           onConfirm={updateAvailable ? this.downloadUpdate : this.closeUpdateAlert}
         >
           {
-            updateAvailable ? "There is an update available for the SPARK MAX Client application. Would you like to update?" : "There are currently no updates available for the SPARK MAX Client."
+            updateAvailable ? tt("msg_spark_max_client_update") : tt("msg_spark_max_client_no_update")
           }
         </Alert>
         <Alert
           isOpen={quitAndInstallAlertOpen}
-          cancelButtonText={"Cancel"}
-          confirmButtonText={"Yes, Quit And Install"}
+          cancelButtonText={tt("lbl_cancel")}
+          confirmButtonText={tt("lbl_yes_quit_install")}
           intent="success"
           onCancel={this.closeQuitAndInstallAlert}
           onClose={this.closeQuitAndInstallAlert}
           onConfirm={this.quitAndUpdate}
         >
-          Successfully downloaded update. Would you like to quit and install it now?
+          {tt("msg_spark_max_client_confirm_update")}
         </Alert>
         <Dialog
           isOpen={viewingLogs}
           onClose={this.unviewLogs}
         >
           <div className="bp3-dialog-header">
-            <h4 className="bp3-heading">Application Logs</h4>
+            <h4 className="bp3-heading">{tt("lbl_application_logs")}</h4>
           </div>
           <div className="bp3-dialog-body log-container">
-            {this.props.logs.length === 0 && <span><i>There are currently no application logs.</i></span>}
+            {this.props.logs.length === 0 && <span><i>{tt("lbl_no_application_logs")}</i></span>}
             {this.props.logs.map((log, index) => {
               return <p key={index}>{log}</p>
             })}
           </div>
         </Dialog>
         <div id="help-troubleshoot">
-          <h2>Troubleshooting</h2>
-          <ol>
-            <li>Try restarting the program.</li>
-            <li>After restarting the program, unplug the usb from the computer and plug it in again.</li>
-            <li>Make sure you're using the latest version of the SPARK MAX Client.</li>
-            <li>Contact <a href="mailto:support@revrobotics.com">support@revrobotics.com</a></li>
-          </ol>
+          <h2>{tt("lbl_troubleshooting")}</h2>
+          {troubleshootContent}
         </div>
         <div>
-          <h2>Documentation</h2>
+          <h2>{tt("lbl_documentation")}</h2>
           <ul>
-            <li><a href={"#"} onClick={this.openJavaDocs}>SPARK MAX Java API</a></li>
-            <li><a href={"#"} onClick={this.openCppDocs}>SPARK MAX C++ API</a></li>
-            <li><a href={"#"} onClick={this.openSamples}>SPARK MAX Code Samples</a></li>
+            <li><a href={"#"} onClick={this.openJavaDocs}>{tt("lbl_spark_max_java_api")}</a></li>
+            <li><a href={"#"} onClick={this.openCppDocs}>{tt("lbl_spark_max_cpp_api")}</a></li>
+            <li><a href={"#"} onClick={this.openSamples}>{tt("lbl_spark_max_code_samples")}</a></li>
           </ul>
         </div>
         <div className="form">
-          <Button className="rev-btn" onClick={this.viewLogs}>View Application Logs</Button>
+          <Button className="rev-btn" onClick={this.viewLogs}>{tt("lbl_view_application_logs")}</Button>
         </div>
         <div className="form update-container">
-          <Button className="rev-btn" disabled={checkingForUpdate} loading={checkingForUpdate} onClick={this.checkForUpdates}>Check for Updates</Button>
+          <Button className="rev-btn" disabled={checkingForUpdate} loading={checkingForUpdate} onClick={this.checkForUpdates}>{tt("lbl_check_for_updates")}</Button>
         </div>
         {
           downloadingUpdate &&
           <div id={"help-download"}>
-            <div className={"fill-w center-items"}>Downloading Update ({`${((downloadJSON.bytesPerSecond || 0) / 1000000).toFixed(2)}mb/s - ${((downloadJSON.transferred || 0) / 1000000).toFixed(2)}mb total`})</div>
+            <div className={"fill-w center-items"}>
+              {tt("lbl_download_update", {
+                bytesPerSecond: ((downloadJSON.bytesPerSecond || 0) / 1000000).toFixed(2),
+                transferred: ((downloadJSON.transferred || 0) / 1000000).toFixed(2),
+              })}
+            </div>
             <div id={"help-download-bar"}>
               <ProgressBar value={downloadJSON.percent / 100} intent={"warning"}/>
             </div>

@@ -38,13 +38,13 @@ const Console = (props: IProps) => {
       <div className="console__header">
         <div className="console__title">
           <Icon icon="console" color="#5c7080"/>
-          &nbsp;Console
+          &nbsp;{tt("lbl_console")}
         </div>
         <Button minimal={true}
                 small={true}
                 rightIcon={opened ? "double-chevron-down" : "double-chevron-up"}
                 className="console__toggle-btn"
-                text={opened ? "Show Less" : "Show More"}
+                text={opened ? tt("lbl_show_less") : tt("lbl_show_more")}
                 onClick={toggleConsole}/>
       </div>
       <div ref={outputEl} className="console__output">

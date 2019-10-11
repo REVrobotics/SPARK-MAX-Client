@@ -41,7 +41,7 @@ const InputDialog = (props: IProps) => {
   const isInputEmpty = !newInput;
   let validationError: string | undefined;
   if (isInputEmpty) {
-    validationError = "Name cannot be empty";
+    validationError = tt("msg_name_empty");
   } else if (validate) {
     validationError = validate(newInput);
   }

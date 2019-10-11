@@ -43,7 +43,11 @@ const createEnumRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValidato
     }
 
     return !values.includes(currentValue) ?
-      Message.error(`Parameter '${getConfigParamName(rule.id)}' should be set to one of the following values: ${values.join(", ")}. Current value is ${currentValue}`)
+      Message.error("msg_param_validate_enum", {
+        name: getConfigParamName(rule.id),
+        values: values.join(", "),
+        value: currentValue,
+      })
       : undefined;
   };
 };
@@ -55,26 +59,26 @@ const createNumericRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValid
 
   const constraints = rule.constraints as INumericFieldConstraints;
 
-  let minMaxMessageText: string;
+  let minMaxMessageId: string;
   if (constraints.min != null && constraints.max != null) {
-    minMaxMessageText = "Parameter '$name' should have value between $min and $max. Current value is $value";
+    minMaxMessageId = "msg_param_validate_numeric_range";
   } else if (constraints.min != null) {
     if (constraints.min === 0) {
-      minMaxMessageText = "Parameter '$name' should be positive. Current value is $value";
+      minMaxMessageId = "msg_param_validate_numeric_positive";
     } else {
-      minMaxMessageText = "Parameter '$name' should be more than $min. Current value is $value";
+      minMaxMessageId = "msg_param_validate_numeric_min";
     }
   } else if (constraints.max != null) {
     if (constraints.max === 0) {
-      minMaxMessageText = "Parameter '$name' should be negative. Current value is $value";
+      minMaxMessageId = "msg_param_validate_numeric_negative";
     } else {
-      minMaxMessageText = "Parameter '$name' should be less than $max. Current value is $value";
+      minMaxMessageId = "msg_param_validate_numeric_max";
     }
   }
 
-  let integralMessageText: string;
+  let integralMessageId: string;
   if (constraints.integral) {
-    integralMessageText = "Parameter '$name' allows only integral values. Current value is $value";
+    integralMessageId = "msg_param_validate_numeric_integral";
   }
 
   return (context) => {
@@ -85,7 +89,7 @@ const createNumericRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValid
 
     if (constraints.min != null && currentValue < constraints.min
       || constraints.max != null && currentValue > constraints.max) {
-      return Message.error(substitute(minMaxMessageText, {
+      return Message.error(substitute(minMaxMessageId, {
         name: getConfigParamName(rule.id),
         value: currentValue,
         min: constraints.min,
@@ -94,7 +98,7 @@ const createNumericRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValid
     }
 
     if (constraints.integral && currentValue !== Math.round(currentValue)) {
-      return Message.error(substitute(integralMessageText, {
+      return Message.error(substitute(integralMessageId, {
         name: getConfigParamName(rule.id),
         value: currentValue,
       }));
@@ -105,15 +109,14 @@ const createNumericRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValid
 };
 
 const createBooleanRuleValidate = (rule: IConfigParamRule): ConfigParamRuleValidator => {
-  const values = [0, 1];
   return (context) => {
     const currentValue = context.getParameter(rule.id);
     if (currentValue == null) {
       return;
     }
 
-    return !values.includes(currentValue) ?
-      Message.error(`Parameter '${getConfigParamName(rule.id)}' should be set to one of the following values: ${values.join(", ")}. Current value is ${currentValue}`)
+    return currentValue !== 0 && currentValue !== 1 ?
+      Message.error("msg_param_validate_boolean", { name: getConfigParamName(rule.id), value: currentValue })
       : undefined;
   };
 };
@@ -140,7 +143,14 @@ const dependencyValidators: { [id: number]: ConfigParamRuleValidator } = {
     }
 
     return motorType === MotorType.Brushless && sensorType !== SensorType.HallSensor ?
-      Message.error(`Parameter 'kMotorType' can be set to '${MOTOR_TYPES.get(motorType).text}' (${motorType}) only when 'kSensorType' equals to '${SENSOR_TYPES.get(SensorType.HallSensor).text}' (${SensorType.HallSensor}). Current value of 'kMotorType' parameter is '${MOTOR_TYPES.get(motorType).text}' (${motorType}) and 'kSensorType' is '${SENSOR_TYPES.get(sensorType).text}' (${sensorType})`)
+      Message.error("msg_param_validate_motor_type", {
+        motorTypeTextValue: MOTOR_TYPES.get(motorType).text,
+        motorTypeValue: motorType,
+        sensorTypeTextValue: MOTOR_TYPES.get(sensorType).text,
+        sensorTypeValue: sensorType,
+        hallSensorTextValue: SENSOR_TYPES.get(SensorType.HallSensor).text,
+        hallSensorValue: SensorType.HallSensor,
+      })
       : undefined;
   },
   [ConfigParam.kSensorType]: (ctx) => {
@@ -151,7 +161,14 @@ const dependencyValidators: { [id: number]: ConfigParamRuleValidator } = {
     }
 
     return sensorType !== SensorType.HallSensor && motorType === MotorType.Brushless ?
-      Message.error(`Parameter 'kSensorType' can be set to '${SENSOR_TYPES.get(sensorType).text}' (${sensorType}) only when 'kMotorType' is set to '${MOTOR_TYPES.get(MotorType.Brushed).text}' (${MotorType.Brushed}). Current value of 'kSensorType' parameter is '${SENSOR_TYPES.get(sensorType).text}' (${sensorType}) and 'kMotorType' is '${MOTOR_TYPES.get(motorType).text}' (${motorType})`)
+      Message.error("msg_param_validate_motor_type", {
+        sensorTypeTextValue: MOTOR_TYPES.get(sensorType).text,
+        sensorTypeValue: sensorType,
+        motorTypeTextValue: MOTOR_TYPES.get(motorType).text,
+        motorTypeValue: motorType,
+        brushedTextValue: MOTOR_TYPES.get(MotorType.Brushed).text,
+        brushedValue: SensorType.HallSensor,
+      })
       : undefined;
   }
 };

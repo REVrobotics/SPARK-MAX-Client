@@ -3,13 +3,8 @@ import {IConfigParamContext, mapRule, mapRuleRegistry} from "./param-rules/Confi
 import {IApplicationState, Message} from "./state";
 import {ConfigParam, ParamStatus} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {queryConnectedDevicesByCanId, querySelectedDevice, querySelectedDeviceCurrentConfig} from "./selectors";
-import {substitute} from "../utils/string-utils";
 import {getConfigParamRule} from "./config-param-rules";
 import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
-
-const MESSAGE_CAN_0 = "For proper operation of the SPARK MAX, please change all SPARK MAX CAN IDs from 0 to any unused ID from 1 to 62.";
-const MESSAGE_NOT_CONFIGURED_DEVICE = "To work with SPARK MAX controller, configure it by setting unique CAN ID on the bus";
-const MESSAGE_NOT_UNIQUE_CAN_ID = "Device having id $id already exists. Assign unique CAN ID, please";
 
 export interface IRamConfigParamContext extends IConfigParamContext {
   getState(): IApplicationState;
@@ -42,7 +37,10 @@ export const getRamConfigParamRule = mapRuleRegistry(getConfigParamRule, [
       const param = getDeviceParamOrDefault(querySelectedDeviceCurrentConfig(state), rule.id);
       const {lastResponse} = param;
       if (lastResponse && lastResponse.status === ParamStatus.Invalid) {
-        warning = Message.warning(`Your requested value of ${lastResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${lastResponse.responseValue}.`);
+        warning = Message.warning("msg_parameter_invalid_value", {
+          requestValue: lastResponse.requestValue,
+          responseValue: lastResponse.responseValue,
+        });
       }
 
       return warning;
@@ -66,13 +64,13 @@ export const getRamConfigParamRule = mapRuleRegistry(getConfigParamRule, [
       const device = querySelectedDevice(state)!;
       if (value === 0 && device.uniqueId !== 0) {
         // Generate error if device is not configured
-        return Message.error(MESSAGE_NOT_CONFIGURED_DEVICE);
+        return Message.error("msg_device_not_configured");
       } else if (without(queryConnectedDevicesByCanId(state, value), device).length > 0) {
         // Generate error if CAN ID is not unique on the bus
-        return Message.error(substitute(MESSAGE_NOT_UNIQUE_CAN_ID, {id: String(value)}));
+        return Message.error("msg_device_assign_unique_can_id", {id: String(value)});
       } else if (value === 0) {
         // Generate warning if device is a single device having CAN ID = 0
-        return Message.warning(MESSAGE_CAN_0);
+        return Message.warning("msg_parameter_can_id_0");
       }
 
       // Run other validations

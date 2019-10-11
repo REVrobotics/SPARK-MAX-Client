@@ -1,7 +1,6 @@
 // tslint:disable-next-line:interface-over-type-literal
 import {Message, MessageSeverity} from "../state";
 import {ErrorObject} from "ajv";
-import {substitute} from "../../utils/string-utils";
 import {IRawDeviceConfigDto} from "../../models/device-config.dto";
 import {removeField, setArrayElement, setField} from "../../utils/object-utils";
 
@@ -81,7 +80,7 @@ export const createSchemaViolationFactory = ({text, severity, fixFactory}: Schem
   (error) => {
     const objectPath = getObjectPath(error);
     return createViolation({
-      message: Message.create(severity || MessageSeverity.Error, substitute(text, {objectPath, params: error.params})),
+      message: Message.create(severity || MessageSeverity.Error, text, {objectPath, params: error.params}),
       objectPath,
       fixFactory,
     });
@@ -93,7 +92,7 @@ export const createSchemaViolationFactory = ({text, severity, fixFactory}: Schem
 export const defaultViolationFactory: ViolationFactory = (error) => ({
   objectPath: getObjectPath(error),
   params: error.params,
-  message: Message.error(error.message || ""),
+  message: Message.errorFromText(error.message || ""),
 });
 
 /**
@@ -101,7 +100,7 @@ export const defaultViolationFactory: ViolationFactory = (error) => ({
  * It relies on {@link ViolationContext} to check that name is unique.
  */
 const generateUniqueConfigurationName = (context: ViolationContext) => {
-  const baseName = "Unnamed";
+  const baseName = tt("lbl_unnamed");
 
   let index = 0;
   let name: string;

@@ -111,7 +111,7 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
 
 export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
-    dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
+    dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_getting_parameters")));
 
     return delayPromise(1000)
       .then(() => SparkManager.getConfigFromParams(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)))
@@ -122,7 +122,7 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
         dispatch(setParameters(virtualDeviceId, values))
       })
       .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, "FAILED TO GET PARAMETERS"));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_failed_to_get_parameters")));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
       });
@@ -135,9 +135,9 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
 
     return dispatch(showConfirmation({
       intent: "success",
-      text: `Are you sure you want to update the configuration of your SPARK controller to a ${activeMotorType.text} motor?`,
-      yesLabel: "Yes, Update",
-      cancelLabel: "Cancel"
+      text: tt("msg_update_configuration", { motorType: activeMotorType.text }),
+      yesLabel: tt("lbl_yes_update"),
+      cancelLabel: tt("lbl_cancel")
     })).then((answer) => {
       if (answer === ConfirmationAnswer.Cancel) {
         return;
@@ -145,7 +145,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
 
       const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
-      dispatch(updateDeviceProcessStatus(virtualDeviceId, "BURNING PARAMETERS..."));
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_burning_parameters")));
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Save));
       return SparkManager.burnFlash(fromDeviceId(deviceId))
         .then(() => delayPromise(1000))
@@ -164,22 +164,22 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
   onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
     return dispatch(showConfirmation({
       intent: "warning",
-      text: "WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?",
-      yesLabel: "Yes",
-      cancelLabel: "Cancel"
+      text: tt("msg_factory_reset_configuration"),
+      yesLabel: tt("lbl_yes"),
+      cancelLabel: tt("lbl_cancel"),
     })).then((answer) => {
       if (answer === ConfirmationAnswer.Cancel) {
         return;
       }
 
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Reset));
-      dispatch(updateDeviceProcessStatus(virtualDeviceId, "RESETTING..."));
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_resetting")));
 
       const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
       return SparkManager.restoreDefaults(fromDeviceId(deviceId))
         .then(() => {
-          dispatch(updateDeviceProcessStatus(virtualDeviceId, "GETTING PARAMETERS..."));
+          dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_getting_parameters")));
           return delayPromise(1000);
         })
         .then(() =>
