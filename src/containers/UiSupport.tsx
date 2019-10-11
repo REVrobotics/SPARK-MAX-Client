@@ -7,9 +7,17 @@ import {
   IMessageQueueConfig
 } from "../store/state";
 import {connect} from "react-redux";
-import {answerConfirmation, closeAlert, closeConfirmation, setToasterRef, SparkDispatch} from "../store/actions";
+import {
+  answerConfirmation,
+  closeAlert,
+  closeConfirmation,
+  closeMessageQueue,
+  setToasterRef,
+  SparkDispatch
+} from "../store/actions";
 import {Alert, Toaster} from "@blueprintjs/core";
 import {queryIsMessageQueueOpened, queryMessageQueueConfig} from "../store/selectors";
+import MessageQueueDialog from "../components/MessageQueueDialog";
 
 interface IProps {
   alert?: IAlertDialogConfig;

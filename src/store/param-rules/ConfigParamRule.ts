@@ -97,7 +97,7 @@ export const mergeValidator = (rule: IConfigParamRule,
     return rule;
   }
 
-  const validate = (context: IFileConfigParamContext) => {
+  const validate = (context: IConfigParamContext) => {
     // Run default validation flow
     const message = rule.validate(context);
     if (message) {

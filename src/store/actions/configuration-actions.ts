@@ -59,10 +59,9 @@ export const loadConfigurations = (): SparkAction<Promise<any>> => {
 };
 
 export const selectConfiguration = (virtualDeviceId: VirtualDeviceId,
-                                    configuration: IDeviceConfiguration): SparkAction<Promise<any>> => {
+                                    configuration: IDeviceConfiguration): SparkAction<void> => {
   return (dispatch) => {
     dispatch(setOnlyTransientParameter(virtualDeviceId, "configurationId", getDeviceConfigurationId(configuration)));
-    return dispatch(applyConfiguration(virtualDeviceId, configuration));
   };
 };
 

@@ -41,13 +41,13 @@ interface IProps extends IOwnProps {
 
   onRemove(item: IDeviceConfiguration): void;
 
-  onRestore(item: IDeviceConfiguration): void;
+  onApply(item: IDeviceConfiguration): void;
 }
 
 const ConfigurationSelect = (props: IProps) => {
   const {
     selected, isDirty, configurations, disabled,
-    onSelect, onRename, onSave, onSaveAs, onRemove, onRestore,
+    onSelect, onRename, onSave, onSaveAs, onRemove, onApply,
   } = props;
 
   const isModifiable = selected ? !isDefaultDeviceConfiguration(selected) : false;
@@ -69,7 +69,7 @@ const ConfigurationSelect = (props: IProps) => {
       return "Name is not unique";
     }
     return;
-  }, []);
+  }, [configurations]);
 
   const [renameOpened, setRenameOpened] = useState(false);
   const openRenameDialog = useCallback(() => setRenameOpened(true), []);
@@ -117,6 +117,7 @@ const ConfigurationSelect = (props: IProps) => {
                         isDirty={isDirty}
                         items={configurations}
                         disabled={disabled}
+                        appliable={!isDefaultDeviceConfiguration(selected)}
                         modifiable={isModifiable}
                         getKey={getDeviceConfigurationId}
                         getText={getDeviceConfigurationName}
@@ -125,7 +126,7 @@ const ConfigurationSelect = (props: IProps) => {
                         onSave={onSave}
                         onSaveAs={openSaveAsDialog}
                         onRemove={onRemove}
-                        onRestore={onRestore}/>
+                        onApply={onApply}/>
     </>
   )
 };
@@ -145,7 +146,7 @@ function mapDispatchToProps(dispatch: SparkDispatch) {
     onSave: (item: IDeviceConfiguration) => dispatch(saveConfiguration(item)),
     onSaveAs: (item: IDeviceConfiguration, name: string) => dispatch(saveConfigurationAs(item, name)),
     onRemove: (item: IDeviceConfiguration) => dispatch(destroyConfiguration(item)),
-    onRestore: (item: IDeviceConfiguration) => dispatch(applyConfigurationForSelectedDevice(item)),
+    onApply: (item: IDeviceConfiguration) => dispatch(applyConfigurationForSelectedDevice(item)),
   };
 }
 
