@@ -98,7 +98,7 @@ export function disconnectHubDevice(virtualDeviceId: VirtualDeviceId): SparkActi
         const device = setVirtualDeviceId(createHubDeviceState(disconnectedDevice), virtualDeviceId);
         const deviceIdsToReplace = queryConnectedDevices(getState()).map(getVirtualDeviceId);
         dispatch(replaceDevices(device, deviceIdsToReplace));
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, "DISCONNECTED"));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(setDeviceLoaded(virtualDeviceId, false));
         dispatch(setConnectedDevice(virtualDeviceId, false));

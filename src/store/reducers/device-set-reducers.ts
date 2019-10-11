@@ -12,8 +12,7 @@ import {
 import {ActionType, ApplicationActions} from "../actions";
 import {removeFields, setArrayElement, setField, setFields} from "../../utils/object-utils";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
-import {getConfigParamRule} from "../config-param-rules";
-import {createRamConfigParamContext, IRamConfigParamContext} from "../ram-config-param-rules";
+import {createRamConfigParamContext, getRamConfigParamRule, IRamConfigParamContext} from "../ram-config-param-rules";
 
 const initialDeviceSetState: IDeviceSetState = {
   orderedDevices: [],
@@ -21,7 +20,10 @@ const initialDeviceSetState: IDeviceSetState = {
 };
 
 // tslint:disable-next-line:no-bitwise
-const getDeviceIdWithNewCanId = (device: DeviceId, newCanId: number) => (0xffff00 & device) | (newCanId & 0xff);
+const getDeviceIdWithNewCanId = (deviceId: DeviceId, newCanId: number) => {
+  const oldCanId = deviceId % 100;
+  return (deviceId - oldCanId) + newCanId;
+};
 
 const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = initialDeviceSetState,
                                                     action: ApplicationActions): IDeviceSetState => {
@@ -158,7 +160,7 @@ const parameterValidationReducer = (state: IApplicationState, action: Applicatio
 const validateDeviceParameter = (ctx: IRamConfigParamContext,
                                  parameter: ConfigParam,
                                  parameterState: IDeviceParameterState): IDeviceParameterState => {
-  const rule = getConfigParamRule(parameter);
+  const rule = getRamConfigParamRule(parameter);
   if (rule == null) {
     return parameterState;
   }

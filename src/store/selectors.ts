@@ -6,12 +6,18 @@
 import {filter, find, first} from "lodash";
 import {
   DEFAULT_TRANSIENT_STATE,
-  DeviceId, getDeviceCommittedCanId,
+  DeviceId,
+  getDeviceBlockedReason,
+  getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
   getDeviceParamValue,
-  getVirtualDeviceId, hasDeviceParamError,
-  IApplicationState, isDeviceInvalid, isDeviceNotConfigured,
+  getVirtualDeviceId,
+  hasDeviceParamError,
+  IApplicationState,
+  isDeviceBlocked,
+  isDeviceInvalid,
+  isDeviceNotConfigured,
   isHubDevice,
   VirtualDeviceId
 } from "./state";
@@ -207,6 +213,33 @@ export const queryIsSelectedDeviceInvalid = (state: IApplicationState) => {
 export const queryIsSelectedDeviceNotConfigured = (state: IApplicationState) => {
   const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? false : isDeviceNotConfigured(selectedDevice);
+};
+
+/**
+ * Returns if device is blocked.
+ * @param state
+ */
+export const queryIsSelectedDeviceBlocked = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  return selectedDevice == null ? false : isDeviceBlocked(selectedDevice);
+};
+
+/**
+ * Returns if selected device requires user attention
+ * @param state
+ */
+export const querySelectedDeviceBlockedReason = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  return selectedDevice == null ? false : getDeviceBlockedReason(selectedDevice);
+};
+
+/**
+ * Returns if some of devices requires user attention
+ * @param state
+ */
+export const queryHasGlobalError = (state: IApplicationState) => {
+  const devices = queryConnectedDevices(state);
+  return devices.some((device) => getDeviceBlockedReason(device) != null);
 };
 
 /**

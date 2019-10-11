@@ -107,7 +107,7 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
     return delayPromise(1000)
       .then(() => SparkManager.getConfigFromParams(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)))
       .then((values) => {
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(setDeviceLoaded(virtualDeviceId, true));
         dispatch(setParameters(virtualDeviceId, values))
@@ -136,6 +136,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
 
       const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, "BURNING PARAMETERS..."));
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Save));
       return SparkManager.burnFlash(fromDeviceId(deviceId))
         .then(() => delayPromise(1000))
@@ -144,6 +145,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
             dispatch(setParameters(virtualDeviceId, values));
           }))
         .finally(() => {
+          dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         });
     });
@@ -177,7 +179,7 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
           }))
         .finally(() => {
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-          dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTED"));
+          dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         });
     });
   });

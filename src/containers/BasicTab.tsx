@@ -11,13 +11,12 @@ import {
 } from "../store/actions";
 import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
-  querySelectedDeviceProcessType,
-  querySelectedDeviceTransientParameters,
+  queryIsSelectedDeviceBlocked,
   queryIsSelectedDeviceConnected,
   queryIsSelectedDeviceInProcessing,
   queryIsSelectedDeviceLoaded,
-  queryIsSelectedDeviceInvalid,
-  queryIsSelectedDeviceNotConfigured
+  querySelectedDeviceProcessType,
+  querySelectedDeviceTransientParameters
 } from "../store/selectors";
 import NumericParamField from "../components/fields/NumericParamField";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
@@ -260,7 +259,7 @@ export function mapStateToProps(state: IApplicationState) {
     enabled: queryIsSelectedDeviceConnected(state)
       && !queryIsSelectedDeviceInProcessing(state)
       && queryIsSelectedDeviceLoaded(state),
-    blocked: queryIsSelectedDeviceInvalid(state) || queryIsSelectedDeviceNotConfigured(state),
+    blocked: queryIsSelectedDeviceBlocked(state),
     processType: querySelectedDeviceProcessType(state),
     transient: querySelectedDeviceTransientParameters(state),
   };

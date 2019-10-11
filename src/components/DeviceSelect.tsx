@@ -2,6 +2,7 @@ import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
 import {getCanIdFromDeviceId, getVirtualDeviceId, IDeviceState} from "../store/state";
+import {useMemo} from "react";
 
 const BpDeviceSelect = Select.ofType<IDeviceState>();
 
@@ -23,17 +24,22 @@ interface IProps {
   devices: IDeviceState[]
   selected?: IDeviceState;
 
+  onOpened(): void;
+  onClosed(): void;
   onSelect(device: IDeviceState): void;
 }
 
-export const DeviceSelect: React.FC<IProps> = ({className, devices, selected, onSelect}) => {
+export const DeviceSelect: React.FC<IProps> = ({className, devices, selected, onOpened, onClosed, onSelect}) => {
   const disabled = devices.length <= 1;
+
+  const popoverProps = useMemo(() => ({ onOpened, onClosed }), []);
 
   return (
     <BpDeviceSelect className={className}
                     items={devices}
                     disabled={disabled}
                     filterable={false}
+                    popoverProps={popoverProps}
                     itemRenderer={renderer} onItemSelect={onSelect}>
       <Button fill={true}
               disabled={disabled}
