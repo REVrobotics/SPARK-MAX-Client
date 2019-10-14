@@ -24,6 +24,7 @@ function createWindow() {
       installExtension(extension)
         .then((name: string) => console.log(`Added Extension: ${name}`))
         .catch((err: any) => console.log('An error occurred: ', err))));
+    // install electron dev tools
     require("devtron").install();
   }
 

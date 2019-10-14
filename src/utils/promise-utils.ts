@@ -78,6 +78,9 @@ export function logError<T>(reason: any): Promise<T> {
   return Promise.reject(reason);
 }
 
+/**
+ * Process array element in order. Processing is determined by the given `promiseFactory`.
+ */
 export function concatMapPromises<T, R>(values: T[], promiseFactory: (value: T) => Promise<R>): Promise<R[]> {
   let currentValueIndex = 0;
   const results: R[] = [];

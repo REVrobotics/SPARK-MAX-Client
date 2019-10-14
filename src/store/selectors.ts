@@ -293,25 +293,51 @@ export const queryProcessStatus = (state: IApplicationState) => {
 
 /**
  * Returns state of network tab
- *
- * @param state
  */
 export const queryNetwork = (state: IApplicationState) => state.network;
+/**
+ * Returns all devices on CAN bus
+ */
 export const queryNetworkDevices = (state: IApplicationState) => state.network.devices;
+/**
+ * Returns specific device on CAN bus
+ */
 export const queryNetworkDevice = (state: IApplicationState, id: DeviceId) =>
   find(state.network.devices, (device) => getNetworkDeviceId(device) === id);
+/**
+ * Returns ALL console output. Displayed on network tab
+ */
 export const queryConsoleOutput = (state: IApplicationState) => state.network.outputText;
+/**
+ * Returns last message provided by firmware load process
+ */
 export const queryLastFirmwareLoadingMessage = (state: IApplicationState) => state.network.lastFirmwareLoadingMessage;
-
+/**
+ * Returns if the latest firmware was already downloaded
+ */
 export const queryIsFirmwareDownloaded = (state: IApplicationState) => queryFirmwareConfig(state) != null;
+/**
+ * Returns if the latest firmware is in process of downloading
+ */
 export const queryIsFirmwareDownloading = (state: IApplicationState) => state.firmware.loading;
+/**
+ * Returns if some error has happened while downloading.
+ */
 export const queryFirmwareDownloadError = (state: IApplicationState) => state.firmware.loadError;
+/**
+ * Returns state of firmware loading
+ */
 export const queryFirmwareConfig = (state: IApplicationState) => state.firmware.config;
+/**
+ * Returns the latest version of firmware.
+ */
 export const queryLatestFirmwareVersion = (state: IApplicationState) => {
   const firmware = queryFirmwareByTag(state, FirmwareTag.Latest);
   return firmware ? firmware.version : undefined;
 };
-
+/**
+ * Returns requested firmware by the provided tag (Latest, RecoveryUpdateRequired, etc)
+ */
 export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): IFirmwareEntry|undefined => {
   const config = queryFirmwareConfig(state);
 
@@ -328,4 +354,7 @@ export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): 
   return;
 };
 
+/**
+ * Returns if firmware is updated currently.
+ */
 export const queryIsFirmwareLoading = (state: IApplicationState) => state.firmware.loading;

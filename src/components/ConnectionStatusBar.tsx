@@ -20,7 +20,7 @@ import {InfoIcon} from "../icons";
 interface IProps {
   selectedDevice?: IDeviceState,
   devices: IDeviceState[],
-  connectionStatus: string,
+  processStatus: string,
   processing: boolean,
   connected: boolean,
   connectable: boolean,
@@ -45,11 +45,11 @@ const getBlockedReasonText = (reason: DeviceBlockedReason) => {
 
 const ConnectionStatusBar = (props: IProps) => {
   const {
-    devices, selectedDevice, blockedReason, processing, connectionStatus, connected, connectable, hasGlobalError,
+    devices, selectedDevice, blockedReason, processing, processStatus, connected, connectable, hasGlobalError,
     onConnect, onDisconnect, onSelectDevice,
   } = props;
 
-  const displayGlobalError = connectionStatus ? false : hasGlobalError;
+  const displayGlobalError = processStatus ? false : hasGlobalError;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
@@ -129,7 +129,7 @@ const ConnectionStatusBar = (props: IProps) => {
                 Some devices have issues
               </>
             )
-            : connectionStatus
+            : processStatus
         }
       </div>
       <div className="status-bar__button">
@@ -151,7 +151,7 @@ export function mapStateToProps(state: IApplicationState) {
     blockedReason: querySelectedDeviceBlockedReason(state),
     processing: queryIsInProcessing(state),
     connectable: queryIsConnectableToAnyDevice(state),
-    connectionStatus: queryProcessStatus(state),
+    processStatus: queryProcessStatus(state),
   };
 }
 

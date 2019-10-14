@@ -9,11 +9,17 @@ export interface IProps {
   expandedHeight?: string;
 }
 
+/**
+ * `Console` represents expandable element bound to the bottom of the screen.
+ * It allows to show long appendable content.
+ * Component always scrolls to the bottom when new content is added.
+ */
 const Console = (props: IProps) => {
   const {text, height, expandedHeight} = props;
 
   const [opened, setOpened] = useState(false);
   const toggleConsole = useCallback(() => setOpened(!opened), [opened]);
+  // Scrolls to the bottom when new content is added
   const outputEl = useRefEffect<HTMLDivElement>((el) => {
     el.scrollTop = el.scrollHeight;
   }, [text]);

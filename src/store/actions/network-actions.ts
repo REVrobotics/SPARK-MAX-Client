@@ -40,6 +40,9 @@ import {
   renderNetworkDeviceHelpText
 } from "./actions-rendered-content";
 
+/**
+ * Selects firmware and starts loading process
+ */
 export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
   return (dispatch, getState) => {
     const deviceIds = queryNetworkDevices(getState())
@@ -75,6 +78,9 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
   };
 };
 
+/**
+ * Starts loading process
+ */
 const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<any>> => {
   return (dispatch) => {
     dispatch(consoleOutput(`[INFO] Loading firmware from ${path}`));
@@ -101,6 +107,9 @@ const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<
   };
 };
 
+/**
+ * Completes loading process with error
+ */
 const firmwareLoadingError = (error?: string): SparkAction<void> => {
   return (dispatch) => {
     const msg: string = "[ERROR] " + (typeof error !== "undefined" ? error : "Error loading firmware. Please disconnect the SPARK MAX controller, and try again.");
@@ -111,6 +120,9 @@ const firmwareLoadingError = (error?: string): SparkAction<void> => {
   };
 };
 
+/**
+ * Updates progress of loading
+ */
 export const updateLoadFirmwareProgress = (error: any, response: FirmwareResponseDto): SparkAction<void> => {
   return (dispatch, getState) => {
     if (response.updateStarted) {
@@ -141,6 +153,9 @@ export const updateLoadFirmwareProgress = (error: any, response: FirmwareRespons
   };
 };
 
+/**
+ * Scans the bus of currently connected device
+ */
 export const scanCanBus = (): SparkAction<Promise<any>> => {
   return (dispatch, getState) => {
     dispatch(updateGlobalIsProcessing(true));
@@ -150,13 +165,17 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
 
     return SparkManager.listAllDevices()
       .then(({extendedList}) => {
+        // Get the version that require recovery update
         const recoveryVersion = queryFirmwareByTag(getState(), FirmwareTag.RecoveryUpdateRequired);
 
+        // All devices connected via CAN bus
         const devices = extendedList.map(createNetworkDevice);
         dispatch(setNetworkDevices(devices));
 
+        // All updateable devices connected via CAN bus
         const updateableDevices = devices.filter(isNetworkDeviceNeedFirmwareVersion);
-        // Load firmware for each updateable device
+
+        // Load firmware for each updateable device one by one
         return concatMapPromises(
           updateableDevices,
           (device) => {
@@ -197,11 +216,13 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
           });
       })
       .then(() => {
+        // Completes scanning process
         dispatch(setNetworkScanInProgress(false));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(""));
       })
       .then(() => {
+        // Displays help dialog, if necessary
         const devices = queryNetworkDevices(getState()).filter(isNetworkDeviceNeedsHelpText);
 
         if (devices.length === 0) {
@@ -217,14 +238,20 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
   };
 };
 
+/**
+ * Checks if any device on CAN bus has obsoleted version.
+ */
 export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
   (dispatch, getState) => {
     return SparkManager.listAllDevices()
       .then(({extendedList}) => {
+        // Get the latest firmware version
         const latestVersion = queryFirmwareByTag(getState(), FirmwareTag.Latest);
 
+        // Find all updateable devices
         const updateableDevices = extendedList.map(createNetworkDevice).filter(isNetworkDeviceNeedFirmwareVersion);
-        // Load firmware for each updateable device
+
+        // Load firmware for each updateable device one by one
         return concatMapPromises(
           updateableDevices,
           (device) => {
@@ -234,6 +261,7 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
               .then((response) => hasError(response) ? Promise.reject() : Promise.resolve(response))
               .then((response) => {
                 const firmwareVersion = response.version!.substring(1);
+                // Check if device has the latest version
                 return latestVersion && compareVersions(firmwareVersion, latestVersion.version) < 0;
               });
           })
@@ -245,6 +273,9 @@ export const selectNetworkDevice = (id: DeviceId, selected: boolean): SparkActio
   return (dispatch) => dispatch(updateNetworkDevice(id, {selected}));
 };
 
+/**
+ * Shows help dialog for specific device.
+ */
 export const showNetworkDeviceHelp = (id: DeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     const device = queryNetworkDevice(getState(), id);

@@ -60,6 +60,9 @@ interface INetworkDeviceSelectorProps {
   onSelected(deviceId: DeviceId, selected: boolean): void;
 }
 
+/**
+ * Displays checkbox to select specific device
+ */
 const NetworkDeviceSelector = (props: INetworkDeviceSelectorProps) => {
   const {deviceId, selected, disabled, onSelected} = props;
 
@@ -73,15 +76,22 @@ interface INetworkDeviceHowToProps {
   onOpen(id: DeviceId): void;
 }
 
+/**
+ * Displays button used to get instructions on how to update firmware.
+ */
 const NetworkDeviceHowTo = (props: INetworkDeviceHowToProps) => {
   const { deviceId, onOpen } = props;
 
   const open = useCallback(() => onOpen(deviceId), []);
 
   return <button className="link" onClick={open}>How to</button>;
-}
+};
 
 class NetworkTab extends React.Component<IProps> {
+  constructor(props: IProps) {
+    super(props);
+  }
+
   public render() {
     const {
       firmwareLoadingProgress, firmwareLoadingText, outputText, scanInProgress, firmwareLoading,
@@ -97,10 +107,10 @@ class NetworkTab extends React.Component<IProps> {
                  numRows={Math.max(devices.length, 10)}
                  columnWidths={[75, 150, 150, 75]}>
 
-            <Column name="Interface" cellRenderer={this.wrapDeviceCellRenderer(this.interfaceColumnRenderer)}/>
-            <Column name="Device" cellRenderer={this.wrapDeviceCellRenderer(this.deviceColumnRenderer)}/>
-            <Column name="Firmware" cellRenderer={this.wrapDeviceCellRenderer(this.firmwareColumnRenderer)}/>
-            <Column name="Update" cellRenderer={this.wrapDeviceCellRenderer(this.updateColumnRenderer)}/>
+            <Column name="Interface" cellRenderer={this.interfaceColumnRenderer}/>
+            <Column name="Device" cellRenderer={this.deviceColumnRenderer}/>
+            <Column name="Firmware" cellRenderer={this.firmwareColumnRenderer}/>
+            <Column name="Update" cellRenderer={this.updateColumnRenderer}/>
           </Table>
           <div>
             <Button className="rev-btn"
@@ -128,9 +138,11 @@ class NetworkTab extends React.Component<IProps> {
     );
   }
 
-  private updateColumnRenderer = (rowIndex: number) => {
+  private updateColumnRenderer = this.wrapDeviceCellRenderer((rowIndex: number) => {
     const {firmwareLoading, devices} = this.props;
     const device = devices[rowIndex];
+    // If device requires recovery mode => display "How To" button,
+    // otherwise display checkbox
     const content = device.status === NetworkDeviceStatus.RequiresRecoveryMode ?
       (
         <NetworkDeviceHowTo deviceId={getNetworkDeviceId(device)} onOpen={this.props.showDeviceHelp}/>
@@ -147,31 +159,33 @@ class NetworkTab extends React.Component<IProps> {
         {content}
       </Cell>
     );
-  };
+  });
 
-  private interfaceColumnRenderer = (rowIndex: number) => {
+  private interfaceColumnRenderer = this.wrapDeviceCellRenderer((rowIndex: number) => {
     const device = this.props.devices[rowIndex];
     return <Cell className="text-center">{device.interfaceName}</Cell>
-  };
+  });
 
-  private deviceColumnRenderer = (rowIndex: number) => {
+  private deviceColumnRenderer = this.wrapDeviceCellRenderer((rowIndex: number) => {
     const device = this.props.devices[rowIndex];
     return <Cell>{device.deviceName}</Cell>
-  };
+  });
 
-  private firmwareColumnRenderer = (rowIndex: number) => {
+  private firmwareColumnRenderer = this.wrapDeviceCellRenderer((rowIndex: number) => {
     const device = this.props.devices[rowIndex];
     const isError = isNetworkDeviceError(device);
 
     let content: ReactNode;
     if (isError) {
+      // Display error if we could not get firmware version
       content = (
         <>
           <Icon icon="warning-sign" intent="danger"/>
-          &nbsp;device.error
+          &nbsp;{device.error}
         </>
       );
     } else if (device.status === NetworkDeviceStatus.NotConfigured) {
+      // If device is "Not Configured" just display this label
       content = (
         <>
           <Icon icon="warning-sign" intent="warning"/>
@@ -179,6 +193,7 @@ class NetworkTab extends React.Component<IProps> {
         </>
       );
     } else {
+      // Otherwise, display firmware version
       content = device.firmwareVersion;
     }
 
@@ -187,7 +202,7 @@ class NetworkTab extends React.Component<IProps> {
         {content}
       </Cell>
     );
-  };
+  });
 
   private buildUpdateTooltip = (device: INetworkDevice) => {
     switch (device.status) {
@@ -203,6 +218,7 @@ class NetworkTab extends React.Component<IProps> {
         return "Unable to update this device.";
     }
   };
+
 
   private wrapDeviceCellRenderer(renderer: ICellRenderer): ICellRenderer {
     return (rowIndex, columnIndex) => {

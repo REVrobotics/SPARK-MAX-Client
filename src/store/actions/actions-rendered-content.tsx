@@ -1,3 +1,7 @@
+/**
+ * This file defines content rendered in actions
+ */
+
 import * as React from "react";
 import {INetworkDevice, NetworkDeviceStatus} from "../state";
 

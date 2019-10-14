@@ -252,6 +252,7 @@ onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) 
         server.firmware({}, (error: any, response: any) => {
           if (error) {
             notifyCallback(getTargetWindow(), "load-firmware-progress", error);
+            cb(error);
             global.clearInterval(firmwareID);
             firmwareID = null;
             return;

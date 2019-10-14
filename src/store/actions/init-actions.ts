@@ -37,6 +37,9 @@ export function initApplication(): SparkAction<void> {
   };
 }
 
+/**
+ * Checks if any of devices uses obsoleted version
+ */
 function checkForFirmwareUpdate(): SparkAction<void> {
   return (dispatch) => {
     dispatch(downloadLatestFirmware())
