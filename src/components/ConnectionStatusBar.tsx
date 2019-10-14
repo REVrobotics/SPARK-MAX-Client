@@ -20,8 +20,8 @@ import {InfoIcon} from "../icons";
 interface IProps {
   selectedDevice?: IDeviceState,
   devices: IDeviceState[],
-  connectionStatus: string,
-  connecting: boolean,
+  processStatus: string,
+  processing: boolean,
   connected: boolean,
   connectable: boolean,
   hasGlobalError: boolean;
@@ -45,11 +45,11 @@ const getBlockedReasonText = (reason: DeviceBlockedReason) => {
 
 const ConnectionStatusBar = (props: IProps) => {
   const {
-    devices, selectedDevice, blockedReason, connecting, connectionStatus, connected, connectable, hasGlobalError,
+    devices, selectedDevice, blockedReason, processing, processStatus, connected, connectable, hasGlobalError,
     onConnect, onDisconnect, onSelectDevice,
   } = props;
 
-  const displayGlobalError = connectionStatus ? false : hasGlobalError;
+  const displayGlobalError = processStatus ? false : hasGlobalError;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
@@ -116,6 +116,7 @@ const ConnectionStatusBar = (props: IProps) => {
       <DeviceSelect className="status-bar__device-selector"
                     devices={devices}
                     selected={selectedDevice}
+                    disabled={devices.length <= 1}
                     onSelect={onSelectDevice}
                     onOpened={onDeviceSelectOpened}
                     onClosed={onDeviceSelectClosed}/>
@@ -128,11 +129,11 @@ const ConnectionStatusBar = (props: IProps) => {
                 Some devices have issues
               </>
             )
-            : connectionStatus
+            : processStatus
         }
       </div>
       <div className="status-bar__button">
-        <Button fill={true} disabled={!connectable || connecting} loading={connecting}
+        <Button fill={true} disabled={!connectable || processing} loading={processing}
                 onClick={connected ? onDisconnect : onConnect}>
           {connected ? "Disconnect" : "Connect"}
         </Button>
@@ -148,9 +149,9 @@ export function mapStateToProps(state: IApplicationState) {
     connected: queryIsSelectedDeviceConnected(state),
     hasGlobalError: queryHasGlobalError(state),
     blockedReason: querySelectedDeviceBlockedReason(state),
-    connecting: queryIsInProcessing(state),
+    processing: queryIsInProcessing(state),
     connectable: queryIsConnectableToAnyDevice(state),
-    connectionStatus: queryProcessStatus(state),
+    processStatus: queryProcessStatus(state),
   };
 }
 

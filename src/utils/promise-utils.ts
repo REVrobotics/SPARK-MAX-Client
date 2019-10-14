@@ -77,3 +77,31 @@ export function logError<T>(reason: any): Promise<T> {
   }
   return Promise.reject(reason);
 }
+
+/**
+ * Process array element in order. Processing is determined by the given `promiseFactory`.
+ */
+export function concatMapPromises<T, R>(values: T[], promiseFactory: (value: T) => Promise<R>): Promise<R[]> {
+  let currentValueIndex = 0;
+  const results: R[] = [];
+  const dfd = deferred<R[]>();
+
+  const next = () => {
+    if (currentValueIndex === values.length) {
+      dfd.resolve(results);
+    } else {
+      promiseFactory(values[currentValueIndex])
+        .then((result) => {
+          results.push(result);
+          next();
+        })
+        .catch((reason) => dfd.reject(reason));
+
+      currentValueIndex++;
+    }
+  };
+
+  next();
+
+  return dfd.promise;
+}

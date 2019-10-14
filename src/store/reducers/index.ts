@@ -4,6 +4,8 @@ import contextReducer from "./context-reducers";
 import logsReducer from "./logs-reducers";
 import uiReducer from "./ui-reducers";
 import deviceSetReducer, {parameterValidationReducer} from "./device-set-reducers";
+import networkReducer from "./network-reducers";
+import firmwareReducer from "./firmware-reducers";
 
 const rootReducer = onChangeReducer(
   combineReducers({
@@ -11,6 +13,8 @@ const rootReducer = onChangeReducer(
     deviceSet: deviceSetReducer,
     logs: logsReducer,
     ui: uiReducer,
+    network: networkReducer,
+    firmware: firmwareReducer,
   }),
   parameterValidationReducer,
 );

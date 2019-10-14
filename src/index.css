@@ -6,6 +6,7 @@
 
 #status-bar {
     width: 100%;
+    min-height: 40px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -120,18 +121,60 @@
     font-weight: bold;
 }
 
-#firmware-console {
+.main-tabs {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-tabs > .bp3-tab-panel {
+    flex: 1;
+}
+
+.console-portal > .bp3-overlay-container {
+    /*
+      Portal is positioned via position=fixed and z-index=<some value>.
+      This prevents clicks on overlay container.
+      Remove binding to the document top to avoid stretching of overlay on whole document.
+     */
+    top: unset;
+}
+
+.console {
+    border-top: 1px solid orange;
+}
+
+.console__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    min-height: 24px;
+    padding: 0 5px 0 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.54);
+
+    font-size: 0.9em;
+}
+
+.console__title {
+    line-height: 24px;
+}
+
+.console__toggle-btn {
+    font-size: 1em;
+}
+
+.console__output {
+
     width: 100%;
-    height: 200px;
+    height: 100%;
     background-color: #cfcfcf;
     padding: 10px;
-    border: 1px solid orange;
     font-family: Consolas, sans-serif;
     font-size: 13px;
     overflow: auto;
 }
 
-#firmware-console > p {
+.console__output > p {
     margin: 0;
 }
 
@@ -425,6 +468,47 @@ label.modified::after {
     width: 100%;
     height: 100%;
     fill: currentColor;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-space-between {
+    justify-content: space-between;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.page {
+    height: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.network-table {
+    width: 480px;
+    height: 250px;
+}
+
+button.link {
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 @keyframes blink {

@@ -8,6 +8,7 @@ import {uniqueId} from "lodash";
 import {ConfigParam} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
+import {ReactNode} from "react";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -80,13 +81,108 @@ export interface IDeviceSetState {
 }
 
 /**
+ * State of network tab
+ */
+export interface INetworkState {
+  /**
+   * Devices visible on CAN bus
+   */
+  devices: INetworkDevice[];
+  /**
+   * Text displayed in the console
+   */
+  outputText: string[];
+  /**
+   * Is firmware loading currently in progress
+   */
+  firmwareLoading: boolean;
+  /**
+   * Progress of current loading process
+   */
+  firmwareLoadingProgress: number,
+  /**
+   * Text status of current loading progress
+   */
+  firmwareLoadingText: string,
+  /**
+   * Is scanning in progress
+   */
+  scanInProgress: boolean;
+  /**
+   * Last message provided by firmware loading process
+   */
+  lastFirmwareLoadingMessage: string;
+}
+
+/**
+ * State of firmware downloading
+ */
+export interface IFirmwareState {
+  loading: boolean;
+  loadError: boolean;
+  config: any;
+}
+
+/**
+ * Version tags from sparkmax-gui-cfg.json
+ */
+export enum FirmwareTag {
+  RecoveryUpdateRequired = "Recovery Update Required",
+  Latest = "Latest",
+  Previous = "Previous",
+}
+
+/**
+ * Firmware entry from sparkmax-gui-cfg.json file
+ */
+export interface IFirmwareEntry {
+  spec: FirmwareTag;
+  version: string;
+  url: string;
+  md5: string;
+  sha1: string;
+}
+
+/**
  * Whole application state
  */
 export interface IApplicationState {
   context: IContextState,
   deviceSet: IDeviceSetState,
+  network: INetworkState,
+  firmware: IFirmwareState;
   logs: string[],
   ui: IUiState;
+}
+
+/**
+ * Status of device on CAN bus
+ */
+export enum NetworkDeviceStatus {
+  Unknown,
+  NotUpdateable,
+  NotConfigured,
+  RequiresRecoveryMode,
+  RecoveryMode,
+  Updateable,
+  Error,
+}
+
+/**
+ * Represents device on CAN bus
+ */
+export interface INetworkDevice {
+  selected: boolean;
+  deviceId: DeviceId;
+  uniqueId: number;
+  interfaceName: string;
+  driverName: string;
+  deviceName: string;
+  updateable: boolean;
+  firmwareVersion: string;
+  loading: boolean;
+  status: NetworkDeviceStatus;
+  error?: string;
 }
 
 /**
@@ -100,11 +196,29 @@ export interface IDeviceInfo {
   updateable: boolean;
 }
 
+export enum TabId {
+  Basic = "main-tab-basic",
+  Advanced = "main-tab-advanced",
+  Run = "main-tab-run",
+  Network = "main-tab-network",
+  Help = "main-tab-help",
+  About = "main-tab-about",
+}
+
 /**
  * State of shared UI components.
  * This state is necessary to support common application flows: confirmations, notifications, etc.
  */
 export interface IUiState {
+  /**
+   * Currently selected application tab
+   */
+  selectedTabId: TabId;
+  /**
+   * Properties for confirmation dialog.
+   */
+  alert?: IAlertDialogConfig;
+  alertOpened: boolean;
   /**
    * Properties for confirmation dialog.
    */
@@ -179,6 +293,16 @@ export interface IDeviceParameterState {
    * Any message associated with the parameter
    */
   message?: Message;
+}
+
+/**
+ * Configuration of confirmation dialog
+ */
+export interface IAlertDialogConfig {
+  intent: Intent;
+  text?: string;
+  content?: ReactNode;
+  okLabel: string;
 }
 
 /**
@@ -390,3 +514,63 @@ export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(
  */
 // tslint:disable-next-line:no-bitwise
 export const getCanIdFromDeviceId = (device: DeviceId) => device % 100;
+
+/**
+ * Returns deviceId of device on CAN bus.
+ * Returned ID may be not-unique.
+ */
+export const getNetworkDeviceId = (device: INetworkDevice) => device.deviceId;
+
+/**
+ * Creates {@link INetworkDevice} based on DTO representation
+ */
+export const createNetworkDevice = (extended: ExtendedListResponseDto): INetworkDevice => {
+  let status: NetworkDeviceStatus;
+
+  if (extended.uniqueId) {
+    status = NetworkDeviceStatus.NotConfigured;
+  } else if (!extended.updateable) {
+    status = NetworkDeviceStatus.NotUpdateable
+  } else {
+    status = NetworkDeviceStatus.Unknown;
+  }
+
+  return {
+    deviceId: extended.deviceId!,
+    uniqueId: extended.uniqueId!,
+    deviceName: extended.deviceName!,
+    interfaceName: extended.interfaceName!,
+    driverName: extended.driverName!,
+    firmwareVersion: "",
+    status,
+    updateable: !!extended.updateable,
+    loading: !!extended.updateable && status !== NetworkDeviceStatus.NotConfigured,
+    selected: status === NetworkDeviceStatus.NotConfigured,
+  };
+};
+
+/**
+ * Returns whether given device is updateable, or not.
+ */
+export const isNetworkDeviceUpdateable = (device: INetworkDevice) => device.updateable;
+/**
+ * Returns whether given device need firmware version to be loaded.
+ */
+export const isNetworkDeviceNeedFirmwareVersion = (device: INetworkDevice) => device.updateable && device.uniqueId === 0;
+/**
+ * Returns whether firmware version is being loaded for the given device
+ */
+export const isNetworkDeviceLoading = (device: INetworkDevice) => device.loading;
+/**
+ * Returns whether firmware version was failed to load for the given device
+ */
+export const isNetworkDeviceError = (device: INetworkDevice) => device.status === NetworkDeviceStatus.Error;
+/**
+ * Returns whether given device can be selected to update
+ */
+export const isNetworkDeviceSelectable = (device: INetworkDevice) =>
+  !device.loading && device.status === NetworkDeviceStatus.Updateable;
+/**
+ * Returns whether given device is selected to update
+ */
+export const isNetworkDeviceSelected = (device: INetworkDevice) => device.selected;

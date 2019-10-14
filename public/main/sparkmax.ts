@@ -243,18 +243,26 @@ onOneWayCall("set-setpoint", (newSetpoint: number) => {
   setpoint = newSetpoint;
 });
 
-ipcMain.on("load-firmware", (event: any, filename: string) => {
+onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) => {
   if (!fs.existsSync(filename)) {
-    event.sender.send("load-firmware-response", "Error loading firmware. Firmware file was not found on the file system.", undefined);
+    cb("Error loading firmware. Firmware file was not found on the file system.");
   } else {
     if (firmwareID === null) {
       firmwareID = global.setInterval(() => {
         server.firmware({}, (error: any, response: any) => {
+          if (error) {
+            notifyCallback(getTargetWindow(), "load-firmware-progress", error);
+            cb(error);
+            global.clearInterval(firmwareID);
+            firmwareID = null;
+            return;
+          }
+
           if (response.isUpdating && !response.updateComplete) {
-            event.sender.send("load-firmware-response", error, response);
+            notifyCallback(getTargetWindow(), "load-firmware-progress", error, response);
           } else {
             setTimeout(() => {
-              event.sender.send("load-firmware-finish", error, response);
+              cb(null, response);
             }, 3000);
             global.clearInterval(firmwareID);
             firmwareID = null;
@@ -262,19 +270,20 @@ ipcMain.on("load-firmware", (event: any, filename: string) => {
         });
       }, 50);
       console.log("Starting firmware update...");
-      server.firmware({filename}, (error: any, response: any) => {
-        if (response.updateStarted && response.updateStarted === true) {
-          console.log("Disconnecting on " + context.currentDevice);
-          context.disconnectDevice();
-          server.disconnect({device: context.currentDevice});
+      server.firmware({filename, devicesToUpdate}, (error: any, response: any) => {
+        if (error) {
+          cb(error);
+          global.clearInterval(firmwareID);
+          firmwareID = null;
+          return;
         }
-        event.sender.send("load-firmware-response", error, response);
+        notifyCallback(getTargetWindow(), "load-firmware-progress", error, response);
       });
     }
   }
 });
 
-ipcMain.on("request-firmware", (event: any) => {
+onTwoWayCall("request-firmware", (cb) => {
   const firmwareDir = path.join(appDataPath, "firmware");
   dialog.showOpenDialog(BrowserWindow.getFocusedWindow() as BrowserWindow, {
     filters: [{name: "Firmware Files (*.dfu)", extensions: ["dfu"]}],
@@ -283,14 +292,19 @@ ipcMain.on("request-firmware", (event: any) => {
     defaultPath: firmwareDir
   }, (filePaths) => {
     if (filePaths && filePaths.length > 0) {
-      event.sender.send("request-firmware-response", filePaths);
+      cb(null, filePaths);
     }
   });
 });
 
-ipcMain.on("get-firmware", (event: any) => {
-  server.firmware({}, (error: any, response: any) => {
-    event.sender.send("get-firmware-response", error, response);
+onTwoWayCall("get-firmware", (cb, device) => {
+  server.firmware({root: {device}}, (error: any, response: any) => {
+    if (error) {
+      cb(error);
+      return;
+    }
+
+    cb(null, response);
   });
 });
 
@@ -303,21 +317,27 @@ onOneWayCall("show-info", (title: any, message: any) => {
   });
 });
 
-ipcMain.on("download", (event: any, url: string) => {
+onTwoWayCall("download", (cb, url: string) => {
   const firmwareDir = path.join(appDataPath, "firmware");
   const parsedUrl = url.split("/");
   const fileName = parsedUrl[parsedUrl.length - 1];
   console.log(`Received download request from ${url}`);
   fs.mkdir(firmwareDir, {recursive: true}, (dirError: any) => {
     if (fs.existsSync(path.join(firmwareDir, fileName))) {
-      console.log("Firmware already exists. Not downloading.");
+      const msg = "Firmware already exists. Not downloading.";
+      console.log(msg);
+      cb(null, msg);
     } else {
       console.log(`Download started from ${url}`);
-      download(BrowserWindow.getFocusedWindow() as BrowserWindow, url, {directory: firmwareDir}).then((saved: DownloadItem) => {
-        console.log(`Download finished. Located in ${saved.getSavePath()}`);
-      }).catch((error: any) => {
-        console.error(error);
-      });
+      download(BrowserWindow.getFocusedWindow() as BrowserWindow, url, {directory: firmwareDir})
+        .then((saved: DownloadItem) => {
+          const msg = `Download finished. Located in ${saved.getSavePath()}`;
+          console.log(msg);
+          cb(null, msg);
+        }).catch((error: any) => {
+          console.error(error);
+          cb(error);
+        });
     }
   });
 });

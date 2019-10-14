@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-8] I">
+    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-10]">
+      <change afterPath="$PROJECT_DIR$/src/components/Console.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/containers/NetworkTab.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/managers/mock-renderer-calls.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/managers/mocked-calls.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/dto-utils.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/actions/firmware-actions.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/actions/network-actions.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/reducers/firmware-reducers.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/reducers/network-reducers.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/react-utils.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/blueprint.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/blueprint.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/electron.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/main/sparkmax.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/main/sparkmax.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/actions/action-schedule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/action-schedule.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/BasicTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/BasicTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/FirmwareTab.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/UiSupport.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/UiSupport.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/managers/SparkManager.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/managers/SparkManager.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/managers/ipc-renderer-calls.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/managers/ipc-renderer-calls.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/dto.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/dto.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/store/actions/action-types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/action-types.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/store/actions/atom-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/atom-actions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/reducer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/redux-scheduler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/redux-scheduler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/init-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/init-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/ui-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/ui-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/reducers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducers/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/reducers/ui-reducers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducers/ui-reducers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/selectors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/selectors.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/state.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/state.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/object-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/object-utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/promise-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/promise-utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/string-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/string-utils.ts" afterDir="false" />
     </list>
-    <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea">
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/usb-client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/usb-client.iml" afterDir="false" />
-    </list>
+    <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +65,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="feature/multiple-controllers" />
+        <entry key="$PROJECT_DIR$" value="feature/REVROBO-14-configurations" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />

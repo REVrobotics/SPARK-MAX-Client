@@ -12,6 +12,11 @@ import actionSchedule from "./store/actions/action-schedule";
 import {sendTwoWay} from "./managers/ipc-renderer-calls";
 import {reduxScheduler} from "./utils/redux-scheduler";
 
+if (process.env.NODE_ENV === "development") {
+  // include mocked calls in DEV mode
+  require("./managers/mocked-calls");
+}
+
 const composeEnhancers = composeWithDevTools({});
 
 const applicationStore = createStore(
