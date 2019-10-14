@@ -4,18 +4,20 @@
 
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
-import {uniqueId} from "lodash";
-import {ConfigParam} from "../models/ConfigParam";
+import {find, keyBy, sortBy, uniqueId} from "lodash";
+import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
 import {ReactNode} from "react";
+import {IRawDeviceConfigDto} from "../models/device-config.dto";
 
 /**
  * Allows to track type of current processing, like saving or resetting
  */
 export enum ProcessType {
   Save = "Save",
-  Reset = "Reset"
+  Reset = "Reset",
+  SetConfiguration = "SetConfiguration"
 }
 
 /**
@@ -144,6 +146,29 @@ export interface IFirmwareEntry {
 }
 
 /**
+ * Device configuration holds values for some devices parameters.
+ * This structure is used by persistent configuration and motor types feature.
+ */
+export interface IDeviceConfiguration {
+  id: string;
+  name: string;
+  parameters: Array<number | undefined>;
+  raw: IRawDeviceConfigDto;
+}
+
+export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
+
+/**
+ * Default device configuration is never changed and always correspond to the current device settings.
+ */
+export const DEFAULT_DEVICE_CONFIGURATION: IDeviceConfiguration = {
+  id: DEFAULT_DEVICE_CONFIGURATION_ID,
+  name: "In RAM",
+  parameters: [],
+  raw: undefined as any,
+};
+
+/**
  * Whole application state
  */
 export interface IApplicationState {
@@ -153,6 +178,7 @@ export interface IApplicationState {
   firmware: IFirmwareState;
   logs: string[],
   ui: IUiState;
+  configurations: IDeviceConfiguration[],
 }
 
 /**
@@ -224,6 +250,7 @@ export interface IUiState {
    */
   confirmation?: IConfirmationDialogConfig;
   confirmationOpened: boolean;
+  messageQueue?: IMessageQueueConfig;
 }
 
 export interface IDeviceState {
@@ -275,6 +302,7 @@ export interface IDeviceState {
  */
 export interface IDeviceTransientState {
   rampRateEnabled: boolean;
+  configurationId: string;
 }
 
 /**
@@ -316,6 +344,17 @@ export interface IConfirmationDialogConfig {
 }
 
 /**
+ * State of message queue.
+ * Message queue represents long list of messages displayed for user.
+ * It is display as soon as it has at least one message
+ */
+export interface IMessageQueueConfig {
+  title: string;
+  body: string;
+  messages: string[];
+}
+
+/**
  * Constraints used by numeric fields
  */
 export interface INumericFieldConstraints {
@@ -324,7 +363,11 @@ export interface INumericFieldConstraints {
   integral?: boolean;
 }
 
-export type IFieldConstraints = INumericFieldConstraints;
+export interface IEnumFieldConstraints {
+  values: number[];
+}
+
+export type IFieldConstraints = INumericFieldConstraints | IEnumFieldConstraints;
 
 /**
  * Values used in control loop
@@ -335,6 +378,7 @@ export enum ProfileConfigParam {
 
 export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
   rampRateEnabled: false,
+  configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
 };
 
 export enum ConfirmationAnswer {
@@ -343,6 +387,7 @@ export enum ConfirmationAnswer {
 }
 
 export enum MessageSeverity {
+  Info = "Info",
   Error = "Error",
   Warning = "Warning"
 }
@@ -351,12 +396,20 @@ export enum MessageSeverity {
  * Message encapsulates some validation result having severity and text
  */
 export class Message {
-  public static error(text: string): Message {
+  public static create(severity: MessageSeverity, text: string): Message {
     return new Message(MessageSeverity.Error, text);
   }
 
+  public static info(text: string): Message {
+    return Message.create(MessageSeverity.Info, text);
+  }
+
+  public static error(text: string): Message {
+    return Message.create(MessageSeverity.Error, text);
+  }
+
   public static warning(text: string): Message {
-    return new Message(MessageSeverity.Warning, text);
+    return Message.create(MessageSeverity.Warning, text);
   }
 
   private constructor(readonly severity: MessageSeverity, readonly text: string) {
@@ -391,6 +444,7 @@ const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => (
 export const getTransientState = (config: IDeviceParameterState[]): IDeviceTransientState => {
   const rampRateParam = config[ConfigParam.kRampRate];
   return {
+    configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
     rampRateEnabled: rampRateParam && rampRateParam.value > 0 || false,
   };
 };
@@ -574,3 +628,95 @@ export const isNetworkDeviceSelectable = (device: INetworkDevice) =>
  * Returns whether given device is selected to update
  */
 export const isNetworkDeviceSelected = (device: INetworkDevice) => device.selected;
+
+/**
+ * Returns ID for device configuration
+ */
+export const getDeviceConfigurationId = (config: IDeviceConfiguration) => config.id;
+/**
+ * Returns name of device configuration
+ */
+export const getDeviceConfigurationName = (config: IDeviceConfiguration) => config.name;
+/**
+ * Returns whether given configuration is a default one.
+ */
+export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
+  getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID;
+
+/**
+ * Returns whether configuration names are equal
+ */
+export const eqDeviceConfigurationName = (a: string, b: string) => a.toLowerCase().trim() === b.toLowerCase().trim();
+
+/**
+ * Creates new empty device configuration
+ */
+export const newDeviceConfiguration = (config: IDeviceConfiguration): IDeviceConfiguration => ({
+  ...config,
+  id: "",
+  raw: {
+    ...config.raw,
+    fileName: "",
+    filePath: "",
+  },
+});
+
+/**
+ * Finds device configuration by name
+ */
+export const findDeviceConfigurationByName = (configs: IDeviceConfiguration[],
+                                              name: string,
+                                              excludeId?: string): IDeviceConfiguration | undefined => {
+  const found = find(
+    configs,
+    (configuration) =>
+      configuration.id !== DEFAULT_DEVICE_CONFIGURATION_ID && eqDeviceConfigurationName(configuration.name, name));
+  return found && found.id !== excludeId ? found : undefined;
+};
+
+/**
+ * Converts DTO representation to device configuration
+ */
+export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceConfiguration => {
+  const dtoParamById = keyBy(dto.parameters, (param) => param.id);
+
+  return {
+    id: dto.fileName,
+    name: dto.name,
+    parameters: configParamNames.map((name) => {
+      const param = dtoParamById[name];
+      return param ? param.value : undefined;
+    }),
+    raw: dto,
+  };
+};
+
+/**
+ * Converts device configuration to DTO representation.
+ * This methods merges current device parameters into DTO and can substitute configuration name.
+ */
+export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
+                                               device: IDeviceState,
+                                               newName?: string): IRawDeviceConfigDto => {
+  const parameterValues = device.currentParameters.map(getDeviceParamValue);
+  const rawParamById = keyBy(basic.parameters, (param) => param.id);
+
+  return {
+    ...basic,
+    name: newName ? newName : basic.name,
+    parameters: parameterValues
+      .map((value, param) => {
+        const id = getConfigParamName(param);
+        const rawParam = rawParamById[id];
+        return rawParam ? { ...rawParam, value } : { id, value };
+      })
+      .filter((_, param) => param !== ConfigParam.kCanID),
+  };
+};
+
+/**
+ * Sorts device configurations
+ */
+export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
+  sortBy(configurations, (config) =>
+    getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID ? `0:${config.name}` : `1:${config.name}`);

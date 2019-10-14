@@ -10,8 +10,10 @@ import {get} from "lodash";
  * @param text
  * @param params
  */
-export const substitute = (text: string, params: {[name: string]: string}) =>
-  text.replace(/\$([a-zA-Z0-9_]+)/g, (_, name) => get(params, name, ""));
+export const substitute = (text: string, params: {[name: string]: any}) =>
+  text.replace(
+    /\$(([a-zA-Z0-9_]+)|({([a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+)}))/g,
+    (_1, _2, name, _3, path) => get(params, name || path, ""));
 
 /**
  * Compares two dot-delimited versions.

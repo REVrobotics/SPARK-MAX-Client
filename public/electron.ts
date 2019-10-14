@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { HEADLESS } from './program-args';
-import {setTargetWindow} from "./main/ipc-main-calls";
+import {setTargetWindow} from "./main/services/ipc-main-calls";
 
 let mainWindow: Electron.BrowserWindow;
 
@@ -102,8 +102,9 @@ function createWindow() {
   /* These are the two main process files associated with our program. They deal with everything with the SPARK MAX
    * Controller as well as the main application configuration.
    */
-  require("./main/sparkmax");
-  require("./main/config");
+  require("./main/services/sparkmax-service");
+  require("./main/services/config-service");
+  require("./main/services/device-config-service");
 
   /* There are plenty of events to listen for in the window's webContents property. This specific event fires when
    * the window itself is not only initialized, but it's rendered web page has finished loading. This provides a smooth

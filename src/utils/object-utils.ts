@@ -3,11 +3,14 @@ import {constant, findIndex, isFunction, omit} from "lodash";
 /**
  * Immutable setter of object field.
  */
-export function setField<T, K extends keyof T>(entity: T, field: K, value: T[K]): T {
-  if (entity[field] === value) {
+export function setField<T, K extends keyof T>(entity: T, field: K, value: T[K] | ((value: T[K]) => T[K])): T {
+  const valueFn = isFunction(value) ? value : constant(value);
+  const newValue = valueFn(entity[field]);
+
+  if (entity[field] === newValue) {
     return entity;
   } else {
-    return {...entity, [field]: value };
+    return {...entity, [field]: newValue };
   }
 }
 
@@ -16,6 +19,13 @@ export function setField<T, K extends keyof T>(entity: T, field: K, value: T[K])
  */
 export function setFields<T>(entity: T, values: Partial<{[P in keyof T]: T[P]}>): T {
   return Object.keys(values).reduce((lastEntity, key) => setField(lastEntity, key as keyof T, values[key]), entity);
+}
+
+export function setNestedField<T>(entity: T, path: any[], value: any): T {
+  return setField(
+    entity,
+    path[0],
+    path.length > 1 ? setNestedField(entity[path[0]], path.slice(1), value) : value);
 }
 
 /**
@@ -78,4 +88,11 @@ export function setArrayElementWith<T>(array: T[],
                                        value: T | ((value: T) => T)): T[] {
   const index = findIndex(array, predicate);
   return setArrayElement(array, index, value);
+}
+
+/**
+ * Returns `value` if it is not `null` or `undefined`, otherwise returns `otherwise`.
+ */
+export function coalesce<T, O extends T>(value: T | null | undefined, otherwise: O): T {
+  return value == null ? otherwise : value;
 }

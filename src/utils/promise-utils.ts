@@ -81,7 +81,7 @@ export function logError<T>(reason: any): Promise<T> {
 /**
  * Process array element in order. Processing is determined by the given `promiseFactory`.
  */
-export function concatMapPromises<T, R>(values: T[], promiseFactory: (value: T) => Promise<R>): Promise<R[]> {
+export function concatMapPromises<T, R>(values: T[], promiseFactory: (value: T, index: number) => Promise<R>): Promise<R[]> {
   let currentValueIndex = 0;
   const results: R[] = [];
   const dfd = deferred<R[]>();
@@ -90,7 +90,7 @@ export function concatMapPromises<T, R>(values: T[], promiseFactory: (value: T) 
     if (currentValueIndex === values.length) {
       dfd.resolve(results);
     } else {
-      promiseFactory(values[currentValueIndex])
+      promiseFactory(values[currentValueIndex], currentValueIndex)
         .then((result) => {
           results.push(result);
           next();

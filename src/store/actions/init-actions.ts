@@ -1,18 +1,38 @@
 import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import {setConnectedDevice, setSelectedTab, updateDeviceProcessStatus} from "./atom-actions";
+import {initMessageQueue, setConnectedDevice, setSelectedTab, updateDeviceProcessStatus} from "./atom-actions";
 import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
 import {queryDeviceByDeviceId, queryFirstVirtualDeviceId} from "../selectors";
 import {ConfirmationAnswer, getVirtualDeviceId, TabId, toDeviceId} from "../state";
 import {downloadLatestFirmware} from "./firmware-actions";
 import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./network-actions";
-import {showConfirmation} from "./ui-actions";
+import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
+import {loadConfigurations} from "./configuration-actions";
+
+/**
+ * Loads necessary application data.
+ */
+function loadApplicationData(): SparkAction<Promise<any>> {
+  return (dispatch) => {
+    // Initialize message queue.
+    // Anyway message queue is displayed ONLY when it has some messages associated
+    dispatch(initMessageQueue({
+      title: "Problems During Startup",
+      body: "During application startup some application settings were invalid.",
+      messages: [],
+    }));
+
+    return dispatch(loadConfigurations())
+      .then(() => dispatch(whenMessageQueueClosed()))
+      .then(() => dispatch(findUsbDevices()));
+  }
+}
 
 export function initApplication(): SparkAction<void> {
   return (dispatch, getState) => {
     dispatch(downloadLatestFirmware());
-    dispatch(findUsbDevices())
+    dispatch(loadApplicationData())
       .then(() => {
         const virtualDeviceId = queryFirstVirtualDeviceId(getState());
         if (virtualDeviceId == null) {

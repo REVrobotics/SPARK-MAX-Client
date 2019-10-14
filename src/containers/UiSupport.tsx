@@ -1,18 +1,36 @@
 import * as React from "react";
-import {ConfirmationAnswer, IAlertDialogConfig, IApplicationState, IConfirmationDialogConfig} from "../store/state";
+import {
+  ConfirmationAnswer,
+  IAlertDialogConfig,
+  IApplicationState,
+  IConfirmationDialogConfig,
+  IMessageQueueConfig
+} from "../store/state";
 import {connect} from "react-redux";
-import {answerConfirmation, closeAlert, closeConfirmation, setToasterRef, SparkDispatch} from "../store/actions";
+import {
+  answerConfirmation,
+  closeAlert,
+  closeConfirmation,
+  closeMessageQueue,
+  setToasterRef,
+  SparkDispatch
+} from "../store/actions";
 import {Alert, Toaster} from "@blueprintjs/core";
+import {queryIsMessageQueueOpened, queryMessageQueueConfig} from "../store/selectors";
+import MessageQueueDialog from "../components/MessageQueueDialog";
 
 interface IProps {
   alert?: IAlertDialogConfig;
   alertOpened: boolean;
   confirmation?: IConfirmationDialogConfig;
   confirmationOpened: boolean;
+  messageQueue?: IMessageQueueConfig;
+  messageQueueOpened: boolean;
   alertClose(): void;
   confirmationYes(): void;
   confirmationCancel(): void;
   confirmationClose(): void;
+  messageQueueClose(): void;
 }
 
 class UiSupport extends React.Component<IProps> {
@@ -20,6 +38,7 @@ class UiSupport extends React.Component<IProps> {
     const {
       alert, alertOpened, alertClose,
       confirmation, confirmationOpened, confirmationYes, confirmationCancel, confirmationClose,
+      messageQueueOpened, messageQueue, messageQueueClose,
     } = this.props;
 
     let alertDialog = null;
@@ -52,11 +71,17 @@ class UiSupport extends React.Component<IProps> {
       );
     }
 
+    let messageQueueDialog = null;
+    if (messageQueueOpened && messageQueue) {
+      messageQueueDialog = <MessageQueueDialog config={messageQueue} onClose={messageQueueClose}/>;
+    }
+
     return (
       <>
         <Toaster ref={setToasterRef}/>
         { confirmationOpened ? confirmationDialog : null}
         { alertOpened ? alertDialog : null }
+        { messageQueueOpened ? messageQueueDialog : null}
       </>
     );
   }
@@ -65,8 +90,12 @@ class UiSupport extends React.Component<IProps> {
 function mapStateToProps(state: IApplicationState) {
   const { ui: {alert, alertOpened, confirmationOpened, confirmation} } = state;
   return {
-    alert, alertOpened,
-    confirmation, confirmationOpened,
+    alert,
+    alertOpened,
+    confirmation,
+    confirmationOpened,
+    messageQueueOpened: queryIsMessageQueueOpened(state),
+    messageQueue: queryMessageQueueConfig(state),
   }
 }
 
@@ -76,6 +105,7 @@ function mapDispatchToProps(dispatch: SparkDispatch) {
     confirmationYes: () => dispatch(answerConfirmation(ConfirmationAnswer.Yes)),
     confirmationCancel: () => dispatch(answerConfirmation(ConfirmationAnswer.Cancel)),
     confirmationClose: () => dispatch(closeConfirmation()),
+    messageQueueClose: () => dispatch(closeMessageQueue()),
   }
 }
 

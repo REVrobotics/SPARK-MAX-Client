@@ -1,22 +1,26 @@
+/**
+ * Facade for sparkmax-server communications
+ */
+
 import {ChildProcess, execFile} from "child_process";
-import {app, BrowserWindow, dialog, DownloadItem, ipcMain} from "electron";
+import {BrowserWindow, dialog, DownloadItem, ipcMain} from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import * as util from "util";
 
-import SparkServer from "./sparkmax-server";
-import {HOST, PORT, USE_GRPC} from "../program-args";
-import {ListRequestDto} from "../proto-gen";
+import SparkServer from "../server/sparkmax-server";
+import {HOST, PORT, USE_GRPC} from "../../program-args";
+import {ListRequestDto} from "../../proto-gen";
 import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall} from "./ipc-main-calls";
-import {SparkmaxContext} from "./context/SparkmaxContext";
-import {timerResourceFactory} from "./context/TimerResource";
-import {ConfigParam} from "../proto-gen/SPARK-MAX-Types_dto_pb";
+import {SparkmaxContext} from "../server/SparkmaxContext";
+import {timerResourceFactory} from "../server/TimerResource";
+import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
+import {getAppDataPath} from "../config";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
 const opn = require("opn");
 
-const appDataPath = app.getPath("appData") + path.sep + "REV SPARK MAX Client";
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
 
@@ -284,7 +288,7 @@ onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) 
 });
 
 onTwoWayCall("request-firmware", (cb) => {
-  const firmwareDir = path.join(appDataPath, "firmware");
+  const firmwareDir = getAppDataPath("firmware");
   dialog.showOpenDialog(BrowserWindow.getFocusedWindow() as BrowserWindow, {
     filters: [{name: "Firmware Files (*.dfu)", extensions: ["dfu"]}],
     properties: ["openFile"],
@@ -318,7 +322,7 @@ onOneWayCall("show-info", (title: any, message: any) => {
 });
 
 onTwoWayCall("download", (cb, url: string) => {
-  const firmwareDir = path.join(appDataPath, "firmware");
+  const firmwareDir = getAppDataPath("firmware");
   const parsedUrl = url.split("/");
   const fileName = parsedUrl[parsedUrl.length - 1];
   console.log(`Received download request from ${url}`);

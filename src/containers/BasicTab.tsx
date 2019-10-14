@@ -1,6 +1,7 @@
 import {Button, FormGroup, Switch} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
+import classNames from "classnames";
 import {IApplicationState, IDeviceTransientState, ProcessType} from "../store/state";
 import {ConfigParam} from "../models/ConfigParam";
 import {
@@ -9,7 +10,6 @@ import {
   setSelectedDeviceTransientParameter,
   SparkDispatch
 } from "../store/actions";
-import {ConfigurationSelect} from "../components/ConfigurationSelect";
 import {
   queryIsFirmwareLoading,
   queryIsSelectedDeviceBlocked,
@@ -27,6 +27,7 @@ import SelectParamField from "../components/fields/SelectParamField";
 import {withDirty} from "../hocs/with-dirty";
 import SwitchParamField from "../components/fields/SwitchParamField";
 import SliderParamField from "../components/fields/SliderParamField";
+import ConfigurationSelect from "./ConfigurationSelect";
 
 interface IBasicFormGroupProps extends IConfigParamProps {
   groupClassName?: string;
@@ -77,7 +78,7 @@ const BasicNumericFieldGroup = bindRamConfigRule((props: IBasicNumericFieldGroup
 
   return (
     <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
-      <NumericParamField {...otherProps} className={fieldClassName}/>
+      <NumericParamField {...otherProps} className={classNames("numeric-form-field", fieldClassName)}/>
     </DirtyValidationFormGroup>
   );
 });
@@ -87,7 +88,7 @@ const BasicSelectFieldGroup = bindRamConfigRule((props: IBasicSelectFieldGroupPr
 
   return (
     <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
-      <SelectParamField {...otherProps} placeholder={placeholder} className={fieldClassName}/>
+      <SelectParamField {...otherProps} placeholder={placeholder} className={classNames("select-form-field", fieldClassName)}/>
     </DirtyValidationFormGroup>
   );
 });

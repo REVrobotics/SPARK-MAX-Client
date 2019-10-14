@@ -1,7 +1,7 @@
 import {Reducer} from "redux";
 import {IUiState, TabId} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {setField} from "../../utils/object-utils";
+import {setField, removeField} from "../../utils/object-utils";
 
 const initialUiState: IUiState = {
   selectedTabId: TabId.Basic,
@@ -21,6 +21,24 @@ const uiReducer: Reducer<IUiState> = (state: IUiState = initialUiState, action: 
       return {...state, confirmationOpened: false};
     case ActionType.SET_SELECTED_TAB:
       return setField(state, "selectedTabId", action.payload.tab);
+    case ActionType.INIT_MESSAGE_QUEUE:
+      return {...state, messageQueue: action.payload};
+    case ActionType.RESET_MESSAGE_QUEUE:
+      return removeField(state, "messageQueue");
+    case ActionType.ADD_TO_MESSAGE_QUEUE:
+      if (state.messageQueue == null) {
+        throw new Error("Message queue is not initialized");
+      }
+      if (action.payload.messages.length === 0) {
+        return state;
+      }
+      return {
+        ...state,
+        messageQueue: {
+          ...state.messageQueue,
+          messages: state.messageQueue.messages.concat(action.payload.messages),
+        },
+      };
     default:
       return state;
   }

@@ -1,19 +1,21 @@
 import {NumericInput} from "@blueprintjs/core";
 import * as React from "react";
 import {useCallback} from "react";
-import {INumericFieldConstraints, MessageSeverity} from "../../store/state";
+import {IFieldConstraints, INumericFieldConstraints, MessageSeverity} from "../../store/state";
 import {getParameterId, IConfigParamProps} from "../config-param-props";
 
 interface IProps extends IConfigParamProps {
   className?: string;
-  constraints?: INumericFieldConstraints;
+  constraints?: IFieldConstraints;
 }
 
 const NumericParamField = ({className, parameter, constraints, disabled, value, message, onValueChange}: IProps) => {
   const onChange = useCallback((newValue) => onValueChange(parameter, newValue), []);
 
-  const min = constraints ? constraints.min : Number.MIN_SAFE_INTEGER;
-  const max = constraints ? constraints.max : Number.MAX_SAFE_INTEGER;
+  const typedConstraints = constraints as INumericFieldConstraints;
+
+  const min = typedConstraints ? typedConstraints.min : Number.MIN_SAFE_INTEGER;
+  const max = typedConstraints ? typedConstraints.max : Number.MAX_SAFE_INTEGER;
 
   return (
     <NumericInput

@@ -79,7 +79,7 @@ class HelpTab extends React.Component<IProps, IState> {
           <div className="bp3-dialog-header">
             <h4 className="bp3-heading">Application Logs</h4>
           </div>
-          <div className="bp3-dialog-body">
+          <div className="bp3-dialog-body log-container">
             {this.props.logs.length === 0 && <span><i>There are currently no application logs.</i></span>}
             {this.props.logs.map((log, index) => {
               return <p key={index}>{log}</p>

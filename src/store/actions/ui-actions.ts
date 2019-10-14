@@ -5,23 +5,39 @@ import {
 import {deferred, IDeferred} from "../../utils/promise-utils";
 import {ConfirmationAnswer, IAlertDialogConfig, IConfirmationDialogConfig} from "../state";
 import {Intent, Toaster} from "@blueprintjs/core";
+import {resetMessageQueue} from "./atom-actions";
+import {queryIsMessageQueueOpened} from "../selectors";
 
 let currentConfirmation: IDeferred<ConfirmationAnswer> | undefined;
 let currentAlert: IDeferred<void> | undefined;
 let toaster: Toaster;
+let waitForMessageQueue: IDeferred<any> | undefined;
+
 
 export const setToasterRef = (t: Toaster) => {
   toaster = t;
 };
 
+/**
+ * Shows toast message on the top of a screen.
+ */
 export const showToast = (intent: Intent, text: string) =>
   toaster.show({
     intent,
     message: text,
   });
 
+/**
+ * Shows success message on the top of a screen
+ */
 export const showToastSuccess = (text: string) => showToast(Intent.SUCCESS, text);
+/**
+ * Shows error message on the top of a screen
+ */
 export const showToastError = (text: string) => showToast(Intent.DANGER, text);
+/**
+ * Shows warning message on the top of a screen
+ */
 export const showToastWarning = (text: string) => showToast(Intent.WARNING, text);
 
 /**
@@ -117,3 +133,29 @@ export const closeConfirmation = (): SparkAction<void> =>
     currentConfirmation.reject();
     currentConfirmation = undefined;
   };
+
+/**
+ * This action returns {@link Promise} resolved as soon as user closes message queue.
+ * This action allows to implement flow when developer needs to wait until message queue is closed.
+ */
+export const whenMessageQueueClosed = (): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    if (queryIsMessageQueueOpened(getState())) {
+      if (waitForMessageQueue == null) {
+        waitForMessageQueue = deferred();
+      }
+      return waitForMessageQueue.promise;
+    } else {
+      return Promise.resolve();
+    }
+  };
+
+export const closeMessageQueue = (): SparkAction<void> => (dispatch, getState) => {
+  if (queryIsMessageQueueOpened(getState())) {
+    dispatch(resetMessageQueue());
+    if (waitForMessageQueue) {
+      waitForMessageQueue.resolve(undefined);
+      waitForMessageQueue = undefined;
+    }
+  }
+};
