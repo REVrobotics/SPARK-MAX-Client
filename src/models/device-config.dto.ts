@@ -1,3 +1,4 @@
+
 export interface IRawDeviceConfigParamDto {
   id: string;
   name?: string;

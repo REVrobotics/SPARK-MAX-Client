@@ -1,6 +1,9 @@
 import {sendTwoWay} from "./ipc-renderer-calls";
-import {IRawDeviceConfigDto} from "../models/device-config";
+import {IRawDeviceConfigDto} from "../models/device-config.dto";
 
+/**
+ * Facade used to manage device configurations.
+ */
 class DeviceConfigManager {
   public static getInstance(): DeviceConfigManager {
     if (typeof DeviceConfigManager._instance === "undefined") {
@@ -19,8 +22,8 @@ class DeviceConfigManager {
     return sendTwoWay("device-config:create", raw);
   }
 
-  public save(raw: IRawDeviceConfigDto): Promise<IRawDeviceConfigDto> {
-    return sendTwoWay("device-config:save", raw);
+  public overwrite(raw: IRawDeviceConfigDto): Promise<IRawDeviceConfigDto> {
+    return sendTwoWay("device-config:overwrite", raw);
   }
 
   public remove(fileName: string): Promise<void> {

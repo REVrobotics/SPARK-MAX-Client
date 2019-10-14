@@ -40,12 +40,14 @@ export const deviceConfigurationReducer = (state: IApplicationState, action: App
         return state;
       }
 
+      // If new configuration is added, new configuration is selected for the current device
       return setNestedField(
         state,
         ["deviceSet", "devices", deviceId, "transientParameters", "configurationId"],
         getDeviceConfigurationId(action.payload.configuration));
     }
     case ActionType.REMOVE_CONFIGURATION:
+      // If configuration is removed, we have to unselect this configuration for all devices
       return setNestedField(
         state,
         ["deviceSet", "devices"],

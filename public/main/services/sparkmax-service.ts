@@ -1,3 +1,7 @@
+/**
+ * Facade for sparkmax-server communications
+ */
+
 import {ChildProcess, execFile} from "child_process";
 import {BrowserWindow, dialog, DownloadItem, ipcMain} from "electron";
 import * as fs from "fs";

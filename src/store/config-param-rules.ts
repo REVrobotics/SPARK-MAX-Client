@@ -59,6 +59,7 @@ const OVERRIDDEN_RULES = [
     options: MOTOR_TYPES.seq(),
     values: enumValues(MotorType),
     restore: (ctx) => {
+      // We have to guarantee that if kSensorType is not HallSensor, then kMotorType=Brushed
       const motorType = ctx.getParameter(ConfigParam.kMotorType);
       const sensorType = ctx.getParameter(ConfigParam.kSensorType);
       return sensorType === SensorType.HallSensor ? motorType : MotorType.Brushed;
@@ -70,6 +71,7 @@ const OVERRIDDEN_RULES = [
     values: enumValues(SensorType),
     isDisabled: (ctx) => ctx.getParameter(ConfigParam.kMotorType) === MotorType.Brushless,
     restore: (ctx) => {
+      // We have to guarantee that if kMotorType=Brushelss, then kSensorType=HallSensor
       const sensorType = ctx.getParameter(ConfigParam.kSensorType);
       const motorType = ctx.getParameter(ConfigParam.kMotorType);
       return motorType === MotorType.Brushless ? SensorType.HallSensor : sensorType;

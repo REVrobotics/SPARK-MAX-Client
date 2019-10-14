@@ -20,30 +20,67 @@ interface IProps<T> {
   selected: T;
   items: T[];
   disabled?: boolean;
+  /**
+   * If `isDirty` flag is set, then asterisk (`*`) is displayed on the right of a label in select.
+   */
   isDirty?: boolean;
+  /**
+   * If `appliable` flag is set, then selected action has *apply* action.
+   */
   appliable?: boolean;
+  /**
+   * If `modifiable` flag is set, then selected action has *Overwrite*, *Rename* and *Remove* actions.
+   */
   modifiable?: boolean;
 
+  /**
+   * Returns unique id for given item
+   */
   getKey: (item: T) => string;
+  /**
+   * Returns text for given item
+   */
   getText: (item: T) => string;
 
+  /**
+   * Runs when user selects *rename* action.
+   * @param item
+   */
   onRename(item: T): void;
 
+  /**
+   * Fires when user selects value in dropdown
+   */
   onSelect(item: T): void;
 
-  onSave(item: T): void;
+  /**
+   * Runs when user selects *overwrite* action
+   */
+  onOverwrite(item: T): void;
 
-  onSaveAs(item: T): void;
+  /**
+   * Runs when user selects *create* action.
+   */
+  onCreate(item: T): void;
 
+  /**
+   * Runs when user selects *remove* action.
+   */
   onRemove(item: T): void;
 
+  /**
+   * Runs when user selects *apply* action.
+   */
   onApply(item: T): void;
 }
 
+/**
+ * Dropdown of persisted values. Selected value has set of actions.
+ */
 function PersistentSelect<T>(props: IProps<T>) {
   const {
     selected, appliable, modifiable, isDirty, getKey, getText, items, disabled,
-    onRename, onSave, onSaveAs, onRemove, onApply, onSelect,
+    onRename, onOverwrite, onCreate, onRemove, onApply, onSelect,
   } = props;
 
   const canApply = coalesce(appliable, true);
@@ -51,32 +88,36 @@ function PersistentSelect<T>(props: IProps<T>) {
 
   const itemRenderer = useCallback(createItemRenderer(getKey, getText), [getKey, getText]);
   const rename = useCallback(() => onRename(selected), [selected]);
-  const save = useCallback(() => onSave(selected), [selected]);
-  const saveAs = useCallback(() => onSaveAs(selected), [selected]);
+  const overwrite = useCallback(() => onOverwrite(selected), [selected]);
+  const create = useCallback(() => onCreate(selected), [selected]);
   const remove = useCallback(() => onRemove(selected), [selected]);
   const apply = useCallback(() => onApply(selected), [selected]);
 
   let mainAction: ReactNode;
   let menuActions: ReactNode;
 
+  // If "apply" action is available it is always a default action
   if (canApply) {
     mainAction = <Button className="persistent-select__main-btn"
                          text="Apply"
                          onClick={apply}
                          disabled={disabled || !isDirty}/>;
   } else if (canModify) {
-    mainAction = <Button className="persistent-select__main-btn" text="Save" onClick={save} disabled={disabled}/>;
+    // If "apply" action is not available and value is modifiable then default action is "overwrite"
+    mainAction = <Button className="persistent-select__main-btn" text="Overwrite" onClick={overwrite} disabled={disabled}/>;
   } else {
-    mainAction = <Button className="persistent-select__main-btn" text="Save As..." onClick={saveAs} disabled={disabled}/>;
+    // If value is neither appliable nor modifiable, then default action is "create"
+    mainAction = <Button className="persistent-select__main-btn" text="Create..." onClick={create} disabled={disabled}/>;
   }
 
+  // Construction available menu actions for selected value
   if (canApply && canModify) {
     menuActions = (
       <Popover minimal={true} position={PopoverPosition.BOTTOM_RIGHT}>
         <Button icon="chevron-down" disabled={disabled}/>
         <Menu className="persistent-select__menu">
-          <MenuItem text="Save" onClick={save}/>
-          <MenuItem text="Save As..." onClick={saveAs}/>
+          <MenuItem text="Overwrite" onClick={overwrite}/>
+          <MenuItem text="Create..." onClick={create}/>
           <MenuItem text="Rename..." onClick={rename}/>
           <MenuItem text="Remove" onClick={remove}/>
         </Menu>
@@ -87,7 +128,7 @@ function PersistentSelect<T>(props: IProps<T>) {
       <Popover minimal={true} position={PopoverPosition.BOTTOM_RIGHT}>
         <Button icon="chevron-down" disabled={disabled}/>
         <Menu className="persistent-select__menu">
-          <MenuItem text="Save As..." onClick={saveAs}/>
+          <MenuItem text="Create..." onClick={create}/>
         </Menu>
       </Popover>
     );

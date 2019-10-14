@@ -9,7 +9,7 @@ import {ConfigParam, configParamNames, getConfigParamName} from "../models/Confi
 import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
 import {ReactNode} from "react";
-import {IRawDeviceConfigDto} from "../models/device-config";
+import {IRawDeviceConfigDto} from "../models/device-config.dto";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -158,6 +158,9 @@ export interface IDeviceConfiguration {
 
 export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
 
+/**
+ * Default device configuration is never changed and always correspond to the current device settings.
+ */
 export const DEFAULT_DEVICE_CONFIGURATION: IDeviceConfiguration = {
   id: DEFAULT_DEVICE_CONFIGURATION_ID,
   name: "In RAM",
@@ -626,13 +629,28 @@ export const isNetworkDeviceSelectable = (device: INetworkDevice) =>
  */
 export const isNetworkDeviceSelected = (device: INetworkDevice) => device.selected;
 
+/**
+ * Returns ID for device configuration
+ */
 export const getDeviceConfigurationId = (config: IDeviceConfiguration) => config.id;
+/**
+ * Returns name of device configuration
+ */
 export const getDeviceConfigurationName = (config: IDeviceConfiguration) => config.name;
+/**
+ * Returns whether given configuration is a default one.
+ */
 export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
   getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID;
 
+/**
+ * Returns whether configuration names are equal
+ */
 export const eqDeviceConfigurationName = (a: string, b: string) => a.toLowerCase().trim() === b.toLowerCase().trim();
 
+/**
+ * Creates new empty device configuration
+ */
 export const newDeviceConfiguration = (config: IDeviceConfiguration): IDeviceConfiguration => ({
   ...config,
   id: "",
@@ -643,6 +661,9 @@ export const newDeviceConfiguration = (config: IDeviceConfiguration): IDeviceCon
   },
 });
 
+/**
+ * Finds device configuration by name
+ */
 export const findDeviceConfigurationByName = (configs: IDeviceConfiguration[],
                                               name: string,
                                               excludeId?: string): IDeviceConfiguration | undefined => {
@@ -653,6 +674,9 @@ export const findDeviceConfigurationByName = (configs: IDeviceConfiguration[],
   return found && found.id !== excludeId ? found : undefined;
 };
 
+/**
+ * Converts DTO representation to device configuration
+ */
 export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceConfiguration => {
   const dtoParamById = keyBy(dto.parameters, (param) => param.id);
 
@@ -667,6 +691,10 @@ export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceCon
   };
 };
 
+/**
+ * Converts device configuration to DTO representation.
+ * This methods merges current device parameters into DTO and can substitute configuration name.
+ */
 export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
                                                device: IDeviceState,
                                                newName?: string): IRawDeviceConfigDto => {
@@ -686,6 +714,9 @@ export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
   };
 };
 
+/**
+ * Sorts device configurations
+ */
 export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
   sortBy(configurations, (config) =>
     getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID ? `0:${config.name}` : `1:${config.name}`);

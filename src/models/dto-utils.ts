@@ -37,5 +37,11 @@ export const getErrorText = (response?: ResponseWithError): string => {
 
 const isDigitOnlyKey = (key: string) => /^\d+$/.test(key);
 
+/**
+ * Returns values of the provided number-based enum
+ */
 export const enumValues = (enumDef: any) => Object.keys(enumDef).filter(isDigitOnlyKey).map(Number);
+/**
+ * Returns names of the provided number-based enum
+ */
 export const enumNames = (enumDef: any) => Object.keys(enumDef).filter(negate(isDigitOnlyKey));

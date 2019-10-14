@@ -1,3 +1,7 @@
+/**
+ * This module declares validations shown on application startup in the message queue.
+ */
+
 import {flatMap} from "lodash";
 import {Message} from "./state";
 import {DeviceConfigValidationResult} from "./device-config/device-config-validator";

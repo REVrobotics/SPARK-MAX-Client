@@ -16,8 +16,8 @@ import {
   applyConfigurationForSelectedDevice,
   destroyConfiguration,
   renameConfiguration,
-  saveConfiguration,
-  saveConfigurationAs,
+  overwriteConfiguration,
+  createConfiguration,
   selectConfigurationForSelectedDevice
 } from "../store/actions/configuration-actions";
 import {queryConfigurations, queryIsSelectedConfigurationDirty, querySelectedConfiguration} from "../store/selectors";
@@ -35,9 +35,9 @@ interface IProps extends IOwnProps {
 
   onRename(item: IDeviceConfiguration, newName: string): void;
 
-  onSave(item: IDeviceConfiguration): void;
+  onOverwrite(item: IDeviceConfiguration): void;
 
-  onSaveAs(item: IDeviceConfiguration, name: string): void;
+  onCreate(item: IDeviceConfiguration, name: string): void;
 
   onRemove(item: IDeviceConfiguration): void;
 
@@ -47,7 +47,7 @@ interface IProps extends IOwnProps {
 const ConfigurationSelect = (props: IProps) => {
   const {
     selected, isDirty, configurations, disabled,
-    onSelect, onRename, onSave, onSaveAs, onRemove, onApply,
+    onSelect, onRename, onOverwrite, onCreate, onRemove, onApply,
   } = props;
 
   const isModifiable = selected ? !isDefaultDeviceConfiguration(selected) : false;
@@ -57,20 +57,26 @@ const ConfigurationSelect = (props: IProps) => {
     onRename(selected, newName);
   }, [selected]);
 
-  const [saveAsOpened, setSaveAsOpened] = useState(false);
-  const openSaveAsDialog = useCallback(() => setSaveAsOpened(true), []);
-  const closeSaveAsDialog = useCallback(() => setSaveAsOpened(false), []);
-  const saveAs = useCallback((name) => {
-    setSaveAsOpened(false);
-    onSaveAs(selected, name);
+  // Logic for create action:
+  // - show input dialog to enter name
+  // - validation to check that name is unique
+  const [createOpened, setCreateOpened] = useState(false);
+  const openCreateDialog = useCallback(() => setCreateOpened(true), []);
+  const closeCreateDialog = useCallback(() => setCreateOpened(false), []);
+  const create = useCallback((name) => {
+    setCreateOpened(false);
+    onCreate(selected, name);
   }, [selected]);
-  const validateNameForSaveAs = useCallback((name) => {
+  const validateNameForCreate = useCallback((name) => {
     if (findDeviceConfigurationByName(configurations, name)) {
       return "Name is not unique";
     }
     return;
   }, [configurations]);
 
+  // Logic for rename action:
+  // - show input dialog to enter new name
+  // - validation to check that name is unique
   const [renameOpened, setRenameOpened] = useState(false);
   const openRenameDialog = useCallback(() => setRenameOpened(true), []);
   const closeRenameDialog = useCallback(() => setRenameOpened(false), []);
@@ -83,17 +89,17 @@ const ConfigurationSelect = (props: IProps) => {
 
   const selectedName = getDeviceConfigurationName(selected);
 
-  let saveAsDialog: ReactNode | undefined;
-  if (saveAsOpened) {
-    saveAsDialog = <InputDialog title={`Create New Configuration`}
+  let createDialog: ReactNode | undefined;
+  if (createOpened) {
+    createDialog = <InputDialog title={`Create New Configuration`}
                                 message={"Enter Name"}
                                 input={selectedName}
-                                validate={validateNameForSaveAs}
+                                validate={validateNameForCreate}
                                 okLabel="Create"
                                 cancelLabel="Cancel"
-                                isOpened={saveAsOpened}
-                                onOk={saveAs}
-                                onCancel={closeSaveAsDialog}/>;
+                                isOpened={createOpened}
+                                onOk={create}
+                                onCancel={closeCreateDialog}/>;
   }
 
   let renameDialog: ReactNode | undefined;
@@ -111,7 +117,7 @@ const ConfigurationSelect = (props: IProps) => {
 
   return (
     <>
-      {saveAsDialog}
+      {createDialog}
       {renameDialog}
       <PersistentSelect selected={selected}
                         isDirty={isDirty}
@@ -123,8 +129,8 @@ const ConfigurationSelect = (props: IProps) => {
                         getText={getDeviceConfigurationName}
                         onRename={openRenameDialog}
                         onSelect={onSelect}
-                        onSave={onSave}
-                        onSaveAs={openSaveAsDialog}
+                        onOverwrite={onOverwrite}
+                        onCreate={openCreateDialog}
                         onRemove={onRemove}
                         onApply={onApply}/>
     </>
@@ -143,8 +149,8 @@ function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     onSelect: (item: IDeviceConfiguration) => dispatch(selectConfigurationForSelectedDevice(item)),
     onRename: (item: IDeviceConfiguration, newName: string) => dispatch(renameConfiguration(item, newName)),
-    onSave: (item: IDeviceConfiguration) => dispatch(saveConfiguration(item)),
-    onSaveAs: (item: IDeviceConfiguration, name: string) => dispatch(saveConfigurationAs(item, name)),
+    onOverwrite: (item: IDeviceConfiguration) => dispatch(overwriteConfiguration(item)),
+    onCreate: (item: IDeviceConfiguration, name: string) => dispatch(createConfiguration(item, name)),
     onRemove: (item: IDeviceConfiguration) => dispatch(destroyConfiguration(item)),
     onApply: (item: IDeviceConfiguration) => dispatch(applyConfigurationForSelectedDevice(item)),
   };

@@ -4,14 +4,29 @@ import {enumNames, enumValues} from "./dto-utils";
 
 export {ConfigParam} from './proto-gen/SPARK-MAX-Types_dto_pb';
 
+/**
+ * Set of ConfigParam values
+ */
 export const configParamValues = enumValues(ConfigParam);
+/**
+ * Set of ConfigParam names
+ */
 export const configParamNames = enumNames(ConfigParam);
 
+/**
+ * Returns type ({@link ParamType}) of the given parameter.
+ */
 export const getConfigParamType = (param: string): ParamType => ConfigParamTypes[`${param}_t`];
+/**
+ * Returns value ({@link ConfigParam}) of the given parameter.
+ */
 export const getConfigParamValue = (name: string): ConfigParam => ConfigParam[name];
+/**
+ * Returns name of the given parameter
+ */
 export const getConfigParamName = (param: ConfigParam): string => ConfigParam[param];
 
-// We have to track all groups of parameters which depend each other
+// Track all groups of parameters which depend each other.
 export const configParamDependencyGroups: ConfigParam[][] = [
   [ConfigParam.kMotorType, ConfigParam.kSensorType],
 ];

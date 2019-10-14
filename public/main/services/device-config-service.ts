@@ -1,8 +1,13 @@
+/**
+ * Facade for device configuration management
+ */
+
 import * as util from "util";
 import * as fs from "fs";
 import * as path from "path";
 import {deburr, omit, stubFalse, stubTrue} from "lodash";
 
+// promisified fs methods
 const fsReadFile = util.promisify(fs.readFile);
 const fsWriteFile = util.promisify(fs.writeFile);
 const fsAccess = util.promisify(fs.access);
@@ -13,16 +18,31 @@ const fsMkdir = util.promisify(fs.mkdir);
 import {onTwoWayCallPromise} from "./ipc-main-calls";
 import {getAppDataPath} from "../config";
 
+// Root path for device configurations
 const deviceConfigPath = getAppDataPath("device-configurations");
 
+/**
+ * Returns path for specific device configuration
+ * @param name
+ */
 const getDeviceConfigPath = (name: string) => path.join(deviceConfigPath, name);
 
 const getFileNameFromPath = (filePath: string) => path.basename(filePath);
 
+/**
+ * Converts device configuration to JSON representation
+ */
 const deviceConfigToJson = (config: any) => JSON.stringify(omit(config, "filePath", "fileName", "error"), null, 2);
 
+/**
+ * Normalizes name to be used as file name
+ * @param name
+ */
 const nameToFsName = (name: string) => deburr(name).toLowerCase().replace(/\s+/g, "-");
 
+/**
+ * Converts JSON representation to device configuration
+ */
 const jsonToDeviceConfig = (filePath: string, json: string) => {
   const fileName = getFileNameFromPath(filePath);
   try {
@@ -35,18 +55,26 @@ const jsonToDeviceConfig = (filePath: string, json: string) => {
   } catch (error) {
     return createDeviceConfigError(filePath, error);
   }
-
 };
 
+/**
+ * Loads all device configurations
+ */
 onTwoWayCallPromise("device-config:load", () => {
   return existsDeviceConfigDir()
     .then((exists) => exists ? readDeviceConfigs() : []);
 });
 
+/**
+ * Creates new device configuration
+ */
 onTwoWayCallPromise("device-config:create", (config) => {
+  // Ensure that root device configuration directory exists
   return ensureDeviceConfigDir()
+    // Generates unique file name in device-configurations directory
     .then(() => generateUniqueFileName(config.name))
     .then((fileName) => {
+      // Write device-configuration to file system
       const filePath = getDeviceConfigPath(fileName);
       const configWithFileName = {
         ...config,
@@ -57,24 +85,31 @@ onTwoWayCallPromise("device-config:create", (config) => {
     });
 });
 
-onTwoWayCallPromise("device-config:save", (config) => {
+// Overwrite specific device configuration
+onTwoWayCallPromise("device-config:overwrite", (config) => {
+  // Ensure that root device configuration directory exists
   return ensureDeviceConfigDir()
+    // Write device-configuration to file system
     .then(() => fsWriteFile(getDeviceConfigPath(config.fileName), deviceConfigToJson(config)))
     .then(() => config);
 });
 
+/**
+ * Remove specific device configuration
+ */
 onTwoWayCallPromise("device-config:remove", (fileName) => {
   const configPath = getDeviceConfigPath(fileName);
-  return ensureDeviceConfigDir()
-    .then(() => existsFsEntry(configPath))
-    .then((exists) => {
-      if (exists) {
-        return fsUnlink(configPath);
-      }
-      return;
-    });
+  // Check if root device configuration directory exists
+  return existsDeviceConfigDir()
+    // Check if given configuration exists
+    .then((exists) => exists ? existsFsEntry(configPath) : false)
+    // Remove device configuration
+    .then((exists) => exists ? fsUnlink(configPath) : undefined);
 });
 
+/**
+ * Generates unique file name
+ */
 function generateUniqueFileName(name: string) {
   const fsName = nameToFsName(name);
 
@@ -87,6 +122,9 @@ function generateUniqueFileName(name: string) {
   return tryName(0);
 }
 
+/**
+ * Read all device configurations
+ */
 function readDeviceConfigs(): Promise<any[]> {
   const deviceConfigPaths = fsReaddir(deviceConfigPath);
 
@@ -94,6 +132,9 @@ function readDeviceConfigs(): Promise<any[]> {
     .then((fileNames) => Promise.all(fileNames.map(readDeviceConfig)));
 }
 
+/**
+ * Read single device configuration
+ */
 function readDeviceConfig(fileName: string) {
   const filePath = getDeviceConfigPath(fileName);
   return fsReadFile(filePath)
@@ -101,6 +142,9 @@ function readDeviceConfig(fileName: string) {
     .catch((error) => createDeviceConfigError(filePath, error));
 }
 
+/**
+ * Creates device configuration error
+ */
 function createDeviceConfigError(filePath: string, error: Error) {
   const fileName = getFileNameFromPath(filePath);
   return {

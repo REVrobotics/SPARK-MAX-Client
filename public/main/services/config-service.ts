@@ -1,3 +1,7 @@
+/**
+ * Facade for application configuration management
+ */
+
 import * as fs from "fs";
 import {onTwoWayCall} from "./ipc-main-calls";
 import {appDataPath, configPath} from "../config";

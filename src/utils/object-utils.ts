@@ -90,6 +90,9 @@ export function setArrayElementWith<T>(array: T[],
   return setArrayElement(array, index, value);
 }
 
+/**
+ * Returns `value` if it is not `null` or `undefined`, otherwise returns `otherwise`.
+ */
 export function coalesce<T, O extends T>(value: T | null | undefined, otherwise: O): T {
   return value == null ? otherwise : value;
 }

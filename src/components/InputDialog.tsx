@@ -2,7 +2,7 @@ import {Button, Classes, Dialog, FormGroup, InputGroup, Intent} from "@blueprint
 import * as React from "react";
 import {FormEvent, useCallback, useState} from "react";
 import Focus from "./Focus";
-import {useRefPipe} from "../utils/react-utils";
+import {usePipe} from "../utils/react-utils";
 
 interface IProps {
   title: string;
@@ -12,6 +12,9 @@ interface IProps {
   okLabel: string;
   cancelLabel: string;
   isOpened: boolean;
+  /**
+   * Allows to provide custom validations
+   */
   validate?: (input: string) => string | undefined;
 
   onOk(newInput: string): void;
@@ -19,6 +22,9 @@ interface IProps {
   onCancel(): void;
 }
 
+/**
+ * {@link InputDialog} declares dialog having a single input and OK/Cancel buttons.
+ */
 const InputDialog = (props: IProps) => {
   const {input, maxLength, message, title, validate, isOpened, okLabel, cancelLabel, onOk, onCancel} = props;
 
@@ -31,6 +37,7 @@ const InputDialog = (props: IProps) => {
   }, [newInput]);
   const change = useCallback((event) => setNewInput(event.target.value), []);
 
+  // Run validations
   const isInputEmpty = !newInput;
   let validationError: string | undefined;
   if (isInputEmpty) {
@@ -42,7 +49,8 @@ const InputDialog = (props: IProps) => {
 
   const intent = isInputInvalid ? Intent.DANGER : undefined;
 
-  const [pipe, setRef] = useRefPipe<any>();
+  // Declares pipe to focus input element
+  const [pipe, setRef] = usePipe<any>();
 
   return (
     <Dialog isOpen={isOpened} onClose={onCancel} title={title}  style={{width: "300px"}}>

@@ -24,7 +24,7 @@ export class SparkmaxContext {
   private pausePromise: Promise<void>|undefined;
 
   /**
-   * Creates server with provided resources.
+   * Creates context with provided resources.
    * Resources will be instantiated as soon as some device is connected.
    */
   constructor(private permanentResourceFactories: ResourceFactory[] = []) {
@@ -81,7 +81,7 @@ export class SparkmaxContext {
       throw new Error(`Resource already started under name '${name}'`)
     }
     if (this.paused) {
-      throw new Error("Cannot create new resources when server is paused");
+      throw new Error("Cannot create new resources when context is paused");
     }
 
     if (this.device) {
@@ -142,7 +142,7 @@ export class SparkmaxContext {
   }
 
   /**
-   * Changes device id. This operation pauses and resumes server
+   * Changes device id. This operation pauses and resumes context
    * @param device
    */
   public changeDeviceId(device: string): Promise<void> {
@@ -151,7 +151,7 @@ export class SparkmaxContext {
     }
 
     if (!this.paused) {
-      throw new Error("Device ID can be changed only when server is paused");
+      throw new Error("Device ID can be changed only when context is paused");
     }
 
     // wait until all resources complete current processing

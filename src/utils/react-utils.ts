@@ -80,10 +80,12 @@ function useObserver<T>(): PipeObserver<T> {
   }, []);
 }
 
-export function useRefPipe<T>(): [Pipe<T>, (ref: T) => void] {
+/**
+ * {@link Pipe} allows to couple UI entities having different lifecycles.
+ */
+export function usePipe<T>(): [Pipe<T>, (value: T) => void] {
   const observer = useObserver<T>();
-  const setRef = useCallback((ref) => observer.next(ref), []);
-  return [observer.pipe, setRef];
+  return [observer.pipe, observer.next];
 }
 
 export function subscribePipe<T>(pipe: Pipe<T>, onNext: (value: T) => void, deps: DependencyList = []): void {

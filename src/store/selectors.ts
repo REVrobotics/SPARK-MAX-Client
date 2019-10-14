@@ -361,16 +361,31 @@ export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): 
  */
 export const queryIsFirmwareLoading = (state: IApplicationState) => state.firmware.loading;
 
+/**
+ * Returns ID of currently selected configuration
+ */
 export const querySelectedConfigurationId = (state: IApplicationState) =>
   querySelectedDeviceTransientParameters(state).configurationId;
 
+/**
+ * Returns currently selected configuration
+ */
 export const querySelectedConfiguration = (state: IApplicationState) => {
   const id = querySelectedConfigurationId(state);
   return queryConfiguration(state, id);
 };
 
+/**
+ * Returns configuration by ID
+ */
 export const queryConfiguration = (state: IApplicationState, id: string) => find(queryConfigurations(state), {id});
+/**
+ * Returns all configurations
+ */
 export const queryConfigurations = (state: IApplicationState) => state.configurations;
+/**
+ * Returns if current device settings do no correspond to the selected configuration
+ */
 export const queryIsSelectedConfigurationDirty = (state: IApplicationState) => {
   const configurationId = querySelectedConfigurationId(state);
   // Dirty flag makes sense only for device with loaded parameters and non-default configuration
@@ -389,8 +404,15 @@ export const queryIsSelectedConfigurationDirty = (state: IApplicationState) => {
   }
 };
 
+/**
+ * Returns state of message queue
+ */
 export const queryMessageQueueConfig = (state: IApplicationState) => state.ui.messageQueue;
 
+/**
+ * Returns whether message queue should be opened now.
+ * Message queue should be opened iff it has at least one message.
+ */
 export const queryIsMessageQueueOpened = (state: IApplicationState) => {
   const { messageQueue } = state.ui;
   return messageQueue ? messageQueue.messages.length > 0 : false;

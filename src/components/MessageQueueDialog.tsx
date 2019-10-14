@@ -8,6 +8,9 @@ interface IProps {
   onClose(): void;
 }
 
+/**
+ * Dialog with long message console. Message console is displayed in the collapsible area.
+ */
 const MessageQueueDialog = (props: IProps) => {
   const { config, onClose } = props;
 

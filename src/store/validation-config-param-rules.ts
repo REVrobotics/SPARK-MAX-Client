@@ -1,3 +1,8 @@
+/**
+ * This file defines more restrictive validations rather than defined in `ram-config-param-rules.ts`.
+ * The primary usage of these validations is to validate device configuration files.
+ */
+
 import {keyBy} from "lodash";
 import {
   ConfigParamRuleType, ConfigParamRuleValidator,
@@ -7,18 +12,18 @@ import {
   mapRuleRegistry, mergeValidator
 } from "./param-rules/ConfigParamRule";
 import {ConfigParam, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
-import {IRawDeviceConfigDto} from "../models/device-config";
+import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {getConfigParamName, getConfigParamValue} from "../models/ConfigParam";
 import {getConfigParamRule} from "./config-param-rules";
 import {IEnumFieldConstraints, INumericFieldConstraints, Message} from "./state";
 import {substitute} from "../utils/string-utils";
 import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
 
-export interface IFileConfigParamContext extends IConfigParamContext {
+export interface IValidationConfigParamContext extends IConfigParamContext {
   config: IRawDeviceConfigDto;
 }
 
-export const createFileConfigParamContext = (config: IRawDeviceConfigDto): IFileConfigParamContext => {
+export const createFileConfigParamContext = (config: IRawDeviceConfigDto): IValidationConfigParamContext => {
   const paramById = keyBy(config.parameters, (param) => getConfigParamValue(param.id));
   return {
     config,

@@ -10,8 +10,13 @@ import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {loadConfigurations} from "./configuration-actions";
 
+/**
+ * Loads necessary application data.
+ */
 function loadApplicationData(): SparkAction<Promise<any>> {
   return (dispatch) => {
+    // Initialize message queue.
+    // Anyway message queue is displayed ONLY when it has some messages associated
     dispatch(initMessageQueue({
       title: "Problems During Startup",
       body: "During application startup some application settings were invalid.",
