@@ -37,9 +37,9 @@ interface IProps {
 const getBlockedReasonText = (reason: DeviceBlockedReason) => {
   switch (reason) {
     case DeviceBlockedReason.NotConfigured:
-      return "Not Configured";
+      return tt("lbl_device_not_configured");
     case DeviceBlockedReason.Invalid:
-      return "CAN ID overlaps with other device on a bus"
+      return tt("lbl_device_invalid_can_id")
   }
 };
 
@@ -63,24 +63,24 @@ const ConnectionStatusBar = (props: IProps) => {
   const deviceInfo = selectedDevice ?
     <div className="device-info">
       <div className="device-info__line">
-        <div className="device-info__line-title">Interface</div>
+        <div className="device-info__line-title">{tt("lbl_interface")}</div>
         {selectedDevice.info.interfaceName}
       </div>
       <div className="device-info__line">
-        <div className="device-info__line-title">Device ID</div>
+        <div className="device-info__line-title">{tt("lbl_device_id")}</div>
         {selectedDevice.fullDeviceId}
       </div>
       <div className="device-info__line">
-        <div className="device-info__line-title">Device Name</div>
+        <div className="device-info__line-title">{tt("lbl_device_name")}</div>
         {selectedDevice.info.deviceName}
       </div>
       <div className="device-info__line">
-        <div className="device-info__line-title">Driver Name</div>
+        <div className="device-info__line-title">{tt("lbl_driver_name")}</div>
         {selectedDevice.info.driverName}
       </div>
       <div className="device-info__line">
-        <div className="device-info__line-title">Status</div>
-        {connected ? "Connected" : "Not Connected"}
+        <div className="device-info__line-title">{tt("lbl_status")}</div>
+        {connected ? tt("lbl_connected") : tt("lbl_not_connected")}
         {
           blockedReason ?
             (
@@ -126,7 +126,7 @@ const ConnectionStatusBar = (props: IProps) => {
             (
               <>
                 <Icon icon="warning-sign" intent={Intent.DANGER}/>
-                Some devices have issues
+                {tt("lbl_global_config_error")}
               </>
             )
             : processStatus
@@ -135,7 +135,7 @@ const ConnectionStatusBar = (props: IProps) => {
       <div className="status-bar__button">
         <Button fill={true} disabled={!connectable || processing} loading={processing}
                 onClick={connected ? onDisconnect : onConnect}>
-          {connected ? "Disconnect" : "Connect"}
+          {connected ? tt("lbl_disconnect") : tt("lbl_connect")}
         </Button>
       </div>
     </div>

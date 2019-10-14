@@ -84,7 +84,7 @@ const NetworkDeviceHowTo = (props: INetworkDeviceHowToProps) => {
 
   const open = useCallback(() => onOpen(deviceId), []);
 
-  return <button className="link" onClick={open}>How to</button>;
+  return <button className="link" onClick={open}>{tt("lbl_how_to")}</button>;
 };
 
 class NetworkTab extends React.Component<IProps> {
@@ -107,25 +107,25 @@ class NetworkTab extends React.Component<IProps> {
                  numRows={Math.max(devices.length, 10)}
                  columnWidths={[75, 150, 150, 75]}>
 
-            <Column name="Interface" cellRenderer={this.interfaceColumnRenderer}/>
-            <Column name="Device" cellRenderer={this.deviceColumnRenderer}/>
-            <Column name="Firmware" cellRenderer={this.firmwareColumnRenderer}/>
-            <Column name="Update" cellRenderer={this.updateColumnRenderer}/>
+            <Column name={tt("lbl_interface")} cellRenderer={this.interfaceColumnRenderer}/>
+            <Column name={tt("lbl_device")} cellRenderer={this.deviceColumnRenderer}/>
+            <Column name={tt("lbl_firmware")} cellRenderer={this.firmwareColumnRenderer}/>
+            <Column name={tt("lbl_update")} cellRenderer={this.updateColumnRenderer}/>
           </Table>
           <div>
             <Button className="rev-btn"
                     onClick={this.props.scanCanBus}
                     disabled={!connected || firmwareLoading}
-                    loading={scanInProgress}>Scan Bus</Button>
+                    loading={scanInProgress}>{tt("lbl_scan_bus")}</Button>
           </div>
         </div>
         <br/>
         <div id="firmware-bar">
-          <span>Latest Firmware: {firmwareDownloading ? "Loading..." : latestFirmwareVersion}</span>
+          <span>Latest Firmware: {firmwareDownloading ? tt("lbl_loading_dots") : latestFirmwareVersion}</span>
           <span><Button className="rev-btn"
                         loading={firmwareLoading || firmwareDownloading}
                         disabled={!connected}
-                        onClick={this.props.requestFirmwareLoad}>{"Load Firmware"}</Button></span>
+                        onClick={this.props.requestFirmwareLoad}>{tt("lbl_load_firmware")}</Button></span>
         </div>
         <br/>
         <div>
@@ -189,7 +189,7 @@ class NetworkTab extends React.Component<IProps> {
       content = (
         <>
           <Icon icon="warning-sign" intent="warning"/>
-          &nbsp;Not Configured
+          &nbsp;{tt("lbl_not_configured")}
         </>
       );
     } else {
@@ -207,18 +207,17 @@ class NetworkTab extends React.Component<IProps> {
   private buildUpdateTooltip = (device: INetworkDevice) => {
     switch (device.status) {
       case NetworkDeviceStatus.Updateable:
-        return "Click to add this device to the update group.";
+        return tt("msg_network_device_updateable_tooltip");
       case NetworkDeviceStatus.RequiresRecoveryMode:
-        return "To update this device, it should be switched to recovery mode";
+        return tt("msg_network_device_requires_recovery_mode_tooltip");
       case NetworkDeviceStatus.RecoveryMode:
-        return "Device in recovery mode will be forcibly updated";
+        return tt("msg_network_device_recovery_mode_tooltip");
       case NetworkDeviceStatus.NotConfigured:
-        return "Not-configured device will be forcibly updated";
+        return tt("msg_network_device_not_configured_tooltip");
       default:
-        return "Unable to update this device.";
+        return tt("msg_network_device_not_updateable_tooltip");
     }
   };
-
 
   private wrapDeviceCellRenderer(renderer: ICellRenderer): ICellRenderer {
     return (rowIndex, columnIndex) => {

@@ -32,7 +32,7 @@ import {logError} from "../../utils/promise-utils";
 
 export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
-    dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTING..."));
+    dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_connecting")));
     dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
 
     const deviceId = fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!);
@@ -58,7 +58,7 @@ export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<
       })
       .catch(logError)
       .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, "CONNECTION FAILED"));
+        dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_connection_failed")));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
       })
@@ -140,17 +140,17 @@ export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Prom
 
 export function findUsbDevices(): SparkAction<Promise<void>> {
   return (dispatch) => {
-    dispatch(updateGlobalProcessStatus("SEARCHING..."));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_searching")));
     dispatch(updateGlobalIsProcessing(true));
 
     return SparkManager.listUsbDevices()
       .then(({deviceList, extendedList}) => {
-        dispatch(updateGlobalProcessStatus(deviceList.length ? "" : "NO DEVICES FOUND"));
+        dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(addDevices(extendedList.map((extended) => createHubDeviceState(extended))));
       })
       .catch(() => {
-        dispatch(updateGlobalProcessStatus("SEARCH FAILED"));
+        dispatch(updateGlobalProcessStatus(tt("lbl_status_search_failed")));
         dispatch(updateGlobalIsProcessing(false));
       });
   };

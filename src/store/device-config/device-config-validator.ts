@@ -41,48 +41,48 @@ export type DeviceConfigValidationResult = {
  */
 const messages = {
   required: createSchemaViolationFactory({
-    text: "Configuration missing required field '${params.missingProperty}'",
+    text: "msg_config_field_required",
     fixFactory: fixWhen(({params}) => params.missingProperty === "name")(fixConfigurationName),
   }),
   properties: {
     name: {
       type: createSchemaViolationFactory({
-        text: "Property '$objectPath' should be a string",
+        text: "msg_config_type_string",
         fixFactory: fixConfigurationName,
       }),
     },
     parameters: {
-      type: createSchemaViolationFactory({text: "Property '$objectPath' should be an array of device parameters"}),
+      type: createSchemaViolationFactory({text: "msg_config_parameters_type"}),
       items: {
         type: createSchemaViolationFactory({
-          text: "Property '$objectPath' should specify device parameter. It should be an object with id, name and value fields",
+          text: "msg_config_parameters_items_type",
           fixFactory: omitParameter,
         }),
         required: createSchemaViolationFactory({
-          text: "Property '$objectPath' missing required field '${params.missingProperty}'",
+          text: "msg_config_required",
           fixFactory: omitParameter,
         }),
         properties: {
           id: {
             type: createSchemaViolationFactory({
-              text: "Property '$objectPath' should be a string and specify name of device parameter.",
+              text: "msg_config_parameter_item_id_type",
               fixFactory: omitParameter,
             }),
             enum: createSchemaViolationFactory({
-              text: "Property '$objectPath' has unknown value. It should specify name of device parameter. Look into the documentation for details",
+              text: "msg_config_parameter_item_id_enum",
               fixFactory: omitParameter,
             }),
           },
           name: {
             type: createSchemaViolationFactory({
-              text: "Property '$objectPath' has wrong value. It should specify name of device parameter. Look into the documentation for details",
+              text: "msg_config_parameter_item_name_type",
               severity: MessageSeverity.Warning,
               fixFactory: fixParameterName,
             }),
           },
           value: {
             type: createSchemaViolationFactory({
-              text: "Property '$objectPath' should be a number value",
+              text: "msg_config_parameter_item_value_type",
               fixFactory: omitParameter,
             }),
           },
@@ -156,7 +156,7 @@ const errorToViolation = (error: ErrorObject) => {
  * Validates configuration file format and returns set of {@link Violation}s.
  */
 export const validateConfigurationFormat = (config: IRawDeviceConfigDto) => {
-  const invalidConfiguration = config.error ? createMessageViolation(Message.error(config.error)) : undefined;
+  const invalidConfiguration = config.error ? createMessageViolation(Message.errorFromText(config.error)) : undefined;
 
   const formatViolations = validateConfigurationFormatBySchema(config);
 

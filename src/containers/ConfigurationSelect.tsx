@@ -69,7 +69,7 @@ const ConfigurationSelect = (props: IProps) => {
   }, [selected]);
   const validateNameForCreate = useCallback((name) => {
     if (findDeviceConfigurationByName(configurations, name)) {
-      return "Name is not unique";
+      return tt("msg_name_not_unique");
     }
     return;
   }, [configurations]);
@@ -82,7 +82,7 @@ const ConfigurationSelect = (props: IProps) => {
   const closeRenameDialog = useCallback(() => setRenameOpened(false), []);
   const validateNameForRename = useCallback((name) => {
     if (findDeviceConfigurationByName(configurations, name, selected.id)) {
-      return "Name is not unique";
+      return tt("msg_name_not_unique");
     }
     return;
   }, [selected]);
@@ -91,12 +91,12 @@ const ConfigurationSelect = (props: IProps) => {
 
   let createDialog: ReactNode | undefined;
   if (createOpened) {
-    createDialog = <InputDialog title={`Create New Configuration`}
-                                message={"Enter Name"}
+    createDialog = <InputDialog title={tt("lbl_create_new_configuration")}
+                                message={tt("lbl_enter_name")}
                                 input={selectedName}
                                 validate={validateNameForCreate}
-                                okLabel="Create"
-                                cancelLabel="Cancel"
+                                okLabel={tt("lbl_create")}
+                                cancelLabel={tt("lbl_cancel")}
                                 isOpened={createOpened}
                                 onOk={create}
                                 onCancel={closeCreateDialog}/>;
@@ -104,12 +104,12 @@ const ConfigurationSelect = (props: IProps) => {
 
   let renameDialog: ReactNode | undefined;
   if (renameOpened) {
-    renameDialog = <InputDialog title={`Rename Configuration`}
-                                message={"Enter New Name"}
+    renameDialog = <InputDialog title={tt("lbl_rename_configuration")}
+                                message={tt("lbl_enter_new_name")}
                                 input={selectedName}
                                 validate={validateNameForRename}
-                                okLabel="Rename"
-                                cancelLabel="Cancel"
+                                okLabel={tt("lbl_rename")}
+                                cancelLabel={tt("lbl_cancel")}
                                 isOpened={renameOpened}
                                 onOk={rename}
                                 onCancel={closeRenameDialog}/>;

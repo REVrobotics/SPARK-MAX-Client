@@ -64,19 +64,19 @@ class RunTab extends React.Component<IProps, IState> {
     this._ticks = 0;
 
     this.state = {
-      mode: "Percent",
+      mode: tt("lbl_percent"),
       option: {
         series: [{
           data: [],
           type: 'line'
         }],
         xAxis: {
-          name: "Time",
+          name: tt("lbl_time"),
           type: 'category',
           data: []
         },
         yAxis: {
-          name: "Percent",
+          name: tt("lbl_percent"),
           type: 'value'
         }
       },
@@ -203,7 +203,10 @@ class RunTab extends React.Component<IProps, IState> {
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!pErr} title={"P"}
-                                content={`Your requested value of ${pRes && pRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${pRes && pRes.responseValue}.`}/>}
+                                content={tt("msg_parameter_invalid_value", {
+                                  requestValue: pRes && pRes.requestValue,
+                                  responseValue: pRes && pRes.responseValue,
+                                })}/>}
             className={(pMod ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="pid-profile" disabled={!connected} value={p} min={0} step={0.001} max={3}
@@ -212,7 +215,10 @@ class RunTab extends React.Component<IProps, IState> {
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!iErr} title={"I"}
-                                content={`Your requested value of ${iRes && iRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${iRes && iRes.responseValue}.`}/>}
+                                content={tt("msg_parameter_invalid_value", {
+                                  requestValue: iRes && iRes.requestValue,
+                                  responseValue: iRes && iRes.responseValue,
+                                })}/>}
             className={(iMod ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="pid-profile" disabled={!connected} value={i} min={0} step={0.001} max={3}
@@ -221,7 +227,10 @@ class RunTab extends React.Component<IProps, IState> {
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!dErr} title={"D"}
-                                content={`Your requested value of ${dRes && dRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${dRes && dRes.responseValue}.`}/>}
+                                content={tt("msg_parameter_invalid_value", {
+                                  requestValue: dRes && dRes.requestValue,
+                                  responseValue: dRes && dRes.responseValue,
+                                })}/>}
             className={(dMod ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="pid-profile" disabled={!connected} value={d} min={0} step={0.001} max={3}
@@ -230,7 +239,10 @@ class RunTab extends React.Component<IProps, IState> {
           </FormGroup>
           <FormGroup
             label={<PopoverHelp enabled={!fErr} title={"F"}
-                                content={`Your requested value of ${fRes && fRes.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${fRes && fRes.responseValue}.`}/>}
+                                content={tt("msg_parameter_invalid_value", {
+                                  requestValue: fRes && fRes.requestValue,
+                                  responseValue: fRes && fRes.responseValue,
+                                })}/>}
             className={(fMod ? "modified" : "") + " form-group-fifth"}
           >
             <NumericInput id="pid-profile" disabled={!connected} value={f} min={0} step={0.001} max={3}
@@ -249,13 +261,13 @@ class RunTab extends React.Component<IProps, IState> {
               onChange={this.changeMode}
               disabled={true}
             >
-              <Radio label="Percent" value={0}/>
-              <Radio label="Velocity" value={1}/>
-              <Radio label="Position" value={3}/>
+              <Radio label={tt("lbl_percent")} value={0}/>
+              <Radio label={tt("lbl_velocity")} value={1}/>
+              <Radio label={tt("lbl_position")} value={3}/>
             </RadioGroup>
           </FormGroup>
           <FormGroup
-            label="Motor Output"
+            label={tt("lbl_motor_output")}
             className="form-group-half"
           >
             <Slider initialValue={output} disabled={!connected} value={output} min={-1.0} max={1.0} stepSize={0.01}
@@ -265,13 +277,13 @@ class RunTab extends React.Component<IProps, IState> {
             className="form-group-quarter"
           >
             <Button id="run-btn" className="rev-btn" fill={true} disabled={!connected}
-                    onClick={running ? this.stop : this.run}>{running ? "Stop" : "Run"}</Button>
+                    onClick={running ? this.stop : this.run}>{running ? tt("lbl_stop") : tt("lbl_run")}</Button>
           </FormGroup>
           <FormGroup
             className="form-group-quarter"
           >
             <Button className="rev-btn" fill={true} disabled={!connected} loading={updatingProfile}
-                    onClick={this.updateProfile}>Save PIDF</Button>
+                    onClick={this.updateProfile}>{tt("lbl_save_pidf")}</Button>
           </FormGroup>
         </div>
       </div>
@@ -401,12 +413,12 @@ class RunTab extends React.Component<IProps, IState> {
             type: 'line'
           }],
           xAxis: {
-            name: "Time",
+            name: tt("lbl_time"),
             type: 'category',
             data: [...this.state.option.xAxis.data, (this.state.option.xAxis.data.length + 1) + ""]
           },
           yAxis: {
-            name: "Percent",
+            name: tt("lbl_percent"),
             type: 'value'
           }
         }
@@ -419,11 +431,11 @@ class RunTab extends React.Component<IProps, IState> {
   private changeMode(value: any) {
     let modeStr = "";
     if (value.currentTarget.value === 0) {
-      modeStr = "Percent";
+      modeStr = tt("lbl_percent");
     } else if (value.currentTarget.value === 1) {
-      modeStr = "Velocity";
+      modeStr = tt("lbl_velocity");
     } else if (value.currentTarget.value === 2) {
-      modeStr = "Position";
+      modeStr = tt("lbl_position");
     }
     SparkManager.setControlMode(fromDeviceId(this.props.deviceId), value.currentTarget.value);
     this.setState({
@@ -434,7 +446,7 @@ class RunTab extends React.Component<IProps, IState> {
           type: 'line'
         }],
         xAxis: {
-          name: "Time",
+          name: tt("lbl_time"),
           type: 'category',
           data: []
         },

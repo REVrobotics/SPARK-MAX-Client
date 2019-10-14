@@ -10,6 +10,7 @@ import {ExtendedListResponseDto} from "../models/dto";
 import {setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
+import {substitute} from "../utils/string-utils";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -392,27 +393,56 @@ export enum MessageSeverity {
   Warning = "Warning"
 }
 
+// tslint:disable-next-line:interface-over-type-literal
+export type MessageParams = { [name: string]: any };
+
 /**
  * Message encapsulates some validation result having severity and text
  */
 export class Message {
-  public static create(severity: MessageSeverity, text: string): Message {
-    return new Message(MessageSeverity.Error, text);
+  public static create(severity: MessageSeverity, id: string, params?: MessageParams): Message {
+    return new Message(MessageSeverity.Error, id, params);
   }
 
-  public static info(text: string): Message {
-    return Message.create(MessageSeverity.Info, text);
+  public static info(id: string, params?: MessageParams): Message {
+    return Message.create(MessageSeverity.Info, id, params);
   }
 
-  public static error(text: string): Message {
-    return Message.create(MessageSeverity.Error, text);
+  public static error(id: string, params?: MessageParams): Message {
+    return Message.create(MessageSeverity.Error, id, params);
   }
 
-  public static warning(text: string): Message {
-    return Message.create(MessageSeverity.Warning, text);
+  public static warning(id: string, params?: MessageParams): Message {
+    return Message.create(MessageSeverity.Warning, id, params);
   }
 
-  private constructor(readonly severity: MessageSeverity, readonly text: string) {
+  public static infoFromText(text: string): Message {
+    return Message.create(MessageSeverity.Info, "text", { text });
+  }
+
+  public static errorFromText(text: string): Message {
+    return Message.create(MessageSeverity.Error, "text", { text });
+  }
+
+  public static warningFromText(text: string): Message {
+    return Message.create(MessageSeverity.Warning, "text", { text });
+  }
+
+  private _text?: string;
+
+  private constructor(readonly severity: MessageSeverity, readonly id: string, readonly params?: MessageParams) {
+  }
+
+  get text(): string {
+    if (this._text == null) {
+      const text = tt(this.id);
+      this._text = this.params ? substitute(text, this.params) : text;
+    }
+    return this._text;
+  }
+
+  set text(_: string) {
+    throw new Error("Text of Message cannot be changed");
   }
 }
 

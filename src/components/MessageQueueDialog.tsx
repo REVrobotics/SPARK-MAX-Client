@@ -26,10 +26,10 @@ const MessageQueueDialog = (props: IProps) => {
         <div className="flex-row flex-space-between">
           <Button className="link-button"
                   minimal={true}
-                  text={opened ? "Hide Details" : "Show Details"}
+                  text={opened ? tt("lbl_hide_details") : tt("lbl_show_details")}
                   icon={opened ? "chevron-up" : "chevron-down"}
                   onClick={toggleDetails}/>
-          <Button className="rev-btn" text="Close" onClick={onClose}/>
+          <Button className="rev-btn" text={tt("lbl_close")} onClick={onClose}/>
         </div>
       </div>
       <div className={opened ? "message-queue__console" : undefined}>

@@ -31,25 +31,25 @@ export const downloadLatestFirmware = (): SparkAction<Promise<void>> => {
     }
 
     dispatch(setFirmwareDownloading());
-    dispatch(consoleOutput("[INFO] Check the latest firmware version"));
+    dispatch(consoleOutput(tt("msg_console_output:check_latest_firmware_version")));
     configLoadPromise = WebProvider.get("content/sw/max/sparkmax-gui-cfg.json")
       .then((firmwareJSON: any) => {
         dispatch(setFirmwareDownloaded(firmwareJSON));
         const firmware = queryFirmwareByTag(getState(), FirmwareTag.Latest);
         if (firmware) {
-          dispatch(consoleOutput(`[INFO] The latest firmware version is ${firmware.version}`));
+          dispatch(consoleOutput(tt("msg_console_output:latest_firmware_version", {version: firmware.version})));
           return SparkManager.downloadFile(firmware.url)
             .then((msg) => {
-              dispatch(consoleOutput(`[INFO] ${msg}`));
+              dispatch(consoleOutput(tt("msg_console_output:info", {message: msg})));
               return firmwareJSON;
             })
-            .catch(() => dispatch(consoleOutput("[ERROR] Could not download the latest firmware version")));
+            .catch(() => dispatch(consoleOutput(tt("msg_console_output:cannot_download_firmware_version"))));
         }
         return firmwareJSON;
       }).catch((error: any) => {
         dispatch(setFirmwareDownloadError());
         dispatch(addLog(error));
-        dispatch(consoleOutput("[ERROR] Could not determine the latest firmware version"))
+        dispatch(consoleOutput(tt("msg_console_output:cannot_determine_firmware_version")))
       });
 
     return configLoadPromise;

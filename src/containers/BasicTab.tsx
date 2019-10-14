@@ -28,6 +28,7 @@ import {withDirty} from "../hocs/with-dirty";
 import SwitchParamField from "../components/fields/SwitchParamField";
 import SliderParamField from "../components/fields/SliderParamField";
 import ConfigurationSelect from "./ConfigurationSelect";
+import {DictionaryName, translateWord} from "../mls/dictionaries";
 
 interface IBasicFormGroupProps extends IConfigParamProps {
   groupClassName?: string;
@@ -53,22 +54,7 @@ interface IBasicSliderFieldGroupProps extends IBasicFormGroupProps {
   stepSize: number;
 }
 
-const BASIC_PARAM_TITLES = {
-  [ConfigParam.kCanID]: "CAN ID",
-  [ConfigParam.kMotorType]: "Select Motor Type",
-  [ConfigParam.kSensorType]: "Sensor Type",
-  [ConfigParam.kIdleMode]: "Idle Mode",
-  [ConfigParam.kInputDeadband]: "PWM Input Deadband",
-  [ConfigParam.kRampRate]: "Rate (seconds to full speed)",
-  [ConfigParam.kSmartCurrentStallLimit]: "Smart Current Limit",
-  [ConfigParam.kEncoderCountsPerRev]: "Encoder CPR",
-  [ConfigParam.kHardLimitFwdEn]: "Forward Limit",
-  [ConfigParam.kHardLimitRevEn]: "Reverse Limit",
-  [ConfigParam.kSoftLimitFwdEn]: "Forward Limit",
-  [ConfigParam.kSoftLimitRevEn]: "Reverse Limit",
-  [ConfigParam.kSoftLimitFwd]: "Forward Limit (value)",
-  [ConfigParam.kSoftLimitRev]: "Reverse Limit (value)",
-};
+const getBasicParamTitle = (param: ConfigParam) => translateWord(DictionaryName.ConfigParams, param);
 
 const DirtySwitchParamField = withDirty(SwitchParamField);
 const DirtyValidationFormGroup = withDirty(ValidationFormGroup);
@@ -77,7 +63,7 @@ const BasicNumericFieldGroup = bindRamConfigRule((props: IBasicNumericFieldGroup
   const {groupClassName, fieldClassName, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={getBasicParamTitle(props.parameter)} className={groupClassName}>
       <NumericParamField {...otherProps} className={classNames("numeric-form-field", fieldClassName)}/>
     </DirtyValidationFormGroup>
   );
@@ -87,7 +73,7 @@ const BasicSelectFieldGroup = bindRamConfigRule((props: IBasicSelectFieldGroupPr
   const {groupClassName, fieldClassName, placeholder, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={getBasicParamTitle(props.parameter)} className={groupClassName}>
       <SelectParamField {...otherProps} placeholder={placeholder} className={classNames("select-form-field", fieldClassName)}/>
     </DirtyValidationFormGroup>
   );
@@ -109,7 +95,7 @@ const BasicSwitchFieldGroup = bindRamConfigRule((props: IBasicSwitchFieldGroupPr
   const {groupClassName, fieldClassName, label, inverted, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={getBasicParamTitle(props.parameter)} className={groupClassName}>
       <SwitchParamField {...otherProps} className={fieldClassName} label={label} inverted={inverted}/>
     </DirtyValidationFormGroup>
   );
@@ -119,14 +105,14 @@ const BasicSliderFieldGroup = bindRamConfigRule((props: IBasicSliderFieldGroupPr
   const {groupClassName, fieldClassName, stepSize, ...otherProps} = props;
 
   return (
-    <DirtyValidationFormGroup {...otherProps} title={BASIC_PARAM_TITLES[props.parameter]} className={groupClassName}>
+    <DirtyValidationFormGroup {...otherProps} title={getBasicParamTitle(props.parameter)} className={groupClassName}>
       <SliderParamField {...otherProps} className={fieldClassName} stepSize={stepSize}/>
     </DirtyValidationFormGroup>
   );
 });
 
-const polarityLabelFn = (checked: boolean) => checked ? "Normally Closed" : "Normally Open";
-const idleModeLabelFn = (checked: boolean) => checked ? "Coast" : "Brake";
+const polarityLabelFn = (checked: boolean) => checked ? tt("lbl_normally_closed") : tt("lbl_normally_open");
+const idleModeLabelFn = (checked: boolean) => checked ? tt("lbl_coast") : tt("lbl_brake");
 
 interface IProps {
   enabled: boolean;
@@ -157,7 +143,7 @@ class BasicTab extends React.Component<IProps> {
       <div>
         <div className="form form-left">
           <FormGroup
-            label="Select Configuration"
+            label={tt("lbl_select_configuration")}
             labelFor="configuration-id"
             className="form-group-half"
           >
@@ -194,11 +180,11 @@ class BasicTab extends React.Component<IProps> {
         </div>
         <div className="form form-top form-space-between">
           <div className="form-column form-column-third no-wrap">
-            <h4 className="form-title">Limit Switch</h4>
+            <h4 className="form-title">{tt("lbl_limit_switch")}</h4>
             <div className="form-control-group">
               <BasicSwitchField parameter={ConfigParam.kHardLimitFwdEn}
                                 disabled={!canEditOtherFields}
-                                label="Forward Limit"/>
+                                label={tt("lbl_forward_limit")}/>
               <BasicSwitchField parameter={ConfigParam.kLimitSwitchFwdPolarity}
                                 disabled={!canEditOtherFields}
                                 label={polarityLabelFn}/>
@@ -207,14 +193,14 @@ class BasicTab extends React.Component<IProps> {
             <div className="form-control-group">
               <BasicSwitchField parameter={ConfigParam.kHardLimitRevEn}
                                 disabled={!canEditOtherFields}
-                                label="Reverse Limit"/>
+                                label={tt("lbl_reverse_limit")}/>
               <BasicSwitchField parameter={ConfigParam.kLimitSwitchRevPolarity}
                                 disabled={!canEditOtherFields}
                                 label={polarityLabelFn}/>
             </div>
           </div>
           <div className="form-column form-column-third no-wrap">
-            <h4 className="form-title">Soft Limits</h4>
+            <h4 className="form-title">{tt("lbl_soft_limits")}</h4>
 
             <BasicSwitchLabelessFieldGroup parameter={ConfigParam.kSoftLimitFwdEn}
                                            disabled={!canEditOtherFields}
@@ -229,12 +215,12 @@ class BasicTab extends React.Component<IProps> {
                                     disabled={!canEditOtherFields}/>
           </div>
           <div className="form-column form-column-third">
-            <h4 className="form-title">Ramp Rate</h4>
+            <h4 className="form-title">{tt("lbl_ramp_rate")}</h4>
             <FormGroup className="form-group-fit" labelFor="rampRateEnabled">
               <Switch id="rampRateEnabled"
                       checked={rampRateEnabled}
                       disabled={!canEditOtherFields}
-                      label={rampRateEnabled ? "Enabled" : "Disabled"}
+                      label={rampRateEnabled ? tt("lbl_enabled") : tt("lbl_disabled")}
                       onChange={this.onChangeRampRateEnabled}/>
             </FormGroup>
             <BasicNumericFieldGroup parameter={ConfigParam.kRampRate}
@@ -245,11 +231,11 @@ class BasicTab extends React.Component<IProps> {
           <Button className="rev-btn"
                   disabled={!canSave || processType === ProcessType.Reset}
                   loading={processType === ProcessType.Save}
-                  onClick={this.props.burnConfiguration}>Save Configuration</Button>
+                  onClick={this.props.burnConfiguration}>{tt("lbl_save_configuration")}</Button>
           <Button className="bad-btn"
                   disabled={!enabled || processType === ProcessType.Save}
                   loading={processType === ProcessType.Reset}
-                  onClick={this.props.resetConfiguration}>Restore Factory Defaults</Button>
+                  onClick={this.props.resetConfiguration}>{tt("lbl_restore_factory_defaults")}</Button>
         </div>
       </div>
     );

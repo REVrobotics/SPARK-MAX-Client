@@ -27,7 +27,8 @@ import {concatMapPromises, logError} from "../../utils/promise-utils";
 import {
   queryConsoleOutput,
   queryFirmwareByTag,
-  queryLastFirmwareLoadingMessage, queryNetworkDevice,
+  queryLastFirmwareLoadingMessage,
+  queryNetworkDevice,
   queryNetworkDevices
 } from "../selectors";
 import {compareVersions} from "../../utils/string-utils";
@@ -50,7 +51,7 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
       .map(getNetworkDeviceId);
 
     if (deviceIds.length === 0) {
-      showToastError("No one device is selected");
+      showToastError(tt("msg_no_device_selected"));
       return Promise.resolve();
     }
 
@@ -64,7 +65,7 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
         if (path) {
           return dispatch(loadFirmware(path, deviceIds))
             .then(() => {
-              dispatch(consoleOutput("[INFO] Connecting back to controller..."));
+              dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
             });
         } else {
           return Promise.resolve();
@@ -72,7 +73,7 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
       })
       .finally(() => {
         dispatch(setFirmwareLoading(false));
-        dispatch(consoleOutput("[INFO] Rescan list of devices"));
+        dispatch(consoleOutput(tt("msg_console_output:rescan")));
         dispatch(scanCanBus());
       });
   };
@@ -83,19 +84,19 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
  */
 const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<any>> => {
   return (dispatch) => {
-    dispatch(consoleOutput(`[INFO] Loading firmware from ${path}`));
+    dispatch(consoleOutput(tt("msg_console_output:loading_firmware")));
     dispatch(updateGlobalIsProcessing(true));
-    dispatch(updateGlobalProcessStatus("LOADING FIRMWARE..."));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
     return SparkManager.loadFirmware(path, deviceIds.map(fromDeviceId))
       .then((res) => {
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
-          showToastError("Firmware could not be updated. Look at console log for details");
+          showToastError(tt("msg_firmware_cannot_be_updated"));
           dispatch(firmwareLoadingError(getErrorText(res)));
           dispatch(firmwareLoadingError());
         } else {
-          showToastSuccess("Firmware was successfully updated");
-          dispatch(consoleOutput("[INFO] Successfully updated firmware."));
+          showToastSuccess(tt("msg_firmware_updated"));
+          dispatch(consoleOutput(tt("msg_console_output:successfully_updated_firmware")));
           dispatch(updateFirmwareLoadingProgress(0, ""));
         }
       })
@@ -112,7 +113,9 @@ const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<
  */
 const firmwareLoadingError = (error?: string): SparkAction<void> => {
   return (dispatch) => {
-    const msg: string = "[ERROR] " + (typeof error !== "undefined" ? error : "Error loading firmware. Please disconnect the SPARK MAX controller, and try again.");
+    const msg = tt("msg_console_output:error", {
+      message: error ? error : "Error loading firmware. Please disconnect the SPARK MAX controller, and try again.",
+    });
     dispatch(consoleOutput(msg));
     dispatch(updateFirmwareLoadingProgress(0, ""));
     dispatch(updateGlobalIsProcessing(false));
@@ -126,7 +129,7 @@ const firmwareLoadingError = (error?: string): SparkAction<void> => {
 export const updateLoadFirmwareProgress = (error: any, response: FirmwareResponseDto): SparkAction<void> => {
   return (dispatch, getState) => {
     if (response.updateStarted) {
-      dispatch(consoleOutput("[INFO] Started firmware update process..."));
+      dispatch(consoleOutput(tt("msg_console_output:started_firmware_update")));
     } else if (response.isUpdating) {
       let updatedOutput = queryConsoleOutput(getState());
       if (response.updateStagePercent != null) {
@@ -135,15 +138,24 @@ export const updateLoadFirmwareProgress = (error: any, response: FirmwareRespons
 
         dispatch(updateFirmwareLoadingProgress(
           percentComplete,
-          `${response.updateStageMessage} - (${(percentComplete * 100).toFixed(1)}%)`));
+          tt("lbl_firmware_loading_progress", {
+            progress: (percentComplete * 100).toFixed(1),
+            message: response.updateStageMessage,
+          })));
 
         updatedOutput = updatedOutput.concat([
-          `[INFO] (${(percentComplete * 100).toFixed(1)}%) ${response.updateStageMessage}`,
+          tt("msg_console_output:firmware_loading_progress", {
+            progress: (percentComplete * 100).toFixed(1),
+            message: response.updateStageMessage,
+          }),
         ]);
       } else if (response.updateStageMessage != null) {
         const lastMessage = queryLastFirmwareLoadingMessage(getState());
         if (lastMessage !== response.updateStageMessage) {
-          updatedOutput.push(`[INFO] (0.0%) ${response.updateStageMessage}`);
+          updatedOutput.push(tt("msg_console_output:firmware_loading_progress", {
+            progress: "0.0",
+            message: response.updateStageMessage,
+          }));
         }
       }
 
@@ -159,7 +171,7 @@ export const updateLoadFirmwareProgress = (error: any, response: FirmwareRespons
 export const scanCanBus = (): SparkAction<Promise<any>> => {
   return (dispatch, getState) => {
     dispatch(updateGlobalIsProcessing(true));
-    dispatch(updateGlobalProcessStatus("SCANNING CAN BUS"));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_scanning_can_bus")));
     dispatch(setNetworkScanInProgress(true));
     dispatch(setNetworkDevices([]));
 
@@ -232,7 +244,7 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
         return dispatch(showAlert({
           content: renderAllNetworkDevicesHelpText(devices),
           intent: Intent.WARNING,
-          okLabel: "OK",
+          okLabel: tt("lbl_close"),
         }));
       });
   };
@@ -287,6 +299,6 @@ export const showNetworkDeviceHelp = (id: DeviceId): SparkAction<Promise<void>> 
     return dispatch(showAlert({
       content: renderNetworkDeviceHelpText(device),
       intent: Intent.WARNING,
-      okLabel: "OK",
+      okLabel: tt("lbl_close"),
     }));
   };

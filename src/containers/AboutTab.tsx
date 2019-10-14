@@ -10,17 +10,17 @@ class AboutTab extends React.Component {
     return (
       <div>
         <div>
-          <h2>SPARK MAX Client</h2>
+          <h2>{tt("lbl_spark_max_client")}</h2>
           <p>
-            A way to update, configure, and test your SPARK MAX Motor Controller.
+            {tt("lbl_spark_max_client_info")}
           </p>
           <p>
-            Copyright © 2019 REV Robotics LLC (support@revrobotics.com) under Apache License v2.0
+            {tt("lbl_spark_max_client_copyright")}
           </p>
         </div>
         <div>
-          <p><b>Server Version</b>: v1.1.61</p>
-          <p><b>Client Version</b>: v{SparkManager.getVersion()}</p>
+          <p><b>{tt("lbl_server_version")}</b>: v1.1.61</p>
+          <p><b>{tt("lbl_client_version")}</b>: v{SparkManager.getVersion()}</p>
         </div>
       </div>
     );

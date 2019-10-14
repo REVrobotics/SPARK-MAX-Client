@@ -42,7 +42,7 @@ import {queryDeviceParameterValue, querySelectedDevice} from "../selectors";
  */
 export const loadConfigurations = (): SparkAction<Promise<any>> => {
   return (dispatch) => {
-    dispatch(updateGlobalProcessStatus("LOADING..."));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_loading")));
     dispatch(updateGlobalIsProcessing(true));
 
     return DeviceConfigManager.load()
@@ -83,7 +83,7 @@ export const applyConfiguration = (virtualDeviceId: VirtualDeviceId,
   return (dispatch, getState) => {
     // Start processing to disable UI.
     dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.SetConfiguration));
-    dispatch(updateDeviceProcessStatus(virtualDeviceId, "SETTING CONFIGURATION..."));
+    dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_set_configuration")));
     dispatch(setOnlyTransientParameter(virtualDeviceId, "configurationId", getDeviceConfigurationId(configuration)));
 
     // Define set of parameters which depend on parameters to be set.
@@ -158,10 +158,10 @@ export const renameConfiguration = (config: IDeviceConfiguration, newName: strin
 export const overwriteConfiguration = (config: IDeviceConfiguration): SparkAction<Promise<void>> => {
   return (dispatch, getState) => {
     return dispatch(showConfirmation({
-      yesLabel: "Yes",
-      cancelLabel: "No",
+      yesLabel: tt("lbl_yes"),
+      cancelLabel: tt("lbl_no"),
       intent: Intent.SUCCESS,
-      text: "Do you want to overwrite existing configuration?",
+      text: tt("msg_overwrite_configuration"),
     })).then((answer) => {
       if (answer === ConfirmationAnswer.Yes) {
         return dispatch(persistConfiguration(config))
@@ -189,10 +189,10 @@ export const createConfiguration = (config: IDeviceConfiguration, name: string):
 export const destroyConfiguration = (config: IDeviceConfiguration): SparkAction<Promise<any>> =>
   (dispatch) => {
     return dispatch(showConfirmation({
-      yesLabel: "Yes",
-      cancelLabel: "No",
+      yesLabel: tt("lbl_yes"),
+      cancelLabel: tt("lbl_no"),
       intent: Intent.SUCCESS,
-      text: "Do you want to remove this configuration?",
+      text: tt("msg_remove_configuration"),
     })).then((answer) => {
       if (answer !== ConfirmationAnswer.Yes) {
         return;

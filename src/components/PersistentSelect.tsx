@@ -99,15 +99,15 @@ function PersistentSelect<T>(props: IProps<T>) {
   // If "apply" action is available it is always a default action
   if (canApply) {
     mainAction = <Button className="persistent-select__main-btn"
-                         text="Apply"
+                         text={tt("lbl_apply")}
                          onClick={apply}
                          disabled={disabled || !isDirty}/>;
   } else if (canModify) {
     // If "apply" action is not available and value is modifiable then default action is "overwrite"
-    mainAction = <Button className="persistent-select__main-btn" text="Overwrite" onClick={overwrite} disabled={disabled}/>;
+    mainAction = <Button className="persistent-select__main-btn" text={tt("lbl_overwrite")} onClick={overwrite} disabled={disabled}/>;
   } else {
     // If value is neither appliable nor modifiable, then default action is "create"
-    mainAction = <Button className="persistent-select__main-btn" text="Create..." onClick={create} disabled={disabled}/>;
+    mainAction = <Button className="persistent-select__main-btn" text={tt("lbl_create_dots")} onClick={create} disabled={disabled}/>;
   }
 
   // Construction available menu actions for selected value
@@ -116,10 +116,10 @@ function PersistentSelect<T>(props: IProps<T>) {
       <Popover minimal={true} position={PopoverPosition.BOTTOM_RIGHT}>
         <Button icon="chevron-down" disabled={disabled}/>
         <Menu className="persistent-select__menu">
-          <MenuItem text="Overwrite" onClick={overwrite}/>
-          <MenuItem text="Create..." onClick={create}/>
-          <MenuItem text="Rename..." onClick={rename}/>
-          <MenuItem text="Remove" onClick={remove}/>
+          <MenuItem text={tt("lbl_overwrite")} onClick={overwrite}/>
+          <MenuItem text={tt("lbl_create_dots")} onClick={create}/>
+          <MenuItem text={tt("lbl_rename_dots")} onClick={rename}/>
+          <MenuItem text={tt("lbl_remove")} onClick={remove}/>
         </Menu>
       </Popover>
     );
@@ -128,7 +128,7 @@ function PersistentSelect<T>(props: IProps<T>) {
       <Popover minimal={true} position={PopoverPosition.BOTTOM_RIGHT}>
         <Button icon="chevron-down" disabled={disabled}/>
         <Menu className="persistent-select__menu">
-          <MenuItem text="Create..." onClick={create}/>
+          <MenuItem text={tt("lbl_create_dots")} onClick={create}/>
         </Menu>
       </Popover>
     );

@@ -18,9 +18,9 @@ export const createMessagesForNotFixedConfigurations = (validationResults: Devic
   }
 
   return [
-    section("Some device configurations have unrecoverable errors"),
+    section(tt("msg_startup_device_unrecoverable_errors")),
     ...flatMap(validationResults, (config) => [
-      title(`Device configuration is invalid: ${config.configuration.filePath}`),
+      title(tt("msg_startup_device_invalid_configuration", { filePath: config.configuration.filePath })),
       ...config.violations.map(({message}) => fromMessage(message)),
     ]),
   ];
@@ -32,9 +32,9 @@ export const createMessagesForFixedConfigurations = (validationResults: DeviceCo
   }
 
   return [
-    section("Some device configurations have errors", "but were recovered as much as possible"),
+    section(tt("msg_startup_device_recovered_errors")),
     ...flatMap(validationResults, (config) => [
-      title(`Recovered device configuration: ${config.configuration.filePath}`),
+      title(tt("msg_startup_device_recovered_configuration", { filePath: config.configuration.filePath })),
       ...config.violations.map(({message}) => fromMessage(message)),
     ]),
   ];
