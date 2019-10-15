@@ -61,6 +61,7 @@ export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<
         dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_connection_failed")));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
         dispatch(addLog(error));
+        return Promise.reject(error);
       })
       .then(() => {
         dispatch(setConnectedDevice(virtualDeviceId, true));
