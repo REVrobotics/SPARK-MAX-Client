@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Icon, Popover} from "@blueprintjs/core";
-import {MessageSeverity} from "../store/state";
+import {MessageSeverity} from "../models/Message";
 
 interface IProps {
   content: string | JSX.Element,

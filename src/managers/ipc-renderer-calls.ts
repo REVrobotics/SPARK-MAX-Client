@@ -14,6 +14,7 @@
 
 import {uniqueId} from "lodash";
 import {decorateCallback, decorateOneWay, decorateTwoWay} from "./mock-renderer-calls";
+import {SystemError} from "../models/errors";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 
@@ -39,7 +40,7 @@ ipcRenderer.on("two-way:response", (event: any, reqId: string, err: any, respons
 
   // Resolve or reject found request
   if (err) {
-    request.reject(err);
+    request.reject(SystemError.deserialize(err));
   } else {
     request.resolve(response);
   }
@@ -52,6 +53,7 @@ export const sendOneWay = decorateOneWay((name: string, ...args: any[]) => ipcRe
 
 /**
  * Sends two-way request and returns {@link Promise} which resolved/rejected as soon as we get feedback.
+ * Returned promise ALWAYS rejected with the instance of {@link SystemError}.
  */
 export const sendTwoWay = decorateTwoWay((name: string, ...args: any[]) => new Promise((resolve, reject) => {
   // Each two way request has unique id to make possible associate response with this one request

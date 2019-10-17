@@ -29,15 +29,16 @@
     bottom: 0;
     width: 10px;
     height: 10px;
-    border: 1px solid white;
     border-radius: 5px;
 }
 
 .status-bar__connection--connected {
+    border: 1px solid white;
     background: green;
 }
 
 .status-bar__connection--disconnected {
+    border: 1px solid white;
     background: red;
 }
 

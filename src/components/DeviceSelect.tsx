@@ -3,7 +3,8 @@ import {Button, MenuItem} from "@blueprintjs/core";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import * as React from "react";
 import {useMemo} from "react";
-import {getCanIdFromDeviceId, getVirtualDeviceId, IDeviceState, Message} from "../store/state";
+import {getCanIdFromDeviceId, getVirtualDeviceId, IDeviceState} from "../store/state";
+import {Message} from "../models/Message";
 
 const BpDeviceSelect = Select.ofType<IDeviceState>();
 

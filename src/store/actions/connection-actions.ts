@@ -47,7 +47,6 @@ export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<v
 
     // Try to connect to the found device
     return SparkManager.connect(toDtoDeviceId(getDeviceId(deviceForDescriptor)), toDtoDescriptor(descriptor))
-      .then(({connected}) => connected ? Promise.resolve() : Promise.reject())
       .catch((error: any) => {
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(tt("lbl_status_connection_failed")));

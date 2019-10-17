@@ -1,5 +1,4 @@
 import {compact, get, keyBy, without} from "lodash";
-import {Message, MessageSeverity} from "../state";
 import * as Ajv from "ajv";
 import {ErrorObject} from "ajv";
 import {ConfigParam, configParamNames, getConfigParamName, getConfigParamValue} from "../../models/ConfigParam";
@@ -24,6 +23,7 @@ import {
   getTypeValidationConfigParamRule
 } from "../validation-config-param-rules";
 import {IConfigParamRuleRegistry} from "../param-rules/ConfigParamRule";
+import {Message, MessageSeverity} from "../../models/Message";
 
 // tslint:disable-next-line:interface-over-type-literal
 export type DeviceConfigValidationResult = {

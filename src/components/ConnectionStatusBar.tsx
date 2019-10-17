@@ -9,7 +9,6 @@ import {
   IApplicationState,
   IDeviceState,
   isDeviceBlocked,
-  Message,
   PathDescriptor
 } from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
@@ -26,6 +25,7 @@ import {
 } from "../store/selectors";
 import {DeviceSelect} from "./DeviceSelect";
 import {InfoIcon} from "../icons";
+import {Message} from "../models/Message";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -81,7 +81,7 @@ const ConnectionStatusBar = (props: IProps) => {
 
   const statusBarConnectionClass = classNames("status-bar__connection", {
     "status-bar__connection--connected": connected,
-    "status-bar__connection--disconnected": !connected,
+    "status-bar__connection--disconnected": !connected && selectedDevice,
   });
 
   const deviceInfo = selectedDevice ?

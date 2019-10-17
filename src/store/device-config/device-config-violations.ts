@@ -1,8 +1,8 @@
 // tslint:disable-next-line:interface-over-type-literal
-import {Message, MessageSeverity} from "../state";
 import {ErrorObject} from "ajv";
 import {IRawDeviceConfigDto} from "../../models/device-config.dto";
 import {removeField, setArrayElement, setField} from "../../utils/object-utils";
+import {Message, MessageSeverity} from "../../models/Message";
 
 /**
  * This type describes a single violation of configuration file.

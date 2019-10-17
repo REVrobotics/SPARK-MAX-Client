@@ -2,7 +2,7 @@ import {FormGroup} from "@blueprintjs/core";
 import PopoverHelp from "../PopoverHelp";
 import * as React from "react";
 import {getParameterId, IConfigParamProps} from "../config-param-props";
-import {MessageSeverity} from "../../store/state";
+import {MessageSeverity} from "../../models/Message";
 
 interface IProps extends IConfigParamProps {
   title?: string

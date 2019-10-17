@@ -1,10 +1,11 @@
 import {without} from "lodash";
 import {IConfigParamContext, mapRule, mapRuleRegistry} from "./param-rules/ConfigParamRule";
-import {IApplicationState, Message} from "./state";
+import {IApplicationState} from "./state";
 import {ConfigParam, ParamStatus} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {queryConnectedDevicesByCanId, querySelectedDevice, querySelectedDeviceCurrentConfig} from "./selectors";
 import {getConfigParamRule} from "./config-param-rules";
 import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
+import {Message} from "../models/Message";
 
 export interface IRamConfigParamContext extends IConfigParamContext {
   getState(): IApplicationState;

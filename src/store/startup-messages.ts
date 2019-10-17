@@ -3,8 +3,8 @@
  */
 
 import {flatMap} from "lodash";
-import {Message} from "./state";
 import {DeviceConfigValidationResult} from "./device-config/device-config-validator";
+import {Message} from "../models/Message";
 
 const section = (...text: string[]) => text.map((t) => `====== ${t}`).join("\n");
 const title = (...text: string[]) => text.map((t) => `*** ${t}`).join("\n");
