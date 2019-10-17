@@ -18,8 +18,7 @@ import {
   IApplicationState, IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured,
-  isHubDevice,
+  isDeviceNotConfigured, PathDescriptor,
   ProcessType,
   VirtualDeviceId
 } from "./state";
@@ -33,6 +32,12 @@ export const querySelectedTabId = (state: IApplicationState) => state.ui.selecte
  */
 export const queryFirstVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}: IApplicationState) =>
   maybeMap(first(orderedDevices.map((id) => devices[id])), getVirtualDeviceId);
+
+/**
+ * Returns all devices having given descriptor
+ */
+export const queryDevicesByDescriptor = ({deviceSet: {devices}}: IApplicationState, descriptor: PathDescriptor) =>
+  filter(devices, (device) => device.descriptor === descriptor);
 
 /**
  * Returns true if at least one device exists, otherwise false
@@ -99,47 +104,31 @@ export const queryDevicesInOrder = ({deviceSet: {orderedDevices, devices}}: IApp
   orderedDevices.map((id) => devices[id]);
 
 /**
- * Returns HUB device ID for given device ID.
- * For HUB device this method returns its ID.
- * For CAN device this method returns ID of master HUB device.
- *
- * TODO: it seems this function will be changed as soon as descriptor support will be ready
+ * Returns {@link PathDescriptor} for given device ID.
  */
-export const queryHubVirtualDeviceId = (state: IApplicationState, id: VirtualDeviceId) => {
+export const queryPathDescriptor = (state: IApplicationState, id: VirtualDeviceId) => {
   const device = queryDevice(state, id);
-  if (isHubDevice(device)) {
-    return device.id;
-  } else {
-    return device.hubDeviceId!;
-  }
+  return device ? device.descriptor : undefined;
 };
 
 /**
  * Returns whether given device is connected or not.
- * HUB device is connected iff isConnected = true
- * CAN device is connected iff its HUB device is connected.
- *
- * TODO: it seems this function will be changed as soon as descriptor support will be ready
  */
 export const queryIsDeviceConnected = (state: IApplicationState, id: VirtualDeviceId) => {
   const device = queryDevice(state, id);
-  if (isHubDevice(device)) {
-    return device.id === state.context.connectedVirtualDeviceId;
-  } else {
-    const usbDevice = queryDevice(state, device.hubDeviceId!);
-    return usbDevice.id === state.context.connectedVirtualDeviceId;
-  }
+  const connectedDescriptor = queryConnectedDescriptor(state);
+  return device ? device.descriptor === connectedDescriptor : false;
 };
 
 /**
  * Returns whether any device is connected
  */
-export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedVirtualDeviceId(state) != null;
+export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedDescriptor(state) != null;
 
 /**
  * Returns id of connected device
  */
-export const queryConnectedVirtualDeviceId = (state: IApplicationState) => state.context.connectedVirtualDeviceId;
+export const queryConnectedDescriptor = (state: IApplicationState) => state.context.connectedDescriptor;
 
 /**
  * Returns whether selected device is in the connected state
@@ -340,7 +329,7 @@ export const queryLatestFirmwareVersion = (state: IApplicationState) => {
 /**
  * Returns requested firmware by the provided tag (Latest, RecoveryUpdateRequired, etc)
  */
-export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): IFirmwareEntry|undefined => {
+export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): IFirmwareEntry | undefined => {
   const config = queryFirmwareConfig(state);
 
   if (config == null || config.firmware == null) {
@@ -414,6 +403,6 @@ export const queryMessageQueueConfig = (state: IApplicationState) => state.ui.me
  * Message queue should be opened iff it has at least one message.
  */
 export const queryIsMessageQueueOpened = (state: IApplicationState) => {
-  const { messageQueue } = state.ui;
+  const {messageQueue} = state.ui;
   return messageQueue ? messageQueue.messages.length > 0 : false;
 };

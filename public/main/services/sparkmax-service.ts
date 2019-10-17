@@ -50,11 +50,13 @@ const pingResourceFactory = timerResourceFactory((device) =>
         if (doDisconnect) {
           context.disconnectDevice();
 
-          server.disconnect({device}, (disconnectErr: any, disconnectResponse: any) => {
+          server.disconnect({device}, (disconnectErr: any) => {
             console.log("Disconnected " + device + " from the SPARK server");
             notifyCallback(getTargetWindow(), "disconnect", disconnectErr, device);
             resolve();
           });
+        } else if (pingResponse.updateRequired) {
+          notifyCallback(getTargetWindow(), "resync");
         } else {
           resolve();
         }
@@ -98,10 +100,10 @@ ipcMain.on("kill-server", () => {
   }
 });
 
-onTwoWayCall("connect", (cb, device: string) => {
+onTwoWayCall("connect", (cb, device: string, descriptor?: string) => {
   console.log("Attempting to connect on " + device + "...");
   // If device is already connected, just return it
-  server.connect({device}, (err: any, response: any) => {
+  server.connect({device, path: descriptor}, (err: any, response: any) => {
     if (err) {
       cb(err);
     } else {
@@ -111,8 +113,8 @@ onTwoWayCall("connect", (cb, device: string) => {
   });
 });
 
-onTwoWayCall("disconnect", (cb, device: string) => {
-  console.log("Disconnecting on " + device + "...");
+onTwoWayCall("disconnect", (cb, device?: string) => {
+  console.log("Disconnecting on " + (device ? device : "the current device") + "...");
 
   // Wait until all current processing is finished
   context.pause()

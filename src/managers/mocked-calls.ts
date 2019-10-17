@@ -57,3 +57,18 @@
 // // });
 // //
 // // mockCallbackCall("load-firmware-progress", CB_ONLY_MOCK_CALL);
+
+// mockTwoWayCall("list-device", (ctx) => {
+//   return ctx.original().then((response: any) => ({
+//     ...response,
+//     extendedList: response.extendedList.concat([{
+//       ...response.extendedList[0],
+//       driverDesc: "asdfasdfasdf",
+//       uniqueId: 1,
+//     }]),
+//   }));
+// });
+//
+// mockCallbackCall("resync", CB_ONLY_MOCK_CALL);
+//
+// setTimeout(() => mockNotify("resync"), 10000);

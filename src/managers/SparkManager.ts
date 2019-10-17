@@ -65,36 +65,8 @@ class SparkManager {
     ipcRenderer.send("open-url", url);
   }
 
-  public discoverAndConnect(): Promise<string> {
-    return this.listUsbDevices()
-      .then(({deviceList}) => deviceList)
-      .then((devices: string[]) => {
-        if (devices.length > 0) {
-          return this.connect(devices[0])
-            .then((response: any) => {
-              if (!response.connected) {
-                return Promise.reject(response.root.error);
-              } else {
-                return Promise.resolve(devices[0]);
-              }
-            });
-        } else {
-          return Promise.reject("No devices were found.");
-        }
-      });
-  }
-
-  public listUsbDevices(): Promise<ListResponseDto> {
-    // TODO: As temporary solution we take the first one device as USB device.
-    //       In future this logic will be changed to use descriptors
-    return this.listDevices({all: true}).then((response) => ({
-      ...response,
-      extendedList: response.extendedList.slice(0, 1),
-    }));
-  }
-
-  public listCanDevices(deviceId: string): Promise<ListResponseDto> {
-    return this.listDevices({all: true, root: {device: deviceId}})
+  public listDevicesByDescriptor(pathDescriptor?: string): Promise<ListResponseDto> {
+    return this.listDevices({all: true, pathDescriptor})
   }
 
   public listAllDevices(): Promise<ListResponseDto> {
@@ -105,12 +77,12 @@ class SparkManager {
     return sendTwoWay("list-device", request);
   }
 
-  public connect(device: string): Promise<any> {
-    return sendTwoWay("connect", device);
+  public connect(deviceId: string, descriptor?: string): Promise<any> {
+    return sendTwoWay("connect", deviceId, descriptor);
   }
 
-  public disconnect(device: string): Promise<string> {
-    return sendTwoWay("disconnect", device);
+  public disconnect(): Promise<string> {
+    return sendTwoWay("disconnect");
   }
 
   public downloadFile(url: string): Promise<string> {
@@ -148,6 +120,10 @@ class SparkManager {
 
   public onDisconnect(f: (device: string) => void): () => void {
     return onCallback("disconnect", (err: Error, device: string) => f(device));
+  }
+
+  public onResync(listener: (error: any, response: any) => void): () => void {
+    return onCallback("resync", listener);
   }
 
   public onHeartbeat(listener: (error: any, response: any) => void): () => void {

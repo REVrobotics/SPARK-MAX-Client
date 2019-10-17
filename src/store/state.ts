@@ -4,10 +4,10 @@
 
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
-import {find, keyBy, sortBy, uniqueId} from "lodash";
+import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {ExtendedListResponseDto} from "../models/dto";
-import {setField} from "../utils/object-utils";
+import {diffObjects, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {substitute} from "../utils/string-utils";
@@ -48,14 +48,30 @@ export type VirtualDeviceId = string;
 export type DeviceId = number;
 
 /**
+ * PathDescriptor serves as unique ID of specific USB port.
+ * If we have SPARK MAX controller connected via USB port,
+ * all devices living on its CAN bus will share the same descriptor.
+ */
+export type PathDescriptor = string;
+
+/**
+ * Default descriptor used when server returns no descriptor for device.
+ * Default descriptor should never be send to the server:
+ * always use `toDtoDescriptor` and `fromDtoDescriptor` to guarantee correct handling of default descriptor.
+ *
+ * **Note** May be server always returns descriptor. But it does not matter.
+ *          Default descriptor is necessary just to follow the same state management flows in the client application.
+ */
+export const DEFAULT_PATH_DESCRIPTOR: PathDescriptor = "__default__";
+
+/**
  * Device-independent status of application
  */
 export interface IContextState {
   /**
    * ID of connected device
-   * TODO: in future it seems we will use descriptor, which groups devices on single CAN bus together
    */
-  connectedVirtualDeviceId?: VirtualDeviceId,
+  connectedDescriptor?: PathDescriptor,
   /**
    * ID of selected device
    */
@@ -263,9 +279,9 @@ export interface IDeviceState {
   uniqueId: number;
   info: IDeviceInfo;
   /**
-   * TODO: In future this field will be deleted as soon as we have support of descriptor
+   * Descriptor shared between devices connected to a single USB port
    */
-  hubDeviceId?: VirtualDeviceId;
+  descriptor: PathDescriptor;
   /**
    * Do we have device-specific processing in progress,
    * like connecting to the device, burning device configuration, etc
@@ -322,6 +338,15 @@ export interface IDeviceParameterState {
    * Any message associated with the parameter
    */
   message?: Message;
+}
+
+/**
+ * Result of diffing of two device sets
+ */
+export interface IDeviceDiffResult {
+  added: IDeviceState[],
+  merged: IDeviceState[],
+  removed: IDeviceState[],
 }
 
 /**
@@ -388,9 +413,9 @@ export enum ConfirmationAnswer {
 }
 
 export enum MessageSeverity {
-  Info = "Info",
-  Error = "Error",
-  Warning = "Warning"
+  Info = "info",
+  Error = "error",
+  Warning = "warning"
 }
 
 // tslint:disable-next-line:interface-over-type-literal
@@ -401,7 +426,7 @@ export type MessageParams = { [name: string]: any };
  */
 export class Message {
   public static create(severity: MessageSeverity, id: string, params?: MessageParams): Message {
-    return new Message(MessageSeverity.Error, id, params);
+    return new Message(severity, id, params);
   }
 
   public static info(id: string, params?: MessageParams): Message {
@@ -417,15 +442,15 @@ export class Message {
   }
 
   public static infoFromText(text: string): Message {
-    return Message.create(MessageSeverity.Info, "text", { text });
+    return Message.create(MessageSeverity.Info, "text", {text});
   }
 
   public static errorFromText(text: string): Message {
-    return Message.create(MessageSeverity.Error, "text", { text });
+    return Message.create(MessageSeverity.Error, "text", {text});
   }
 
   public static warningFromText(text: string): Message {
-    return Message.create(MessageSeverity.Warning, "text", { text });
+    return Message.create(MessageSeverity.Warning, "text", {text});
   }
 
   private _text?: string;
@@ -449,10 +474,11 @@ export class Message {
 /**
  * Creates initial state for device.
  */
-const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => ({
+export const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => ({
   id: uniqueId("device:"),
   fullDeviceId: extended.deviceId!,
   uniqueId: extended.uniqueId!,
+  descriptor: fromDtoDescriptor(extended.driverDesc),
   info: {
     deviceId: extended.deviceId!,
     interfaceName: extended.interfaceName!,
@@ -460,12 +486,21 @@ const createDeviceState = (extended: ExtendedListResponseDto): IDeviceState => (
     driverName: extended.driverName!,
     updateable: extended.updateable!,
   },
-  processStatus: "NOT CONNECTED",
+  processStatus: "",
   isProcessing: false,
   isLoaded: false,
   transientParameters: DEFAULT_TRANSIENT_STATE,
   currentParameters: [],
   burnedParameters: [],
+});
+
+/**
+ * Resets device state to describe not loaded and not connected device
+ */
+export const resetDeviceState = (state: IDeviceState) => ({
+  ...state,
+  uniqueId: 0,
+  isLoaded: false,
 });
 
 /**
@@ -480,38 +515,15 @@ export const getTransientState = (config: IDeviceParameterState[]): IDeviceTrans
 };
 
 /**
- * Creates initial state for HUB device.
- * TODO: It seems in future this method will be changed as soon as support of descriptor will be ready
+ * Device ID is passed to the server as string, but used in the application as number.
+ * This method is necessary for convenience
  */
-export const createHubDeviceState = (extended: ExtendedListResponseDto): IDeviceState => createDeviceState(extended);
-
-/**
- * Creates initial state for CAN (non-HUB) device.
- * TODO: It seems in future this method will be changed as soon as support of descriptor will be ready
- */
-export const createCanDeviceState = (extended: ExtendedListResponseDto,
-                                     hubDeviceId: VirtualDeviceId): IDeviceState => ({
-  ...createDeviceState(extended),
-  hubDeviceId,
-});
-
-/**
- * Is provided device is HUB device
- * TODO: It seems in future this method will be changed as soon as support of descriptor will be ready
- * @param device
- */
-export const isHubDevice = (device: IDeviceState) => !device.hubDeviceId;
-
+export const fromDtoDeviceId = (device: string) => Number(device);
 /**
  * Device ID is passed to the server as string, but used in the application as number.
- * This method is necessary for convenient
+ * This method is necessary for convenience
  */
-export const toDeviceId = (device: string) => Number(device);
-/**
- * Device ID is passed to the server as string, but used in the application as number.
- * This method is necessary for convenient
- */
-export const fromDeviceId = (deviceId: DeviceId) => String(deviceId);
+export const toDtoDeviceId = (deviceId: DeviceId) => String(deviceId);
 
 /**
  * Returns "physical" device ID of the given device
@@ -598,6 +610,33 @@ export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(
  */
 // tslint:disable-next-line:no-bitwise
 export const getCanIdFromDeviceId = (device: DeviceId) => device % 100;
+
+/**
+ * Analyzes two set of devices and determines which device was added, updated or removed
+ */
+export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDeviceDiffResult => {
+  const [previousZero, previousNotZero] = partition(
+    previous,
+    (device) => getCanIdFromDeviceId(getDeviceId(device)) === 0);
+  const [nextZero, nextNotZero] = partition(
+    next,
+    (device) => getCanIdFromDeviceId(getDeviceId(device)) === 0);
+
+  // Analyze devices having CAN ID != 0
+  const diffNon0 = diffObjects(previousNotZero, nextNotZero, getDeviceId);
+
+  // Analyze devices having CAN ID = 0
+  const diff0 = diffObjects(previousZero, nextZero, (device) => device.uniqueId);
+
+  return {
+    added: diffNon0.added.concat(diff0.added),
+    merged: diffNon0.unmodified
+      .concat(diff0.unmodified)
+      .concat(diffNon0.modified.map(({previous: p}) => p))
+      .concat(diff0.modified.map(({previous: p}) => p)),
+    removed: diffNon0.removed.concat(diff0.removed),
+  };
+};
 
 /**
  * Returns deviceId of device on CAN bus.
@@ -738,7 +777,7 @@ export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
       .map((value, param) => {
         const id = getConfigParamName(param);
         const rawParam = rawParamById[id];
-        return rawParam ? { ...rawParam, value } : { id, value };
+        return rawParam ? {...rawParam, value} : {id, value};
       })
       .filter((_, param) => param !== ConfigParam.kCanID),
   };
@@ -750,3 +789,7 @@ export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
 export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
   sortBy(configurations, (config) =>
     getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID ? `0:${config.name}` : `1:${config.name}`);
+
+export const isDefaultDescriptor = (descriptor: PathDescriptor) => descriptor === DEFAULT_PATH_DESCRIPTOR;
+export const toDtoDescriptor = (descriptor: PathDescriptor) => isDefaultDescriptor(descriptor) ? undefined : descriptor;
+export const fromDtoDescriptor = (descriptor?: PathDescriptor) => descriptor ? descriptor : DEFAULT_PATH_DESCRIPTOR;

@@ -18,7 +18,7 @@ import {ConfigParam, MotorType, SensorType} from "../../models/dto";
 import {forSelectedDevice} from "./action-creators";
 import {
   ConfirmationAnswer,
-  fromDeviceId,
+  toDtoDeviceId,
   IDeviceTransientState,
   isDeviceNotConfigured,
   ProcessType,
@@ -85,7 +85,7 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
 
     const device = queryDevice(getState(), virtualDeviceId);
 
-    const deviceId = fromDeviceId(device.fullDeviceId);
+    const deviceId = toDtoDeviceId(device.fullDeviceId);
 
     if (isDeviceNotConfigured(device) && param === ConfigParam.kCanID) {
       return SparkManager.idAssignment(newValue, device.uniqueId)
@@ -111,10 +111,11 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
 
 export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
+    dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
     dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_getting_parameters")));
 
     return delayPromise(1000)
-      .then(() => SparkManager.getConfigFromParams(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!)))
+      .then(() => SparkManager.getConfigFromParams(toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!)))
       .then((values) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -147,10 +148,10 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
 
       dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_burning_parameters")));
       dispatch(updateDeviceIsProcessing(virtualDeviceId, true, ProcessType.Save));
-      return SparkManager.burnFlash(fromDeviceId(deviceId))
+      return SparkManager.burnFlash(toDtoDeviceId(deviceId))
         .then(() => delayPromise(1000))
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((values) => {
+          SparkManager.getConfigFromParams(toDtoDeviceId(deviceId)).then((values) => {
             dispatch(setParameters(virtualDeviceId, values));
           }))
         .finally(() => {
@@ -177,13 +178,13 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
 
       const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
-      return SparkManager.restoreDefaults(fromDeviceId(deviceId))
+      return SparkManager.restoreDefaults(toDtoDeviceId(deviceId))
         .then(() => {
           dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_getting_parameters")));
           return delayPromise(1000);
         })
         .then(() =>
-          SparkManager.getConfigFromParams(fromDeviceId(deviceId)).then((values) => {
+          SparkManager.getConfigFromParams(toDtoDeviceId(deviceId)).then((values) => {
             dispatch(setParameters(virtualDeviceId, values));
           }))
         .finally(() => {

@@ -10,7 +10,7 @@ import {
   ConfirmationAnswer, DeviceId, IAlertDialogConfig,
   IApplicationState,
   IConfirmationDialogConfig, IDeviceConfiguration,
-  IDeviceState, IDeviceTransientState, IMessageQueueConfig, INetworkDevice,
+  IDeviceState, IDeviceTransientState, IMessageQueueConfig, INetworkDevice, PathDescriptor,
   ProcessType, TabId, VirtualDeviceId
 } from "../state";
 
@@ -22,15 +22,13 @@ export enum ActionType {
   SET_GLOBAL_PROCESSING = "SET_GLOBAL_PROCESSING",
   SET_DEVICE_PROCESS_STATUS = "SET_DEVICE_PROCESS_STATUS",
   SET_DEVICE_PROCESSING = "SET_DEVICE_PROCESSING",
-  SET_CONNECTED_DEVICE = "SET_CONNECTED_DEVICE",
+  SET_PROCESS_STATUS_BY_DESCRIPTOR = "SET_PROCESS_STATUS_BY_DESCRIPTOR",
+  SET_PROCESSING_BY_DESCRIPTOR = "SET_PROCESSING_BY_DESCRIPTOR",
+  SET_CONNECTED_DESCRIPTOR = "SET_CONNECTED_DESCRIPTOR",
   SET_DEVICE_LOADED = "SET_DEVICE_LOADED",
   ADD_DEVICES = "ADD_DEVICES",
   REPLACE_DEVICES = "REPLACE_DEVICES",
   SET_PARAMETERS = "SET_PARAMETERS",
-  SET_MOTOR_CONFIG = "SET_MOTOR_CONFIG",
-  SET_MOTOR_CONFIG_PARAMETER = "SET_MOTOR_CONFIG_PARAMETER",
-  SET_BURNED_MOTOR_CONFIG = "SET_BURNED_MOTOR_CONFIG",
-  SET_SERVER_PARAM_RESPONSE = "SET_SERVER_PARAM_RESPONSE",
   SAVE_CONFIRMATION = "SAVE_CONFIRMATION",
   BURN_CONFIRMATION = "BURN_CONFIRMATION",
   ADD_LOG = "ADD_LOG",
@@ -89,6 +87,12 @@ export interface IDeviceAwareAction extends Action {
   }
 }
 
+export interface IDescriptorAwareAction extends Action {
+  payload: {
+    descriptor: PathDescriptor
+  }
+}
+
 export interface IUpdateDeviceProcessStatus extends IDeviceAwareAction {
   type: ActionType.SET_DEVICE_PROCESS_STATUS,
   payload: {
@@ -97,11 +101,18 @@ export interface IUpdateDeviceProcessStatus extends IDeviceAwareAction {
   }
 }
 
-export interface ISetConnectedDevice extends IDeviceAwareAction {
-  type: ActionType.SET_CONNECTED_DEVICE,
+export interface IUpdateProcessStatusByDescriptor extends IDescriptorAwareAction {
+  type: ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR,
   payload: {
-    virtualDeviceId: VirtualDeviceId,
-    connected: boolean
+    descriptor: PathDescriptor,
+    processStatus: string
+  }
+}
+
+export interface ISetConnectedDescriptor {
+  type: ActionType.SET_CONNECTED_DESCRIPTOR,
+  payload: {
+    descriptor?: PathDescriptor
   }
 }
 
@@ -122,6 +133,15 @@ export interface ISetDeviceProcessing extends IDeviceAwareAction {
   }
 }
 
+export interface ISetProcessingByDescriptor extends IDescriptorAwareAction {
+  type: ActionType.SET_PROCESSING_BY_DESCRIPTOR,
+  payload: {
+    descriptor: PathDescriptor,
+    isProcessing: boolean,
+    processType?: ProcessType
+  }
+}
+
 export interface IAddDevices extends Action {
   type: ActionType.ADD_DEVICES,
   payload: {
@@ -132,8 +152,8 @@ export interface IAddDevices extends Action {
 export interface IReplaceDevices extends Action {
   type: ActionType.REPLACE_DEVICES,
   payload: {
-    device: IDeviceState,
-    replaceIds: VirtualDeviceId[],
+    descriptor: PathDescriptor,
+    devices: IDeviceState[],
   }
 }
 
@@ -379,8 +399,8 @@ export type SparkAction<R> = ThunkAction<R, IApplicationState, void, Application
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | ISelectDevice
-
-  | ISetParameters | ISetConnectedDevice | ISetDeviceLoaded | ISetSelectedDevice
+  | IUpdateProcessStatusByDescriptor | ISetProcessingByDescriptor
+  | ISetParameters | ISetConnectedDescriptor | ISetDeviceLoaded | ISetSelectedDevice
   | ISetDeviceParameter | ISetDeviceParameterResponse | IRecalculateDeviceId
   | ISetTransientParameter | IResetTransientState
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing

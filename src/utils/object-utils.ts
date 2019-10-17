@@ -1,4 +1,4 @@
-import {constant, findIndex, isFunction, omit} from "lodash";
+import {constant, difference, findIndex, intersection, isFunction, keyBy, omit} from "lodash";
 
 /**
  * Immutable setter of object field.
@@ -96,3 +96,37 @@ export function setArrayElementWith<T>(array: T[],
 export function coalesce<T, O extends T>(value: T | null | undefined, otherwise: O): T {
   return value == null ? otherwise : value;
 }
+
+/**
+ * Describes result of `diffObjects` operation
+ */
+interface IDiffResult<T> {
+  added: T[];
+  unmodified: T[];
+  modified: Array<{previous: T, next: T}>;
+  removed: T[];
+}
+
+/**
+ * Analyzes two set of objects and returns detailed description of all changes
+ */
+export function diffObjects<T>(previous: T[], next: T[], by: (obj: T) => any): IDiffResult<T> {
+  const previousIds = previous.map(by);
+  const nextIds = next.map(by);
+
+  const previousById = keyBy<T>(previous, by);
+  const nextById = keyBy<T>(next, by);
+
+  const addedIds = difference(nextIds, previousIds);
+  const existingIds = intersection(nextIds, previousIds);
+  const removedIds = difference(previousIds, nextIds);
+
+  return {
+    added: addedIds.map((id) => nextById[id]),
+    modified: existingIds
+      .filter((id) => previousById[id] !== nextById[id])
+      .map((id) => ({previous: previousById[id], next: nextById[id]})),
+    unmodified: existingIds.filter((id) => previousById[id] === nextById[id]).map((id) => previousById[id]),
+    removed: removedIds.map((id) => previousById[id]),
+  };
+};

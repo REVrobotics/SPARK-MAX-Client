@@ -15,8 +15,8 @@ const initialNetworkState: INetworkState = {
 
 const networkReducer = (state: INetworkState = initialNetworkState, action: ApplicationActions): INetworkState => {
   switch (action.type) {
-    case ActionType.SET_CONNECTED_DEVICE:
-      if (!action.payload.connected) {
+    case ActionType.SET_CONNECTED_DESCRIPTOR:
+      if (action.payload.descriptor == null) {
         return setFields(state, omit(initialNetworkState, "outputText"));
       } else {
         return state;

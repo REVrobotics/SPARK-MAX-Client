@@ -1,7 +1,9 @@
+import {first} from "lodash";
 import {Reducer} from "redux";
-import {getVirtualDeviceId, IContextState} from "../state";
+import {getVirtualDeviceId, IApplicationState, IContextState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {setField} from "../../utils/object-utils";
+import {setField, setNestedField} from "../../utils/object-utils";
+import {queryDevicesByDescriptor} from "../selectors";
 
 const initialContextState: IContextState = {
   isProcessing: false,
@@ -13,16 +15,8 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialCo
   switch (action.type) {
     case ActionType.SET_SELECTED_DEVICE:
       return setField(state, "selectedVirtualDeviceId", action.payload.virtualDeviceId);
-    case ActionType.REPLACE_DEVICES: {
-      // Ensure that selected device id always points out to the existing device
-      if (state.selectedVirtualDeviceId && action.payload.replaceIds.includes(state.selectedVirtualDeviceId)) {
-        return setField(state, "selectedVirtualDeviceId", getVirtualDeviceId(action.payload.device));
-      } else {
-        return state;
-      }
-    }
-    case ActionType.SET_CONNECTED_DEVICE:
-      return setField(state, "connectedVirtualDeviceId", action.payload.connected ? action.payload.virtualDeviceId : undefined);
+    case ActionType.SET_CONNECTED_DESCRIPTOR:
+      return setField(state, "connectedDescriptor", action.payload.descriptor);
     case ActionType.SET_GLOBAL_PROCESS_STATUS:
       return setField(state, "processStatus", action.payload.processStatus);
     case ActionType.SET_GLOBAL_PROCESSING:
@@ -31,5 +25,23 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialCo
       return state;
   }
 };
+
+const syncSelectedVirtualDeviceIdReducer = (state: IApplicationState,
+                                            action: ApplicationActions): IApplicationState => {
+  switch (action.type) {
+    case ActionType.REPLACE_DEVICES: {
+      const {selectedVirtualDeviceId} = state.context;
+      if (selectedVirtualDeviceId && state.deviceSet.devices[selectedVirtualDeviceId]) {
+        return state;
+      }
+      const firstDevice = first(queryDevicesByDescriptor(state, action.payload.descriptor))!;
+      return setNestedField(state, ["context", "selectedVirtualDeviceId"], getVirtualDeviceId(firstDevice));
+    }
+    default:
+      return state;
+  }
+};
+
+export { syncSelectedVirtualDeviceIdReducer };
 
 export default contextReducer;

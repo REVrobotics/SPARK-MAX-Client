@@ -3,16 +3,21 @@
  * These actions should not rely on some middleware and use only redux out-of-the box capabilities.
  */
 
-import {ActionCreator} from "redux";
 import {
   ActionType,
+  IAddConfiguration,
   IAddDevices,
   IAddLog,
+  IAddToMessageQueue,
   IConsoleOutput,
-  ISetLastFirmwareLoadingMessage,
+  IInitMessageQueue,
   IRecalculateDeviceId,
+  IRemoveConfiguration,
   IReplaceDevices,
-  ISetConnectedDevice,
+  IResetMessageQueue,
+  IResetTransientState,
+  ISetConfigurations,
+  ISetConnectedDescriptor,
   ISetConsoleOutput,
   ISetDeviceLoaded,
   ISetDeviceParameter,
@@ -23,46 +28,46 @@ import {
   ISetFirmwareDownloading,
   ISetFirmwareLoading,
   ISetGlobalProcessing,
+  ISetLastFirmwareLoadingMessage,
   ISetNetworkDevices,
   ISetNetworkScanInProgress,
   ISetParameters,
+  ISetProcessingByDescriptor,
   ISetSelectedDevice,
+  ISetSelectedTab,
+  ISetTransientParameter,
   ISetUpdateAvailable,
+  IUpdateConfiguration,
   IUpdateDeviceProcessStatus,
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  ISetSelectedTab,
-  ISetConfigurations,
-  IAddConfiguration,
-  IUpdateConfiguration,
-  IRemoveConfiguration,
-  IInitMessageQueue,
-  IResetMessageQueue,
-  IAddToMessageQueue,
-  ISetTransientParameter, IResetTransientState,
+  IUpdateProcessStatusByDescriptor,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 import {
   DeviceId,
   IDeviceConfiguration,
-  IDeviceState, IDeviceTransientState, IMessageQueueConfig,
+  IDeviceState,
+  IDeviceTransientState,
+  IMessageQueueConfig,
   INetworkDevice,
+  PathDescriptor,
   ProcessType,
   TabId,
   VirtualDeviceId
 } from "../state";
 import {ConfigParam} from "../../models/ConfigParam";
 
-export const updateGlobalProcessStatus: ActionCreator<IUpdateGlobalProcessStatus> = (processStatus: string) => ({
+export const updateGlobalProcessStatus = (processStatus: string): IUpdateGlobalProcessStatus => ({
   payload: {
     processStatus,
   },
   type: ActionType.SET_GLOBAL_PROCESS_STATUS
 });
 
-export const updateGlobalIsProcessing: ActionCreator<ISetGlobalProcessing> = (isProcessing: boolean) => ({
+export const updateGlobalIsProcessing = (isProcessing: boolean): ISetGlobalProcessing => ({
   payload: {
     isProcessing
   },
@@ -78,17 +83,24 @@ export const updateDeviceProcessStatus = (virtualDeviceId: VirtualDeviceId,
   type: ActionType.SET_DEVICE_PROCESS_STATUS
 });
 
-export const setConnectedDevice: ActionCreator<ISetConnectedDevice> = (virtualDeviceId: VirtualDeviceId,
-                                                                       connected: boolean) => ({
+export const updateProcessStatusByDescriptor = (descriptor: PathDescriptor,
+                                                processStatus: string): IUpdateProcessStatusByDescriptor => ({
   payload: {
-    virtualDeviceId,
-    connected
+    descriptor,
+    processStatus,
   },
-  type: ActionType.SET_CONNECTED_DEVICE
+  type: ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR
 });
 
-export const setDeviceLoaded: ActionCreator<ISetDeviceLoaded> = (virtualDeviceId: VirtualDeviceId,
-                                                                 loaded: boolean) => ({
+export const setConnectedDescriptor = (descriptor?: PathDescriptor): ISetConnectedDescriptor => ({
+  payload: {
+    descriptor,
+  },
+  type: ActionType.SET_CONNECTED_DESCRIPTOR
+});
+
+export const setDeviceLoaded = (virtualDeviceId: VirtualDeviceId,
+                                loaded: boolean): ISetDeviceLoaded => ({
   payload: {
     virtualDeviceId,
     loaded
@@ -107,24 +119,34 @@ export const updateDeviceIsProcessing = (virtualDeviceId: VirtualDeviceId,
   type: ActionType.SET_DEVICE_PROCESSING
 });
 
-export const addDevices: ActionCreator<IAddDevices> = (devices: IDeviceState[]) => ({
+export const updateIsProcessingByDescriptor = (descriptor: PathDescriptor,
+                                               isProcessing: boolean,
+                                               processType?: ProcessType): ISetProcessingByDescriptor => ({
+  payload: {
+    descriptor,
+    isProcessing,
+    processType
+  },
+  type: ActionType.SET_PROCESSING_BY_DESCRIPTOR
+});
+
+export const addDevices = (devices: IDeviceState[]): IAddDevices => ({
   payload: {
     devices,
   },
   type: ActionType.ADD_DEVICES
 });
 
-export const replaceDevices: ActionCreator<IReplaceDevices> = (device: IDeviceState,
-                                                               replaceIds: VirtualDeviceId[]) => ({
+export const replaceDevices = (descriptor: PathDescriptor, devices: IDeviceState[]): IReplaceDevices => ({
   payload: {
-    device,
-    replaceIds,
+    descriptor,
+    devices,
   },
   type: ActionType.REPLACE_DEVICES
 });
 
-export const setParameters: ActionCreator<ISetParameters> = (virtualDeviceId: VirtualDeviceId,
-                                                             parameters: number[]) => ({
+export const setParameters = (virtualDeviceId: VirtualDeviceId,
+                              parameters: number[]): ISetParameters => ({
   payload: {
     virtualDeviceId,
     parameters
@@ -132,9 +154,9 @@ export const setParameters: ActionCreator<ISetParameters> = (virtualDeviceId: Vi
   type: ActionType.SET_PARAMETERS
 });
 
-export const setDeviceParameter: ActionCreator<ISetDeviceParameter> = (virtualDeviceId: VirtualDeviceId,
-                                                                       parameter: ConfigParam,
-                                                                       value: number) => ({
+export const setDeviceParameter = (virtualDeviceId: VirtualDeviceId,
+                                   parameter: ConfigParam,
+                                   value: number): ISetDeviceParameter => ({
   payload: {
     virtualDeviceId,
     parameter,
@@ -161,10 +183,10 @@ export const resetTransientState = (virtualDeviceId: VirtualDeviceId): IResetTra
   type: ActionType.RESET_TRANSIENT_STATE,
 });
 
-export const setDeviceParameterResponse: ActionCreator<ISetDeviceParameterResponse> = (virtualDeviceId: VirtualDeviceId,
-                                                                                       parameter: ConfigParam,
-                                                                                       response: IServerResponse,
-                                                                                       updateValue: boolean) => ({
+export const setDeviceParameterResponse = (virtualDeviceId: VirtualDeviceId,
+                                           parameter: ConfigParam,
+                                           response: IServerResponse,
+                                           updateValue: boolean): ISetDeviceParameterResponse => ({
   payload: {
     virtualDeviceId,
     parameter,
@@ -174,36 +196,36 @@ export const setDeviceParameterResponse: ActionCreator<ISetDeviceParameterRespon
   type: ActionType.SET_DEVICE_PARAMETER_RESPONSE,
 });
 
-export const recalculateDeviceId: ActionCreator<IRecalculateDeviceId> = (virtualDeviceId: VirtualDeviceId) => ({
+export const recalculateDeviceId = (virtualDeviceId: VirtualDeviceId): IRecalculateDeviceId => ({
   payload: {
     virtualDeviceId,
   },
   type: ActionType.RECALCULATE_DEVICE_ID,
 });
 
-export const setSelectedDevice: ActionCreator<ISetSelectedDevice> = (virtualDeviceId: VirtualDeviceId) => ({
+export const setSelectedDevice = (virtualDeviceId: VirtualDeviceId): ISetSelectedDevice => ({
   payload: {
     virtualDeviceId,
   },
   type: ActionType.SET_SELECTED_DEVICE,
 });
 
-export const addLog: ActionCreator<IAddLog> = (log: string) => ({
+export const addLog = (log: string): IAddLog => ({
   payload: {
     log
   },
   type: ActionType.ADD_LOG
 });
 
-export const setNetworkDevices: ActionCreator<ISetNetworkDevices> = (devices: INetworkDevice[]) => ({
+export const setNetworkDevices = (devices: INetworkDevice[]): ISetNetworkDevices => ({
   payload: {
     devices,
   },
   type: ActionType.SET_NETWORK_DEVICES,
 });
 
-export const updateNetworkDevice: ActionCreator<IUpdateNetworkDevice> = (deviceId: DeviceId,
-                                                                         update: Partial<INetworkDevice>) => ({
+export const updateNetworkDevice = (deviceId: DeviceId,
+                                    update: Partial<INetworkDevice>): IUpdateNetworkDevice => ({
   payload: {
     deviceId,
     update,
@@ -211,55 +233,55 @@ export const updateNetworkDevice: ActionCreator<IUpdateNetworkDevice> = (deviceI
   type: ActionType.UPDATE_NETWORK_DEVICE,
 });
 
-export const setNetworkScanInProgress: ActionCreator<ISetNetworkScanInProgress> = (scanInProgress: boolean) => ({
+export const setNetworkScanInProgress = (scanInProgress: boolean): ISetNetworkScanInProgress => ({
   payload: {
     scanInProgress,
   },
   type: ActionType.SET_NETWORK_SCAN_IN_PROGRESS,
 });
 
-export const setFirmwareDownloading: ActionCreator<ISetFirmwareDownloading> = () => ({
+export const setFirmwareDownloading = (): ISetFirmwareDownloading => ({
   payload: {},
   type: ActionType.SET_FIRMWARE_DOWNLOADING,
 });
 
-export const setFirmwareDownloaded: ActionCreator<ISetFirmwareDownloaded> = (config: any) => ({
+export const setFirmwareDownloaded = (config: any): ISetFirmwareDownloaded => ({
   payload: {config},
   type: ActionType.SET_FIRMWARE_DOWNLOADED,
 });
 
-export const setFirmwareDownloadError: ActionCreator<ISetFirmwareDownloadError> = () => ({
+export const setFirmwareDownloadError = (): ISetFirmwareDownloadError => ({
   payload: {},
   type: ActionType.SET_FIRMWARE_DOWNLOAD_ERROR,
 });
 
-export const setFirmwareLoading: ActionCreator<ISetFirmwareLoading> = (loading: boolean) => ({
+export const setFirmwareLoading = (loading: boolean): ISetFirmwareLoading => ({
   payload: {loading},
   type: ActionType.SET_FIRMWARE_LOADING,
 });
 
-export const consoleOutput: ActionCreator<IConsoleOutput> = (text: string) => ({
+export const consoleOutput = (text: string): IConsoleOutput => ({
   payload: {text},
   type: ActionType.CONSOLE_OUTPUT,
 });
 
-export const setConsoleOutput: ActionCreator<ISetConsoleOutput> = (text: string[]) => ({
+export const setConsoleOutput = (text: string[]): ISetConsoleOutput => ({
   payload: {text},
   type: ActionType.SET_CONSOLE_OUTPUT,
 });
 
-export const updateFirmwareLoadingProgress: ActionCreator<IUpdateFirmwareLoadingProgress> = (progress: number,
-                                                                                             text: string) => ({
+export const updateFirmwareLoadingProgress = (progress: number,
+                                              text: string): IUpdateFirmwareLoadingProgress => ({
   payload: {progress, text},
   type: ActionType.UPDATE_FIRMWARE_LOADING_PROGRESS,
 });
 
-export const setLastFirmwareLoadingMessage: ActionCreator<ISetLastFirmwareLoadingMessage> = (message: string) => ({
+export const setLastFirmwareLoadingMessage = (message: string): ISetLastFirmwareLoadingMessage => ({
   payload: {message},
   type: ActionType.SET_LAST_FIRMWARE_LOADING_MESSAGE,
 });
 
-export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAvailable: boolean) => ({
+export const setUpdateAvailable = (updateAvailable: boolean): ISetUpdateAvailable => ({
   payload: {
     updateAvailable
   },
@@ -267,7 +289,7 @@ export const setUpdateAvailable: ActionCreator<ISetUpdateAvailable> = (updateAva
 });
 
 export const setSelectedTab = (tab: TabId): ISetSelectedTab => ({
-  payload: { tab },
+  payload: {tab},
   type: ActionType.SET_SELECTED_TAB,
 });
 

@@ -3,7 +3,7 @@ import {
   createNetworkDevice,
   DeviceId,
   FirmwareTag,
-  fromDeviceId,
+  toDtoDeviceId,
   getNetworkDeviceId,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
@@ -88,7 +88,7 @@ const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
-    return SparkManager.loadFirmware(path, deviceIds.map(fromDeviceId))
+    return SparkManager.loadFirmware(path, deviceIds.map(toDtoDeviceId))
       .then((res) => {
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
           showToastError(tt("msg_firmware_cannot_be_updated"));
@@ -159,7 +159,7 @@ export const updateLoadFirmwareProgress = (error: any, response: FirmwareRespons
         }
       }
 
-      dispatch(setLastFirmwareLoadingMessage(response.updateStageMessage));
+      dispatch(setLastFirmwareLoadingMessage(response.updateStageMessage || ""));
       dispatch(setConsoleOutput(updatedOutput));
     }
   };
@@ -193,7 +193,7 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
           (device) => {
             const deviceId = getNetworkDeviceId(device);
 
-            return SparkManager.getFirmware(fromDeviceId(deviceId))
+            return SparkManager.getFirmware(toDtoDeviceId(deviceId))
               .then((response) => {
                 if (hasError(response)) {
                   return Promise.reject(getErrorText(response));
@@ -269,7 +269,7 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
           (device) => {
             const deviceId = getNetworkDeviceId(device);
 
-            return SparkManager.getFirmware(fromDeviceId(deviceId))
+            return SparkManager.getFirmware(toDtoDeviceId(deviceId))
               .then((response) => hasError(response) ? Promise.reject() : Promise.resolve(response))
               .then((response) => {
                 const firmwareVersion = response.version!.substring(1);
