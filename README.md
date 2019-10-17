@@ -57,7 +57,7 @@ This script downloads file from GitHub repository and generates gRPC client usin
     1. Copy `scripts/proto-gen/proto-gen.secret-sample.js` file and rename it either to `proto-gen.secret.json` or `proto-gen.secret.js`.
 3. Run
     ```
-    npm run proto-gen
+    npm run gen:proto
     ```
 
 ## Application Arguments

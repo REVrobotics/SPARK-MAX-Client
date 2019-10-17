@@ -8,6 +8,7 @@ export enum TelemetryId {
 
 export interface ConnectRequestDto {
   device?: string;
+  path?: string;
 }
 
 export interface ConnectResponseDto {
@@ -31,6 +32,7 @@ export interface PingRequestDto {
 export interface PingResponseDto {
   root?: RootResponseDto;
   connected?: boolean;
+  updateRequired?: boolean;
 }
 
 export interface BurnRequestDto {
@@ -43,6 +45,7 @@ export interface BurnResponseDto {
 
 export interface RootCommandDto {
   device?: string;
+  verbosity?: number;
 }
 
 export interface RootResponseDto {
@@ -52,6 +55,7 @@ export interface RootResponseDto {
 export interface ListRequestDto {
   root?: RootCommandDto;
   all?: boolean;
+  pathDescriptor?: string;
 }
 
 export interface ExtendedListResponseDto {
@@ -61,6 +65,13 @@ export interface ExtendedListResponseDto {
   deviceId?: number;
   updateable?: boolean;
   uniqueId?: number;
+  driverDesc?: string;
+}
+
+export interface ExtendedDfuResponseDto {
+  deviceType?: string;
+  recoveryMode?: boolean;
+  identifier?: string;
 }
 
 export interface ListResponseDto {
@@ -68,6 +79,7 @@ export interface ListResponseDto {
   driverList: string[];
   root?: RootResponseDto;
   extendedList: ExtendedListResponseDto[];
+  dfuDevice: ExtendedDfuResponseDto[];
 }
 
 export interface FirmwareRequestDto {

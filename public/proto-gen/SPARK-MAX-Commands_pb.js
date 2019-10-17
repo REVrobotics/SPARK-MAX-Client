@@ -26,6 +26,7 @@ goog.exportSymbol('proto.sparkmax.connectRequest', null, global);
 goog.exportSymbol('proto.sparkmax.connectResponse', null, global);
 goog.exportSymbol('proto.sparkmax.disconnectRequest', null, global);
 goog.exportSymbol('proto.sparkmax.disconnectResponse', null, global);
+goog.exportSymbol('proto.sparkmax.extendedDfuResponse', null, global);
 goog.exportSymbol('proto.sparkmax.extendedListResponse', null, global);
 goog.exportSymbol('proto.sparkmax.factoryResetRequest', null, global);
 goog.exportSymbol('proto.sparkmax.firmwareRequest', null, global);
@@ -97,7 +98,8 @@ proto.sparkmax.connectRequest.prototype.toObject = function(opt_includeInstance)
  */
 proto.sparkmax.connectRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    device: jspb.Message.getFieldWithDefault(msg, 1, "")
+    device: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    path: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -138,6 +140,10 @@ proto.sparkmax.connectRequest.deserializeBinaryFromReader = function(msg, reader
       var value = /** @type {string} */ (reader.readString());
       msg.setDevice(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPath(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -174,6 +180,13 @@ proto.sparkmax.connectRequest.serializeBinaryToWriter = function(message, writer
       f
     );
   }
+  f = message.getPath();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -189,6 +202,21 @@ proto.sparkmax.connectRequest.prototype.getDevice = function() {
 /** @param {string} value */
 proto.sparkmax.connectRequest.prototype.setDevice = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string path = 2;
+ * @return {string}
+ */
+proto.sparkmax.connectRequest.prototype.getPath = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.sparkmax.connectRequest.prototype.setPath = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -900,7 +928,8 @@ proto.sparkmax.pingResponse.prototype.toObject = function(opt_includeInstance) {
 proto.sparkmax.pingResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     root: (f = msg.getRoot()) && proto.sparkmax.rootResponse.toObject(includeInstance, f),
-    connected: jspb.Message.getFieldWithDefault(msg, 2, false)
+    connected: jspb.Message.getFieldWithDefault(msg, 2, false),
+    updaterequired: jspb.Message.getFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -946,6 +975,10 @@ proto.sparkmax.pingResponse.deserializeBinaryFromReader = function(msg, reader) 
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setConnected(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUpdaterequired(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -987,6 +1020,13 @@ proto.sparkmax.pingResponse.serializeBinaryToWriter = function(message, writer) 
   if (f) {
     writer.writeBool(
       2,
+      f
+    );
+  }
+  f = message.getUpdaterequired();
+  if (f) {
+    writer.writeBool(
+      3,
       f
     );
   }
@@ -1037,6 +1077,23 @@ proto.sparkmax.pingResponse.prototype.getConnected = function() {
 /** @param {boolean} value */
 proto.sparkmax.pingResponse.prototype.setConnected = function(value) {
   jspb.Message.setProto3BooleanField(this, 2, value);
+};
+
+
+/**
+ * optional bool updateRequired = 3;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.sparkmax.pingResponse.prototype.getUpdaterequired = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 3, false));
+};
+
+
+/** @param {boolean} value */
+proto.sparkmax.pingResponse.prototype.setUpdaterequired = function(value) {
+  jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -1405,7 +1462,8 @@ proto.sparkmax.rootCommand.prototype.toObject = function(opt_includeInstance) {
  */
 proto.sparkmax.rootCommand.toObject = function(includeInstance, msg) {
   var f, obj = {
-    device: jspb.Message.getFieldWithDefault(msg, 1, "")
+    device: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    verbosity: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1446,6 +1504,10 @@ proto.sparkmax.rootCommand.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setDevice(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setVerbosity(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1482,6 +1544,13 @@ proto.sparkmax.rootCommand.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getVerbosity();
+  if (f !== 0) {
+    writer.writeUint32(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1497,6 +1566,21 @@ proto.sparkmax.rootCommand.prototype.getDevice = function() {
 /** @param {string} value */
 proto.sparkmax.rootCommand.prototype.setDevice = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional uint32 verbosity = 2;
+ * @return {number}
+ */
+proto.sparkmax.rootCommand.prototype.getVerbosity = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.sparkmax.rootCommand.prototype.setVerbosity = function(value) {
+  jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1690,7 +1774,8 @@ proto.sparkmax.listRequest.prototype.toObject = function(opt_includeInstance) {
 proto.sparkmax.listRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     root: (f = msg.getRoot()) && proto.sparkmax.rootCommand.toObject(includeInstance, f),
-    all: jspb.Message.getFieldWithDefault(msg, 2, false)
+    all: jspb.Message.getFieldWithDefault(msg, 2, false),
+    pathdescriptor: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -1736,6 +1821,10 @@ proto.sparkmax.listRequest.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setAll(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPathdescriptor(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1777,6 +1866,13 @@ proto.sparkmax.listRequest.serializeBinaryToWriter = function(message, writer) {
   if (f) {
     writer.writeBool(
       2,
+      f
+    );
+  }
+  f = message.getPathdescriptor();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -1827,6 +1923,21 @@ proto.sparkmax.listRequest.prototype.getAll = function() {
 /** @param {boolean} value */
 proto.sparkmax.listRequest.prototype.setAll = function(value) {
   jspb.Message.setProto3BooleanField(this, 2, value);
+};
+
+
+/**
+ * optional string pathDescriptor = 3;
+ * @return {string}
+ */
+proto.sparkmax.listRequest.prototype.getPathdescriptor = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.sparkmax.listRequest.prototype.setPathdescriptor = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -1882,7 +1993,8 @@ proto.sparkmax.extendedListResponse.toObject = function(includeInstance, msg) {
     devicename: jspb.Message.getFieldWithDefault(msg, 3, ""),
     deviceid: jspb.Message.getFieldWithDefault(msg, 4, 0),
     updateable: jspb.Message.getFieldWithDefault(msg, 5, false),
-    uniqueid: jspb.Message.getFieldWithDefault(msg, 6, 0)
+    uniqueid: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    driverdesc: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -1942,6 +2054,10 @@ proto.sparkmax.extendedListResponse.deserializeBinaryFromReader = function(msg, 
     case 6:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setUniqueid(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDriverdesc(value);
       break;
     default:
       reader.skipField();
@@ -2011,6 +2127,13 @@ proto.sparkmax.extendedListResponse.serializeBinaryToWriter = function(message, 
   if (f !== 0) {
     writer.writeUint32(
       6,
+      f
+    );
+  }
+  f = message.getDriverdesc();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
       f
     );
   }
@@ -2109,6 +2232,219 @@ proto.sparkmax.extendedListResponse.prototype.setUniqueid = function(value) {
 };
 
 
+/**
+ * optional string driverDesc = 7;
+ * @return {string}
+ */
+proto.sparkmax.extendedListResponse.prototype.getDriverdesc = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/** @param {string} value */
+proto.sparkmax.extendedListResponse.prototype.setDriverdesc = function(value) {
+  jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.sparkmax.extendedDfuResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.sparkmax.extendedDfuResponse, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.sparkmax.extendedDfuResponse.displayName = 'proto.sparkmax.extendedDfuResponse';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.sparkmax.extendedDfuResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.sparkmax.extendedDfuResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.sparkmax.extendedDfuResponse} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.sparkmax.extendedDfuResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    devicetype: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    recoverymode: jspb.Message.getFieldWithDefault(msg, 2, false),
+    identifier: jspb.Message.getFieldWithDefault(msg, 3, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.sparkmax.extendedDfuResponse}
+ */
+proto.sparkmax.extendedDfuResponse.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.sparkmax.extendedDfuResponse;
+  return proto.sparkmax.extendedDfuResponse.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.sparkmax.extendedDfuResponse} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.sparkmax.extendedDfuResponse}
+ */
+proto.sparkmax.extendedDfuResponse.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDevicetype(value);
+      break;
+    case 2:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setRecoverymode(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setIdentifier(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.sparkmax.extendedDfuResponse.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.sparkmax.extendedDfuResponse.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.sparkmax.extendedDfuResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.sparkmax.extendedDfuResponse.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getDevicetype();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getRecoverymode();
+  if (f) {
+    writer.writeBool(
+      2,
+      f
+    );
+  }
+  f = message.getIdentifier();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string deviceType = 1;
+ * @return {string}
+ */
+proto.sparkmax.extendedDfuResponse.prototype.getDevicetype = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.sparkmax.extendedDfuResponse.prototype.setDevicetype = function(value) {
+  jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional bool recoveryMode = 2;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.sparkmax.extendedDfuResponse.prototype.getRecoverymode = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 2, false));
+};
+
+
+/** @param {boolean} value */
+proto.sparkmax.extendedDfuResponse.prototype.setRecoverymode = function(value) {
+  jspb.Message.setProto3BooleanField(this, 2, value);
+};
+
+
+/**
+ * optional string identifier = 3;
+ * @return {string}
+ */
+proto.sparkmax.extendedDfuResponse.prototype.getIdentifier = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.sparkmax.extendedDfuResponse.prototype.setIdentifier = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
 
 /**
  * Generated by JsPbCodeGenerator.
@@ -2132,7 +2468,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.sparkmax.listResponse.repeatedFields_ = [1,2,4];
+proto.sparkmax.listResponse.repeatedFields_ = [1,2,4,5];
 
 
 
@@ -2167,7 +2503,9 @@ proto.sparkmax.listResponse.toObject = function(includeInstance, msg) {
     driverlistList: jspb.Message.getRepeatedField(msg, 2),
     root: (f = msg.getRoot()) && proto.sparkmax.rootResponse.toObject(includeInstance, f),
     extendedlistList: jspb.Message.toObjectList(msg.getExtendedlistList(),
-    proto.sparkmax.extendedListResponse.toObject, includeInstance)
+    proto.sparkmax.extendedListResponse.toObject, includeInstance),
+    dfudeviceList: jspb.Message.toObjectList(msg.getDfudeviceList(),
+    proto.sparkmax.extendedDfuResponse.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -2221,6 +2559,11 @@ proto.sparkmax.listResponse.deserializeBinaryFromReader = function(msg, reader) 
       var value = new proto.sparkmax.extendedListResponse;
       reader.readMessage(value,proto.sparkmax.extendedListResponse.deserializeBinaryFromReader);
       msg.addExtendedlist(value);
+      break;
+    case 5:
+      var value = new proto.sparkmax.extendedDfuResponse;
+      reader.readMessage(value,proto.sparkmax.extendedDfuResponse.deserializeBinaryFromReader);
+      msg.addDfudevice(value);
       break;
     default:
       reader.skipField();
@@ -2279,6 +2622,14 @@ proto.sparkmax.listResponse.serializeBinaryToWriter = function(message, writer) 
       4,
       f,
       proto.sparkmax.extendedListResponse.serializeBinaryToWriter
+    );
+  }
+  f = message.getDfudeviceList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      5,
+      f,
+      proto.sparkmax.extendedDfuResponse.serializeBinaryToWriter
     );
   }
 };
@@ -2400,6 +2751,37 @@ proto.sparkmax.listResponse.prototype.addExtendedlist = function(opt_value, opt_
 
 proto.sparkmax.listResponse.prototype.clearExtendedlistList = function() {
   this.setExtendedlistList([]);
+};
+
+
+/**
+ * repeated extendedDfuResponse dfuDevice = 5;
+ * @return {!Array<!proto.sparkmax.extendedDfuResponse>}
+ */
+proto.sparkmax.listResponse.prototype.getDfudeviceList = function() {
+  return /** @type{!Array<!proto.sparkmax.extendedDfuResponse>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.sparkmax.extendedDfuResponse, 5));
+};
+
+
+/** @param {!Array<!proto.sparkmax.extendedDfuResponse>} value */
+proto.sparkmax.listResponse.prototype.setDfudeviceList = function(value) {
+  jspb.Message.setRepeatedWrapperField(this, 5, value);
+};
+
+
+/**
+ * @param {!proto.sparkmax.extendedDfuResponse=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.sparkmax.extendedDfuResponse}
+ */
+proto.sparkmax.listResponse.prototype.addDfudevice = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 5, opt_value, proto.sparkmax.extendedDfuResponse, opt_index);
+};
+
+
+proto.sparkmax.listResponse.prototype.clearDfudeviceList = function() {
+  this.setDfudeviceList([]);
 };
 
 

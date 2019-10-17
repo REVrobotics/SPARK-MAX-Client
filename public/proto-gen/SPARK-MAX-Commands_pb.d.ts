@@ -10,6 +10,9 @@ export class connectRequest extends jspb.Message {
     getDevice(): string;
     setDevice(value: string): void;
 
+    getPath(): string;
+    setPath(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): connectRequest.AsObject;
@@ -24,6 +27,7 @@ export class connectRequest extends jspb.Message {
 export namespace connectRequest {
     export type AsObject = {
         device: string,
+        path: string,
     }
 }
 
@@ -135,6 +139,9 @@ export class pingResponse extends jspb.Message {
     getConnected(): boolean;
     setConnected(value: boolean): void;
 
+    getUpdaterequired(): boolean;
+    setUpdaterequired(value: boolean): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): pingResponse.AsObject;
@@ -150,6 +157,7 @@ export namespace pingResponse {
     export type AsObject = {
         root?: rootResponse.AsObject,
         connected: boolean,
+        updaterequired: boolean,
     }
 }
 
@@ -205,6 +213,9 @@ export class rootCommand extends jspb.Message {
     getDevice(): string;
     setDevice(value: string): void;
 
+    getVerbosity(): number;
+    setVerbosity(value: number): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): rootCommand.AsObject;
@@ -219,6 +230,7 @@ export class rootCommand extends jspb.Message {
 export namespace rootCommand {
     export type AsObject = {
         device: string,
+        verbosity: number,
     }
 }
 
@@ -253,6 +265,9 @@ export class listRequest extends jspb.Message {
     getAll(): boolean;
     setAll(value: boolean): void;
 
+    getPathdescriptor(): string;
+    setPathdescriptor(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): listRequest.AsObject;
@@ -268,6 +283,7 @@ export namespace listRequest {
     export type AsObject = {
         root?: rootCommand.AsObject,
         all: boolean,
+        pathdescriptor: string,
     }
 }
 
@@ -290,6 +306,9 @@ export class extendedListResponse extends jspb.Message {
     getUniqueid(): number;
     setUniqueid(value: number): void;
 
+    getDriverdesc(): string;
+    setDriverdesc(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): extendedListResponse.AsObject;
@@ -309,6 +328,36 @@ export namespace extendedListResponse {
         deviceid: number,
         updateable: boolean,
         uniqueid: number,
+        driverdesc: string,
+    }
+}
+
+export class extendedDfuResponse extends jspb.Message { 
+    getDevicetype(): string;
+    setDevicetype(value: string): void;
+
+    getRecoverymode(): boolean;
+    setRecoverymode(value: boolean): void;
+
+    getIdentifier(): string;
+    setIdentifier(value: string): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): extendedDfuResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: extendedDfuResponse): extendedDfuResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: extendedDfuResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): extendedDfuResponse;
+    static deserializeBinaryFromReader(message: extendedDfuResponse, reader: jspb.BinaryReader): extendedDfuResponse;
+}
+
+export namespace extendedDfuResponse {
+    export type AsObject = {
+        devicetype: string,
+        recoverymode: boolean,
+        identifier: string,
     }
 }
 
@@ -334,6 +383,11 @@ export class listResponse extends jspb.Message {
     setExtendedlistList(value: Array<extendedListResponse>): void;
     addExtendedlist(value?: extendedListResponse, index?: number): extendedListResponse;
 
+    clearDfudeviceList(): void;
+    getDfudeviceList(): Array<extendedDfuResponse>;
+    setDfudeviceList(value: Array<extendedDfuResponse>): void;
+    addDfudevice(value?: extendedDfuResponse, index?: number): extendedDfuResponse;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): listResponse.AsObject;
@@ -351,6 +405,7 @@ export namespace listResponse {
         driverlistList: Array<string>,
         root?: rootResponse.AsObject,
         extendedlistList: Array<extendedListResponse.AsObject>,
+        dfudeviceList: Array<extendedDfuResponse.AsObject>,
     }
 }
 
