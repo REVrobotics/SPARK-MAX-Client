@@ -30,6 +30,12 @@ import {
   getDeviceParamValueOrDefault
 } from "../store/param-rules/config-param-helpers";
 import {ConfigParam} from "../models/ConfigParam";
+import {ChartjsWaveformEngine, createWaveformDisplay, DataSet, WaveformChart, WaveformScale} from "../display";
+
+const engine = new ChartjsWaveformEngine();
+const ChartJsDisplay = createWaveformDisplay(engine);
+const dataSource1 = engine.createDataSource({});
+const dataSource2 = engine.createDataSource({});
 
 interface IProps {
   deviceId: DeviceId,
@@ -38,6 +44,7 @@ interface IProps {
   connected: boolean,
 
   setParameters(parameters: number[]): void;
+
   setParameterResponse(param: ConfigParam, response: IServerResponse): void;
 }
 
@@ -52,6 +59,7 @@ interface IState {
   dStr: string,
   fStr: string,
   updatingProfile: boolean
+  two: boolean,
 }
 
 class RunTab extends React.Component<IProps, IState> {
@@ -87,7 +95,8 @@ class RunTab extends React.Component<IProps, IState> {
       iStr: "0.0",
       dStr: "0.0",
       fStr: "0.0",
-      updatingProfile: false
+      updatingProfile: false,
+      two: false,
     };
 
     this.changeMode = this.changeMode.bind(this);
@@ -147,7 +156,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   public render() {
     const {currentParameters, burnedParameters, connected} = this.props;
-    const {currentProfile, option, mode, output, running, pStr, iStr, dStr, fStr, updatingProfile} = this.state;
+    const {currentProfile, option, mode, output, running, pStr, iStr, dStr, fStr, updatingProfile, two} = this.state;
 
     const p = pStr;
     const i = iStr;
@@ -185,8 +194,37 @@ class RunTab extends React.Component<IProps, IState> {
     const fRes = currentF.lastResponse;
     const fErr: boolean = fRes && fRes.status === 4 || false;
 
+    const scale2 = two ?
+      <WaveformScale id="axis-2"
+                     autoScale={true}
+                     min={0}
+                     max={100}
+                     suggestedMax={50}
+                     color="blue"/>
+      : null;
+    const plot2 = two ?
+      <DataSet scaleId="axis-2" dataSource={dataSource2} label="Plot 2" color="blue"/>
+      : null;
+
     return (
-      <div className="graph">
+      <div>
+        {/* tslint:disable-next-line:jsx-no-lambda */}
+        <button type="button" onClick={() => this.setState({two: !two})}>Show two plots</button>
+        <ChartJsDisplay>
+          <WaveformChart timeSpan={30}>
+            <WaveformScale id="axis-1"
+                           autoScale={true}
+                           min={0}
+                           max={100}
+                           suggestedMax={50}
+                           color="red"/>
+            <DataSet scaleId="axis-1" dataSource={dataSource1} label="Plot 1" color="red"/>
+          </WaveformChart>
+          <WaveformChart timeSpan={40}>
+            {scale2}
+            {plot2}
+          </WaveformChart>
+        </ChartJsDisplay>
         <ReactEcharts
           option={option}
           notMerge={true}

@@ -603,3 +603,15 @@ button.link {
 .device-marker--error {
     color: #c23030;
 }
+
+.waveform-display {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+}
+
+.waveform-chart {
+    position: relative;
+    flex: 1;
+}
