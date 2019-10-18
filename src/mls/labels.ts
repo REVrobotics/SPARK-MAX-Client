@@ -89,6 +89,7 @@ const labels = {
   "lbl_status_set_configuration": "SETTING CONFIGURATION...",
   "lbl_status_connected": "CONNECTED",
   "lbl_status_connecting": "CONNECTING...",
+  "lbl_status_disconnecting": "DISCONNECTING...",
   "lbl_status_connection_failed": "CONNECTION FAILED",
   "lbl_status_searching": "SEARCHING...",
   "lbl_status_search_failed": "SEARCH FAILED",
@@ -98,6 +99,8 @@ const labels = {
   "lbl_status_failed_to_get_parameters": "FAILED TO GET PARAMETERS",
   "lbl_status_burning_parameters": "BURNING PARAMETERS...",
   "lbl_status_resetting": "RESETTING...",
+  "lbl_status_syncing": "SYNCING...",
+  "lbl_status_failed_to_sync": "FAILED TO SYNC...",
   "lbl_yes": "Yes",
   "lbl_no": "No",
   "lbl_problems_during_startup": "Problems During Startup",
@@ -110,6 +113,8 @@ const labels = {
   "lbl_network_tab": "Network",
   "lbl_help_tab": "Help",
   "lbl_about_tab": "About",
+  "lbl_not_connected_lc": "not connected",
+  "lbl_configuration_issue_lc": "configuration issue",
 };
 
 export default labels;

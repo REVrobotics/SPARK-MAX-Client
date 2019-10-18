@@ -105,6 +105,7 @@ function createWindow() {
   require("./main/services/sparkmax-service");
   require("./main/services/config-service");
   require("./main/services/device-config-service");
+  require("./main/services/log-service");
 
   /* There are plenty of events to listen for in the window's webContents property. This specific event fires when
    * the window itself is not only initialized, but it's rendered web page has finished loading. This provides a smooth

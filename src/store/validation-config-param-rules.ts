@@ -15,9 +15,10 @@ import {ConfigParam, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {getConfigParamName, getConfigParamValue} from "../models/ConfigParam";
 import {getConfigParamRule} from "./config-param-rules";
-import {IEnumFieldConstraints, INumericFieldConstraints, Message} from "./state";
+import {IEnumFieldConstraints, INumericFieldConstraints} from "./state";
 import {substitute} from "../utils/string-utils";
 import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
+import {Message} from "../models/Message";
 
 export interface IValidationConfigParamContext extends IConfigParamContext {
   config: IRawDeviceConfigDto;

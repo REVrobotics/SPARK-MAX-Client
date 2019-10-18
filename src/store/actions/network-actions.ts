@@ -3,11 +3,11 @@ import {
   createNetworkDevice,
   DeviceId,
   FirmwareTag,
-  fromDeviceId,
   getNetworkDeviceId,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
-  NetworkDeviceStatus
+  NetworkDeviceStatus,
+  toDtoDeviceId
 } from "../state";
 import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
@@ -23,7 +23,7 @@ import {
   updateGlobalProcessStatus,
   updateNetworkDevice
 } from "./atom-actions";
-import {concatMapPromises, logError} from "../../utils/promise-utils";
+import {concatMapPromises} from "../../utils/promise-utils";
 import {
   queryConsoleOutput,
   queryFirmwareByTag,
@@ -40,6 +40,7 @@ import {
   renderAllNetworkDevicesHelpText,
   renderNetworkDeviceHelpText
 } from "./actions-rendered-content";
+import {onError, useErrorHandler} from "./error-actions";
 
 /**
  * Selects firmware and starts loading process
@@ -88,7 +89,7 @@ const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
-    return SparkManager.loadFirmware(path, deviceIds.map(fromDeviceId))
+    return SparkManager.loadFirmware(path, deviceIds.map(toDtoDeviceId))
       .then((res) => {
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
           showToastError(tt("msg_firmware_cannot_be_updated"));
@@ -101,10 +102,11 @@ const loadFirmware = (path: string, deviceIds: DeviceId[]): SparkAction<Promise<
         }
       })
       // Rescan CAN bus to actualize data on Network tab
-      .catch((error: any) => {
+      .catch(onError((error: any) => {
         dispatch(firmwareLoadingError(error));
         dispatch(firmwareLoadingError());
-      });
+      }))
+      .catch(useErrorHandler(dispatch));
   };
 };
 
@@ -159,7 +161,7 @@ export const updateLoadFirmwareProgress = (error: any, response: FirmwareRespons
         }
       }
 
-      dispatch(setLastFirmwareLoadingMessage(response.updateStageMessage));
+      dispatch(setLastFirmwareLoadingMessage(response.updateStageMessage || ""));
       dispatch(setConsoleOutput(updatedOutput));
     }
   };
@@ -193,7 +195,7 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
           (device) => {
             const deviceId = getNetworkDeviceId(device);
 
-            return SparkManager.getFirmware(fromDeviceId(deviceId))
+            return SparkManager.getFirmware(toDtoDeviceId(deviceId))
               .then((response) => {
                 if (hasError(response)) {
                   return Promise.reject(getErrorText(response));
@@ -218,7 +220,6 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
                   }));
                 }
               })
-              .catch(logError)
               // If we cannot load firmware for some device we mark it with "error" status
               .catch((error) => dispatch(updateNetworkDevice(deviceId, {
                 loading: false,
@@ -246,7 +247,8 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
           intent: Intent.WARNING,
           okLabel: tt("lbl_close"),
         }));
-      });
+      })
+      .catch(useErrorHandler(dispatch));
   };
 };
 
@@ -269,8 +271,7 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
           (device) => {
             const deviceId = getNetworkDeviceId(device);
 
-            return SparkManager.getFirmware(fromDeviceId(deviceId))
-              .then((response) => hasError(response) ? Promise.reject() : Promise.resolve(response))
+            return SparkManager.getFirmware(toDtoDeviceId(deviceId))
               .then((response) => {
                 const firmwareVersion = response.version!.substring(1);
                 // Check if device has the latest version
@@ -278,7 +279,8 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
               });
           })
       })
-      .then((obsoletes) => obsoletes.some(Boolean));
+      .then((obsoletes) => obsoletes.some(Boolean))
+      .catch(useErrorHandler(dispatch));
   };
 
 export const selectNetworkDevice = (id: DeviceId, selected: boolean): SparkAction<void> => {

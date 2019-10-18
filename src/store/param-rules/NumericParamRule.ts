@@ -1,5 +1,5 @@
 import {identity, stubFalse} from "lodash";
-import {INumericFieldConstraints, Message} from "../state";
+import {INumericFieldConstraints} from "../state";
 import {
   ConfigParamRuleType,
   EMPTY_OPTIONS,
@@ -8,6 +8,7 @@ import {
   VALIDATE_SUCCESS
 } from "./ConfigParamRule";
 import {ConfigParam} from "../../models/ConfigParam";
+import {Message} from "../../models/Message";
 
 export interface INumericRuleOptions {
   default: number;

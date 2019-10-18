@@ -1,16 +1,17 @@
-import {keyBy, values, sortBy} from "lodash";
+import {filter, fromPairs, keyBy, sortBy, values} from "lodash";
 import {Reducer} from "redux";
 import {
-  DeviceId,
-  getDeviceId,
+  DeviceId, getDeviceId,
   getDeviceParamValue,
   getTransientState,
-  getVirtualDeviceId, IApplicationState, IDeviceParameterState,
+  getVirtualDeviceId,
+  IApplicationState,
+  IDeviceParameterState,
   IDeviceSetState,
-  IDeviceState
+  IDeviceState, VirtualDeviceId
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {removeFields, setArrayElement, setField, setFields} from "../../utils/object-utils";
+import {removeFields, setArrayElement, setField, setFields, setNestedField} from "../../utils/object-utils";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {createRamConfigParamContext, getRamConfigParamRule, IRamConfigParamContext} from "../ram-config-param-rules";
 
@@ -30,19 +31,27 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
   switch (action.type) {
     case ActionType.ADD_DEVICES: {
       const devices = setFields(state.devices, keyBy(action.payload.devices, getVirtualDeviceId));
-      return setFields(state, {
-        devices,
-        orderedDevices: sortBy(values(devices), getDeviceId).map(getVirtualDeviceId),
-      });
+      return setField(state, "devices", devices);
     }
     case ActionType.REPLACE_DEVICES: {
-      const mainDeviceId = getVirtualDeviceId(action.payload.device);
-      const withoutCanDevices = removeFields(state.devices, action.payload.replaceIds);
-      const devices = setField(withoutCanDevices, mainDeviceId as any, action.payload.device);
-      return setFields(state, {
-        devices,
-        orderedDevices: sortBy(values(devices), getDeviceId).map(getVirtualDeviceId),
-      });
+      const oldDevices = filter(state.devices, (device) => device.descriptor === action.payload.descriptor);
+      const withoutOldDevices = removeFields(state.devices, oldDevices.map(getVirtualDeviceId));
+
+      const withNewDevices = setFields(
+        withoutOldDevices,
+        fromPairs(action.payload.devices.map((device) => [getVirtualDeviceId(device), device])));
+      return setField(state, "devices", withNewDevices);
+    }
+    case ActionType.SET_PROCESSING_BY_DESCRIPTOR:
+    case ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR: {
+      // Find all devices having the same descriptor
+      const devices = filter(state.devices, (device) => device.descriptor === action.payload.descriptor);
+      return setField(
+        state,
+        "devices",
+        setFields(
+          state.devices,
+          fromPairs(devices.map((device) => [getVirtualDeviceId(device), deviceReducer(device, action)]))));
     }
     case ActionType.SET_DEVICE_LOADED:
     case ActionType.SET_DEVICE_PROCESS_STATUS:
@@ -58,19 +67,21 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
         "devices",
         setField(state.devices,
           action.payload.virtualDeviceId,
-          deviceSetReducers(state.devices[action.payload.virtualDeviceId], action)));
+          deviceReducer(state.devices[action.payload.virtualDeviceId], action)));
     default:
       return state;
   }
 };
 
-const deviceSetReducers: Reducer<IDeviceState> = (state: IDeviceState, action: ApplicationActions): IDeviceState => {
+const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: ApplicationActions): IDeviceState => {
   switch (action.type) {
     case ActionType.SET_DEVICE_LOADED:
       return {...state, isLoaded: action.payload.loaded};
     case ActionType.SET_DEVICE_PROCESS_STATUS:
+    case ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR:
       return {...state, processStatus: action.payload.processStatus};
     case ActionType.SET_DEVICE_PROCESSING:
+    case ActionType.SET_PROCESSING_BY_DESCRIPTOR:
       return {...state, isProcessing: action.payload.isProcessing, processType: action.payload.processType};
     case ActionType.SET_PARAMETERS: {
       const parameterStates = action.payload.parameters.map((value) => ({value}));
@@ -177,5 +188,29 @@ const validateDeviceParameter = (ctx: IRamConfigParamContext,
   return setField(parameterState, "message", rule.validate(ctx));
 };
 
-export { parameterValidationReducer };
+const deviceOrderingReducer = (state: IApplicationState, action: ApplicationActions): IApplicationState =>
+  setNestedField(
+    state,
+    ["deviceSet", "orderedDevices"],
+    orderedDevicesReducer(state, action));
+
+const orderedDevicesReducer = (state: IApplicationState, action: ApplicationActions): VirtualDeviceId[] => {
+  switch (action.type) {
+    case ActionType.ADD_DEVICES:
+    case ActionType.REPLACE_DEVICES:
+    case ActionType.SET_CONNECTED_DESCRIPTOR: {
+      const devices = values(state.deviceSet.devices);
+      const descriptor = state.context.connectedDescriptor;
+
+      return sortBy(
+        devices,
+        (device) => `${device.descriptor === descriptor ? "0": "1"}:${device.descriptor}:${getDeviceId(device)}`)
+        .map(getVirtualDeviceId);
+    }
+    default:
+      return state.deviceSet.orderedDevices;
+  }
+};
+
+export { parameterValidationReducer, deviceOrderingReducer };
 export default deviceSetReducer;

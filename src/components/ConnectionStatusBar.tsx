@@ -3,10 +3,19 @@ import {Button, Icon, Intent, Popover, PopoverInteractionKind, PopoverPosition} 
 import * as React from "react";
 import {useCallback, useState} from "react";
 import {connect} from "react-redux";
-import {DeviceBlockedReason, getVirtualDeviceId, IApplicationState, IDeviceState} from "../store/state";
+import {
+  DeviceBlockedReason,
+  getVirtualDeviceId,
+  IApplicationState,
+  IDeviceState,
+  isDeviceBlocked,
+  PathDescriptor
+} from "../store/state";
 import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
 import {
-  queryDevicesInOrder, queryHasGlobalError,
+  queryConnectedDescriptor,
+  queryDevicesInOrder,
+  queryHasGlobalError,
   queryIsConnectableToAnyDevice,
   queryIsInProcessing,
   queryIsSelectedDeviceConnected,
@@ -16,6 +25,7 @@ import {
 } from "../store/selectors";
 import {DeviceSelect} from "./DeviceSelect";
 import {InfoIcon} from "../icons";
+import {Message} from "../models/Message";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -23,6 +33,7 @@ interface IProps {
   processStatus: string,
   processing: boolean,
   connected: boolean,
+  connectedDescriptor?: PathDescriptor;
   connectable: boolean,
   hasGlobalError: boolean;
   blockedReason?: DeviceBlockedReason;
@@ -46,6 +57,7 @@ const getBlockedReasonText = (reason: DeviceBlockedReason) => {
 const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processing, processStatus, connected, connectable, hasGlobalError,
+    connectedDescriptor,
     onConnect, onDisconnect, onSelectDevice,
   } = props;
 
@@ -55,9 +67,21 @@ const ConnectionStatusBar = (props: IProps) => {
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
   const onDeviceSelectClosed = useCallback(() => setSelectOpened(false), []);
 
+  const getDeviceMarker = useCallback(
+    (device: IDeviceState) => {
+      if (device.descriptor !== connectedDescriptor) {
+        return Message.info("lbl_not_connected_lc");
+      } else if (isDeviceBlocked(device)) {
+        return Message.error("lbl_configuration_issue_lc");
+      } else {
+        return;
+      }
+    },
+    [connectedDescriptor]);
+
   const statusBarConnectionClass = classNames("status-bar__connection", {
     "status-bar__connection--connected": connected,
-    "status-bar__connection--disconnected": !connected,
+    "status-bar__connection--disconnected": !connected && selectedDevice,
   });
 
   const deviceInfo = selectedDevice ?
@@ -115,6 +139,7 @@ const ConnectionStatusBar = (props: IProps) => {
       </Popover>
       <DeviceSelect className="status-bar__device-selector"
                     devices={devices}
+                    getMarker={getDeviceMarker}
                     selected={selectedDevice}
                     disabled={devices.length <= 1}
                     onSelect={onSelectDevice}
@@ -147,6 +172,7 @@ export function mapStateToProps(state: IApplicationState) {
     selectedDevice: querySelectedDevice(state),
     devices: queryDevicesInOrder(state),
     connected: queryIsSelectedDeviceConnected(state),
+    connectedDescriptor: queryConnectedDescriptor(state),
     hasGlobalError: queryHasGlobalError(state),
     blockedReason: querySelectedDeviceBlockedReason(state),
     processing: queryIsInProcessing(state),

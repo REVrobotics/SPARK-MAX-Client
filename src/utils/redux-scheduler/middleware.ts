@@ -35,7 +35,7 @@ export const reduxScheduler: (config: IScheduleConfig) => Middleware = (config) 
               (reason) => schedule.reject(task, reason));
           } catch (err) {
             schedule.reject(task, err);
-            return Promise.reject();
+            return Promise.reject(err);
           }
         });
 

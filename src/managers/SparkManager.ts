@@ -1,6 +1,7 @@
 import {ConfigParam} from "../models/ConfigParam";
-import {FirmwareResponseDto, ListRequestDto, ListResponseDto} from "../models/dto";
+import {FirmwareResponseDto, getErrorText, hasError, ListRequestDto, ListResponseDto} from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
+import {LogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../models/errors";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -10,6 +11,20 @@ export interface IServerResponse {
   responseValue: number | string | boolean,
   type: number,
   status: number,
+}
+
+function wrapSparkError<T>(promise: Promise<T>): Promise<T> {
+  return promise
+    // Specialize SystemError to make it obvious what is the source of error
+    .catch((error: SystemError) => Promise.reject(error.specialize(() => ({ category: SYSTEM_ERROR_SPARKMAX_CATEGORY }))))
+    .then((response) => {
+      // If sparkmax returns error => promise should be rejected with error
+      if (hasError(response)) {
+        return Promise.reject<T>(LogicError.create("sparkmax", getErrorText(response)))
+      } else {
+        return response;
+      }
+    });
 }
 
 class SparkManager {
@@ -65,36 +80,8 @@ class SparkManager {
     ipcRenderer.send("open-url", url);
   }
 
-  public discoverAndConnect(): Promise<string> {
-    return this.listUsbDevices()
-      .then(({deviceList}) => deviceList)
-      .then((devices: string[]) => {
-        if (devices.length > 0) {
-          return this.connect(devices[0])
-            .then((response: any) => {
-              if (!response.connected) {
-                return Promise.reject(response.root.error);
-              } else {
-                return Promise.resolve(devices[0]);
-              }
-            });
-        } else {
-          return Promise.reject("No devices were found.");
-        }
-      });
-  }
-
-  public listUsbDevices(): Promise<ListResponseDto> {
-    // TODO: As temporary solution we take the first one device as USB device.
-    //       In future this logic will be changed to use descriptors
-    return this.listDevices({all: true}).then((response) => ({
-      ...response,
-      extendedList: response.extendedList.slice(0, 1),
-    }));
-  }
-
-  public listCanDevices(deviceId: string): Promise<ListResponseDto> {
-    return this.listDevices({all: true, root: {device: deviceId}})
+  public listDevicesByDescriptor(pathDescriptor?: string): Promise<ListResponseDto> {
+    return this.listDevices({all: true, pathDescriptor})
   }
 
   public listAllDevices(): Promise<ListResponseDto> {
@@ -102,15 +89,15 @@ class SparkManager {
   }
 
   public listDevices(request: ListRequestDto): Promise<ListResponseDto> {
-    return sendTwoWay("list-device", request);
+    return wrapSparkError(sendTwoWay("list-device", request));
   }
 
-  public connect(device: string): Promise<any> {
-    return sendTwoWay("connect", device);
+  public connect(deviceId: string, descriptor?: string): Promise<any> {
+    return wrapSparkError(sendTwoWay("connect", deviceId, descriptor));
   }
 
-  public disconnect(device: string): Promise<string> {
-    return sendTwoWay("disconnect", device);
+  public disconnect(): Promise<string> {
+    return wrapSparkError(sendTwoWay("disconnect"));
   }
 
   public downloadFile(url: string): Promise<string> {
@@ -118,16 +105,7 @@ class SparkManager {
   }
 
   public restoreDefaults(device: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      ipcRenderer.once("restore-defaults-response", (event: any, error: any, response: any) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(response);
-        }
-      });
-      ipcRenderer.send("restore-defaults", device);
-    });
+    return wrapSparkError(sendTwoWay("restore-defaults", device));
   }
 
   public requestFirmware(): Promise<any[]> {
@@ -135,11 +113,11 @@ class SparkManager {
   }
 
   public getFirmware(device: string): Promise<FirmwareResponseDto> {
-    return sendTwoWay("get-firmware", device);
+    return wrapSparkError(sendTwoWay("get-firmware", device));
   }
 
   public loadFirmware(filename: string, devicesToUpdate: string[]): Promise<FirmwareResponseDto> {
-    return sendTwoWay("load-firmware", filename, devicesToUpdate);
+    return wrapSparkError(sendTwoWay("load-firmware", filename, devicesToUpdate));
   }
 
   public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {
@@ -148,6 +126,10 @@ class SparkManager {
 
   public onDisconnect(f: (device: string) => void): () => void {
     return onCallback("disconnect", (err: Error, device: string) => f(device));
+  }
+
+  public onResync(listener: (error: any, response: any) => void): () => void {
+    return onCallback("resync", listener);
   }
 
   public onHeartbeat(listener: (error: any, response: any) => void): () => void {
@@ -180,11 +162,11 @@ class SparkManager {
   }
 
   public burnFlash(device: string): Promise<any> {
-    return sendTwoWay("burn-flash", device);
+    return wrapSparkError(sendTwoWay("burn-flash", device));
   }
 
   public idAssignment(canId: number, uniqueId: number): Promise<any> {
-    return sendTwoWay("id-assignment", canId, uniqueId);
+    return wrapSparkError(sendTwoWay("id-assignment", canId, uniqueId));
   }
 
   public async setAndGetParameter(device: string,
@@ -196,11 +178,11 @@ class SparkManager {
   }
 
   private getParameter(device: string, id: number): Promise<number> {
-    return sendTwoWay("get-param", device, id).then((response) => Number(response.value));
+    return wrapSparkError(sendTwoWay("get-param", device, id).then((response) => Number(response.value)));
   }
 
   private getParameterList(device: string): Promise<number[]> {
-    return sendTwoWay("get-param-list", device);
+    return wrapSparkError(sendTwoWay("get-param-list", device));
   }
 
   public showInfoBox(title: string, message: string) {
@@ -208,7 +190,7 @@ class SparkManager {
   }
 
   private setParameter(device: string, id: number, value: number | string | boolean): Promise<number> {
-    return sendTwoWay("set-param", device, id, value);
+    return wrapSparkError(sendTwoWay("set-param", device, id, value));
   }
 }
 

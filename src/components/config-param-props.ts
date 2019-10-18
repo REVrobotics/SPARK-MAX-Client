@@ -1,6 +1,7 @@
 import {ConfigParam} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
-import {IFieldConstraints, Message} from "../store/state";
+import {IFieldConstraints} from "../store/state";
 import {IDictionaryWord} from "../store/dictionaries";
+import {Message} from "../models/Message";
 
 export interface IConfigParamProps {
   parameter: ConfigParam;

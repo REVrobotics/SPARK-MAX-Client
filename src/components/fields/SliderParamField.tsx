@@ -2,8 +2,9 @@ import {Slider} from "@blueprintjs/core";
 import * as classNames from "classnames";
 import * as React from "react";
 import {useCallback} from "react";
-import {IFieldConstraints, INumericFieldConstraints, MessageSeverity} from "../../store/state";
+import {IFieldConstraints, INumericFieldConstraints} from "../../store/state";
 import {IConfigParamProps} from "../config-param-props";
+import {MessageSeverity} from "../../models/Message";
 
 interface IProps extends IConfigParamProps {
   className?: string;

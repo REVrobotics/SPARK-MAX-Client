@@ -426,6 +426,19 @@ var sparkMaxServerService = exports.sparkMaxServerService = {
     responseDeserialize: deserialize_sparkmax_firmwareResponse,
   },
   //
+  // Retrieve or update the firmware of the device(s)
+  firmwareRecover: {
+    path: '/sparkmax.sparkMaxServer/FirmwareRecover',
+    requestStream: false,
+    responseStream: false,
+    requestType: SPARK$MAX$Commands_pb.firmwareRequest,
+    responseType: SPARK$MAX$Commands_pb.firmwareResponse,
+    requestSerialize: serialize_sparkmax_firmwareRequest,
+    requestDeserialize: deserialize_sparkmax_firmwareRequest,
+    responseSerialize: serialize_sparkmax_firmwareResponse,
+    responseDeserialize: deserialize_sparkmax_firmwareResponse,
+  },
+  //
   // Set a device parameter. The parameter should be configParam type
   // the value is a string in both the request and response.
   setParameter: {

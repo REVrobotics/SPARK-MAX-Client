@@ -5,7 +5,7 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {
   DeviceId,
-  fromDeviceId,
+  toDtoDeviceId,
   getProfileConfigParam,
   IApplicationState,
   IDeviceParameterState,
@@ -292,9 +292,9 @@ class RunTab extends React.Component<IProps, IState> {
 
   private updateProfile() {
     this.setState({updatingProfile: true});
-    SparkManager.burnFlash(fromDeviceId(this.props.deviceId)).then(() => {
+    SparkManager.burnFlash(toDtoDeviceId(this.props.deviceId)).then(() => {
       setTimeout(() => {
-        SparkManager.getConfigFromParams(fromDeviceId(this.props.deviceId)).then((values) => {
+        SparkManager.getConfigFromParams(toDtoDeviceId(this.props.deviceId)).then((values) => {
           this.props.setParameters(values);
           this.setState({updatingProfile: false});
         }).catch((error: any) => {
@@ -339,7 +339,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyP(value: number, valueStr: string) {
     const param = getProfileConfigParam(this.state.currentProfile, ProfileConfigParam.P);
-    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(toDtoDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
       this.props.setParameterResponse(param, res);
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
         this.setState({pStr: valueStr});
@@ -351,7 +351,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyI(value: number, valueStr: string) {
     const param = getProfileConfigParam(this.state.currentProfile, ProfileConfigParam.I);
-    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(toDtoDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
       this.props.setParameterResponse(param, res);
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
         this.setState({iStr: valueStr});
@@ -363,7 +363,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyD(value: number, valueStr: string) {
     const param = getProfileConfigParam(this.state.currentProfile, ProfileConfigParam.I);
-    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(toDtoDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
       this.props.setParameterResponse(param, res);
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
         this.setState({dStr: valueStr});
@@ -375,7 +375,7 @@ class RunTab extends React.Component<IProps, IState> {
 
   private modifyF(value: number, valueStr: string) {
     const param = getProfileConfigParam(this.state.currentProfile, ProfileConfigParam.F);
-    SparkManager.setAndGetParameter(fromDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
+    SparkManager.setAndGetParameter(toDtoDeviceId(this.props.deviceId), param, value).then((res: IServerResponse) => {
       this.props.setParameterResponse(param, res);
       if (parseFloat(res.responseValue as string) === parseFloat(valueStr)) {
         this.setState({fStr: valueStr});
@@ -437,7 +437,7 @@ class RunTab extends React.Component<IProps, IState> {
     } else if (value.currentTarget.value === 2) {
       modeStr = tt("lbl_position");
     }
-    SparkManager.setControlMode(fromDeviceId(this.props.deviceId), value.currentTarget.value);
+    SparkManager.setControlMode(toDtoDeviceId(this.props.deviceId), value.currentTarget.value);
     this.setState({
       mode: modeStr,
       option: {

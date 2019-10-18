@@ -1,72 +1,66 @@
 import {first} from "lodash";
 import {
-  createCanDeviceState,
-  createHubDeviceState,
-  fromDeviceId,
-  getVirtualDeviceId,
-  setVirtualDeviceId,
+  createDeviceState,
+  diffDevices,
+  getDeviceId,
+  PathDescriptor,
+  resetDeviceState,
+  toDtoDescriptor,
+  toDtoDeviceId,
   VirtualDeviceId
 } from "../state";
 import {
   addDevices,
-  addLog, replaceDevices,
-  setConnectedDevice, setDeviceLoaded, setParameters, setSelectedDevice,
-  updateDeviceIsProcessing,
-  updateDeviceProcessStatus,
+  replaceDevices,
+  setConnectedDescriptor,
+  setSelectedDevice,
   updateGlobalIsProcessing,
-  updateGlobalProcessStatus
+  updateGlobalProcessStatus,
+  updateIsProcessingByDescriptor,
+  updateProcessStatusByDescriptor
 } from "./atom-actions";
 import SparkManager from "../../managers/SparkManager";
 import {
-  queryConnectedVirtualDeviceId,
+  queryConnectedDescriptor,
   queryDevice,
-  queryHubVirtualDeviceId,
-  querySelectedVirtualDeviceId,
+  queryDevicesByDescriptor,
   queryIsDeviceConnected,
-  queryDeviceId, queryConnectedDevices
+  queryPathDescriptor,
+  querySelectedVirtualDeviceId
 } from "../selectors";
 import {loadParameters} from "./parameter-actions";
 import {SparkAction} from "./action-types";
-import {onSchedule} from "../../utils/redux-scheduler";
-import {logError} from "../../utils/promise-utils";
+import {showToastWarning} from "./ui-actions";
+import {onError, useErrorHandler} from "./error-actions";
 
-export function connectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
+export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
-    dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_connecting")));
-    dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
+    // Update status of all devices for the given descriptor
+    dispatch(updateGlobalIsProcessing(true));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_connecting")));
+    dispatch(updateIsProcessingByDescriptor(descriptor, true));
 
-    const deviceId = fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!);
+    // Find some device for the given descriptor
+    // It does not matter what device (having the same descriptor) we use to connect
+    const deviceForDescriptor = first(queryDevicesByDescriptor(getState(), descriptor))!;
 
-    return SparkManager.connect(deviceId)
-      .then(() =>
-        // After device is connected, scan its CAN bus
-        SparkManager.listCanDevices(deviceId)
-          .catch((err) => {
-            // Common error handling, catch clause here below will process error
-            SparkManager.disconnect(deviceId);
-            return Promise.reject(err);
-          }))
-      .then(({extendedList}) => {
-        // Here we need only SPARK MAX controllers
-        const sparkMaxDevices = extendedList.filter((extended) => extended.updateable);
-        // Generate device state for each device
-        const canDevices = sparkMaxDevices.map((extended) => createCanDeviceState(extended, virtualDeviceId));
-        // We assume that first device is the device we tried to connect
-        // We have to assign correct id (that was used initially)
-        const firstCanDevice = canDevices.slice(0, 1).map((device) => setVirtualDeviceId(device, virtualDeviceId));
-        dispatch(addDevices(firstCanDevice.concat(canDevices.slice(1))));
-      })
-      .catch(logError)
-      .catch((error: any) => {
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_connection_failed")));
-        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-        dispatch(addLog(error));
-        return Promise.reject(error);
-      })
+    // Try to connect to the found device
+    return SparkManager.connect(toDtoDeviceId(getDeviceId(deviceForDescriptor)), toDtoDescriptor(descriptor))
+      .catch(onError(() => {
+        dispatch(updateGlobalIsProcessing(false));
+        dispatch(updateGlobalProcessStatus(tt("lbl_status_connection_failed")));
+        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+      }))
       .then(() => {
-        dispatch(setConnectedDevice(virtualDeviceId, true));
-        return dispatch(loadParameters(virtualDeviceId))
-      });
+        dispatch(setConnectedDescriptor(descriptor));
+        dispatch(updateGlobalIsProcessing(false));
+        dispatch(updateGlobalProcessStatus(""));
+        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+
+        // Resync list of devices after connection
+        return dispatch(syncDevices(descriptor));
+      })
+      .catch(useErrorHandler(dispatch));
   };
 }
 
@@ -78,60 +72,104 @@ export function connectToSelectedDevice(): SparkAction<Promise<void>> {
       return Promise.resolve();
     }
 
-    const hubDeviceId = queryHubVirtualDeviceId(getState(), deviceId);
+    const descriptor = queryPathDescriptor(getState(), deviceId);
 
-    return dispatch(disconnectCurrentDevice())
-      .then(() => dispatch(connectHubDevice(hubDeviceId)))
-  };
-}
-
-export function disconnectHubDevice(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> {
-  return onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
-    dispatch(updateDeviceIsProcessing(virtualDeviceId, true));
-    return SparkManager.disconnect(fromDeviceId(queryDeviceId(getState(), virtualDeviceId)!))
-      .then(() =>
-        SparkManager.listUsbDevices()
-        // TODO: select disconnected USB device based on descriptor
-          .then(({extendedList}) => first(extendedList)!))
-      .then((disconnectedDevice) => {
-        // Remove all CAN devices connected to hub device
-        // As we do not know what device is a hub, we just replace current one by hub device state
-        const device = setVirtualDeviceId(createHubDeviceState(disconnectedDevice), virtualDeviceId);
-        const deviceIdsToReplace = queryConnectedDevices(getState()).map(getVirtualDeviceId);
-        dispatch(replaceDevices(device, deviceIdsToReplace));
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
-        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-        dispatch(setDeviceLoaded(virtualDeviceId, false));
-        dispatch(setConnectedDevice(virtualDeviceId, false));
-        dispatch(setParameters(virtualDeviceId, []));
-      })
-      .catch(logError)
-      .catch(() => {
-        dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-      });
-  });
-};
-
-export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
-  return (dispatch, getState) => {
-    const virtualDeviceId = queryConnectedVirtualDeviceId(getState());
-    if (virtualDeviceId == null) {
+    // Hardly, it can be imagined such situation when descriptor is absent, but just in case
+    if (descriptor == null) {
       return Promise.resolve();
     }
 
-    const hubVirtualDeviceId = queryHubVirtualDeviceId(getState(), virtualDeviceId);
+    return dispatch(disconnectCurrentDevice())
+      .then(() => dispatch(connectDevice(descriptor)))
+  };
+}
 
-    return dispatch(disconnectHubDevice(hubVirtualDeviceId));
+export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
+  return (dispatch, getState) => {
+    const descriptor = queryConnectedDescriptor(getState());
+
+    if (descriptor == null) {
+      return Promise.resolve();
+    }
+
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_disconnecting")));
+    dispatch(updateGlobalIsProcessing(true));
+    dispatch(updateIsProcessingByDescriptor(descriptor, true));
+    return SparkManager.disconnect()
+      .then(() => {
+        const devices = queryDevicesByDescriptor(getState(), descriptor);
+        dispatch(replaceDevices(descriptor, devices.map(resetDeviceState)));
+
+        dispatch(setConnectedDescriptor());
+      })
+      .catch(useErrorHandler(dispatch))
+      .finally(() => {
+        dispatch(updateGlobalProcessStatus(""));
+        dispatch(updateGlobalIsProcessing(false));
+        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+      });
+  };
+}
+
+export function syncDevices(descriptor: PathDescriptor,
+                            showNotifications: boolean = false): SparkAction<Promise<void>> {
+  return (dispatch, getState) => {
+    // Update status of all devices for the given descriptor
+    dispatch(updateProcessStatusByDescriptor(descriptor, tt("lbl_status_syncing")));
+    dispatch(updateIsProcessingByDescriptor(descriptor, true));
+
+    return SparkManager.listDevicesByDescriptor(toDtoDescriptor(descriptor))
+      .then(({extendedList}) => {
+        // Here we need only SPARK MAX controllers
+        const nextDevices = extendedList.filter((extended) => extended.updateable);
+        // Generate device state for each connected device
+        const nextDeviceStates = nextDevices.map(createDeviceState);
+        const currentDeviceStates = queryDevicesByDescriptor(getState(), descriptor);
+        const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
+        // Merge list of devices for the given descriptor
+        dispatch(replaceDevices(descriptor, added.concat(merged)));
+        dispatch(updateProcessStatusByDescriptor(descriptor, ""));
+        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+
+        if (showNotifications) {
+          added.forEach((device) => showToastWarning(tt("msg_device_added", {
+            deviceId: device.info.deviceId,
+            deviceName: device.info.deviceName
+          })));
+
+          removed.forEach((device) => showToastWarning(tt("msg_device_removed", {
+            deviceId: device.info.deviceId,
+            deviceName: device.info.deviceName
+          })));
+        }
+      })
+      .catch(onError(() => {
+        dispatch(updateProcessStatusByDescriptor(descriptor, tt("lbl_status_failed_to_sync")));
+        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+      }))
+      .then(() => {
+        const selectedDeviceId = querySelectedVirtualDeviceId(getState());
+        if (selectedDeviceId) {
+          return dispatch(ensureDeviceLoaded(selectedDeviceId));
+        } else {
+          return Promise.resolve();
+        }
+      })
+      .catch(useErrorHandler(dispatch));
   };
 }
 
 export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> =>
+  (dispatch) => {
+    dispatch(setSelectedDevice(virtualDeviceId));
+    return dispatch(ensureDeviceLoaded(virtualDeviceId));
+  };
+
+export const ensureDeviceLoaded = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> =>
   (dispatch, getState) => {
     const device = queryDevice(getState(), virtualDeviceId);
 
     const isConnected = queryIsDeviceConnected(getState(), virtualDeviceId);
-
-    dispatch(setSelectedDevice(virtualDeviceId));
 
     // load parameters if device is connected and parameters was not loaded
     return isConnected && !device.isLoaded ?
@@ -139,20 +177,21 @@ export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Prom
       : Promise.resolve();
   };
 
-export function findUsbDevices(): SparkAction<Promise<void>> {
+export function findAllDevices(): SparkAction<Promise<void>> {
   return (dispatch) => {
     dispatch(updateGlobalProcessStatus(tt("lbl_status_searching")));
     dispatch(updateGlobalIsProcessing(true));
 
-    return SparkManager.listUsbDevices()
-      .then(({deviceList, extendedList}) => {
+    return SparkManager.listAllDevices()
+      .then(({extendedList}) => {
         dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
-        dispatch(addDevices(extendedList.map((extended) => createHubDeviceState(extended))));
+        dispatch(addDevices(extendedList.filter(({updateable}) => updateable).map(createDeviceState)));
       })
-      .catch(() => {
+      .catch(onError(() => {
         dispatch(updateGlobalProcessStatus(tt("lbl_status_search_failed")));
         dispatch(updateGlobalIsProcessing(false));
-      });
+      }))
+      .catch(useErrorHandler(dispatch));
   };
 }

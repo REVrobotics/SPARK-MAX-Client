@@ -1,9 +1,9 @@
 import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import {initMessageQueue, setConnectedDevice, setSelectedTab, updateDeviceProcessStatus} from "./atom-actions";
-import {connectHubDevice, findUsbDevices, selectDevice} from "./connection-actions";
-import {queryDeviceByDeviceId, queryFirstVirtualDeviceId} from "../selectors";
-import {ConfirmationAnswer, getVirtualDeviceId, TabId, toDeviceId} from "../state";
+import {initMessageQueue, setConnectedDescriptor, setSelectedTab} from "./atom-actions";
+import {connectDevice, findAllDevices, selectDevice, syncDevices} from "./connection-actions";
+import {queryConnectedDescriptor, queryFirstVirtualDeviceId, querySelectedDevice} from "../selectors";
+import {ConfirmationAnswer, TabId} from "../state";
 import {downloadLatestFirmware} from "./firmware-actions";
 import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./network-actions";
 import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
@@ -25,7 +25,7 @@ function loadApplicationData(): SparkAction<Promise<any>> {
 
     return dispatch(loadConfigurations())
       .then(() => dispatch(whenMessageQueueClosed()))
-      .then(() => dispatch(findUsbDevices()));
+      .then(() => dispatch(findAllDevices()));
   }
 }
 
@@ -39,16 +39,21 @@ export function initApplication(): SparkAction<void> {
           return;
         }
         return dispatch(selectDevice(virtualDeviceId))
-          .then(() => dispatch(connectHubDevice(virtualDeviceId)))
+          .then(() => {
+            const selectedDevice = querySelectedDevice(getState())!;
+            return dispatch(connectDevice(selectedDevice.descriptor));
+          })
           .then(() => dispatch(checkForFirmwareUpdate()));
       });
 
-    SparkManager.onDisconnect((deviceId) => {
-      const device = queryDeviceByDeviceId(getState(), toDeviceId(deviceId));
-      if (device) {
-        const virtualDeviceId = getVirtualDeviceId(device);
-        dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
-        dispatch(setConnectedDevice(virtualDeviceId, false));
+    SparkManager.onDisconnect(() => {
+      dispatch(setConnectedDescriptor());
+    });
+
+    SparkManager.onResync(() => {
+      const descriptor = queryConnectedDescriptor(getState());
+      if (descriptor) {
+        dispatch(syncDevices(descriptor, true));
       }
     });
 

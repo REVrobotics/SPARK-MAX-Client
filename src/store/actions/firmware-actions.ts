@@ -2,7 +2,6 @@ import {SparkAction} from "./action-types";
 import WebProvider from "../../providers/WebProvider";
 import SparkManager from "../../managers/SparkManager";
 import {
-  addLog,
   consoleOutput,
   setFirmwareDownloaded,
   setFirmwareDownloadError,
@@ -15,6 +14,7 @@ import {
   queryIsFirmwareDownloading
 } from "../selectors";
 import {FirmwareTag} from "../state";
+import {onError, useErrorHandler} from "./error-actions";
 
 let configLoadPromise: Promise<void>;
 
@@ -46,11 +46,12 @@ export const downloadLatestFirmware = (): SparkAction<Promise<void>> => {
             .catch(() => dispatch(consoleOutput(tt("msg_console_output:cannot_download_firmware_version"))));
         }
         return firmwareJSON;
-      }).catch((error: any) => {
+      })
+      .catch(onError(() => {
         dispatch(setFirmwareDownloadError());
-        dispatch(addLog(error));
         dispatch(consoleOutput(tt("msg_console_output:cannot_determine_firmware_version")))
-      });
+      }))
+      .catch(useErrorHandler(dispatch));
 
     return configLoadPromise;
   };

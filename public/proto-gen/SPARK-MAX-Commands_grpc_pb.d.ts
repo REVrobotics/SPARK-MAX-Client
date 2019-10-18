@@ -13,6 +13,7 @@ interface IsparkMaxServerService extends grpc.ServiceDefinition<grpc.UntypedServ
     ping: IsparkMaxServerService_IPing;
     list: IsparkMaxServerService_IList;
     firmware: IsparkMaxServerService_IFirmware;
+    firmwareRecover: IsparkMaxServerService_IFirmwareRecover;
     setParameter: IsparkMaxServerService_ISetParameter;
     getParameter: IsparkMaxServerService_IGetParameter;
     burnFlash: IsparkMaxServerService_IBurnFlash;
@@ -65,6 +66,15 @@ interface IsparkMaxServerService_IList extends grpc.MethodDefinition<SPARK_MAX_C
 }
 interface IsparkMaxServerService_IFirmware extends grpc.MethodDefinition<SPARK_MAX_Commands_pb.firmwareRequest, SPARK_MAX_Commands_pb.firmwareResponse> {
     path: string; // "/sparkmax.sparkMaxServer/Firmware"
+    requestStream: boolean; // false
+    responseStream: boolean; // false
+    requestSerialize: grpc.serialize<SPARK_MAX_Commands_pb.firmwareRequest>;
+    requestDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.firmwareRequest>;
+    responseSerialize: grpc.serialize<SPARK_MAX_Commands_pb.firmwareResponse>;
+    responseDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.firmwareResponse>;
+}
+interface IsparkMaxServerService_IFirmwareRecover extends grpc.MethodDefinition<SPARK_MAX_Commands_pb.firmwareRequest, SPARK_MAX_Commands_pb.firmwareResponse> {
+    path: string; // "/sparkmax.sparkMaxServer/FirmwareRecover"
     requestStream: boolean; // false
     responseStream: boolean; // false
     requestSerialize: grpc.serialize<SPARK_MAX_Commands_pb.firmwareRequest>;
@@ -189,6 +199,7 @@ export interface IsparkMaxServerServer {
     ping: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.pingRequest, SPARK_MAX_Commands_pb.pingResponse>;
     list: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.listRequest, SPARK_MAX_Commands_pb.listResponse>;
     firmware: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.firmwareRequest, SPARK_MAX_Commands_pb.firmwareResponse>;
+    firmwareRecover: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.firmwareRequest, SPARK_MAX_Commands_pb.firmwareResponse>;
     setParameter: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.setParameterRequest, SPARK_MAX_Commands_pb.parameterResponse>;
     getParameter: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.getParameterRequest, SPARK_MAX_Commands_pb.parameterResponse>;
     burnFlash: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.burnRequest, SPARK_MAX_Commands_pb.burnResponse>;
@@ -219,6 +230,9 @@ export interface IsparkMaxServerClient {
     firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;
     setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;
     setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;
@@ -274,6 +288,9 @@ export class sparkMaxServerClient extends grpc.Client implements IsparkMaxServer
     public firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     public firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     public firmware(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    public firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    public firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
+    public firmwareRecover(request: SPARK_MAX_Commands_pb.firmwareRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.firmwareResponse) => void): grpc.ClientUnaryCall;
     public setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;
     public setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;
     public setParameter(request: SPARK_MAX_Commands_pb.setParameterRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.parameterResponse) => void): grpc.ClientUnaryCall;

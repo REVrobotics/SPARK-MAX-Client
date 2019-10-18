@@ -38,6 +38,7 @@
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
+    "winston": "^3.2.1",
     "yargs": "^14.0.0",
     "zeromq": "^5.1.0"
   },

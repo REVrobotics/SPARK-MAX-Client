@@ -2,7 +2,7 @@ import {constant, identity, stubFalse} from "lodash";
 import {ConfigParamRuleType, IConfigParamContext, IConfigParamRule, VALIDATE_SUCCESS} from "./ConfigParamRule";
 import {IDictionaryWord} from "../dictionaries";
 import {ConfigParam} from "../../models/ConfigParam";
-import {Message} from "../state";
+import {Message} from "../../models/Message";
 
 export interface IEnumRuleOptions {
   default: any;

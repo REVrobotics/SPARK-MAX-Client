@@ -1,9 +1,9 @@
 import {onChangeReducer} from "../../utils/reducer-utils";
 import {combineReducers} from "redux";
-import contextReducer from "./context-reducers";
+import contextReducer, {syncSelectedVirtualDeviceIdReducer} from "./context-reducers";
 import logsReducer from "./logs-reducers";
 import uiReducer from "./ui-reducers";
-import deviceSetReducer, {parameterValidationReducer} from "./device-set-reducers";
+import deviceSetReducer, {deviceOrderingReducer, parameterValidationReducer} from "./device-set-reducers";
 import networkReducer from "./network-reducers";
 import firmwareReducer from "./firmware-reducers";
 import configurationsReducer, {deviceConfigurationReducer} from "./configuration-reducers";
@@ -19,7 +19,9 @@ const rootReducer = onChangeReducer(
     configurations: configurationsReducer,
   }),
   parameterValidationReducer,
+  deviceOrderingReducer,
   deviceConfigurationReducer,
+  syncSelectedVirtualDeviceIdReducer,
 );
 
 export default rootReducer;

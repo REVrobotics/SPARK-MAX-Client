@@ -16,6 +16,7 @@ import {SparkmaxContext} from "../server/SparkmaxContext";
 import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
 import {getAppDataPath} from "../config";
+import {logger} from "../loggers";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
@@ -39,7 +40,7 @@ const pingResourceFactory = timerResourceFactory((device) =>
       server.ping({}, (pingErr: any, pingResponse: any) => {
         let doDisconnect = false;
         if (pingErr) {
-          console.error(pingErr);
+          logger.error("Error during ping call", pingErr);
           doDisconnect = true;
         } else {
           if (!pingResponse.connected && firmwareID === null) {
@@ -50,11 +51,13 @@ const pingResourceFactory = timerResourceFactory((device) =>
         if (doDisconnect) {
           context.disconnectDevice();
 
-          server.disconnect({device}, (disconnectErr: any, disconnectResponse: any) => {
+          server.disconnect({device}, (disconnectErr: any) => {
             console.log("Disconnected " + device + " from the SPARK server");
             notifyCallback(getTargetWindow(), "disconnect", disconnectErr, device);
             resolve();
           });
+        } else if (pingResponse.updateRequired) {
+          notifyCallback(getTargetWindow(), "resync");
         } else {
           resolve();
         }
@@ -98,10 +101,10 @@ ipcMain.on("kill-server", () => {
   }
 });
 
-onTwoWayCall("connect", (cb, device: string) => {
+onTwoWayCall("connect", (cb, device: string, descriptor?: string) => {
   console.log("Attempting to connect on " + device + "...");
   // If device is already connected, just return it
-  server.connect({device}, (err: any, response: any) => {
+  server.connect({device, path: descriptor}, (err: any, response: any) => {
     if (err) {
       cb(err);
     } else {
@@ -111,8 +114,8 @@ onTwoWayCall("connect", (cb, device: string) => {
   });
 });
 
-onTwoWayCall("disconnect", (cb, device: string) => {
-  console.log("Disconnecting on " + device + "...");
+onTwoWayCall("disconnect", (cb, device?: string) => {
+  console.log("Disconnecting on " + (device ? device : "the current device") + "...");
 
   // Wait until all current processing is finished
   context.pause()

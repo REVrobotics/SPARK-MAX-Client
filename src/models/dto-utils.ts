@@ -22,7 +22,7 @@ export const getRootResponse = (response?: ResponseWithError): RootResponseDto|u
 export const hasError = (response?: ResponseWithError): boolean => {
   const root = getRootResponse(response);
 
-  return root ? root.error != null : false;
+  return root ? !!root.error : false;
 };
 
 /**

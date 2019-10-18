@@ -12,6 +12,7 @@ export enum TelemetryId {
 
 export interface ConnectRequestDto {
   device?: string;
+  path?: string;
 }
 
 export interface ConnectResponseDto {
@@ -35,6 +36,7 @@ export interface PingRequestDto {
 export interface PingResponseDto {
   root?: RootResponseDto;
   connected?: boolean;
+  updateRequired?: boolean;
 }
 
 export interface BurnRequestDto {
@@ -47,6 +49,7 @@ export interface BurnResponseDto {
 
 export interface RootCommandDto {
   device?: string;
+  verbosity?: number;
 }
 
 export interface RootResponseDto {
@@ -56,6 +59,7 @@ export interface RootResponseDto {
 export interface ListRequestDto {
   root?: RootCommandDto;
   all?: boolean;
+  pathDescriptor?: string;
 }
 
 export interface ExtendedListResponseDto {
@@ -65,6 +69,13 @@ export interface ExtendedListResponseDto {
   deviceId?: number;
   updateable?: boolean;
   uniqueId?: number;
+  driverDesc?: string;
+}
+
+export interface ExtendedDfuResponseDto {
+  deviceType?: string;
+  recoveryMode?: boolean;
+  identifier?: string;
 }
 
 export interface ListResponseDto {
@@ -72,6 +83,7 @@ export interface ListResponseDto {
   driverList: string[];
   root?: RootResponseDto;
   extendedList: ExtendedListResponseDto[];
+  dfuDevice: ExtendedDfuResponseDto[];
 }
 
 export interface FirmwareRequestDto {
@@ -256,6 +268,9 @@ export function connectRequestFromDto(dto: ConnectRequestDto): SPARK_MAX_Command
   if (dto.device != null) {
     message.setDevice(dto.device);
   }
+  if (dto.path != null) {
+    message.setPath(dto.path);
+  }
   return message;
 }
 
@@ -264,6 +279,10 @@ export function connectRequestToDto(message: SPARK_MAX_Commands.connectRequest):
   const field0 = message.getDevice();
   if (field0 != null) {
     dto.device = message.getDevice();
+  }
+  const field1 = message.getPath();
+  if (field1 != null) {
+    dto.path = message.getPath();
   }
   return dto;
 }
@@ -358,6 +377,9 @@ export function pingResponseFromDto(dto: PingResponseDto): SPARK_MAX_Commands.pi
   if (dto.connected != null) {
     message.setConnected(dto.connected);
   }
+  if (dto.updateRequired != null) {
+    message.setUpdaterequired(dto.updateRequired);
+  }
   return message;
 }
 
@@ -370,6 +392,10 @@ export function pingResponseToDto(message: SPARK_MAX_Commands.pingResponse): Pin
   const field1 = message.getConnected();
   if (field1 != null) {
     dto.connected = message.getConnected();
+  }
+  const field2 = message.getUpdaterequired();
+  if (field2 != null) {
+    dto.updateRequired = message.getUpdaterequired();
   }
   return dto;
 }
@@ -413,6 +439,9 @@ export function rootCommandFromDto(dto: RootCommandDto): SPARK_MAX_Commands.root
   if (dto.device != null) {
     message.setDevice(dto.device);
   }
+  if (dto.verbosity != null) {
+    message.setVerbosity(dto.verbosity);
+  }
   return message;
 }
 
@@ -421,6 +450,10 @@ export function rootCommandToDto(message: SPARK_MAX_Commands.rootCommand): RootC
   const field0 = message.getDevice();
   if (field0 != null) {
     dto.device = message.getDevice();
+  }
+  const field1 = message.getVerbosity();
+  if (field1 != null) {
+    dto.verbosity = message.getVerbosity();
   }
   return dto;
 }
@@ -450,6 +483,9 @@ export function listRequestFromDto(dto: ListRequestDto): SPARK_MAX_Commands.list
   if (dto.all != null) {
     message.setAll(dto.all);
   }
+  if (dto.pathDescriptor != null) {
+    message.setPathdescriptor(dto.pathDescriptor);
+  }
   return message;
 }
 
@@ -462,6 +498,10 @@ export function listRequestToDto(message: SPARK_MAX_Commands.listRequest): ListR
   const field1 = message.getAll();
   if (field1 != null) {
     dto.all = message.getAll();
+  }
+  const field2 = message.getPathdescriptor();
+  if (field2 != null) {
+    dto.pathDescriptor = message.getPathdescriptor();
   }
   return dto;
 }
@@ -485,6 +525,9 @@ export function extendedListResponseFromDto(dto: ExtendedListResponseDto): SPARK
   }
   if (dto.uniqueId != null) {
     message.setUniqueid(dto.uniqueId);
+  }
+  if (dto.driverDesc != null) {
+    message.setDriverdesc(dto.driverDesc);
   }
   return message;
 }
@@ -515,6 +558,41 @@ export function extendedListResponseToDto(message: SPARK_MAX_Commands.extendedLi
   if (field5 != null) {
     dto.uniqueId = message.getUniqueid();
   }
+  const field6 = message.getDriverdesc();
+  if (field6 != null) {
+    dto.driverDesc = message.getDriverdesc();
+  }
+  return dto;
+}
+
+export function extendedDfuResponseFromDto(dto: ExtendedDfuResponseDto): SPARK_MAX_Commands.extendedDfuResponse {
+  const message = new SPARK_MAX_Commands.extendedDfuResponse();
+  if (dto.deviceType != null) {
+    message.setDevicetype(dto.deviceType);
+  }
+  if (dto.recoveryMode != null) {
+    message.setRecoverymode(dto.recoveryMode);
+  }
+  if (dto.identifier != null) {
+    message.setIdentifier(dto.identifier);
+  }
+  return message;
+}
+
+export function extendedDfuResponseToDto(message: SPARK_MAX_Commands.extendedDfuResponse): ExtendedDfuResponseDto {
+  const dto: ExtendedDfuResponseDto = {} as any;
+  const field0 = message.getDevicetype();
+  if (field0 != null) {
+    dto.deviceType = message.getDevicetype();
+  }
+  const field1 = message.getRecoverymode();
+  if (field1 != null) {
+    dto.recoveryMode = message.getRecoverymode();
+  }
+  const field2 = message.getIdentifier();
+  if (field2 != null) {
+    dto.identifier = message.getIdentifier();
+  }
   return dto;
 }
 
@@ -531,6 +609,9 @@ export function listResponseFromDto(dto: ListResponseDto): SPARK_MAX_Commands.li
   }
   if (dto.extendedList != null) {
     message.setExtendedlistList(dto.extendedList.map((item) => extendedListResponseFromDto(item)));
+  }
+  if (dto.dfuDevice != null) {
+    message.setDfudeviceList(dto.dfuDevice.map((item) => extendedDfuResponseFromDto(item)));
   }
   return message;
 }
@@ -552,6 +633,10 @@ export function listResponseToDto(message: SPARK_MAX_Commands.listResponse): Lis
   const field3 = message.getExtendedlistList();
   if (field3 != null) {
     dto.extendedList = field3.map((item) => extendedListResponseToDto(item));
+  }
+  const field4 = message.getDfudeviceList();
+  if (field4 != null) {
+    dto.dfuDevice = field4.map((item) => extendedDfuResponseToDto(item));
   }
   return dto;
 }

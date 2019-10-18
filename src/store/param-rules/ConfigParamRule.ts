@@ -1,7 +1,8 @@
 import {constant, isFunction, keyBy} from "lodash";
-import {IFieldConstraints, Message} from "../state";
+import {IFieldConstraints} from "../state";
 import {IDictionaryWord} from "../dictionaries";
 import {ConfigParam, configParamValues} from "../../models/ConfigParam";
+import {Message} from "../../models/Message";
 
 /**
  * This interface allows to decouple logic in {@link IConfigParamRule} from the context where it is used.
