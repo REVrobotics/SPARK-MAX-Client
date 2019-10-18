@@ -10,7 +10,7 @@ type CallbackCall = (name: string, cb: (...args: any[]) => void) => () => void;
 type OriginalCall = (name: string, ...args: any[]) => any;
 
 interface IDecorationConfig {
-  original: () => any;
+  original: (args?: any[]) => any;
   type: string;
   name: string;
   args: any[];
@@ -27,7 +27,7 @@ export interface IMockContext {
   /**
    * Fires original implementation of call
    */
-  original: () => any;
+  original: (args?: any[]) => any;
 }
 
 /**
@@ -62,7 +62,7 @@ function decorateCall(type: string,
       // otherwise use original implementation
       if (isMocked(type, name)) {
         return useMock({
-          original: () => original(name, ...args),
+          original: (overriddenArgs) => original(name, ...(overriddenArgs || args)),
           type,
           name,
           args,

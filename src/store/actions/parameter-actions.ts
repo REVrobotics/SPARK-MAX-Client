@@ -4,13 +4,12 @@ import {queryDevice, queryDeviceId, queryDeviceParameterValue, queryHasDevicePar
 import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
-  addLog,
   recalculateDeviceId,
   setDeviceLoaded,
   setDeviceParameter,
   setDeviceParameterResponse,
-  setParameters,
   setOnlyTransientParameter,
+  setParameters,
   updateDeviceIsProcessing,
   updateDeviceProcessStatus
 } from "./atom-actions";
@@ -18,14 +17,15 @@ import {ConfigParam, MotorType, SensorType} from "../../models/dto";
 import {forSelectedDevice} from "./action-creators";
 import {
   ConfirmationAnswer,
-  toDtoDeviceId,
   IDeviceTransientState,
   isDeviceNotConfigured,
   ProcessType,
+  toDtoDeviceId,
   VirtualDeviceId
 } from "../state";
 import {MOTOR_TYPES} from "../dictionaries";
 import {onSchedule} from "../../utils/redux-scheduler";
+import {onError, useErrorHandler} from "./error-actions";
 
 export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
                                   param: ConfigParam,
@@ -95,7 +95,8 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
           dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, true));
           dispatch(recalculateDeviceId(virtualDeviceId));
           return newValue;
-        });
+        })
+        .catch(useErrorHandler(dispatch));
     } else {
       return SparkManager.setAndGetParameter(deviceId, param, newValue)
         .then((res: IServerResponse) => {
@@ -105,7 +106,8 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
             dispatch(recalculateDeviceId(virtualDeviceId));
           }
           return responseValue;
-        });
+        })
+        .catch(useErrorHandler(dispatch));
     }
   };
 
@@ -122,11 +124,11 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
         dispatch(setDeviceLoaded(virtualDeviceId, true));
         dispatch(setParameters(virtualDeviceId, values))
       })
-      .catch((error: any) => {
+      .catch(onError(() => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_failed_to_get_parameters")));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-        dispatch(addLog(error));
-      });
+      }))
+      .catch(useErrorHandler(dispatch));
   });
 
 export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
@@ -154,6 +156,7 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
           SparkManager.getConfigFromParams(toDtoDeviceId(deviceId)).then((values) => {
             dispatch(setParameters(virtualDeviceId, values));
           }))
+        .catch(useErrorHandler(dispatch))
         .finally(() => {
           dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -187,6 +190,7 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
           SparkManager.getConfigFromParams(toDtoDeviceId(deviceId)).then((values) => {
             dispatch(setParameters(virtualDeviceId, values));
           }))
+        .catch(useErrorHandler(dispatch))
         .finally(() => {
           dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
           dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));

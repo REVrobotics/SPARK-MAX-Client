@@ -59,6 +59,9 @@ const messages = {
   "msg_param_validate_sensor_type": "Parameter 'kSensorType' can be set to '$sensorTypeTextValue' ($sensorTypeValue) only when 'kMotorType' is set to '$brushedTextValue' ($brushedValue). Current value of 'kSensorType' parameter is '$sensorTypeTextValue' ($sensorTypeValue) and 'kMotorType' is '${motorTypeTextValue}' ($motorTypeValue)",
   "msg_device_added": "New device was added: $deviceId $deviceName",
   "msg_device_removed": "Some device was removed: $deviceId $deviceName",
+  "msg_sparkmax_error": "SPARK MAX server error: $message",
+  "msg_sparkmax_connection_error": "SPARK MAX server network issue: check that server is running",
+  "msg_system_error": "Unexpected system error has occurred. Check log for details or contact support team",
 };
 
 export default messages;

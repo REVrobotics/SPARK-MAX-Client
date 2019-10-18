@@ -11,7 +11,6 @@ import {
 } from "../state";
 import {
   addDevices,
-  addLog,
   replaceDevices,
   setConnectedDescriptor,
   setSelectedDevice,
@@ -31,8 +30,8 @@ import {
 } from "../selectors";
 import {loadParameters} from "./parameter-actions";
 import {SparkAction} from "./action-types";
-import {logError} from "../../utils/promise-utils";
 import {showToastWarning} from "./ui-actions";
+import {onError, useErrorHandler} from "./error-actions";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -47,13 +46,11 @@ export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<v
 
     // Try to connect to the found device
     return SparkManager.connect(toDtoDeviceId(getDeviceId(deviceForDescriptor)), toDtoDescriptor(descriptor))
-      .catch((error: any) => {
+      .catch(onError(() => {
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(tt("lbl_status_connection_failed")));
         dispatch(updateIsProcessingByDescriptor(descriptor, false));
-        dispatch(addLog(error));
-        return Promise.reject(error);
-      })
+      }))
       .then(() => {
         dispatch(setConnectedDescriptor(descriptor));
         dispatch(updateGlobalIsProcessing(false));
@@ -62,7 +59,8 @@ export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<v
 
         // Resync list of devices after connection
         return dispatch(syncDevices(descriptor));
-      });
+      })
+      .catch(useErrorHandler(dispatch));
   };
 }
 
@@ -104,7 +102,7 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
 
         dispatch(setConnectedDescriptor());
       })
-      .catch(logError)
+      .catch(useErrorHandler(dispatch))
       .finally(() => {
         dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
@@ -145,10 +143,10 @@ export function syncDevices(descriptor: PathDescriptor,
           })));
         }
       })
-      .catch(() => {
+      .catch(onError(() => {
         dispatch(updateProcessStatusByDescriptor(descriptor, tt("lbl_status_failed_to_sync")));
         dispatch(updateIsProcessingByDescriptor(descriptor, false));
-      })
+      }))
       .then(() => {
         const selectedDeviceId = querySelectedVirtualDeviceId(getState());
         if (selectedDeviceId) {
@@ -156,7 +154,8 @@ export function syncDevices(descriptor: PathDescriptor,
         } else {
           return Promise.resolve();
         }
-      });
+      })
+      .catch(useErrorHandler(dispatch));
   };
 }
 
@@ -189,9 +188,10 @@ export function findAllDevices(): SparkAction<Promise<void>> {
         dispatch(updateGlobalIsProcessing(false));
         dispatch(addDevices(extendedList.filter(({updateable}) => updateable).map(createDeviceState)));
       })
-      .catch(() => {
+      .catch(onError(() => {
         dispatch(updateGlobalProcessStatus(tt("lbl_status_search_failed")));
         dispatch(updateGlobalIsProcessing(false));
-      });
+      }))
+      .catch(useErrorHandler(dispatch));
   };
 }

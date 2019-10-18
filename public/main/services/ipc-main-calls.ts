@@ -4,7 +4,9 @@
 
 import {ipcMain} from "electron";
 import WebContents = Electron.WebContents;
+import {logger} from "../loggers";
 
+// Converts error into serializable form
 const serializeSystemError = (error: any) => {
   let serialized: any;
 
@@ -34,17 +36,20 @@ export const isPromise = (value: any): value is Promise<any> => {
 };
 
 export function onOneWayCall(name: string, cb: (...args: any[]) => void): void {
-  ipcMain.on(`one-way:${name}`, (event: any, ...args: any[]) => cb(...args));
+  ipcMain.on(`one-way:${name}`, (event: any, ...args: any[]) => {
+    try {
+      cb(...args);
+    } catch(err) {
+      logger.error(`Error during one-way call: ${name}(${args.join(", ")}) `, err);
+    }
+  });
 }
 
 export function onTwoWayCall(name: string, handler: (cb: (err?: any, response?: any) => void, ...args: any[]) => void): void {
   ipcMain.on(`two-way:${name}`, (event: any, reqId: string, ...args: any[]) => {
-    const cb = (err?: any, response?: any) => {
+    const handleResult = (err?: any, response?: any) => {
       if (err) {
-        // TODO: write error to the log file
-        if (process.env.NODE_ENV === "development") {
-          console.error(err);
-        }
+        logger.error(`Error during two-way call: ${name}(${args.join(", ")}) `, err);
         event.sender.send(`two-way:response`, reqId, serializeSystemError(err));
       } else {
         event.sender.send(`two-way:response`, reqId, null, response);
@@ -52,9 +57,9 @@ export function onTwoWayCall(name: string, handler: (cb: (err?: any, response?: 
     };
 
     try {
-      handler(cb, ...args);
+      handler(handleResult, ...args);
     } catch (err) {
-      cb(err);
+      handleResult(err);
     }
   });
 }

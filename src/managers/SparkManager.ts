@@ -1,7 +1,7 @@
 import {ConfigParam} from "../models/ConfigParam";
 import {FirmwareResponseDto, getErrorText, hasError, ListRequestDto, ListResponseDto} from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
-import {LogicError, SystemError} from "../models/errors";
+import {LogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../models/errors";
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -15,6 +15,8 @@ export interface IServerResponse {
 
 function wrapSparkError<T>(promise: Promise<T>): Promise<T> {
   return promise
+    // Specialize SystemError to make it obvious what is the source of error
+    .catch((error: SystemError) => Promise.reject(error.specialize(() => ({ category: SYSTEM_ERROR_SPARKMAX_CATEGORY }))))
     .then((response) => {
       // If sparkmax returns error => promise should be rejected with error
       if (hasError(response)) {
@@ -22,9 +24,7 @@ function wrapSparkError<T>(promise: Promise<T>): Promise<T> {
       } else {
         return response;
       }
-    })
-    // Specialize SystemError to make it obvious source of error
-    .catch((error: SystemError) => Promise.reject(error.specialize(() => ({ category: "sparkmax" }))));
+    });
 }
 
 class SparkManager {

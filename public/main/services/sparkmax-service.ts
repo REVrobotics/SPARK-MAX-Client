@@ -16,6 +16,7 @@ import {SparkmaxContext} from "../server/SparkmaxContext";
 import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
 import {getAppDataPath} from "../config";
+import {logger} from "../loggers";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
@@ -39,7 +40,7 @@ const pingResourceFactory = timerResourceFactory((device) =>
       server.ping({}, (pingErr: any, pingResponse: any) => {
         let doDisconnect = false;
         if (pingErr) {
-          console.error(pingErr);
+          logger.error("Error during ping call", pingErr);
           doDisconnect = true;
         } else {
           if (!pingResponse.connected && firmwareID === null) {

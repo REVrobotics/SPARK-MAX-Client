@@ -100,7 +100,8 @@
     padding: 15px;
 }
 
-.device-info__line {    display: flex;
+.device-info__line {
+    display: flex;
     flex-direction: row;
     line-height: 20px;
 }

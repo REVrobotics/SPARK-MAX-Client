@@ -1,10 +1,22 @@
 import {substitute} from "../utils/string-utils";
+import {Intent} from "@blueprintjs/core";
 
 export enum MessageSeverity {
   Info = "info",
   Error = "error",
   Warning = "warning"
 }
+
+const SEVERITY_TO_INTENT = {
+  [MessageSeverity.Error]: Intent.DANGER,
+  [MessageSeverity.Info]: Intent.NONE,
+  [MessageSeverity.Warning]: Intent.WARNING,
+};
+
+/**
+ * Converts severity level to {@link Intent}
+ */
+export const severityToIntent = (severity: MessageSeverity): Intent => SEVERITY_TO_INTENT[severity];
 
 // tslint:disable-next-line:interface-over-type-literal
 export type MessageParams = { [name: string]: any };

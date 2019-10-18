@@ -34,8 +34,11 @@ const syncSelectedVirtualDeviceIdReducer = (state: IApplicationState,
       if (selectedVirtualDeviceId && state.deviceSet.devices[selectedVirtualDeviceId]) {
         return state;
       }
-      const firstDevice = first(queryDevicesByDescriptor(state, action.payload.descriptor))!;
-      return setNestedField(state, ["context", "selectedVirtualDeviceId"], getVirtualDeviceId(firstDevice));
+      const firstDevice = first(queryDevicesByDescriptor(state, action.payload.descriptor));
+      return setNestedField(
+        state,
+        ["context", "selectedVirtualDeviceId"],
+        firstDevice ? getVirtualDeviceId(firstDevice) : undefined);
     }
     default:
       return state;

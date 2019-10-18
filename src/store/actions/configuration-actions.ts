@@ -35,6 +35,7 @@ import {getDependentParams} from "../../models/ConfigParam";
 import {getConfigParamRule} from "../config-param-rules";
 import {createRamConfigParamContext} from "../ram-config-param-rules";
 import {queryDeviceParameterValue, querySelectedDevice} from "../selectors";
+import {useErrorHandler} from "./error-actions";
 
 /**
  * Loads all device configurations.
@@ -61,7 +62,8 @@ export const loadConfigurations = (): SparkAction<Promise<any>> => {
         // Add all violations to message queue
         dispatch(addToMessageQueue(createMessagesForNotFixedConfigurations(notValid)));
         dispatch(addToMessageQueue(createMessagesForFixedConfigurations(fixed)));
-      });
+      })
+      .catch(useErrorHandler(dispatch));
   };
 };
 
@@ -123,6 +125,7 @@ export const applyConfiguration = (virtualDeviceId: VirtualDeviceId,
           return dispatch(setParameterValue(virtualDeviceId, param, restoredValue)).then(noop);
         });
       })
+      .catch(useErrorHandler(dispatch))
       .finally(() => {
         dispatch(resetTransientState(virtualDeviceId));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
@@ -150,7 +153,8 @@ const persistConfiguration = (config: IDeviceConfiguration,
 export const renameConfiguration = (config: IDeviceConfiguration, newName: string): SparkAction<Promise<any>> =>
   (dispatch) =>
     dispatch(persistConfiguration(config, newName))
-      .then((newConfig) => dispatch(updateConfiguration(getDeviceConfigurationId(newConfig), newConfig)));
+      .then((newConfig) => dispatch(updateConfiguration(getDeviceConfigurationId(newConfig), newConfig)))
+      .catch(useErrorHandler(dispatch));
 
 /**
  * Overwrites configuration
@@ -166,7 +170,8 @@ export const overwriteConfiguration = (config: IDeviceConfiguration): SparkActio
       if (answer === ConfirmationAnswer.Yes) {
         return dispatch(persistConfiguration(config))
           .then((newConfig) => dispatch(updateConfiguration(getDeviceConfigurationId(newConfig), newConfig)))
-          .then(noop);
+          .then(noop)
+          .catch(useErrorHandler(dispatch));
       } else {
         return Promise.resolve();
       }
@@ -180,7 +185,8 @@ export const overwriteConfiguration = (config: IDeviceConfiguration): SparkActio
 export const createConfiguration = (config: IDeviceConfiguration, name: string): SparkAction<Promise<any>> =>
   (dispatch) => {
     return dispatch(persistConfiguration(newDeviceConfiguration(config), name))
-      .then((newConfig) => dispatch(addConfiguration(newConfig)));
+      .then((newConfig) => dispatch(addConfiguration(newConfig)))
+      .catch(useErrorHandler(dispatch));
   };
 
 /**
@@ -201,7 +207,8 @@ export const destroyConfiguration = (config: IDeviceConfiguration): SparkAction<
       const id = getDeviceConfigurationId(config);
       return DeviceConfigManager.remove(id)
         .then(() => dispatch(removeConfiguration(id)))
-        .then(noop);
+        .then(noop)
+        .catch(useErrorHandler(dispatch));
     });
   };
 

@@ -14,7 +14,6 @@ import {
   NetworkDeviceStatus,
 } from "../store/state";
 import {
-  addLog,
   requestFirmwareLoad,
   scanCanBus,
   selectNetworkDevice,
@@ -244,7 +243,6 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     scanCanBus: () => dispatch(scanCanBus()),
     requestFirmwareLoad: () => dispatch(requestFirmwareLoad()),
-    addLog: (log: string) => dispatch(addLog(log)),
     selectDevice: (id: DeviceId, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
     showDeviceHelp: (id: DeviceId) => dispatch(showNetworkDeviceHelp(id)),
   };
