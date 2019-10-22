@@ -9,3 +9,6 @@ export const ChartjsWaveformEngine = Engine;
 export const WaveformChart = Chart;
 export const WaveformScale = Scale;
 export const DataSet = DefaultDataSet;
+
+export const waveformEngine = new ChartjsWaveformEngine();
+export const WaveformEngineDisplay = createWaveformDisplay(waveformEngine);

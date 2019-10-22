@@ -48,7 +48,7 @@ class RunTab extends React.Component<IProps> {
                 onSelect={onSelectPanel}>
             {panelOptions.map((options) => <Tool key={options.value} {...options}/>)}
           </List>
-          <RunDisplay className="display__container"/>
+          <RunDisplay className="flex-1 display__container"/>
         </div>
         <PanelContainer className="flex-1 display__panel-container"
                         icon={panelOptionsByKey[selectedPanel].icon}

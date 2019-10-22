@@ -11,6 +11,7 @@ import {diffObjects, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {Message, MessageSeverity} from "../models/Message";
+import {LegendPosition} from "../display/display-interfaces";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -224,6 +225,7 @@ export interface ISignalInstanceState {
   min: number;
   max: number;
   style: ISignalStyle;
+  scaleId: string;
 }
 
 export interface ISignalStyle {
@@ -240,16 +242,11 @@ export interface IDeviceDisplayState {
   quickBar: ConfigParam[];
 }
 
-export enum LegendAlignment {
-  Top = "top",
-  Right = "right",
-}
-
 export interface IDisplaySettings {
   timeSpan: number;
   singleChart: boolean;
   showLegend: boolean;
-  legendAlignment: LegendAlignment;
+  legendPosition: LegendPosition;
 }
 
 /**
@@ -521,6 +518,7 @@ export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,
                                      style: ISignalStyle): ISignalInstanceState => ({
   virtualDeviceId,
   signalId: getSignalId(signal),
+  scaleId: `${virtualDeviceId}:${getSignalId(signal)}`,
   autoScaled: true,
   min: signal.expectedMin,
   max: signal.expectedMax,

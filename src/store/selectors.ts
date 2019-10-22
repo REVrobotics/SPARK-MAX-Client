@@ -3,23 +3,30 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {filter, find, first} from "lodash";
+import {filter, find, first, flatMap, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
-  DeviceId, FirmwareTag,
+  DeviceId,
+  FirmwareTag,
   getDeviceBlockedReason,
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue, getNetworkDeviceId, getSignalId,
+  getDeviceParamValue,
+  getNetworkDeviceId,
+  getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState, IFirmwareEntry,
+  IApplicationState,
+  IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured, ISignalStyle, PathDescriptor,
-  ProcessType, SignalId,
+  isDeviceNotConfigured,
+  ISignalStyle,
+  PathDescriptor,
+  ProcessType,
+  SignalId,
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
@@ -461,4 +468,13 @@ export const querySelectedSignal = (state: IApplicationState) => {
     return;
   }
   return querySignal(state, deviceDisplay.selectedSignalId);
+};
+
+export const querySignalsWithInstances = (state: IApplicationState) => {
+  return flatMap(
+    values(state.display.devices),
+    ({assignedSignals, signals}) => values(assignedSignals).map((instance) => [
+      signals.find((signal) => getSignalId(signal) === instance.signalId),
+      instance,
+    ]));
 };

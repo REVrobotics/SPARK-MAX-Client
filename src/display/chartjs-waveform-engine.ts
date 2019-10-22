@@ -8,6 +8,7 @@ import {
   DataSetOptions,
   DataSource,
   DataSubscription,
+  LegendPosition,
   ScaleId,
   WaveformChartOptions,
   WaveformScaleOptions
@@ -15,7 +16,7 @@ import {
 import * as React from "react";
 import {ReactNode, Ref} from "react";
 import * as Chart from "chart.js";
-import {ChartConfiguration, ChartDataSets, ChartXAxe, ChartYAxe} from "chart.js";
+import {ChartConfiguration, ChartDataSets, ChartXAxe, ChartYAxe, PositionType} from "chart.js";
 import {setArrayElement} from "../utils/object-utils";
 
 Chart.defaults.global.legend!.onClick = noop;
@@ -121,6 +122,17 @@ const updateDataSet = (dataset: ChartDataSets, options: DataSetOptions): void =>
   dataset.backgroundColor = options.color;
 };
 
+const toChartjsPosition = (position: LegendPosition): PositionType => {
+  switch (position) {
+    case LegendPosition.Inside:
+      return "chartArea";
+    case LegendPosition.Right:
+      return "right";
+    default:
+      return "top";
+  }
+}
+
 class ChartjsEngineChart implements WaveformEngineChart {
   private configuration: ChartConfiguration;
   private chart: Chart;
@@ -142,6 +154,15 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   public update(options: WaveformChartOptions): void {
+    const legend = (this.initialized ? this.chart.options : this.configuration.options)!.legend!;
+    if (this.initialized) {
+      legend.display = options.showLegend;
+      legend.position = toChartjsPosition(options.legendPosition);
+    } else {
+      legend.display = options.showLegend;
+      legend.position = toChartjsPosition(options.legendPosition);
+    }
+
     if (this.timeSpan !== options.timeSpan) {
       this.timeSpan = options.timeSpan;
 

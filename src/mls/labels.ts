@@ -123,7 +123,7 @@ const labels = {
   "lbl_time_span": "Time Span",
   "lbl_show_single_chart": "Single Chart",
   "lbl_show_legend": "Show Legend",
-  "lbl_dock_lc": "dock",
+  "lbl_legend_position": "Legend Position",
   "lbl_add_signal": "Add Signal",
   "lbl_delete_signal": "Delete Signal",
   "lbl_no_signal_selected_title": "No Signal Selected",
@@ -135,6 +135,8 @@ const labels = {
   "lbl_max": "Max",
   "lbl_remove_from_quick_bar": "Remove from Quick Bar",
   "lbl_add_to_quick_bar": "Add to Quick Bar",
+  "lbl_no_signals_title": "No Signals Added",
+  "lbl_no_signals_description": "In order to start tracking device parameters add any signal and run device",
 };
 
 export default labels;

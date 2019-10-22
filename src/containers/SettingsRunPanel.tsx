@@ -14,7 +14,7 @@ import {connect} from "react-redux";
 import {queryDisplaySettings} from "../store/selectors";
 import {setDisplaySetting, SparkDispatch} from "../store/actions";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
-import {Dictionary, getWordText, IDictionaryWord, LEGEND_ALIGNMENT} from "../store/dictionaries";
+import {Dictionary, getWordText, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
 
 interface Props {
   settings: IDisplaySettings;
@@ -150,11 +150,10 @@ const SettingsRunPanel = (props: Props) => {
       <NumericSetting name="timeSpan" label={tt("lbl_time_span")}/>
       <BooleanSetting name="singleChart" label={tt("lbl_show_single_chart")}/>
       <BooleanSetting name="showLegend" label={tt("lbl_show_legend")}/>
-      <EnumSetting name="legendAlignment"
-                   align="right"
-                   label={tt("lbl_dock_lc")}
+      <EnumSetting name="legendPosition"
+                   label={tt("lbl_legend_position")}
                    disabled={!settings.showLegend}
-                   dictionary={LEGEND_ALIGNMENT}/>
+                   dictionary={LEGEND_POSITIONS}/>
     </div>
   );
 };

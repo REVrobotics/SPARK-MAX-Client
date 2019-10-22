@@ -1,7 +1,15 @@
 import {ReactNode, Ref} from "react";
 
 export interface WaveformChartOptions {
+  showLegend: boolean;
+  legendPosition: LegendPosition;
   timeSpan: number;
+}
+
+export enum LegendPosition {
+  Top = "top",
+  Right = "right",
+  Inside = "inside",
 }
 
 export interface WaveformScaleOptions {

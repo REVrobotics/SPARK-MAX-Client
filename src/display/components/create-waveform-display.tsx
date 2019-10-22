@@ -4,6 +4,7 @@ import {WaveformEngine} from "../display-interfaces";
 import WaveformDisplay from "./WaveformDisplay";
 
 interface Props {
+  className?: string;
   children: ReactNode;
 }
 

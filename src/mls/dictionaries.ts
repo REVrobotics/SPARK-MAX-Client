@@ -1,13 +1,13 @@
 import {fromPairs} from "lodash";
 import {ConfigParam, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
-import {LegendAlignment} from "../store/state";
 import {enumValues} from "../models/dto-utils";
+import {LegendPosition} from "../display/display-interfaces";
 
 export enum DictionaryName {
   MotorTypes = "MotorTypes",
   SensorTypes = "SensorTypes",
   ConfigParams = "ConfigParams",
-  LegendAlignments = "LegendAlignments",
+  LegendPositions = "LegendPositions",
 }
 
 const dictionarySet = {
@@ -37,9 +37,10 @@ const dictionarySet = {
     [ConfigParam.kSoftLimitFwd]: "Forward Limit (value)",
     [ConfigParam.kSoftLimitRev]: "Reverse Limit (value)",
   },
-  [DictionaryName.LegendAlignments]: {
-    [LegendAlignment.Top]: "On Top",
-    [LegendAlignment.Right]: "On Right",
+  [DictionaryName.LegendPositions]: {
+    [LegendPosition.Top]: "On Top",
+    [LegendPosition.Right]: "On Right",
+    [LegendPosition.Inside]: "Inside",
   },
 };
 

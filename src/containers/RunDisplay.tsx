@@ -1,11 +1,19 @@
 import {constant} from "lodash";
 import * as React from "react";
-import {IApplicationState, IDisplaySettings, ISignalInstanceState, SignalId, VirtualDeviceId} from "../store/state";
+import {
+  IApplicationState,
+  IDisplaySettings,
+  ISignalInstanceState,
+  ISignalState,
+  SignalId,
+  VirtualDeviceId
+} from "../store/state";
 import {DataPoint, DataSource} from "../display/display-interfaces";
 import {connect} from "react-redux";
+import {DataSet, WaveformChart, waveformEngine, WaveformEngineDisplay, WaveformScale} from "../display";
+import {querySignalsWithInstances} from "../store/selectors";
+import {NonIdealState} from "@blueprintjs/core";
 
-// const engine = new ChartjsWaveformEngine();
-// const ChartJsDisplay = createWaveformDisplay(engine);
 // const dataSource1 = engine.createDataSource({});
 // const dataSource2 = engine.createDataSource({});
 
@@ -37,23 +45,53 @@ import {connect} from "react-redux";
 // </ChartJsDisplay>
 
 interface IProps {
-  className: string;
+  className?: string;
   settings: IDisplaySettings;
-  signals: ISignalInstanceState[];
+  signalsWithInstances: Array<[ISignalState, ISignalInstanceState]>;
   getDataSource: (deviceId: VirtualDeviceId, signalId: SignalId) => DataSource<DataPoint>;
 }
 
 const RunDisplay = (props: IProps) => {
-  const {className} = props;
+  const {className, settings, signalsWithInstances, getDataSource} = props;
 
-  return <div className={className}/>
+  if (signalsWithInstances.length === 0) {
+    return <NonIdealState className={className}
+                          icon="timeline-line-chart"
+                          title={tt("lbl_no_signals_title")}
+                          description={tt("lbl_no_signals_description")}/>
+  }
+
+  return (
+    <WaveformEngineDisplay className={className}>
+      {
+        signalsWithInstances.map(([signal, instance]) =>
+          <WaveformChart key={instance.scaleId}
+                         timeSpan={settings.timeSpan}
+                         legendPosition={settings.legendPosition}
+                         showLegend={settings.showLegend}>
+            <WaveformScale id={instance.scaleId}
+                           autoScale={instance.autoScaled}
+                           suggestedMin={signal.expectedMin}
+                           suggestedMax={signal.expectedMax}
+                           min={instance.min}
+                           max={instance.max}
+                           color={instance.style.color}/>
+            <DataSet scaleId={instance.scaleId}
+                     dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
+                     label={signal.name}
+                     color={instance.style.color}/>
+          </WaveformChart>
+        )
+      }
+    </WaveformEngineDisplay>
+  );
 };
 
 function mapStateToProps(state: IApplicationState) {
   return {
     settings: state.display.settings,
-    signals: [],
-    getDataSource: () => null as any,
+    signalsWithInstances: querySignalsWithInstances(state),
+    getDataSource: () => waveformEngine.createDataSource(state.display.settings.timeSpan),
   };
 }
 

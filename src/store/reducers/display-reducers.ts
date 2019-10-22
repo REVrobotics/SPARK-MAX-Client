@@ -4,7 +4,6 @@ import {
   getVirtualDeviceId,
   IApplicationState, IDeviceDisplayState,
   IDisplayState,
-  LegendAlignment,
   PanelName
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
@@ -17,10 +16,11 @@ import {
   setNestedField
 } from "../../utils/object-utils";
 import {queryDevicesByDescriptor} from "../selectors";
+import {LegendPosition} from "../../display/display-interfaces";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
-  settings: {showLegend: true, legendAlignment: LegendAlignment.Top, singleChart: true, timeSpan: 30},
+  settings: {showLegend: true, legendPosition: LegendPosition.Top, singleChart: true, timeSpan: 30},
   devices: {},
 };
 
