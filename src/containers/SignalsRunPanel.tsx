@@ -51,7 +51,7 @@ const Signal = (props: SignalProps) => {
 
   let button: ReactNode;
   if (active) {
-    button = <Icon icon="double-chevron-right" iconSize={14} className="signal-icon--active"/>;
+    button = <Icon icon="double-chevron-right" iconSize={14} className="active-list-item-icon"/>;
   } else if (assigned) {
     button = <Button icon="trash" minimal={true} title={tt("lbl_delete_signal")} onClick={remove}/>;
   } else {

@@ -8,14 +8,20 @@ import {
   PanelName
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {removeField, removeFields, setField, setFields, setNestedField} from "../../utils/object-utils";
+import {
+  insertArrayElementSorted, removeArrayElementSorted,
+  removeField,
+  removeFields,
+  setField,
+  setFields,
+  setNestedField
+} from "../../utils/object-utils";
 import {queryDevicesByDescriptor} from "../selectors";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
   settings: {showLegend: true, legendAlignment: LegendAlignment.Top, singleChart: true, timeSpan: 30},
   devices: {},
-  quickBar: [],
 };
 
 const displayReducer = (state: IDisplayState = displayInitialState, action: ApplicationActions) => {
@@ -24,6 +30,8 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
       return setField(state, "selectedPanel", action.payload.panel);
     case ActionType.SET_DISPLAY_SETTING:
       return setField(state, "settings", setField(state.settings, action.payload.key, action.payload.value));
+    case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
+    case ActionType.SET_DISPLAY_QUICK_PARAM:
     case ActionType.SET_SELECTED_SIGNAL:
     case ActionType.ADD_SIGNAL_INSTANCE:
     case ActionType.REMOVE_SIGNAL_INSTANCE:
@@ -39,6 +47,18 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
 
 const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationActions) => {
   switch (action.type) {
+    case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
+      return setField(
+        state,
+        "selectedParamGroupId",
+        action.payload.paramGroupId);
+    case ActionType.SET_DISPLAY_QUICK_PARAM:
+      return setField(
+        state,
+        "quickBar",
+        action.payload.quick ?
+          insertArrayElementSorted(state.quickBar, action.payload.param)
+          : removeArrayElementSorted(state.quickBar, action.payload.param));
     case ActionType.SET_SELECTED_SIGNAL:
       return setField(
         state,

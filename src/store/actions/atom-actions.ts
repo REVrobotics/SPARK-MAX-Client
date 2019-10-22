@@ -36,7 +36,7 @@ import {
   ISetNetworkScanInProgress,
   ISetParameters,
   ISetProcessingByDescriptor,
-  ISetSelectedDevice,
+  ISetSelectedDevice, ISetDisplaySelectedParamGroup,
   ISetSelectedSignal,
   ISetSelectedTab, ISetSignalInstanceField,
   ISetTransientParameter,
@@ -46,7 +46,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor,
+  IUpdateProcessStatusByDescriptor, ISetDisplayQuickParam,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -66,7 +66,7 @@ import {
   TabId,
   VirtualDeviceId
 } from "../state";
-import {ConfigParam} from "../../models/ConfigParam";
+import {ConfigParam, ConfigParamGroupId} from "../../models/ConfigParam";
 
 export const updateGlobalProcessStatus = (processStatus: string): IUpdateGlobalProcessStatus => ({
   payload: {
@@ -347,28 +347,28 @@ export const addToMessageQueue = (messages: string[]): IAddToMessageQueue => ({
 });
 
 export const setDisplaySelectedPanel = (panel: PanelName): ISetDisplaySelectedPanel => ({
-  payload: { panel },
+  payload: {panel},
   type: ActionType.SET_DISPLAY_SELECTED_PANEL,
 });
 
 export const setDisplaySetting = (key: keyof IDisplaySettings, value: any): ISetDisplaySetting => ({
-  payload: { key, value },
+  payload: {key, value},
   type: ActionType.SET_DISPLAY_SETTING,
 });
 
 export const setSelectedSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): ISetSelectedSignal => ({
   type: ActionType.SET_SELECTED_SIGNAL,
-  payload: { virtualDeviceId, signalId },
+  payload: {virtualDeviceId, signalId},
 });
 
 export const addSignalInstance = (instance: ISignalInstanceState): IAddSignalInstance => ({
   type: ActionType.ADD_SIGNAL_INSTANCE,
-  payload: { virtualDeviceId: instance.virtualDeviceId, instance },
+  payload: {virtualDeviceId: instance.virtualDeviceId, instance},
 });
 
 export const removeSignalInstance = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IRemoveSignalInstance => ({
   type: ActionType.REMOVE_SIGNAL_INSTANCE,
-  payload: { virtualDeviceId, signalId },
+  payload: {virtualDeviceId, signalId},
 });
 
 export const setSignalInstanceField = (virtualDeviceId: VirtualDeviceId,
@@ -376,7 +376,20 @@ export const setSignalInstanceField = (virtualDeviceId: VirtualDeviceId,
                                        key: keyof ISignalInstanceState,
                                        value: any): ISetSignalInstanceField => ({
   type: ActionType.SET_SIGNAL_INSTANCE_FIELD,
-  payload: { virtualDeviceId, signalId, key, value },
+  payload: {virtualDeviceId, signalId, key, value},
+});
+
+export const setDisplaySelectedParamGroupId = (virtualDeviceId: VirtualDeviceId,
+                                               paramGroupId: ConfigParamGroupId): ISetDisplaySelectedParamGroup => ({
+  type: ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP,
+  payload: {virtualDeviceId, paramGroupId},
+});
+
+export const setDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
+                                     param: ConfigParam,
+                                     quick: boolean): ISetDisplayQuickParam => ({
+  type: ActionType.SET_DISPLAY_QUICK_PARAM,
+  payload: {virtualDeviceId, param, quick},
 });
 
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
@@ -384,3 +397,5 @@ export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceP
 export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
+export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
+export const setSelectedDeviceDisplayQuickParam = forSelectedDevice(setDisplayQuickParam);

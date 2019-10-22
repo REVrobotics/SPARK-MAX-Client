@@ -5,7 +5,7 @@
 import {Action} from "redux";
 import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
-import {ConfigParam} from "../../models/ConfigParam";
+import {ConfigParam, ConfigParamGroupId} from "../../models/ConfigParam";
 import {
   ConfirmationAnswer,
   DeviceId,
@@ -85,6 +85,9 @@ export enum ActionType {
   ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
   REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
   SET_SIGNAL_INSTANCE_FIELD = "SET_SIGNAL_INSTANCE_FIELD",
+
+  SET_DISPLAY_SELECTED_PARAM_GROUP = "SET_DISPLAY_SELECTED_PARAM_GROUP",
+  SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -464,6 +467,23 @@ export interface ISetSignalInstanceField extends IDeviceAwareAction {
   }
 }
 
+export interface ISetDisplaySelectedParamGroup extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    paramGroupId: ConfigParamGroupId,
+  },
+}
+
+export interface ISetDisplayQuickParam extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_QUICK_PARAM,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    param: ConfigParam,
+    quick: boolean,
+  },
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -483,4 +503,5 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISaveConfirmation | IBurnConfirmation
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam
   | IAddLog;

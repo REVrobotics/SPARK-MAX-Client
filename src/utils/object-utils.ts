@@ -1,4 +1,6 @@
-import {constant, difference, findIndex, intersection, isFunction, keyBy, omit} from "lodash";
+import {constant, difference, findIndex, intersection, isFunction, keyBy, omit, sortedIndex, sortedIndexOf} from "lodash";
+
+export const EMPTY_ARRAY: any[] = [];
 
 /**
  * Immutable setter of object field.
@@ -88,6 +90,32 @@ export function setArrayElementWith<T>(array: T[],
                                        value: T | ((value: T) => T)): T[] {
   const index = findIndex(array, predicate);
   return setArrayElement(array, index, value);
+}
+
+export function insertArrayElement<T>(array: T[], index: number, element: T): T[] {
+  return array.slice(0, index).concat([element]).concat(array.slice(index));
+}
+
+export function removeArrayElement<T>(array: T[], index: number): T[] {
+  return array.slice(0, index).concat(array.slice(index + 1));
+}
+
+export function insertArrayElementSorted<T>(array: T[], element: T): T[] {
+  const index = sortedIndexOf(array, element);
+  if (index >= 0) {
+    return array;
+  }
+
+  return insertArrayElement(array, sortedIndex(array, element), element);
+}
+
+export function removeArrayElementSorted<T>(array: T[], element: T): T[] {
+  const index = sortedIndexOf(array, element);
+  if (index < 0) {
+    return array;
+  }
+
+  return removeArrayElement(array, index);
 }
 
 /**

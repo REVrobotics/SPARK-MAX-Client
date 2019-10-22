@@ -5,8 +5,8 @@
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
-import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
-import {ExtendedListResponseDto, SignalDto} from "../models/dto";
+import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
+import {ConfigParamGroupName, ExtendedListResponseDto, SignalDto} from "../models/dto";
 import {diffObjects, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
@@ -211,7 +211,6 @@ export enum PanelName {
  */
 export interface IDisplayState {
   selectedPanel: PanelName;
-  quickBar: ConfigParam[];
   settings: IDisplaySettings;
   devices: {[deviceId: string]: IDeviceDisplayState};
 }
@@ -235,8 +234,10 @@ export type ISignalState = SignalDto;
 
 export interface IDeviceDisplayState {
   selectedSignalId?: SignalId;
+  selectedParamGroupId: ConfigParamGroupId;
   assignedSignals: {[id: number]: ISignalInstanceState};
   signals: ISignalState[];
+  quickBar: ConfigParam[];
 }
 
 export enum LegendAlignment {
@@ -511,6 +512,8 @@ export const createDeviceDisplayState = (): IDeviceDisplayState => ({
     {deviceId: 0, id: 6, name: "Motor Output %", units: "%", expectedMin: 0, expectedMax: 80},
   ],
   assignedSignals: {},
+  quickBar: [],
+  selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
 });
 
 export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,

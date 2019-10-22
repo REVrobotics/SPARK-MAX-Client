@@ -133,6 +133,8 @@ const labels = {
   "lbl_auto_scaled": "Auto-scaled",
   "lbl_min": "Min",
   "lbl_max": "Max",
+  "lbl_remove_from_quick_bar": "Remove from Quick Bar",
+  "lbl_add_to_quick_bar": "Add to Quick Bar",
 };
 
 export default labels;

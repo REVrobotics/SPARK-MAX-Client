@@ -1,5 +1,7 @@
+import {fromPairs} from "lodash";
 import {ConfigParam, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {LegendAlignment} from "../store/state";
+import {enumValues} from "../models/dto-utils";
 
 export enum DictionaryName {
   MotorTypes = "MotorTypes",
@@ -19,8 +21,9 @@ const dictionarySet = {
     [SensorType.Encoder]: "Encoder",
   },
   [DictionaryName.ConfigParams]: {
+    ...fromPairs(enumValues(ConfigParam).map((value) => [value, ConfigParam[value]])),
     [ConfigParam.kCanID]: "CAN ID",
-    [ConfigParam.kMotorType]: "Select Motor Type",
+    [ConfigParam.kMotorType]: "Motor Type",
     [ConfigParam.kSensorType]: "Sensor Type",
     [ConfigParam.kIdleMode]: "Idle Mode",
     [ConfigParam.kInputDeadband]: "PWM Input Deadband",
@@ -41,5 +44,9 @@ const dictionarySet = {
 };
 
 export function translateWord(name: string, key: any): string {
-  return dictionarySet[name][key];
+  const translation = dictionarySet[name][key];
+  if (translation != null) {
+    return translation;
+  }
+  return `${name}:${key}`;
 }

@@ -11,6 +11,7 @@ import PanelContainer from "../components/PanelContainer";
 import SignalsRunPanel from "../containers/SignalsRunPanel";
 import RunDisplay from "./RunDisplay";
 import SettingsRunPanel from "./SettingsRunPanel";
+import ParametersRunPanel from "./ParametersRunPanel";
 
 interface IProps {
   selectedPanel: PanelName;
@@ -52,6 +53,7 @@ class RunTab extends React.Component<IProps> {
         <PanelContainer className="flex-1 display__panel-container"
                         icon={panelOptionsByKey[selectedPanel].icon}
                         title={panelOptionsByKey[selectedPanel].title}>
+          {selectedPanel === PanelName.Parameters ? <ParametersRunPanel/> : null}
           {selectedPanel === PanelName.Signals ? <SignalsRunPanel/> : null}
           {selectedPanel === PanelName.Settings ? <SettingsRunPanel/> : null}
         </PanelContainer>

@@ -518,6 +518,10 @@ label.modified::after {
     flex: 1;
 }
 
+.no-flex {
+    flex: 0 0 auto;
+}
+
 .full-width {
     width: 100%;
 }
@@ -546,6 +550,10 @@ label.modified::after {
 
 .mr-10 {
     margin-right: 10px;
+}
+
+.p-10 {
+    padding: 10px;
 }
 
 .p-20 {
@@ -699,7 +707,7 @@ button.link {
 
 .panel-container__header {
     padding: 0 5px;
-    border-right: 2px solid rgba(0, 0, 0, 0.38);
+    border-right: 4px solid rgba(0, 0, 0, 0.38);
     background: orange;
 }
 
@@ -743,12 +751,12 @@ button.link {
    padding: 20px 5px;
 }
 
-.signal-list {
+.signal-list, .param-group-list {
     width: 200px;
     border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.signal-icon--active {
+.active-list-item-icon {
     height: 14px;
     margin-right: 10px;
 }
@@ -760,4 +768,37 @@ button.link {
 .unit-group__unit {
     margin-left: 5px;
     line-height: 30px;
+}
+
+.display-param-list {
+    overflow: auto;
+    padding: 10px
+}
+
+.display-param {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-bottom: 8px
+}
+
+.display-param__quick {
+    margin: 0;
+}
+
+.display-param__group {
+    padding: 0;
+    margin: 0;
+}
+
+.display-param__group .bp3-label {
+    overflow: hidden;
+    width: 160px;
+
+    text-overflow: ellipsis;
+}
+
+.display-param__field--numeric .bp3-input-group {
+    width: 80px;
 }
