@@ -32,7 +32,7 @@ const configurationsReducer = (state: IDeviceConfiguration[] = initialConfigurat
   return state;
 };
 
-export const deviceConfigurationReducer = (state: IApplicationState, action: ApplicationActions): IApplicationState => {
+export const rootConfigurationsReducer = (state: IApplicationState, action: ApplicationActions): IApplicationState => {
   switch (action.type) {
     case ActionType.ADD_CONFIGURATION: {
       const deviceId = querySelectedVirtualDeviceId(state);

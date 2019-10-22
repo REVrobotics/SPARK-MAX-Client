@@ -16,6 +16,7 @@ import {ActionType, ApplicationActions} from "../actions";
 import {setArrayElement, setField, setFields, setNestedField} from "../../utils/object-utils";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {createRamConfigParamContext, getRamConfigParamRule, IRamConfigParamContext} from "../ram-config-param-rules";
+import {composeReducers} from "../../utils/reducer-utils";
 
 const initialDeviceSetState: IDeviceSetState = {
   orderedDevices: [],
@@ -210,5 +211,6 @@ const orderedDevicesReducer = (state: IApplicationState, action: ApplicationActi
   }
 };
 
-export { parameterValidationReducer, deviceOrderingReducer };
+export const rootDeviceSetReducer = composeReducers(parameterValidationReducer, deviceOrderingReducer);
+
 export default deviceSetReducer;

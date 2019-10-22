@@ -7,11 +7,24 @@ import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
 import {ConfigParam} from "../../models/ConfigParam";
 import {
-  ConfirmationAnswer, DeviceId, IAlertDialogConfig,
+  ConfirmationAnswer,
+  DeviceId,
+  IAlertDialogConfig,
   IApplicationState,
-  IConfirmationDialogConfig, IDeviceConfiguration,
-  IDeviceState, IDeviceTransientState, IMessageQueueConfig, INetworkDevice, PathDescriptor,
-  ProcessType, TabId, VirtualDeviceId
+  IConfirmationDialogConfig,
+  IDeviceConfiguration,
+  IDeviceState,
+  IDeviceTransientState,
+  IDisplaySettings,
+  IMessageQueueConfig,
+  INetworkDevice,
+  ISignalInstanceState,
+  PanelName,
+  PathDescriptor,
+  ProcessType,
+  SignalId,
+  TabId,
+  VirtualDeviceId
 } from "../state";
 
 /**
@@ -64,6 +77,14 @@ export enum ActionType {
   INIT_MESSAGE_QUEUE = "INIT_MESSAGE_QUEUE",
   RESET_MESSAGE_QUEUE = "RESET_MESSAGE_QUEUE",
   ADD_TO_MESSAGE_QUEUE = "ADD_TO_MESSAGE_QUEUE",
+
+  SET_DISPLAY_SELECTED_PANEL = "SET_DISPLAY_SELECTED_PANEL",
+  SET_DISPLAY_SETTING = "SET_DISPLAY_SETTING",
+  SET_SELECTED_SIGNAL = "SET_SELECTED_SIGNAL",
+
+  ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
+  REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
+  SET_SIGNAL_INSTANCE_FIELD = "SET_SIGNAL_INSTANCE_FIELD",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -394,6 +415,55 @@ export interface IAddToMessageQueue extends Action {
   },
 }
 
+export interface ISetDisplaySelectedPanel {
+  type: ActionType.SET_DISPLAY_SELECTED_PANEL,
+  payload: {
+    panel: PanelName,
+  },
+}
+
+export interface ISetDisplaySetting {
+  type: ActionType.SET_DISPLAY_SETTING,
+  payload: {
+    key: keyof IDisplaySettings,
+    value: any,
+  },
+}
+
+export interface ISetSelectedSignal extends IDeviceAwareAction {
+  type: ActionType.SET_SELECTED_SIGNAL,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+  }
+}
+
+export interface IAddSignalInstance extends IDeviceAwareAction {
+  type: ActionType.ADD_SIGNAL_INSTANCE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    instance: ISignalInstanceState,
+  }
+}
+
+export interface IRemoveSignalInstance extends IDeviceAwareAction {
+  type: ActionType.REMOVE_SIGNAL_INSTANCE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+  }
+}
+
+export interface ISetSignalInstanceField extends IDeviceAwareAction {
+  type: ActionType.SET_SIGNAL_INSTANCE_FIELD,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+    key: keyof ISignalInstanceState,
+    value: any,
+  }
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -411,4 +481,6 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | IInitMessageQueue | IResetMessageQueue | IAddToMessageQueue
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
+  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal
+  | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
   | IAddLog;

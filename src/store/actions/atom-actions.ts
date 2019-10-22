@@ -8,11 +8,12 @@ import {
   IAddConfiguration,
   IAddDevices,
   IAddLog,
+  IAddSignalInstance,
   IAddToMessageQueue,
   IConsoleOutput,
   IInitMessageQueue,
   IRecalculateDeviceId,
-  IRemoveConfiguration,
+  IRemoveConfiguration, IRemoveSignalInstance,
   IReplaceDevices,
   IResetMessageQueue,
   IResetTransientState,
@@ -23,6 +24,8 @@ import {
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
   ISetDeviceProcessing,
+  ISetDisplaySelectedPanel,
+  ISetDisplaySetting,
   ISetFirmwareDownloaded,
   ISetFirmwareDownloadError,
   ISetFirmwareDownloading,
@@ -34,7 +37,8 @@ import {
   ISetParameters,
   ISetProcessingByDescriptor,
   ISetSelectedDevice,
-  ISetSelectedTab,
+  ISetSelectedSignal,
+  ISetSelectedTab, ISetSignalInstanceField,
   ISetTransientParameter,
   ISetUpdateAvailable,
   IUpdateConfiguration,
@@ -51,10 +55,14 @@ import {
   IDeviceConfiguration,
   IDeviceState,
   IDeviceTransientState,
+  IDisplaySettings,
   IMessageQueueConfig,
   INetworkDevice,
+  ISignalInstanceState,
+  PanelName,
   PathDescriptor,
   ProcessType,
+  SignalId,
   TabId,
   VirtualDeviceId
 } from "../state";
@@ -338,7 +346,41 @@ export const addToMessageQueue = (messages: string[]): IAddToMessageQueue => ({
   type: ActionType.ADD_TO_MESSAGE_QUEUE,
 });
 
+export const setDisplaySelectedPanel = (panel: PanelName): ISetDisplaySelectedPanel => ({
+  payload: { panel },
+  type: ActionType.SET_DISPLAY_SELECTED_PANEL,
+});
+
+export const setDisplaySetting = (key: keyof IDisplaySettings, value: any): ISetDisplaySetting => ({
+  payload: { key, value },
+  type: ActionType.SET_DISPLAY_SETTING,
+});
+
+export const setSelectedSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): ISetSelectedSignal => ({
+  type: ActionType.SET_SELECTED_SIGNAL,
+  payload: { virtualDeviceId, signalId },
+});
+
+export const addSignalInstance = (instance: ISignalInstanceState): IAddSignalInstance => ({
+  type: ActionType.ADD_SIGNAL_INSTANCE,
+  payload: { virtualDeviceId: instance.virtualDeviceId, instance },
+});
+
+export const removeSignalInstance = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IRemoveSignalInstance => ({
+  type: ActionType.REMOVE_SIGNAL_INSTANCE,
+  payload: { virtualDeviceId, signalId },
+});
+
+export const setSignalInstanceField = (virtualDeviceId: VirtualDeviceId,
+                                       signalId: SignalId,
+                                       key: keyof ISignalInstanceState,
+                                       value: any): ISetSignalInstanceField => ({
+  type: ActionType.SET_SIGNAL_INSTANCE_FIELD,
+  payload: { virtualDeviceId, signalId, key, value },
+});
+
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
 export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceProcessStatus);
 export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
+export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);

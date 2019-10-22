@@ -116,6 +116,23 @@ const labels = {
   "lbl_about_tab": "About",
   "lbl_not_connected_lc": "not connected",
   "lbl_configuration_issue_lc": "configuration issue",
+  "lbl_run_panel": "Run",
+  "lbl_parameters_panel": "Parameters",
+  "lbl_signals_panel": "Signals",
+  "lbl_settings_panel": "Settings",
+  "lbl_time_span": "Time Span",
+  "lbl_show_single_chart": "Single Chart",
+  "lbl_show_legend": "Show Legend",
+  "lbl_dock_lc": "dock",
+  "lbl_add_signal": "Add Signal",
+  "lbl_delete_signal": "Delete Signal",
+  "lbl_no_signal_selected_title": "No Signal Selected",
+  "lbl_no_signal_selected_description": "Select a signal from the list on the left to see its details",
+  "lbl_add_signal_title": "Signal is Not Added",
+  "lbl_add_signal_description": "Press on the button here below to add this signal for the selected device",
+  "lbl_auto_scaled": "Auto-scaled",
+  "lbl_min": "Min",
+  "lbl_max": "Max",
 };
 
 export default labels;

@@ -314,6 +314,11 @@ h4.form-title {
     font-weight: normal;
 }
 
+.form-row {
+    display: flex;
+    flex-direction: row;
+}
+
 .form-column {
     display: flex;
     flex-direction: column;
@@ -505,6 +510,10 @@ label.modified::after {
     justify-content: space-between;
 }
 
+.flex-cross-center {
+    align-items: center;
+}
+
 .flex-1 {
     flex: 1;
 }
@@ -515,6 +524,11 @@ label.modified::after {
 
 .page {
     height: 100%;
+}
+
+.page--full {
+    height: calc(100vh - 72px);
+    margin: -20px -10px 0 -10px;
 }
 
 .text-center {
@@ -532,6 +546,10 @@ label.modified::after {
 
 .mr-10 {
     margin-right: 10px;
+}
+
+.p-20 {
+    padding: 20px;
 }
 
 .bp3-button.link-button {
@@ -614,4 +632,132 @@ button.link {
 .waveform-chart {
     position: relative;
     flex: 1;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding: 2px;
+}
+
+.list__gap {
+    order: 1;
+}
+
+.tool--start {
+    order: 0;
+}
+
+.tool--end {
+    order: 2;
+}
+
+.tool + .tool {
+    margin-top: 5px;
+}
+
+.list-item {
+    position: relative;
+}
+
+.list-item > .list-item__button {
+    justify-content: flex-start;
+    min-height: 36px;
+    padding: 10px;
+}
+
+.list-item > .list-item__button .bp3-button-text {
+    width: 100%;
+}
+
+.list-item:not(:first-child) {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.list-item__options {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.display__toolbar {
+    margin: 10px 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.display__container {
+    height: 300px;
+}
+
+.panel-container {
+    position: relative;
+    border-top: 1px solid rgba(0, 0, 0, 0.38);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.panel-container__header {
+    padding: 0 5px;
+    border-right: 2px solid rgba(0, 0, 0, 0.38);
+    background: orange;
+}
+
+.panel-container__icon {
+    margin-top: 10px;
+}
+
+.panel-container__title {
+    position: absolute;
+    left: 6px;
+    top: calc(50% + 100px);
+    width: 200px;
+    transform: rotate(-90deg);
+    transform-origin: left top;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.form-group-setting {
+    margin-bottom: 0;
+}
+
+.form-group-setting .bp3-label {
+    width: 100px;
+}
+
+.form-group-setting .bp3-numeric-input .bp3-input-group {
+    width: 70px;
+}
+
+.form-group-setting .bp3-switch {
+    margin-bottom: 5px;
+}
+
+.form-group-setting--right .bp3-label {
+    justify-content: flex-end;
+}
+
+.run-settings-panel {
+   padding: 20px 5px;
+}
+
+.signal-list {
+    width: 200px;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.signal-icon--active {
+    height: 14px;
+    margin-right: 10px;
+}
+
+.unit-group .bp3-input-group {
+    width: 80px;
+}
+
+.unit-group__unit {
+    margin-left: 5px;
+    line-height: 30px;
 }

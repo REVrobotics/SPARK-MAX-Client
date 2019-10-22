@@ -7,7 +7,6 @@ import AdvancedTab from "./containers/AdvancedTab";
 import BasicTab from "./containers/BasicTab";
 import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
-// import SettingsTab from "./containers/SettingsTab";
 import {IApplicationState, TabId} from "./store/state";
 import WebProvider from "./providers/WebProvider";
 import AboutTab from "./containers/AboutTab";
@@ -52,11 +51,9 @@ class App extends React.Component<IProps> {
           <Tab id={TabId.Basic} title={tt("lbl_basic_tab")} panel={<BasicTab/>}/>
           <Tab id={TabId.Advanced} title={tt("lbl_advanced_tab")} panel={<AdvancedTab/>}/>
           <Tab id={TabId.Run} title={tt("lbl_run_tab")} panel={<RunTab/>}/>
-          {/*<Tab id="main-tab-network" title="Network" panel={<span>Network</span>} />*/}
           <Tab id={TabId.Network} title={tt("lbl_network_tab")} panel={<NetworkTab/>}/>
           <Tab id={TabId.Help} title={tt("lbl_help_tab")} panel={<HelpTab/>}/>
           <Tab id={TabId.About} title={tt("lbl_about_tab")} panel={<AboutTab/>}/>
-          {/*<Tab id="main-tab-settings" title="Settings" panel={<SettingsTab/>} />*/}
         </Tabs>
       </div>
     );

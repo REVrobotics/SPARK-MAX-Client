@@ -6,7 +6,7 @@ import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
-import {ExtendedListResponseDto} from "../models/dto";
+import {ExtendedListResponseDto, SignalDto} from "../models/dto";
 import {diffObjects, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
@@ -196,6 +196,59 @@ export interface IApplicationState {
   logs: string[],
   ui: IUiState;
   configurations: IDeviceConfiguration[],
+  display: IDisplayState
+}
+
+export enum PanelName {
+  Run = "run",
+  Parameters = "parameters",
+  Signals = "signals",
+  Settings = "settings",
+}
+
+/**
+ * State of display on run tab
+ */
+export interface IDisplayState {
+  selectedPanel: PanelName;
+  quickBar: ConfigParam[];
+  settings: IDisplaySettings;
+  devices: {[deviceId: string]: IDeviceDisplayState};
+}
+
+export type SignalId = number;
+
+export interface ISignalInstanceState {
+  signalId: SignalId;
+  virtualDeviceId: VirtualDeviceId;
+  autoScaled: boolean;
+  min: number;
+  max: number;
+  style: ISignalStyle;
+}
+
+export interface ISignalStyle {
+  color: string;
+}
+
+export type ISignalState = SignalDto;
+
+export interface IDeviceDisplayState {
+  selectedSignalId?: SignalId;
+  assignedSignals: {[id: number]: ISignalInstanceState};
+  signals: ISignalState[];
+}
+
+export enum LegendAlignment {
+  Top = "top",
+  Right = "right",
+}
+
+export interface IDisplaySettings {
+  timeSpan: number;
+  singleChart: boolean;
+  showLegend: boolean;
+  legendAlignment: LegendAlignment;
 }
 
 /**
@@ -412,6 +465,10 @@ export enum ConfirmationAnswer {
   Cancel = "Cancel"
 }
 
+export const DISPLAY_SETTING_CONSTRAINTS: {[name: string]: IFieldConstraints} = {
+  timeSpan: {min: 0, max: 1000},
+};
+
 /**
  * Creates initial state for device.
  */
@@ -442,6 +499,29 @@ export const resetDeviceState = (state: IDeviceState) => ({
   ...state,
   uniqueId: 0,
   isLoaded: false,
+});
+
+export const createDeviceDisplayState = (): IDeviceDisplayState => ({
+  signals: [
+    {deviceId: 0, id: 1, name: "Signal 1", units: "M", expectedMin: 0, expectedMax: 100},
+    {deviceId: 0, id: 2, name: "Motor Current", units: "A", expectedMin: 0, expectedMax: 100},
+    {deviceId: 0, id: 3, name: "Motor Temperature", units: "C", expectedMin: 0, expectedMax: 80},
+    {deviceId: 0, id: 4, name: "Motor Velocity", units: "M/s", expectedMin: 0, expectedMax: 60},
+    {deviceId: 0, id: 5, name: "Input Voltage", units: "V", expectedMin: 0, expectedMax: 70},
+    {deviceId: 0, id: 6, name: "Motor Output %", units: "%", expectedMin: 0, expectedMax: 80},
+  ],
+  assignedSignals: {},
+});
+
+export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,
+                                     signal: ISignalState,
+                                     style: ISignalStyle): ISignalInstanceState => ({
+  virtualDeviceId,
+  signalId: getSignalId(signal),
+  autoScaled: true,
+  min: signal.expectedMin,
+  max: signal.expectedMax,
+  style,
 });
 
 /**
@@ -734,3 +814,8 @@ export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
 export const isDefaultDescriptor = (descriptor: PathDescriptor) => descriptor === DEFAULT_PATH_DESCRIPTOR;
 export const toDtoDescriptor = (descriptor: PathDescriptor) => isDefaultDescriptor(descriptor) ? undefined : descriptor;
 export const fromDtoDescriptor = (descriptor?: PathDescriptor) => descriptor ? descriptor : DEFAULT_PATH_DESCRIPTOR;
+
+export const getDisplaySettingConstraints = <S extends keyof IDisplaySettings>(name: S) =>
+  DISPLAY_SETTING_CONSTRAINTS[name];
+
+export const getSignalId = (signal: ISignalState) => signal.id;

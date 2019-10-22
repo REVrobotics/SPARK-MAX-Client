@@ -12,14 +12,14 @@ import {
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue, getNetworkDeviceId,
+  getDeviceParamValue, getNetworkDeviceId, getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
   IApplicationState, IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured, PathDescriptor,
-  ProcessType,
+  isDeviceNotConfigured, ISignalStyle, PathDescriptor,
+  ProcessType, SignalId,
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
@@ -405,4 +405,60 @@ export const queryMessageQueueConfig = (state: IApplicationState) => state.ui.me
 export const queryIsMessageQueueOpened = (state: IApplicationState) => {
   const {messageQueue} = state.ui;
   return messageQueue ? messageQueue.messages.length > 0 : false;
+};
+
+export const queryDisplaySelectedPanel = (state: IApplicationState) => state.display.selectedPanel;
+export const queryDisplaySettings = (state: IApplicationState) => state.display.settings;
+
+export const querySelectedDeviceDisplay = (state: IApplicationState) => {
+  const selectedDeviceId = querySelectedVirtualDeviceId(state);
+  return selectedDeviceId == null ? undefined : state.display.devices[selectedDeviceId];
+};
+
+export const querySignals = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.signals;
+};
+
+export const queryAssignedSignals = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.assignedSignals;
+};
+
+export const querySelectedSignalId = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.selectedSignalId;
+};
+
+export const querySignal = (state: IApplicationState, signalId: SignalId) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.signals.find((signal) => getSignalId(signal) === signalId);
+};
+
+export const querySignalNewStyle = (state: IApplicationState,
+                                    virtualDeviceId: VirtualDeviceId,
+                                    signalId: SignalId): ISignalStyle => {
+  return {
+    color: "red",
+  };
+};
+
+export const querySelectedSignal = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null || deviceDisplay.selectedSignalId == null) {
+    return;
+  }
+  return querySignal(state, deviceDisplay.selectedSignalId);
 };

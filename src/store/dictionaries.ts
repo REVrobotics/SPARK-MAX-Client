@@ -1,6 +1,7 @@
 import {isString, keyBy} from "lodash";
 import {MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {DictionaryName, translateWord} from "../mls/dictionaries";
+import {LegendAlignment} from "./state";
 
 export interface IDictionaryWord {
   id: any;
@@ -54,3 +55,7 @@ export const MOTOR_TYPES = Dictionary.from(
 export const SENSOR_TYPES = Dictionary.from(
   DictionaryName.SensorTypes,
   [SensorType.NoSensor, SensorType.HallSensor, SensorType.Encoder]);
+
+export const LEGEND_ALIGNMENT = Dictionary.from(
+  DictionaryName.LegendAlignments,
+  [LegendAlignment.Top, LegendAlignment.Right]);

@@ -1,9 +1,11 @@
 import {ConfigParam, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {LegendAlignment} from "../store/state";
 
 export enum DictionaryName {
   MotorTypes = "MotorTypes",
   SensorTypes = "SensorTypes",
   ConfigParams = "ConfigParams",
+  LegendAlignments = "LegendAlignments",
 }
 
 const dictionarySet = {
@@ -31,7 +33,11 @@ const dictionarySet = {
     [ConfigParam.kSoftLimitRevEn]: "Reverse Limit",
     [ConfigParam.kSoftLimitFwd]: "Forward Limit (value)",
     [ConfigParam.kSoftLimitRev]: "Reverse Limit (value)",
-  }
+  },
+  [DictionaryName.LegendAlignments]: {
+    [LegendAlignment.Top]: "On Top",
+    [LegendAlignment.Right]: "On Right",
+  },
 };
 
 export function translateWord(name: string, key: any): string {
