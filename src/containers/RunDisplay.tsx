@@ -1,6 +1,6 @@
 import {constant} from "lodash";
 import * as React from "react";
-import {IApplicationState, IDisplaySettings, ISignalInstanceState, ISignalState} from "../store/state";
+import {IApplicationState, DisplaySettings, ISignalInstanceState, ISignalState} from "../store/state";
 import {connect} from "react-redux";
 import {DataSet, WaveformChart, WaveformEngineDisplay, WaveformScale} from "../display";
 import {querySignalsWithInstances} from "../store/selectors";
@@ -10,7 +10,7 @@ import {ReactNode} from "react";
 
 interface IProps {
   className?: string;
-  settings: IDisplaySettings;
+  settings: DisplaySettings;
   signalsWithInstances: Array<[ISignalState, ISignalInstanceState]>;
 }
 

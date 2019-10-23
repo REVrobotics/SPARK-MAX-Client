@@ -51,7 +51,7 @@ export function removeFields<T extends object, P extends keyof T>(entity: T, key
 /**
  * Applies function to the provided object iff object is not nil.
  */
-export function maybeMap<T, R>(entity: T | undefined | null, map: (entity: T) => R): R | undefined | null {
+export function maybeMap<T, R>(entity: T | undefined, map: (entity: T) => R): R | undefined {
   if (entity == null) {
     return entity as any;
   }
@@ -128,7 +128,7 @@ export function coalesce<T, O extends T>(value: T | null | undefined, otherwise:
 /**
  * Describes result of `diffObjects` operation
  */
-interface IDiffResult<T> {
+interface IDiffArrayResult<T> {
   added: T[];
   unmodified: T[];
   modified: Array<{previous: T, next: T}>;
@@ -138,7 +138,7 @@ interface IDiffResult<T> {
 /**
  * Analyzes two set of objects and returns detailed description of all changes
  */
-export function diffObjects<T>(previous: T[], next: T[], by: (obj: T) => any): IDiffResult<T> {
+export function diffArrays<T>(previous: T[], next: T[], by: (obj: T) => any): IDiffArrayResult<T> {
   const previousIds = previous.map(by);
   const nextIds = next.map(by);
 
@@ -158,3 +158,16 @@ export function diffObjects<T>(previous: T[], next: T[], by: (obj: T) => any): I
     removed: removedIds.map((id) => previousById[id]),
   };
 };
+
+export function truncateByTime<T>(data: T[], timeSpan: number, getTime: (item: T) => number) {
+  const lastPoint = data[data.length - 1];
+
+  while (data.length > 2) {
+    const nextPoint = data[1];
+    if ((getTime(lastPoint) - getTime(nextPoint)) <= timeSpan) {
+      break;
+    }
+
+    data.shift();
+  }
+}

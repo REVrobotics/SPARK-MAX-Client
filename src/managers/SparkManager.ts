@@ -1,5 +1,12 @@
 import {ConfigParam} from "../models/ConfigParam";
-import {FirmwareResponseDto, getErrorText, hasError, ListRequestDto, ListResponseDto} from "../models/dto";
+import {
+  FirmwareResponseDto,
+  getErrorText,
+  hasError,
+  ListRequestDto,
+  ListResponseDto,
+  TelemetryListResponseDto
+} from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 import {LogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../models/errors";
 
@@ -114,6 +121,10 @@ class SparkManager {
 
   public loadFirmware(filename: string, devicesToUpdate: string[]): Promise<FirmwareResponseDto> {
     return wrapSparkError(sendTwoWay("load-firmware", filename, devicesToUpdate));
+  }
+
+  public telemetryList(): Promise<TelemetryListResponseDto> {
+    return wrapSparkError(sendTwoWay("telemetry-list"));
   }
 
   public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {

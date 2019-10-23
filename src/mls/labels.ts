@@ -137,6 +137,8 @@ const labels = {
   "lbl_add_to_quick_bar": "Add to Quick Bar",
   "lbl_no_signals_title": "No Signals Added",
   "lbl_no_signals_description": "In order to start tracking device parameters add any signal and run device",
+  "lbl_no_device_connected_title": "No Device Connected",
+  "lbl_no_device_connected_description": "In order to run device, it should be connected. Choose device on the top of the window and press \"Connect\"",
 };
 
 export default labels;

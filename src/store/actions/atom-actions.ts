@@ -13,7 +13,8 @@ import {
   IConsoleOutput,
   IInitMessageQueue,
   IRecalculateDeviceId,
-  IRemoveConfiguration, IRemoveSignalInstance,
+  IRemoveConfiguration,
+  IRemoveSignalInstance,
   IReplaceDevices,
   IResetMessageQueue,
   IResetTransientState,
@@ -24,7 +25,10 @@ import {
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
   ISetDeviceProcessing,
+  ISetDisplay,
+  ISetDisplayQuickParam,
   ISetDisplaySelectedPanel,
+  ISetDisplaySelectedParamGroup,
   ISetDisplaySetting,
   ISetFirmwareDownloaded,
   ISetFirmwareDownloadError,
@@ -36,9 +40,10 @@ import {
   ISetNetworkScanInProgress,
   ISetParameters,
   ISetProcessingByDescriptor,
-  ISetSelectedDevice, ISetDisplaySelectedParamGroup,
+  ISetSelectedDevice,
   ISetSelectedSignal,
-  ISetSelectedTab, ISetSignalInstanceField,
+  ISetSelectedTab,
+  ISetSignalInstanceField,
   ISetTransientParameter,
   ISetUpdateAvailable,
   IUpdateConfiguration,
@@ -46,16 +51,17 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor, ISetDisplayQuickParam,
+  IUpdateProcessStatusByDescriptor,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 import {
   DeviceId,
+  DisplaySettings,
   IDeviceConfiguration,
   IDeviceState,
   IDeviceTransientState,
-  IDisplaySettings,
+  IDisplayState,
   IMessageQueueConfig,
   INetworkDevice,
   ISignalInstanceState,
@@ -351,7 +357,7 @@ export const setDisplaySelectedPanel = (panel: PanelName): ISetDisplaySelectedPa
   type: ActionType.SET_DISPLAY_SELECTED_PANEL,
 });
 
-export const setDisplaySetting = (key: keyof IDisplaySettings, value: any): ISetDisplaySetting => ({
+export const setDisplaySetting = (key: keyof DisplaySettings, value: any): ISetDisplaySetting => ({
   payload: {key, value},
   type: ActionType.SET_DISPLAY_SETTING,
 });
@@ -390,6 +396,11 @@ export const setDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
                                      quick: boolean): ISetDisplayQuickParam => ({
   type: ActionType.SET_DISPLAY_QUICK_PARAM,
   payload: {virtualDeviceId, param, quick},
+});
+
+export const setDisplay = (display: IDisplayState): ISetDisplay => ({
+  type: ActionType.SET_DISPLAY,
+  payload: {display},
 });
 
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);

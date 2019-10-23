@@ -17,8 +17,7 @@ import * as React from "react";
 import {ReactNode, Ref} from "react";
 import * as Chart from "chart.js";
 import {ChartConfiguration, ChartDataSets, ChartXAxe, ChartYAxe, PositionType} from "chart.js";
-import {setArrayElement} from "../utils/object-utils";
-import {truncateByTime} from "./display-utils";
+import {setArrayElement, truncateByTime} from "../utils/object-utils";
 
 Chart.defaults.global.legend!.onClick = noop;
 

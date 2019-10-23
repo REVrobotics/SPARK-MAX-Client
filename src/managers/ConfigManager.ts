@@ -1,5 +1,7 @@
 import {sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 
+export const CONFIG_DISPLAY = "display";
+
 class ConfigManager {
   public static getInstance(): ConfigManager {
     if (typeof ConfigManager._instance === "undefined") {
@@ -19,6 +21,10 @@ class ConfigManager {
   }
 
   public getNumber(path: string): Promise<number> {
+    return sendTwoWay("config-get", path);
+  }
+
+  public get<T>(path: string): Promise<T> {
     return sendTwoWay("config-get", path);
   }
 

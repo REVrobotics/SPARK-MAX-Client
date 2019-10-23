@@ -15,12 +15,13 @@ import {addLog} from "./atom-actions";
  * ```
  */
 export const useErrorHandler = <T = any>(dispatch: SparkDispatch) =>
-  (reason: any): Promise<T> => dispatch(handleError<T>(reason));
+  (reason: any): Promise<T> => dispatch(handleError<T>(reason, true));
 
 /**
  * Handles some generic error.
  */
-export const handleError = <T>(reason: any): SparkAction<Promise<T>> => (dispatch) => {
+export const handleError = <T>(reason: any,
+                               onlyExpectedErrors: boolean = true): SparkAction<Promise<T>> => (dispatch) => {
   // If error was already handled, do not handle it one more time
   if (isApplicationError(reason) && reason.handled) {
     return Promise.reject(reason);
@@ -32,13 +33,15 @@ export const handleError = <T>(reason: any): SparkAction<Promise<T>> => (dispatc
     reason.setHandled();
     dispatch(addLog(reason.text));
     return Promise.reject(reason);
-  } else {
+  } else if (!onlyExpectedErrors) {
     // All system errors should be shown as toast notifications
     const error = SystemError.from(reason);
     handleSystemError(error);
     error.setHandled();
     dispatch(addLog(error.message));
     return Promise.reject(error);
+  } else {
+    return Promise.reject(reason);
   }
 };
 

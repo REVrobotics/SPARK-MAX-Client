@@ -31,6 +31,7 @@ import {loadParameters} from "./parameter-actions";
 import {SparkAction} from "./action-types";
 import {showToastWarning} from "./ui-actions";
 import {onError, useErrorHandler} from "./error-actions";
+import {syncSignals} from "./display-actions";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -100,6 +101,7 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
         dispatch(replaceDevices(devices.map(resetDeviceState)));
 
         dispatch(setConnectedDescriptor());
+        dispatch(syncSignals());
       })
       .catch(useErrorHandler(dispatch))
       .finally(() => {
@@ -163,6 +165,7 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
           return Promise.resolve();
         }
       })
+      .then(() => dispatch(syncSignals()))
       .catch(useErrorHandler(dispatch));
   };
 }

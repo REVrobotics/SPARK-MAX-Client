@@ -4,25 +4,26 @@ import * as React from "react";
 import {ChangeEvent, ComponentType, useCallback} from "react";
 import {Button, FormGroup, MenuItem, Switch} from "@blueprintjs/core";
 import {
+  DisplaySettings,
   getDisplaySettingConstraints,
   IApplicationState,
-  IDisplaySettings,
   IFieldConstraints,
   INumericFieldConstraints
 } from "../store/state";
 import {connect} from "react-redux";
 import {queryDisplaySettings} from "../store/selectors";
-import {setDisplaySetting, SparkDispatch} from "../store/actions";
+import {SparkDispatch} from "../store/actions";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import {Dictionary, getWordText, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
+import {setAndPersistDisplaySetting} from "../store/actions/display-actions";
 
 interface Props {
-  settings: IDisplaySettings;
+  settings: DisplaySettings;
 }
 
 interface SettingProps {
-  name: keyof IDisplaySettings;
+  name: keyof DisplaySettings;
   label: string;
   align?: "right";
   disabled?: boolean;
@@ -46,7 +47,7 @@ const bindRunSetting = (component: ComponentType<ConnectedSettingProps>): Compon
 
   const mapDispatchToPropsSetting = (dispatch: SparkDispatch, props: SettingProps) => {
     return {
-      onValueChange: (value: any) => dispatch(setDisplaySetting(props.name, value)),
+      onValueChange: (value: any) => dispatch(setAndPersistDisplaySetting(props.name, value)),
     };
   };
 

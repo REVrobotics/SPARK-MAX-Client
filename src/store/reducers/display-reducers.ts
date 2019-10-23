@@ -1,6 +1,7 @@
 import {difference, fromPairs} from "lodash";
 import {
   createDeviceDisplayState,
+  DEFAULT_DISPLAY_SETTINGS,
   getSignalId,
   getVirtualDeviceId,
   IApplicationState,
@@ -20,16 +21,17 @@ import {
   setNestedField
 } from "../../utils/object-utils";
 import {queryDevicesByDescriptor} from "../selectors";
-import {LegendPosition} from "../../display/display-interfaces";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
-  settings: {showLegend: true, legendPosition: LegendPosition.Top, singleChart: true, timeSpan: 30},
+  settings: DEFAULT_DISPLAY_SETTINGS,
   devices: {},
 };
 
 const displayReducer = (state: IDisplayState = displayInitialState, action: ApplicationActions) => {
   switch (action.type) {
+    case ActionType.SET_DISPLAY:
+      return action.payload.display;
     case ActionType.SET_DISPLAY_SELECTED_PANEL:
       return setField(state, "selectedPanel", action.payload.panel);
     case ActionType.SET_DISPLAY_SETTING:

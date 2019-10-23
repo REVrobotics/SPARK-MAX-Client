@@ -6,8 +6,15 @@ import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
-import {ConfigParamGroupName, ExtendedListResponseDto, SignalDto, TelemetryDataItemDto} from "../models/dto";
-import {diffObjects, setField} from "../utils/object-utils";
+import {
+  ConfigParamGroupName,
+  DisplayConfigDto,
+  DisplaySettingsDto,
+  ExtendedListResponseDto,
+  SignalDto,
+  TelemetryDataItemDto
+} from "../models/dto";
+import {diffArrays, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {Message, MessageSeverity} from "../models/Message";
@@ -212,9 +219,17 @@ export enum PanelName {
  */
 export interface IDisplayState {
   selectedPanel: PanelName;
-  settings: IDisplaySettings;
-  devices: {[deviceId: string]: IDeviceDisplayState};
+  settings: DisplaySettings;
+  devices: { [deviceId: string]: IDeviceDisplayState };
+  raw?: DisplayConfigDto;
 }
+
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
+  showLegend: true,
+  legendPosition: LegendPosition.Top,
+  singleChart: true,
+  timeSpan: 30
+};
 
 export type SignalId = number;
 
@@ -239,17 +254,12 @@ export type ITelemetryDataItem = TelemetryDataItemDto;
 export interface IDeviceDisplayState {
   selectedSignalId?: SignalId;
   selectedParamGroupId: ConfigParamGroupId;
-  assignedSignals: {[id: number]: ISignalInstanceState};
+  assignedSignals: { [id: number]: ISignalInstanceState };
   signals: ISignalState[];
   quickBar: ConfigParam[];
 }
 
-export interface IDisplaySettings {
-  timeSpan: number;
-  singleChart: boolean;
-  showLegend: boolean;
-  legendPosition: LegendPosition;
-}
+export type DisplaySettings = DisplaySettingsDto;
 
 /**
  * Status of device on CAN bus
@@ -465,7 +475,7 @@ export enum ConfirmationAnswer {
   Cancel = "Cancel"
 }
 
-export const DISPLAY_SETTING_CONSTRAINTS: {[name: string]: IFieldConstraints} = {
+export const DISPLAY_SETTING_CONSTRAINTS: { [name: string]: IFieldConstraints } = {
   timeSpan: {min: 1, max: 1000},
 };
 
@@ -502,14 +512,7 @@ export const resetDeviceState = (state: IDeviceState) => ({
 });
 
 export const createDeviceDisplayState = (): IDeviceDisplayState => ({
-  signals: [
-    {deviceId: 0, id: 1, name: "Signal 1", units: "M", expectedMin: 0, expectedMax: 100},
-    {deviceId: 0, id: 2, name: "Motor Current", units: "A", expectedMin: 0, expectedMax: 100},
-    {deviceId: 0, id: 3, name: "Motor Temperature", units: "C", expectedMin: 0, expectedMax: 80},
-    {deviceId: 0, id: 4, name: "Motor Velocity", units: "M/s", expectedMin: 0, expectedMax: 60},
-    {deviceId: 0, id: 5, name: "Input Voltage", units: "V", expectedMin: 0, expectedMax: 70},
-    {deviceId: 0, id: 6, name: "Motor Output %", units: "%", expectedMin: 0, expectedMax: 80},
-  ],
+  signals: [],
   assignedSignals: {},
   quickBar: [],
   selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
@@ -647,10 +650,10 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
     (device) => getCanIdFromDeviceId(getDeviceId(device)) === 0);
 
   // Analyze devices having CAN ID != 0
-  const diffNon0 = diffObjects(previousNotZero, nextNotZero, getDeviceId);
+  const diffNon0 = diffArrays(previousNotZero, nextNotZero, getDeviceId);
 
   // Analyze devices having CAN ID = 0
-  const diff0 = diffObjects(previousZero, nextZero, (device) => device.uniqueId);
+  const diff0 = diffArrays(previousZero, nextZero, (device) => device.uniqueId);
 
   return {
     added: diffNon0.added.concat(diff0.added),
@@ -818,7 +821,7 @@ export const isDefaultDescriptor = (descriptor: PathDescriptor) => descriptor ==
 export const toDtoDescriptor = (descriptor: PathDescriptor) => isDefaultDescriptor(descriptor) ? undefined : descriptor;
 export const fromDtoDescriptor = (descriptor?: PathDescriptor) => descriptor ? descriptor : DEFAULT_PATH_DESCRIPTOR;
 
-export const getDisplaySettingConstraints = <S extends keyof IDisplaySettings>(name: S) =>
+export const getDisplaySettingConstraints = <S extends keyof DisplaySettings>(name: S) =>
   DISPLAY_SETTING_CONSTRAINTS[name];
 
 export const getSignalId = (signal: ISignalState) => signal.id;

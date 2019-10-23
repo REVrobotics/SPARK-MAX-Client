@@ -3,10 +3,10 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {IApplicationState, PanelName} from "../store/state";
 import {setDisplaySelectedPanel, SparkDispatch} from "../store/actions";
-import {queryDisplaySelectedPanel} from "../store/selectors";
+import {queryDisplaySelectedPanel, queryIsHasConnectedDevice} from "../store/selectors";
 import List from "../components/List";
 import Tool, {ListItemAlignment} from "../components/Tool";
-import {IconName} from "@blueprintjs/core";
+import {IconName, NonIdealState} from "@blueprintjs/core";
 import PanelContainer from "../components/PanelContainer";
 import SignalsRunPanel from "../containers/SignalsRunPanel";
 import RunDisplay from "./RunDisplay";
@@ -14,6 +14,7 @@ import SettingsRunPanel from "./SettingsRunPanel";
 import ParametersRunPanel from "./ParametersRunPanel";
 
 interface IProps {
+  connected: boolean;
   selectedPanel: PanelName;
 
   onSelectPanel(panel: PanelName): void;
@@ -38,7 +39,13 @@ const panelOptionsByKey: {[name: string]: PanelOptions} = keyBy(panelOptions, (o
 class RunTab extends React.Component<IProps> {
 
   public render() {
-    const {selectedPanel, onSelectPanel} = this.props;
+    const {connected, selectedPanel, onSelectPanel} = this.props;
+
+    if (!connected) {
+      return <NonIdealState icon="disable"
+                            title={tt("lbl_no_device_connected_title")}
+                            description={tt("lbl_no_device_connected_description")}/>;
+    }
 
     return (
       <div className="page page--full flex-column">
@@ -295,6 +302,7 @@ class RunTab extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
+    connected: queryIsHasConnectedDevice(state),
     selectedPanel: queryDisplaySelectedPanel(state),
   };
 }

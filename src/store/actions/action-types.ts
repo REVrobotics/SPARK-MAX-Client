@@ -15,7 +15,7 @@ import {
   IDeviceConfiguration,
   IDeviceState,
   IDeviceTransientState,
-  IDisplaySettings,
+  DisplaySettings,
   IMessageQueueConfig,
   INetworkDevice,
   ISignalInstanceState,
@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId
+  VirtualDeviceId, IDisplayState
 } from "../state";
 
 /**
@@ -88,6 +88,7 @@ export enum ActionType {
 
   SET_DISPLAY_SELECTED_PARAM_GROUP = "SET_DISPLAY_SELECTED_PARAM_GROUP",
   SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
+  SET_DISPLAY = "SET_DISPLAY",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -428,7 +429,7 @@ export interface ISetDisplaySelectedPanel {
 export interface ISetDisplaySetting {
   type: ActionType.SET_DISPLAY_SETTING,
   payload: {
-    key: keyof IDisplaySettings,
+    key: keyof DisplaySettings,
     value: any,
   },
 }
@@ -484,6 +485,13 @@ export interface ISetDisplayQuickParam extends IDeviceAwareAction {
   },
 }
 
+export interface ISetDisplay {
+  type: ActionType.SET_DISPLAY,
+  payload: {
+    display: IDisplayState,
+  },
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -503,5 +511,5 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISaveConfirmation | IBurnConfirmation
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay
   | IAddLog;

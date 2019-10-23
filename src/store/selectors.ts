@@ -47,6 +47,12 @@ export const queryDevicesByDescriptor = ({deviceSet: {devices}}: IApplicationSta
   filter(devices, (device) => device.descriptor === descriptor);
 
 /**
+ * Returns all devices having given descriptor
+ */
+export const queryDevicesByDeviceId = ({deviceSet: {devices}}: IApplicationState, deviceId: DeviceId) =>
+  filter(devices, (device) => getDeviceId(device) === deviceId);
+
+/**
  * Returns true if at least one device exists, otherwise false
  */
 export const queryIsConnectableToAnyDevice = (state: IApplicationState) => state.deviceSet.orderedDevices.length > 0;

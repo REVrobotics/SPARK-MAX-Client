@@ -4,8 +4,6 @@ import {default as Chart} from "./components/WaveformChart";
 import {default as Scale} from "./components/WaveformScale";
 import {default as DefaultDataSet} from "./components/DataSet";
 
-export * from "./display-utils";
-
 export const createWaveformDisplay = createDisplay;
 export const ChartjsWaveformEngine = Engine;
 export const WaveformChart = Chart;

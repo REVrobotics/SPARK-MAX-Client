@@ -1,7 +1,8 @@
 import {forEach, groupBy, isEmpty, once, pull} from "lodash";
 import {DeviceId, ITelemetryDataItem, SignalId, VirtualDeviceId} from "./state";
-import {truncateByTime, waveformEngine} from "../display";
+import {waveformEngine} from "../display";
 import {DataPoint, DataStream} from "../display/display-interfaces";
+import {truncateByTime} from "../utils/object-utils";
 
 export interface IStreamOptions {
   timeSpan: number;
@@ -100,22 +101,32 @@ const closeDestination = (destination: IDestination) => {
   destination.data = [];
 };
 
-const getDestination = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IDestination => {
-  const deviceDestinations = destinations[virtualDeviceId];
-  if (deviceDestinations == null) {
-    throw new Error(`Destination was not found by virtual device id: ${virtualDeviceId}`);
-  }
+const ensureDestination = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IDestination => {
+  const deviceDestinations = destinations[virtualDeviceId] || {};
+  destinations[virtualDeviceId] = deviceDestinations;
 
-  const destination = deviceDestinations[signalId];
-  if (destination == null) {
-    throw new Error(`Destination was not found by virtual device id and signal id: ${virtualDeviceId}, ${signalId}`);
-  }
+  const destination = deviceDestinations[signalId] || openDestination();
+  deviceDestinations[signalId] = destination;
 
   return destination;
 };
 
+// const getDestination = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IDestination => {
+//   const deviceDestinations = destinations[virtualDeviceId];
+//   if (deviceDestinations == null) {
+//     throw new Error(`Destination was not found by virtual device id: ${virtualDeviceId}`);
+//   }
+//
+//   const destination = deviceDestinations[signalId];
+//   if (destination == null) {
+//     throw new Error(`Destination was not found by virtual device id and signal id: ${virtualDeviceId}, ${signalId}`);
+//   }
+//
+//   return destination;
+// };
+
 const getDataStream = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): DataStream<DataPoint[]> => (cb) => {
-  const destination = getDestination(virtualDeviceId, signalId);
+  const destination = ensureDestination(virtualDeviceId, signalId);
   const unsubscribe = once(() => {
     pull(destination.nextCallbacks, cb);
     pull(destination.completeCallbacks, unsubscribe);

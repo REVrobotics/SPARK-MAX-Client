@@ -54,7 +54,7 @@ onTwoWayCall("config-set", (cb, pathName, value) => {
         storeJSON[pathName] = "";
       }
       storeJSON[pathName] = value;
-      fs.writeFile(configPath, JSON.stringify(storeJSON), (writeErr) => {
+      fs.writeFile(configPath, JSON.stringify(storeJSON, null, 4), (writeErr) => {
         if (writeErr) {
           cb(writeErr);
         } else {
