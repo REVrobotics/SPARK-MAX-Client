@@ -2,7 +2,7 @@ import classNames from "classnames";
 import {constant} from "lodash";
 import * as React from "react";
 import {ChangeEvent, ComponentType, useCallback} from "react";
-import {Button, FormGroup, MenuItem, NumericInput, Switch} from "@blueprintjs/core";
+import {Button, FormGroup, MenuItem, Switch} from "@blueprintjs/core";
 import {
   getDisplaySettingConstraints,
   IApplicationState,
@@ -15,6 +15,7 @@ import {queryDisplaySettings} from "../store/selectors";
 import {setDisplaySetting, SparkDispatch} from "../store/actions";
 import {IItemRendererProps, Select} from "@blueprintjs/select";
 import {Dictionary, getWordText, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
+import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 
 interface Props {
   settings: IDisplaySettings;
@@ -26,6 +27,7 @@ interface SettingProps {
   align?: "right";
   disabled?: boolean;
   constraints?: IFieldConstraints;
+  safeInvalidValue?: any;
 }
 
 type ConnectedSettingProps = SettingProps & {
@@ -51,9 +53,14 @@ const bindRunSetting = (component: ComponentType<ConnectedSettingProps>): Compon
   return connect(mapStateToPropsSetting, mapDispatchToPropsSetting)(component);
 };
 
-const NumericSetting = bindRunSetting((props: ConnectedSettingProps & { constraints: INumericFieldConstraints }) => {
+type NumericSettingProps = ConnectedSettingProps & {
+  constraints: INumericFieldConstraints;
+  safeInvalidValue?: number;
+};
+
+const NumericSetting = bindRunSetting((props: NumericSettingProps) => {
   const {
-    label, value, constraints, disabled, align,
+    label, value, constraints, disabled, align, safeInvalidValue,
     onValueChange,
   } = props;
 
@@ -69,11 +76,13 @@ const NumericSetting = bindRunSetting((props: ConnectedSettingProps & { constrai
       inline={true}
       labelFor="input"
     >
-      <NumericInput
+      <SafeNumericInput
         id="input"
         value={value}
         disabled={disabled}
         onValueChange={onValueChange}
+        safeBehavior={SafeNumericBehavior.Clamp}
+        safeInvalidValue={safeInvalidValue}
         min={min}
         max={max}
       />
@@ -147,7 +156,7 @@ const SettingsRunPanel = (props: Props) => {
 
   return (
     <div className="run-settings-panel form-column full-width">
-      <NumericSetting name="timeSpan" label={tt("lbl_time_span")}/>
+      <NumericSetting name="timeSpan" label={tt("lbl_time_span")} safeInvalidValue={30}/>
       <BooleanSetting name="singleChart" label={tt("lbl_show_single_chart")}/>
       <BooleanSetting name="showLegend" label={tt("lbl_show_legend")}/>
       <EnumSetting name="legendPosition"

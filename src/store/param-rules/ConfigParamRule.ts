@@ -25,7 +25,7 @@ export enum ConfigParamRuleType { Boolean, Numeric, Enum }
  */
 export interface IConfigParamRule {
   id: ConfigParam;
-  default?: any;
+  default: number;
   constraints?: IFieldConstraints;
   type: ConfigParamRuleType;
 

@@ -11,7 +11,7 @@ import {
   getConfigParamReadableName,
   getConfigParamsInGroup
 } from "../models/ConfigParam";
-import {Checkbox, FormGroup, Icon, Tooltip} from "@blueprintjs/core";
+import {Checkbox, Icon, Tooltip} from "@blueprintjs/core";
 import {IApplicationState} from "../store/state";
 import {connect} from "react-redux";
 import {setSelectedDeviceDisplayParamGroup, setSelectedDeviceDisplayQuickParam, SparkDispatch} from "../store/actions";
@@ -23,6 +23,8 @@ import SwitchParamField from "../components/fields/SwitchParamField";
 import {getConfigParamRule} from "../store/config-param-rules";
 import {ConfigParamRuleType} from "../store/param-rules/ConfigParamRule";
 import SelectParamField from "../components/fields/SelectParamField";
+import {withDirty} from "../hocs/with-dirty";
+import ValidationFormGroup from "../components/groups/ValidationFormGroup";
 
 interface Props {
   selectedParamGroupId: ConfigParamGroupId;
@@ -56,12 +58,17 @@ const DisplayConfigParam = (props: DisplayConfigParamProps) => {
                   checked={quick}
                   onChange={quickChange}/>
       </Tooltip>
-      <FormGroup inline={true} className="display-param__group" label={getConfigParamReadableName(parameter)}>
+      <DisplayConfigParamFieldGroup inline={true}
+                                    parameter={parameter}
+                                    className="display-param__group"
+                                    title={getConfigParamReadableName(parameter)}>
         <DisplayConfigParamField parameter={parameter}/>
-      </FormGroup>
+      </DisplayConfigParamFieldGroup>
     </div>
   );
 };
+
+const DisplayConfigParamFieldGroup = bindRamConfigRule(withDirty(ValidationFormGroup));
 
 interface DisplayConfigParamFieldProps {
   parameter: ConfigParam;

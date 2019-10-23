@@ -3,7 +3,7 @@ import {
   ChartId,
   DataSetId,
   DataSetOptions,
-  DataSource, ScaleId,
+  DataSource, DataStream, ScaleId,
   WaveformChartOptions,
   WaveformEngine,
   WaveformScaleOptions,
@@ -92,7 +92,7 @@ export abstract class AbstractWaveformEngine implements WaveformEngine {
     chart.updateScale(scaleId, scale);
   }
 
-  public abstract createDataSource(intents: any): DataSource<any>;
+  public abstract createDataSource(stream: DataStream<any>): DataSource<any>;
 
   public abstract createRoot(ref: Ref<HTMLElement>): ReactNode;
 

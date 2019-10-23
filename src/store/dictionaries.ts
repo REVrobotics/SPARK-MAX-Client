@@ -1,5 +1,5 @@
 import {isString, keyBy} from "lodash";
-import {MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {DictionaryName, translateWord} from "../mls/dictionaries";
 import {LegendPosition} from "../display/display-interfaces";
 
@@ -51,6 +51,10 @@ export const getWordText = (option: IDictionaryWord) => option.text;
 export const MOTOR_TYPES = Dictionary.from(
   DictionaryName.MotorTypes,
   [MotorType.Brushless, MotorType.Brushed]);
+
+export const IDLE_MODES = Dictionary.from(
+  DictionaryName.IdleModes,
+  [IdleMode.Coast, IdleMode.Brake]);
 
 export const SENSOR_TYPES = Dictionary.from(
   DictionaryName.SensorTypes,

@@ -1,14 +1,18 @@
 import {difference, fromPairs} from "lodash";
 import {
-  createDeviceDisplayState, getSignalId,
+  createDeviceDisplayState,
+  getSignalId,
   getVirtualDeviceId,
-  IApplicationState, IDeviceDisplayState,
+  IApplicationState,
+  IDeviceDisplayState,
   IDisplayState,
+  ISignalInstanceState,
   PanelName
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {
-  insertArrayElementSorted, removeArrayElementSorted,
+  insertArrayElementSorted,
+  removeArrayElementSorted,
   removeField,
   removeFields,
   setField,
@@ -75,14 +79,40 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
         "assignedSignals",
         removeField(state.assignedSignals, action.payload.signalId));
     case ActionType.SET_SIGNAL_INSTANCE_FIELD: {
-      const fields = {[action.payload.key]: action.payload.value};
-      // When autoScaled flag is set => reset min/max bounds
-      if (action.payload.key === "autoScaled" && action.payload.value) {
-        const foundSignal = state.signals.find((signal) => getSignalId(signal) === action.payload.signalId);
-        if (foundSignal) {
-          fields.min = foundSignal.expectedMin;
-          fields.max = foundSignal.expectedMax;
-        }
+      const {key, value, signalId} = action.payload;
+
+      const fields: Partial<ISignalInstanceState> = {};
+      const foundSignal = state.signals.find((signal) => getSignalId(signal) === signalId)!;
+      const instance = state.assignedSignals[signalId];
+      switch (key) {
+        case "autoScaled":
+          // When autoScaled flag is set => reset min/max bounds
+          if (value) {
+            fields.min = foundSignal.expectedMin;
+            fields.max = foundSignal.expectedMax;
+          }
+          fields.autoScaled = value;
+          break;
+        case "min":
+          // Guarantee that min value is always valid
+          if (isNaN(value)) {
+            fields.min = foundSignal.expectedMin;
+          } else if (value > instance.max) {
+            fields.min = instance.max;
+          } else {
+            fields.min = value;
+          }
+          break;
+        case "max":
+          // Guarantee that max value is always valid
+          if (isNaN(value)) {
+            fields.max = foundSignal.expectedMax;
+          } else if (value < instance.min) {
+            fields.max = instance.min;
+          } else {
+            fields.max = value;
+          }
+          break;
       }
 
       return setField(
@@ -90,8 +120,8 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
         "assignedSignals",
         setField(
           state.assignedSignals,
-          action.payload.signalId,
-          setFields(state.assignedSignals[action.payload.signalId], fields)));
+          signalId,
+          setFields(instance, fields)));
     }
     default:
       return state;

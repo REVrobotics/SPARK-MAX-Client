@@ -11,3 +11,15 @@ export interface SignalDto {
   expectedMax: number;
   deviceId: number;
 }
+
+export interface TelemetryDataItemDto {
+  id: number;
+  deviceId: number;
+  value: number;
+  timestamp_ms: number;
+  name: string;
+  units: string;
+  expectedMin: number;
+  expectedMax: number;
+  updateRate_ms: number;
+}

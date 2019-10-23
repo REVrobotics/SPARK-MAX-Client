@@ -6,10 +6,10 @@ import {
   DataPoint,
   DataSetId,
   DataSetOptions,
-  DataSource,
-  DataSubscription,
+  DataSource, DataStream,
   LegendPosition,
   ScaleId,
+  Unsubscribe,
   WaveformChartOptions,
   WaveformScaleOptions
 } from "./display-interfaces";
@@ -18,6 +18,7 @@ import {ReactNode, Ref} from "react";
 import * as Chart from "chart.js";
 import {ChartConfiguration, ChartDataSets, ChartXAxe, ChartYAxe, PositionType} from "chart.js";
 import {setArrayElement} from "../utils/object-utils";
+import {truncateByTime} from "./display-utils";
 
 Chart.defaults.global.legend!.onClick = noop;
 
@@ -138,7 +139,7 @@ class ChartjsEngineChart implements WaveformEngineChart {
   private chart: Chart;
   private dataSetIds: DataSetId = [];
   private dataSources: { [dataSetId: string]: DataSource<DataPoint> } = {};
-  private dataSubscriptions: { [dataSetId: string]: DataSubscription<DataPoint[]> } = {};
+  private dataSubscriptions: { [dataSetId: string]: Unsubscribe } = {};
   private initialized = false;
   private timeSpan: number = 30;
 
@@ -268,18 +269,17 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   private listenDataSource(dataSetId: DataSetId, dataSource: DataSource<DataPoint>): void {
-    const subscription = dataSource.observe(this.buildDataQuery());
-    subscription.onData((data) => {
+    const subscription = dataSource(this.buildDataQuery());
+    this.dataSubscriptions[dataSetId] = subscription((data: DataPoint[]) => {
       this.updateDatasetData(dataSetId, data);
       this.flush();
     });
-    this.dataSubscriptions[dataSetId] = subscription;
   }
 
   private unlistenDataSource(dataSetId: DataSetId): void {
     const subscription = this.dataSubscriptions[dataSetId];
     if (subscription) {
-      subscription.unsubscribe();
+      subscription();
       delete this.dataSubscriptions[dataSetId];
     }
   }
@@ -326,34 +326,19 @@ class ChartjsWaveformEngine extends AbstractWaveformEngine {
     return React.createElement("canvas", {ref});
   }
 
-  public createDataSource(intents: any): DataSource<any> {
-    const data: DataPoint[] = [];
+  public createDataSource(dataStream: DataStream<DataPoint[]>): DataSource<DataPoint> {
+    return ({timeSpan}: { timeSpan: number }) => {
+      return (cb: (data: any[]) => void) => {
+        const data: DataPoint[] = [];
 
-    return {
-      query: () => data,
-      observe: () => {
-        let intervalId: any;
+        return dataStream((next) => {
+          data.push(...next);
 
-        return {
-          onData(cb: (data: any[]) => void): void {
-            cb(data);
+          truncateByTime(data, timeSpan, (point) => point.x.getTime());
 
-            intervalId = setInterval(() => {
-              data.push({
-                x: new Date(new Date().getTime() - startDate.getTime()),
-                y: Math.floor(Math.random() * 100),
-              });
-              if (data.length > 100) {
-                data.shift();
-              }
-              cb(data)
-            }, 500);
-          },
-          unsubscribe(): void {
-            clearInterval(intervalId);
-          }
-        };
-      },
+          cb(data);
+        });
+      };
     };
   }
 
@@ -364,5 +349,3 @@ class ChartjsWaveformEngine extends AbstractWaveformEngine {
 }
 
 export default ChartjsWaveformEngine;
-
-const startDate = new Date();

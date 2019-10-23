@@ -1,16 +1,18 @@
 import {ConfirmationAnswer, createSignalInstance, ISignalInstanceState, SignalId, VirtualDeviceId} from "../state";
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
-import {querySignal, querySignalNewStyle} from "../selectors";
+import {queryDeviceId, querySignal, querySignalNewStyle} from "../selectors";
 import {addSignalInstance, removeSignalInstance, setSelectedSignal, setSignalInstanceField} from "./atom-actions";
 import {showConfirmation} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
+import {addDestination, removeDestination} from "../data-stream";
 
 export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): SparkAction<void> =>
   (dispatch, getState) => {
     const signal = querySignal(getState(), signalId);
     const color = querySignalNewStyle(getState(), virtualDeviceId, signalId);
     if (signal) {
+      addDestination(virtualDeviceId, signal.deviceId, signalId);
       dispatch(addSignalInstance(createSignalInstance(virtualDeviceId, signal, color)));
       dispatch(setSelectedSignal(virtualDeviceId, signalId));
     }
@@ -27,6 +29,7 @@ export const removeSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalI
       .then((answer) => {
         if (answer === ConfirmationAnswer.Yes) {
           dispatch(removeSignalInstance(virtualDeviceId, signalId));
+          removeDestination(virtualDeviceId, queryDeviceId(getState(), virtualDeviceId)!, signalId);
         }
       });
   };

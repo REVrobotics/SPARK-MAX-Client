@@ -59,20 +59,16 @@ export interface WaveformEngine {
 
   destroyDataSet(chart: ChartId, dataSetId: DataSetId): void;
 
-  createDataSource(intents: any): DataSource<any>;
+  createDataSource(stream: DataStream<any>): DataSource<any>;
 
   createRoot(ref: Ref<HTMLElement>): ReactNode;
 }
 
-export interface DataSource<T> {
-  observe(options: any): DataSubscription<T[]>;
-  query(options: any): T[];
-}
+export type Unsubscribe = () => void;
 
-export interface DataSubscription<T> {
-  onData(cb: (data: T) => void): void;
-  unsubscribe(): void;
-}
+export type DataStream<T> = (cb: (data: T) => void) => Unsubscribe;
+
+export type DataSource<T> = (options: any) => DataStream<T[]>;
 
 export interface DataPoint {
   y: number;

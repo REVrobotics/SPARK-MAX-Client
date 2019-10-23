@@ -1,22 +1,19 @@
 import classNames from "classnames";
 import * as React from "react";
 import {ChangeEvent, ReactNode, useCallback, useMemo} from "react";
-import {getSignalId, IApplicationState, ISignalState, ISignalInstanceState, SignalId} from "../store/state";
+import {getSignalId, IApplicationState, ISignalInstanceState, ISignalState, SignalId} from "../store/state";
 import {connect} from "react-redux";
 import List from "../components/List";
 import {setSelectedDeviceSignal, SparkDispatch} from "../store/actions";
-import {
-  querySelectedSignalId,
-  queryAssignedSignals,
-  querySignals
-} from "../store/selectors";
+import {queryAssignedSignals, querySelectedSignalId, querySignals} from "../store/selectors";
 import {
   addSelectedDeviceSignal,
   removeSelectedDeviceSignal,
   setSelectedDeviceSignalField
 } from "../store/actions/display-actions";
-import {Button, Checkbox, FormGroup, Icon, Intent, NonIdealState, NumericInput} from "@blueprintjs/core";
+import {Button, Checkbox, FormGroup, Icon, Intent, NonIdealState} from "@blueprintjs/core";
 import ListItem from "../components/ListItem";
+import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 
 interface Props {
   selectedSignalId?: SignalId;
@@ -38,8 +35,11 @@ interface SignalProps {
   signal: ISignalState;
   assigned: boolean;
   active?: boolean;
+
   onAdd(id: SignalId): void;
+
   onRemove(id: SignalId): void;
+
   onClick?(): void;
 }
 
@@ -74,8 +74,11 @@ interface SignalPaneProps {
   className?: string;
   signal?: ISignalState;
   instance?: ISignalInstanceState;
+
   onAdd(id: SignalId): void;
+
   onRemove(id: SignalId): void;
+
   onSetField(id: SignalId, key: keyof ISignalInstanceState, value: any): void;
 }
 
@@ -103,10 +106,13 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
                      contentClassName="unit-group"
                      label={tt("lbl_min")} labelFor="limit">
             <div className="flex-row">
-              <NumericInput id="limit"
-                            disabled={instance.autoScaled}
-                            value={instance.min}
-                            onValueChange={minChange}/>
+              <SafeNumericInput id="limit"
+                                disabled={instance.autoScaled}
+                                safeBehavior={SafeNumericBehavior.Clamp}
+                                min={0}
+                                value={instance.min}
+                                safeInvalidValue={instance.min}
+                                onValueChange={minChange}/>
               <div className="unit-group__unit">{signal.units}</div>
             </div>
           </FormGroup>
@@ -115,10 +121,12 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
                      contentClassName="unit-group"
                      label={tt("lbl_max")} labelFor="limit">
             <div className="flex-row">
-              <NumericInput id="limit"
-                            disabled={instance.autoScaled}
-                            value={instance.max}
-                            onValueChange={maxChange}/>
+              <SafeNumericInput id="limit"
+                                disabled={instance.autoScaled}
+                                safeBehavior={SafeNumericBehavior.Clamp}
+                                value={instance.max}
+                                safeInvalidValue={instance.max}
+                                onValueChange={maxChange}/>
               <div className="unit-group__unit">{signal.units}</div>
             </div>
           </FormGroup>

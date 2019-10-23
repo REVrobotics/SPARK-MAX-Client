@@ -6,7 +6,7 @@ import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
-import {ConfigParamGroupName, ExtendedListResponseDto, SignalDto} from "../models/dto";
+import {ConfigParamGroupName, ExtendedListResponseDto, SignalDto, TelemetryDataItemDto} from "../models/dto";
 import {diffObjects, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
@@ -233,6 +233,8 @@ export interface ISignalStyle {
 }
 
 export type ISignalState = SignalDto;
+
+export type ITelemetryDataItem = TelemetryDataItemDto;
 
 export interface IDeviceDisplayState {
   selectedSignalId?: SignalId;
@@ -464,7 +466,7 @@ export enum ConfirmationAnswer {
 }
 
 export const DISPLAY_SETTING_CONSTRAINTS: {[name: string]: IFieldConstraints} = {
-  timeSpan: {min: 0, max: 1000},
+  timeSpan: {min: 1, max: 1000},
 };
 
 /**

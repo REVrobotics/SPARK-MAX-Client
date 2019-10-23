@@ -1,9 +1,9 @@
-import {ConfigParam, enumValues, MotorType, ParamType, SensorType} from "../models/dto";
+import {ConfigParam, enumValues, IdleMode, MotorType, ParamType, SensorType} from "../models/dto";
 import {createRuleRegistry, overrideRuleRegistry} from "./param-rules/ConfigParamRule";
 import {createNumericRule} from "./param-rules/NumericParamRule";
 import {createEnumRule} from "./param-rules/EnumParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
-import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
+import {IDLE_MODES, MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
 import {configParamNames, getConfigParamType} from "../models/ConfigParam";
 
 /**
@@ -64,6 +64,11 @@ const OVERRIDDEN_RULES = [
       const sensorType = ctx.getParameter(ConfigParam.kSensorType);
       return sensorType === SensorType.HallSensor ? motorType : MotorType.Brushed;
     },
+  }),
+  createEnumRule(ConfigParam.kIdleMode, {
+    default: IdleMode.Coast,
+    options: IDLE_MODES.seq(),
+    values: enumValues(IdleMode),
   }),
   createEnumRule(ConfigParam.kSensorType, {
     default: SensorType.HallSensor,
@@ -241,3 +246,10 @@ const OVERRIDDEN_RULES = [
 
 export const getGeneratedConfigParamRule = createRuleRegistry(GENERATED_RULES);
 export const getConfigParamRule = overrideRuleRegistry(getGeneratedConfigParamRule, OVERRIDDEN_RULES);
+export const toConfigParamDefaultValue = (param: ConfigParam, value?: number) => {
+  if (value == null || isNaN(value)) {
+    return getConfigParamRule(param).default;
+  } else {
+    return value;
+  }
+};
