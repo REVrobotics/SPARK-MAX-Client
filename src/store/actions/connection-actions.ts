@@ -101,7 +101,9 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
         dispatch(replaceDevices(devices.map(resetDeviceState)));
 
         dispatch(setConnectedDescriptor());
-        dispatch(syncSignals());
+
+        // When there is no connected device, syncSignals just cleans display and removes all destinations
+        return dispatch(syncSignals());
       })
       .catch(useErrorHandler(dispatch))
       .finally(() => {
@@ -123,6 +125,8 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
     }
 
     return SparkManager.listAllDevices()
+    // Syncing of signals is a part of device syncing
+      .then((response) => dispatch(syncSignals()).then(() => response))
       .then(({extendedList}) => {
         // Here we need only SPARK MAX controllers
         const nextDevices = extendedList.filter((extended) => extended.updateable);
@@ -165,7 +169,6 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
           return Promise.resolve();
         }
       })
-      .then(() => dispatch(syncSignals()))
       .catch(useErrorHandler(dispatch));
   };
 }

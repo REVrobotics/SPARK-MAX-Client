@@ -20,8 +20,8 @@ const RunDisplay = (props: IProps) => {
   if (signalsWithInstances.length === 0) {
     return <NonIdealState className={className}
                           icon="timeline-line-chart"
-                          title={tt("lbl_no_signals_title")}
-                          description={tt("lbl_no_signals_description")}/>
+                          title={tt("lbl_no_signals_added_title")}
+                          description={tt("lbl_no_signals_added_description")}/>
   }
 
   let children: ReactNode;

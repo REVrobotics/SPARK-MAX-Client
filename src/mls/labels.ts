@@ -135,10 +135,14 @@ const labels = {
   "lbl_max": "Max",
   "lbl_remove_from_quick_bar": "Remove from Quick Bar",
   "lbl_add_to_quick_bar": "Add to Quick Bar",
-  "lbl_no_signals_title": "No Signals Added",
-  "lbl_no_signals_description": "In order to start tracking device parameters add any signal and run device",
+  "lbl_no_signals_added_title": "No Signals Added",
+  "lbl_no_signals_added_description": "In order to start tracking device parameters add any signal and run device",
   "lbl_no_device_connected_title": "No Device Connected",
   "lbl_no_device_connected_description": "In order to run device, it should be connected. Choose device on the top of the window and press \"Connect\"",
+  "lbl_no_signals_title": "No Signals",
+  "lbl_no_signals_description": "No any signal is available for the selected device",
+  "lbl_device_blocked_title": "Configuration Issue",
+  "lbl_device_blocked_description": "Selected device has configuration issue. Fix it to continue working with the device. Look for the details under \"i\" icon on the top of the window",
 };
 
 export default labels;

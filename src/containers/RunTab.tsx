@@ -3,19 +3,25 @@ import * as React from "react";
 import {connect} from "react-redux";
 import {IApplicationState, PanelName} from "../store/state";
 import {setDisplaySelectedPanel, SparkDispatch} from "../store/actions";
-import {queryDisplaySelectedPanel, queryIsHasConnectedDevice} from "../store/selectors";
+import {
+  queryDisplaySelectedPanel,
+  queryHasSignalForSelectedDevice,
+  queryIsHasConnectedDevice, queryIsSelectedDeviceBlocked
+} from "../store/selectors";
 import List from "../components/List";
 import Tool, {ListItemAlignment} from "../components/Tool";
 import {IconName, NonIdealState} from "@blueprintjs/core";
 import PanelContainer from "../components/PanelContainer";
-import SignalsRunPanel from "../containers/SignalsRunPanel";
 import RunDisplay from "./RunDisplay";
-import SettingsRunPanel from "./SettingsRunPanel";
 import ParametersRunPanel from "./ParametersRunPanel";
+import SettingsRunPanel from "./SettingsRunPanel";
+import SignalsRunPanel from "./SignalsRunPanel";
 
 interface IProps {
   connected: boolean;
   selectedPanel: PanelName;
+  selectedDeviceIsBlocked: boolean;
+  hasSignalForSelectedDevice: boolean;
 
   onSelectPanel(panel: PanelName): void;
 }
@@ -36,10 +42,46 @@ const panelOptions: PanelOptions[] = [
 
 const panelOptionsByKey: {[name: string]: PanelOptions} = keyBy(panelOptions, (options) => options.value);
 
+interface RunPanelProps {
+  panel: PanelName;
+  selectedDeviceIsBlocked: boolean;
+  hasSignalForSelectedDevice: boolean;
+}
+
+const RunPanel = (props: RunPanelProps) => {
+  const {panel, hasSignalForSelectedDevice, selectedDeviceIsBlocked} = props;
+
+  // Only settings panel can be made visible if there is no any signal for selected device
+  if (panel !== PanelName.Settings) {
+    if (!hasSignalForSelectedDevice) {
+      return <NonIdealState icon="info-sign"
+                            title={tt("lbl_no_signals_title")}
+                            description={tt("lbl_no_signals_description")}/>;
+    } else if (selectedDeviceIsBlocked) {
+      return <NonIdealState icon="warning-sign"
+                            title={tt("lbl_device_blocked_title")}
+                            description={tt("lbl_device_blocked_description")}/>;
+    }
+  }
+
+  switch (panel) {
+    case PanelName.Run:
+      return null;
+    case PanelName.Parameters:
+      return <ParametersRunPanel/>;
+    case PanelName.Signals:
+      return <SignalsRunPanel/>;
+    case PanelName.Settings:
+      return <SettingsRunPanel/>;
+    default:
+      return null;
+  }
+};
+
 class RunTab extends React.Component<IProps> {
 
   public render() {
-    const {connected, selectedPanel, onSelectPanel} = this.props;
+    const {connected, selectedPanel, hasSignalForSelectedDevice, selectedDeviceIsBlocked, onSelectPanel} = this.props;
 
     if (!connected) {
       return <NonIdealState icon="disable"
@@ -60,9 +102,9 @@ class RunTab extends React.Component<IProps> {
         <PanelContainer className="flex-1 display__panel-container"
                         icon={panelOptionsByKey[selectedPanel].icon}
                         title={panelOptionsByKey[selectedPanel].title}>
-          {selectedPanel === PanelName.Parameters ? <ParametersRunPanel/> : null}
-          {selectedPanel === PanelName.Signals ? <SignalsRunPanel/> : null}
-          {selectedPanel === PanelName.Settings ? <SettingsRunPanel/> : null}
+          <RunPanel panel={selectedPanel}
+                    selectedDeviceIsBlocked={selectedDeviceIsBlocked}
+                    hasSignalForSelectedDevice={hasSignalForSelectedDevice}/>
         </PanelContainer>
       </div>
     );
@@ -304,6 +346,8 @@ export function mapStateToProps(state: IApplicationState) {
   return {
     connected: queryIsHasConnectedDevice(state),
     selectedPanel: queryDisplaySelectedPanel(state),
+    selectedDeviceIsBlocked: queryIsSelectedDeviceBlocked(state),
+    hasSignalForSelectedDevice: queryHasSignalForSelectedDevice(state),
   };
 }
 

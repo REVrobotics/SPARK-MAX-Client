@@ -3,7 +3,7 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {filter, find, first, flatMap, values} from "lodash";
+import {filter, find, first, flatMap, keys, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
@@ -18,7 +18,7 @@ import {
   getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState,
+  IApplicationState, IDestination,
   IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
@@ -425,7 +425,15 @@ export const queryDisplaySettings = (state: IApplicationState) => state.display.
 
 export const querySelectedDeviceDisplay = (state: IApplicationState) => {
   const selectedDeviceId = querySelectedVirtualDeviceId(state);
-  return selectedDeviceId == null ? undefined : state.display.devices[selectedDeviceId];
+  return selectedDeviceId == null ? undefined : queryDeviceDisplay(state, selectedDeviceId);
+};
+
+export const queryDeviceDisplay = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
+  state.display.devices[virtualDeviceId];
+
+export const queryHasSignalForSelectedDevice = (state: IApplicationState) => {
+  const display = querySelectedDeviceDisplay(state);
+  return display ? display.signals.length > 0 : false;
 };
 
 export const querySignals = (state: IApplicationState) => {
@@ -484,3 +492,14 @@ export const querySignalsWithInstances = (state: IApplicationState) => {
       instance,
     ]));
 };
+
+export const queryDisplay = (state: IApplicationState) => state.display;
+
+export const queryDestinations = (state: IApplicationState): IDestination[] =>
+  flatMap(
+    keys(state.display.devices),
+    (virtualDeviceId) => keys(state.display.devices[virtualDeviceId].assignedSignals).map(Number).map((signalId) => ({
+      virtualDeviceId,
+      deviceId: queryDeviceId(state, virtualDeviceId)!,
+      signalId,
+    })));

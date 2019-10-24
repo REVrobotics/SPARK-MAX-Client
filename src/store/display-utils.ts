@@ -71,9 +71,9 @@ export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
   };
 };
 
-export const displayFromDto = (state: IApplicationState,
-                               allSignals: ISignalState[],
-                               config?: DisplayConfigDto): IDisplayState => {
+export const createDisplayState = (state: IApplicationState,
+                                   allSignals: ISignalState[] = [],
+                                   config?: DisplayConfigDto): IDisplayState => {
   // Group devices by device id
   const devicesByVirtualId = config ? mapDeviceIdKeyToVirtualId(state, config.devices) : {};
   // Group all signals by device and by signal id

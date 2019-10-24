@@ -261,6 +261,12 @@ export interface IDeviceDisplayState {
 
 export type DisplaySettings = DisplaySettingsDto;
 
+export interface IDestination {
+  virtualDeviceId: VirtualDeviceId;
+  deviceId: DeviceId;
+  signalId: SignalId;
+}
+
 /**
  * Status of device on CAN bus
  */

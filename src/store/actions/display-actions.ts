@@ -8,7 +8,14 @@ import {
 } from "../state";
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
-import {queryIsHasConnectedDevice, querySignal, querySignalNewStyle} from "../selectors";
+import {
+  queryDestinations,
+  queryDisplay,
+  queryDisplaySettings,
+  queryIsHasConnectedDevice,
+  querySignal,
+  querySignalNewStyle
+} from "../selectors";
 import {
   addSignalInstance,
   removeSignalInstance,
@@ -23,24 +30,29 @@ import SparkManager from "../../managers/SparkManager";
 import ConfigManager, {CONFIG_DISPLAY} from "../../managers/ConfigManager";
 import {DisplayConfigDto} from "../../models/dto";
 import {useErrorHandler} from "./error-actions";
-import {displayFromDto, displayToDto, mergeDisplays} from "../display-utils";
+import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
+import {addDestination, changeDestination, removeDestination, setStreamOptions} from "../data-stream";
+import {diffArrays} from "../../utils/object-utils";
 
 export const syncSignals = (): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
+    // If we do not have connected device => clean display and remove all destinations
     if (!queryIsHasConnectedDevice(getState())) {
-      const state = getState();
-      dispatch(setDisplay(mergeDisplays(state.display, displayFromDto(state, []))));
-      dispatch(syncStream());
+      dispatch(runAndSyncDestinations(() =>
+        dispatch(setDisplay(mergeDisplays(queryDisplay(getState()), createDisplayState(getState()))))));
       return Promise.resolve();
     }
 
+    // Load all signals from server and merge with saved list of signals
     return Promise.all([
       SparkManager.telemetryList(),
       ConfigManager.get<DisplayConfigDto | undefined>(CONFIG_DISPLAY),
     ]).then(([{signalsAvailable}, displayConfig]) => {
-      const state = getState();
-      dispatch(setDisplay(mergeDisplays(state.display, displayFromDto(state, signalsAvailable, displayConfig))));
-      dispatch(syncStream());
+      // Build list of available and assigned signals, sync list of destinations
+      dispatch(runAndSyncDestinations(() =>
+        dispatch(setDisplay(mergeDisplays(
+          queryDisplay(getState()),
+          createDisplayState(getState(), signalsAvailable, displayConfig))))));
     }).catch(useErrorHandler(dispatch));
   };
 
@@ -50,14 +62,26 @@ export const persistDisplayConfig = (): SparkAction<Promise<void>> =>
       .catch(useErrorHandler(dispatch));
   };
 
+/**
+ * When deviceId is changed, we have to
+ * * update deviceId associations for existing set of signals
+ * * change stream destination
+ * * update persisted display configuration
+ */
+export const syncSignalDeviceId = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
+  (dispatch) => {
+    return dispatch(syncSignals())
+      .then(() => dispatch(persistDisplayConfig()));
+  };
+
 export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     const signal = querySignal(getState(), signalId);
     if (signal) {
       const color = querySignalNewStyle(getState(), virtualDeviceId, signalId);
-      dispatch(addSignalInstance(createSignalInstance(virtualDeviceId, signal, color)));
+      dispatch(runAndSyncDestinations(() =>
+        dispatch(addSignalInstance(createSignalInstance(virtualDeviceId, signal, color)))));
       dispatch(setSelectedSignal(virtualDeviceId, signalId));
-      dispatch(syncStream());
       return dispatch(persistDisplayConfig());
     } else {
       return Promise.resolve();
@@ -74,8 +98,7 @@ export const removeSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalI
     }))
       .then((answer) => {
         if (answer === ConfirmationAnswer.Yes) {
-          dispatch(removeSignalInstance(virtualDeviceId, signalId));
-          dispatch(syncStream());
+          dispatch(runAndSyncDestinations(() => dispatch(removeSignalInstance(virtualDeviceId, signalId))));
           return dispatch(persistDisplayConfig());
         } else {
           return Promise.resolve();
@@ -94,14 +117,40 @@ export const setSignalField = (virtualDeviceId: VirtualDeviceId,
 
 export const setAndPersistDisplaySetting = (key: keyof DisplaySettings, value: any): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    dispatch(setDisplaySetting(key, value));
+    dispatch(runAndSyncDestinations(() => dispatch(setDisplaySetting(key, value))));
     return dispatch(persistDisplayConfig());
   };
 
-const syncStream = (): SparkAction<void> =>
-  (_, getState) => {
-    console.log("resync subscription");
+/**
+ * This action runs specified operation (potentially mutable) and analyzes if list of signal instances was changed.
+ * If some signals were added/removed, corresponding destinations are added/removed correspondingly.
+ */
+const runAndSyncDestinations = (run: () => void): SparkAction<void> =>
+  (dispatch, getState) => {
+    const oldDestinations = queryDestinations(getState());
+    run();
+    const displaySettings = queryDisplaySettings(getState());
+    setStreamOptions({
+      timeSpan: displaySettings.timeSpan * 1000,
+    });
+    const newDestinations = queryDestinations(getState());
+    // Compare list of old/new destinations
+    const result = diffArrays(
+      oldDestinations,
+      newDestinations,
+      (destination) => `${destination.virtualDeviceId}:${destination.signalId}`);
+
+    // Sync destinations
+    result.added.forEach(addDestination);
+    result.removed.forEach(removeDestination);
+    // Consider the case of modified deviceId
+    result.modified.forEach(({previous, next}) => {
+      if (previous.deviceId !== next.deviceId) {
+        changeDestination(next);
+      }
+    });
   };
+
 
 export const addSelectedDeviceSignal = forSelectedDevice(addSignal);
 export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
