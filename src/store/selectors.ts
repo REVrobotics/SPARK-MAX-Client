@@ -3,7 +3,7 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {filter, find, first, flatMap, keys, values} from "lodash";
+import {filter, find, first, flatMap, isEmpty, keys, toPairs, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
@@ -18,7 +18,7 @@ import {
   getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState, IDestination,
+  IApplicationState, IDestination, IDeviceDisplayState,
   IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
@@ -436,7 +436,7 @@ export const queryHasSignalForSelectedDevice = (state: IApplicationState) => {
   return display ? display.signals.length > 0 : false;
 };
 
-export const querySignals = (state: IApplicationState) => {
+export const querySelectedDeviceSignals = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
     return;
@@ -444,7 +444,7 @@ export const querySignals = (state: IApplicationState) => {
   return deviceDisplay.signals;
 };
 
-export const queryAssignedSignals = (state: IApplicationState) => {
+export const querySelectedDeviceAssignedSignals = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
     return;
@@ -452,7 +452,7 @@ export const queryAssignedSignals = (state: IApplicationState) => {
   return deviceDisplay.assignedSignals;
 };
 
-export const querySelectedSignalId = (state: IApplicationState) => {
+export const querySelectedSignalIdForSelectedDevice = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
     return;
@@ -460,12 +460,37 @@ export const querySelectedSignalId = (state: IApplicationState) => {
   return deviceDisplay.selectedSignalId;
 };
 
-export const querySignal = (state: IApplicationState, signalId: SignalId) => {
+export const querySelectedDeviceSignal = (state: IApplicationState, signalId: SignalId) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
     return;
   }
   return deviceDisplay.signals.find((signal) => getSignalId(signal) === signalId);
+};
+
+export const querySelectedDeviceRun = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.run;
+};
+
+export const queryVirtualDeviceIdsByDisplayPredicate = (state: IApplicationState,
+                                                        displayFn: (display: IDeviceDisplayState) => boolean): VirtualDeviceId[] => {
+  return toPairs(state.display.devices)
+    .filter(([virtualDeviceId, deviceDisplay]) => displayFn(deviceDisplay))
+    .map(([virtualDeviceId]) => virtualDeviceId);
+};
+
+export const queryRunningVirtualDeviceIds = (state: IApplicationState) =>
+  queryVirtualDeviceIdsByDisplayPredicate(state, (display) => display.run.running);
+
+export const queryHasRunningDevices = (state: IApplicationState) => queryRunningVirtualDeviceIds(state).length > 0;
+
+export const queryHasAssignedSignalsForSelectedDevice = (state: IApplicationState) => {
+  const display = querySelectedDeviceDisplay(state);
+  return display ? !isEmpty(display.assignedSignals) : false;
 };
 
 export const querySignalNewStyle = (state: IApplicationState,
@@ -481,7 +506,7 @@ export const querySelectedSignal = (state: IApplicationState) => {
   if (deviceDisplay == null || deviceDisplay.selectedSignalId == null) {
     return;
   }
-  return querySignal(state, deviceDisplay.selectedSignalId);
+  return querySelectedDeviceSignal(state, deviceDisplay.selectedSignalId);
 };
 
 export const querySignalsWithInstances = (state: IApplicationState) => {

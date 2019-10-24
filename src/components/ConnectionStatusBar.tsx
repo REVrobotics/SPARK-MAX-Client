@@ -21,7 +21,7 @@ import {
 import {
   queryConnectedDescriptor,
   queryDevicesInOrder,
-  queryHasGlobalError,
+  queryHasGlobalError, queryHasRunningDevices,
   queryIsConnectableToAnyDevice,
   queryIsInProcessing,
   queryIsSelectedDeviceConnected,
@@ -32,6 +32,7 @@ import {
 import {DeviceSelect} from "./DeviceSelect";
 import {InfoIcon} from "../icons";
 import {Message} from "../models/Message";
+import {stopAllDevices} from "../store/actions/display-actions";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -43,6 +44,7 @@ interface IProps {
   connectable: boolean,
   hasGlobalError: boolean;
   blockedReason?: DeviceBlockedReason;
+  hasRunningDevices: boolean;
 
   onConnect(): void;
 
@@ -51,6 +53,8 @@ interface IProps {
   onRescan(): void;
 
   onSelectDevice(device: IDeviceState): void;
+
+  onStopAll(): void;
 }
 
 const getBlockedReasonText = (reason: DeviceBlockedReason) => {
@@ -62,11 +66,35 @@ const getBlockedReasonText = (reason: DeviceBlockedReason) => {
   }
 };
 
+const MainAction = (props: IProps) => {
+  const {
+    processing, connected, connectable,
+    hasRunningDevices,
+    onConnect, onDisconnect, onStopAll,
+  } = props;
+
+  const disabled = hasRunningDevices ? false : (!connectable || processing);
+  const loading = hasRunningDevices ? false : processing;
+  const action = hasRunningDevices ? onStopAll : (connected ? onDisconnect : onConnect);
+  const text = hasRunningDevices ? tt("lbl_stop_all") : (connected ? tt("lbl_disconnect") : tt("lbl_connect"));
+  const icon = hasRunningDevices ? "stop" : undefined;
+
+  return (
+    <Button fill={true}
+            icon={icon}
+            disabled={disabled}
+            loading={loading}
+            onClick={action}>
+      {text}
+    </Button>
+  );
+};
+
 const ConnectionStatusBar = (props: IProps) => {
   const {
-    devices, selectedDevice, blockedReason, processing, processStatus, connected, connectable, hasGlobalError,
+    devices, selectedDevice, blockedReason, processStatus, connected, hasGlobalError,
     connectedDescriptor,
-    onConnect, onDisconnect, onSelectDevice, onRescan,
+      onSelectDevice, onRescan,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
@@ -171,10 +199,7 @@ const ConnectionStatusBar = (props: IProps) => {
         }
       </div>
       <div className="status-bar__button">
-        <Button fill={true} disabled={!connectable || processing} loading={processing}
-                onClick={connected ? onDisconnect : onConnect}>
-          {connected ? tt("lbl_disconnect") : tt("lbl_connect")}
-        </Button>
+        <MainAction {...props}/>
       </div>
     </div>
   );
@@ -191,6 +216,7 @@ export function mapStateToProps(state: IApplicationState) {
     processing: queryIsInProcessing(state),
     connectable: queryIsConnectableToAnyDevice(state),
     processStatus: queryProcessStatus(state),
+    hasRunningDevices: queryHasRunningDevices(state),
   };
 }
 
@@ -200,6 +226,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     onDisconnect: () => dispatch(disconnectCurrentDevice()),
     onRescan: () => dispatch(syncDevices()),
     onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
+    onStopAll: () => dispatch(stopAllDevices()),
   };
 }
 

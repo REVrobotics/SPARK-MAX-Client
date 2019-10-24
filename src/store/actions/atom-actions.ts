@@ -21,6 +21,7 @@ import {
   ISetConfigurations,
   ISetConnectedDescriptor,
   ISetConsoleOutput,
+  ISetControlField,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
@@ -40,6 +41,7 @@ import {
   ISetNetworkScanInProgress,
   ISetParameters,
   ISetProcessingByDescriptor,
+  ISetDeviceRunningStatus,
   ISetSelectedDevice,
   ISetSelectedSignal,
   ISetSelectedTab,
@@ -56,6 +58,7 @@ import {
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 import {
+  ControlField,
   DeviceId,
   DisplaySettings,
   IDeviceConfiguration,
@@ -403,10 +406,24 @@ export const setDisplay = (display: IDisplayState): ISetDisplay => ({
   payload: {display},
 });
 
+export const setControlField = (virtualDeviceId: VirtualDeviceId,
+                                field: ControlField,
+                                value: any): ISetControlField => ({
+  type: ActionType.SET_CONTROL_FIELD,
+  payload: {virtualDeviceId, field, value},
+});
+
+export const setDeviceRunning = (virtualDeviceId: VirtualDeviceId) => setDeviceRunningStatus(virtualDeviceId, true);
+export const setDeviceStopped = (virtualDeviceId: VirtualDeviceId) => setDeviceRunningStatus(virtualDeviceId, false);
+
+const setDeviceRunningStatus = (virtualDeviceId: VirtualDeviceId, running: boolean): ISetDeviceRunningStatus => ({
+  type: ActionType.SET_RUNNING_STATUS,
+  payload: {virtualDeviceId, running},
+});
+
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
 export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceProcessStatus);
 export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
 export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
-export const setSelectedDeviceDisplayQuickParam = forSelectedDevice(setDisplayQuickParam);

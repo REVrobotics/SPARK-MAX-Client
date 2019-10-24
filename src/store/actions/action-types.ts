@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState
+  VirtualDeviceId, IDisplayState, ControlField
 } from "../state";
 
 /**
@@ -89,6 +89,8 @@ export enum ActionType {
   SET_DISPLAY_SELECTED_PARAM_GROUP = "SET_DISPLAY_SELECTED_PARAM_GROUP",
   SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
   SET_DISPLAY = "SET_DISPLAY",
+  SET_CONTROL_FIELD = "SET_CONTROL_FIELD",
+  SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -492,6 +494,23 @@ export interface ISetDisplay {
   },
 }
 
+export interface ISetControlField extends IDeviceAwareAction {
+  type: ActionType.SET_CONTROL_FIELD,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    field: ControlField,
+    value: any,
+  },
+}
+
+export interface ISetDeviceRunningStatus extends IDeviceAwareAction {
+  type: ActionType.SET_RUNNING_STATUS,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    running: boolean;
+  }
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -509,7 +528,7 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | IInitMessageQueue | IResetMessageQueue | IAddToMessageQueue
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
-  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal
+  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlField
   | IAddLog;

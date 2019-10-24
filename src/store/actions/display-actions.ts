@@ -1,5 +1,5 @@
 import {
-  ConfirmationAnswer,
+  ConfirmationAnswer, ControlField,
   createSignalInstance,
   DisplaySettings,
   ISignalInstanceState,
@@ -12,14 +12,14 @@ import {
   queryDestinations,
   queryDisplay,
   queryDisplaySettings,
-  queryIsHasConnectedDevice,
-  querySignal,
+  queryIsHasConnectedDevice, queryRunningVirtualDeviceIds,
+  querySelectedDeviceSignal,
   querySignalNewStyle
 } from "../selectors";
 import {
   addSignalInstance,
-  removeSignalInstance,
-  setDisplay,
+  removeSignalInstance, setControlField, setDeviceRunning, setDeviceStopped,
+  setDisplay, setDisplayQuickParam,
   setDisplaySetting,
   setSelectedSignal,
   setSignalInstanceField
@@ -28,7 +28,7 @@ import {showConfirmation} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import SparkManager from "../../managers/SparkManager";
 import ConfigManager, {CONFIG_DISPLAY} from "../../managers/ConfigManager";
-import {DisplayConfigDto} from "../../models/dto";
+import {ConfigParam, DisplayConfigDto} from "../../models/dto";
 import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
 import {addDestination, changeDestination, removeDestination, setStreamOptions} from "../data-stream";
@@ -76,7 +76,7 @@ export const syncSignalDeviceId = (virtualDeviceId: VirtualDeviceId): SparkActio
 
 export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    const signal = querySignal(getState(), signalId);
+    const signal = querySelectedDeviceSignal(getState(), signalId);
     if (signal) {
       const color = querySignalNewStyle(getState(), virtualDeviceId, signalId);
       dispatch(runAndSyncDestinations(() =>
@@ -121,6 +121,36 @@ export const setAndPersistDisplaySetting = (key: keyof DisplaySettings, value: a
     return dispatch(persistDisplayConfig());
   };
 
+export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
+                                               param: ConfigParam,
+                                               quick: boolean): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    dispatch(setDisplayQuickParam(virtualDeviceId, param, quick));
+    return dispatch(persistDisplayConfig());
+  };
+
+export const sendControlField = (virtualDeviceId: VirtualDeviceId,
+                                 field: ControlField,
+                                 value: any): SparkAction<void> =>
+  (dispatch, getState) => {
+    dispatch(setControlField(virtualDeviceId, field, value));
+  };
+
+export const startDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<void> =>
+  (dispatch, getState) => {
+    dispatch(setDeviceRunning(virtualDeviceId));
+  };
+
+export const stopDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<void> =>
+  (dispatch, getState) => {
+    dispatch(setDeviceStopped(virtualDeviceId));
+  };
+
+export const stopAllDevices = (): SparkAction<void> =>
+  (dispatch, getState) => {
+    queryRunningVirtualDeviceIds(getState()).forEach((id) => dispatch(setDeviceStopped(id)));
+  };
+
 /**
  * This action runs specified operation (potentially mutable) and analyzes if list of signal instances was changed.
  * If some signals were added/removed, corresponding destinations are added/removed correspondingly.
@@ -151,7 +181,10 @@ const runAndSyncDestinations = (run: () => void): SparkAction<void> =>
     });
   };
 
-
 export const addSelectedDeviceSignal = forSelectedDevice(addSignal);
 export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
 export const setSelectedDeviceSignalField = forSelectedDevice(setSignalField);
+export const setAndPersistSelectedDeviceDisplayQuickParam = forSelectedDevice(setAndPersistDisplayQuickParam);
+export const sendSelectedDeviceControlField = forSelectedDevice(sendControlField);
+export const startSelectedDevice = forSelectedDevice(startDevice);
+export const stopSelectedDevice = forSelectedDevice(stopDevice);

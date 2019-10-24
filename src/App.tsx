@@ -13,10 +13,11 @@ import AboutTab from "./containers/AboutTab";
 import {disconnectCurrentDevice, initApplication, setSelectedTab, SparkDispatch} from "./store/actions";
 import UiSupport from "./containers/UiSupport";
 import NetworkTab from "./containers/NetworkTab";
-import {querySelectedTabId} from "./store/selectors";
+import {queryHasRunningDevices, querySelectedTabId} from "./store/selectors";
 
 interface IProps {
   selectedTab: TabId;
+  hasRunningDevices: boolean;
 
   selectTab(tab: TabId): void;
   init(): void;
@@ -39,19 +40,21 @@ class App extends React.Component<IProps> {
   }
 
   public render() {
+    const {selectedTab, hasRunningDevices, selectTab} = this.props;
+
     return (
       <div id="main-container" className="flex-column">
         <UiSupport/>
         <ConnectionStatusBar/>
         <Tabs id="main-tabs"
               className="flex-1 main-tabs"
-              selectedTabId={this.props.selectedTab}
-              onChange={this.props.selectTab}
+              selectedTabId={selectedTab}
+              onChange={selectTab}
               renderActiveTabPanelOnly={true}>
-          <Tab id={TabId.Basic} title={tt("lbl_basic_tab")} panel={<BasicTab/>}/>
-          <Tab id={TabId.Advanced} title={tt("lbl_advanced_tab")} panel={<AdvancedTab/>}/>
+          <Tab id={TabId.Basic} disabled={hasRunningDevices} title={tt("lbl_basic_tab")} panel={<BasicTab/>}/>
+          <Tab id={TabId.Advanced} disabled={hasRunningDevices} title={tt("lbl_advanced_tab")} panel={<AdvancedTab/>}/>
           <Tab id={TabId.Run} title={tt("lbl_run_tab")} panel={<RunTab/>}/>
-          <Tab id={TabId.Network} title={tt("lbl_network_tab")} panel={<NetworkTab/>}/>
+          <Tab id={TabId.Network} disabled={hasRunningDevices} title={tt("lbl_network_tab")} panel={<NetworkTab/>}/>
           <Tab id={TabId.Help} title={tt("lbl_help_tab")} panel={<HelpTab/>}/>
           <Tab id={TabId.About} title={tt("lbl_about_tab")} panel={<AboutTab/>}/>
         </Tabs>
@@ -63,6 +66,7 @@ class App extends React.Component<IProps> {
 export function mapStateToProps(state: IApplicationState) {
   return {
     selectedTab: querySelectedTabId(state),
+    hasRunningDevices: queryHasRunningDevices(state),
   };
 }
 

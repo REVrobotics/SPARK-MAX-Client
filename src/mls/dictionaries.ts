@@ -1,5 +1,5 @@
 import {fromPairs} from "lodash";
-import {ConfigParam, IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ConfigParam, CtrlType, IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {enumValues} from "../models/dto-utils";
 import {LegendPosition} from "../display/display-interfaces";
 
@@ -9,6 +9,7 @@ export enum DictionaryName {
   ConfigParams = "ConfigParams",
   LegendPositions = "LegendPositions",
   IdleModes = "IdleModes",
+  ControlModes = "ControlModes",
 }
 
 const dictionarySet = {
@@ -46,6 +47,11 @@ const dictionarySet = {
     [LegendPosition.Top]: "On Top",
     [LegendPosition.Right]: "On Right",
     [LegendPosition.Inside]: "Inside",
+  },
+  [DictionaryName.ControlModes]: {
+    [CtrlType.DutyCycle]: "Percent",
+    [CtrlType.Velocity]: "Velocity",
+    [CtrlType.Position]: "Position",
   },
 };
 

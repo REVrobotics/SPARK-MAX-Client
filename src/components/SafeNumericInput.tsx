@@ -33,7 +33,7 @@ const toDisplayedValue = (behavior: SafeNumericBehavior,
 
   const numValue = Number(value);
   if (behavior === SafeNumericBehavior.Clamp) {
-    return clamp(numValue, min == null ? Number.MIN_VALUE : min, max == null ? Number.MAX_VALUE : max);
+    return clamp(numValue, min == null ? Number.NEGATIVE_INFINITY : min, max == null ? Number.POSITIVE_INFINITY : max);
   } else {
     return numValue;
   }

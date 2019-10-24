@@ -21,6 +21,7 @@ import {
   setNestedField
 } from "../../utils/object-utils";
 import {queryDevicesByDescriptor} from "../selectors";
+import {roundDecimal} from "../../utils/number-utils";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
@@ -42,6 +43,8 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.ADD_SIGNAL_INSTANCE:
     case ActionType.REMOVE_SIGNAL_INSTANCE:
     case ActionType.SET_SIGNAL_INSTANCE_FIELD:
+    case ActionType.SET_CONTROL_FIELD:
+    case ActionType.SET_RUNNING_STATUS:
       return setNestedField(
         state,
         ["devices", action.payload.virtualDeviceId],
@@ -53,6 +56,19 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
 
 const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationActions) => {
   switch (action.type) {
+    case ActionType.SET_RUNNING_STATUS:
+      return setField(state, "run", setField(state.run, "running", action.payload.running));
+    case ActionType.SET_CONTROL_FIELD: {
+      const {field, value} = action.payload;
+      switch (field) {
+        case "mode":
+          return setField(state, "run", setFields(state.run, {mode: value, value: 0}));
+        case "value":
+          return setField(state, "run", setField(state.run, "value", roundDecimal(value || 0, 2)));
+        default:
+          return setField(state, "run", setField(state.run, "value", value));
+      }
+    }
     case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
       return setField(
         state,

@@ -510,6 +510,10 @@ label.modified::after {
     justify-content: space-between;
 }
 
+.flex-center {
+    justify-content: center;
+}
+
 .flex-cross-center {
     align-items: center;
 }
@@ -787,12 +791,12 @@ button.link {
     margin: 0;
 }
 
-.display-param__group {
+.display-param-group {
     padding: 0;
     margin: 0;
 }
 
-.display-param__group .bp3-label {
+.display-param-group .bp3-label {
     overflow: hidden;
     width: 160px;
 
@@ -801,4 +805,51 @@ button.link {
 
 .display-param__field--numeric .bp3-input-group {
     width: 80px;
+}
+
+.run-quick-bar {
+    padding: 0 10px 0 5px;
+}
+
+.run-quick-bar__header {
+    padding: 0 5px;
+    line-height: 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    font-weight: bold;
+}
+
+.run-quick-bar__body {
+    padding-top: 5px;
+}
+
+.run-main-panel__quick {
+    width: 320px;
+    border-right: 2px solid rgba(0, 0, 0, 0.38);
+}
+
+.control-area__button-list {
+    padding: 10px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.38);
+    background: rgba(0, 0, 0, 0.12);
+}
+
+.control-area__field-list {
+    padding: 10px 0;
+}
+
+.control-area__field-group {
+    margin-bottom: 10px;
+}
+
+.control-area__field-group .bp3-label {
+    min-width: 100px;
+}
+
+.control-area__field-group .bp3-numeric-input .bp3-input-group {
+    width: calc(100% - 30px);
+}
+
+.control-area__field-slider {
+    margin-left: 15px;
+    width: calc(100% - 30px);
 }

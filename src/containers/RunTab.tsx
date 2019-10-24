@@ -6,7 +6,8 @@ import {setDisplaySelectedPanel, SparkDispatch} from "../store/actions";
 import {
   queryDisplaySelectedPanel,
   queryHasSignalForSelectedDevice,
-  queryIsHasConnectedDevice, queryIsSelectedDeviceBlocked
+  queryIsHasConnectedDevice,
+  queryIsSelectedDeviceBlocked
 } from "../store/selectors";
 import List from "../components/List";
 import Tool, {ListItemAlignment} from "../components/Tool";
@@ -16,6 +17,8 @@ import RunDisplay from "./RunDisplay";
 import ParametersRunPanel from "./ParametersRunPanel";
 import SettingsRunPanel from "./SettingsRunPanel";
 import SignalsRunPanel from "./SignalsRunPanel";
+import RunQuickBar from "./RunQuickBar";
+import RunControlArea from "./RunControlArea";
 
 interface IProps {
   connected: boolean;
@@ -66,7 +69,7 @@ const RunPanel = (props: RunPanelProps) => {
 
   switch (panel) {
     case PanelName.Run:
-      return null;
+      return <MainRunPanel/>;
     case PanelName.Parameters:
       return <ParametersRunPanel/>;
     case PanelName.Signals:
@@ -78,6 +81,14 @@ const RunPanel = (props: RunPanelProps) => {
   }
 };
 
+const MainRunPanel = () => {
+  return (
+    <div className="run-main-panel flex-row full-width no-wrap">
+      <RunQuickBar className="run-main-panel__quick"/>
+      <RunControlArea className="run-main-panel__control-area flex-1"/>
+    </div>
+  );
+};
 class RunTab extends React.Component<IProps> {
 
   public render() {

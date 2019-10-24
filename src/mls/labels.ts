@@ -143,6 +143,15 @@ const labels = {
   "lbl_no_signals_description": "No any signal is available for the selected device",
   "lbl_device_blocked_title": "Configuration Issue",
   "lbl_device_blocked_description": "Selected device has configuration issue. Fix it to continue working with the device. Look for the details under \"i\" icon on the top of the window",
+  "lbl_quick_bar": "Quick Bar",
+  "lbl_control_mode": "Control Mode",
+  "lbl_set_point": "Set Point",
+  "lbl_start_device": "Run this device",
+  "lbl_stop_device": "Stop this device",
+  "lbl_stop_devices": "Stop all running devices",
+  "lbl_pause_devices": "Stop all running devices with possibility to restart by a single click",
+  "lbl_resume_devices": "Run all paused devices",
+  "lbl_stop_all": "Stop All",
 };
 
 export default labels;

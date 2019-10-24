@@ -5,7 +5,7 @@ import {getSignalId, IApplicationState, ISignalInstanceState, ISignalState, Sign
 import {connect} from "react-redux";
 import List from "../components/List";
 import {setSelectedDeviceSignal, SparkDispatch} from "../store/actions";
-import {queryAssignedSignals, querySelectedSignalId, querySignals} from "../store/selectors";
+import {querySelectedDeviceAssignedSignals, querySelectedSignalIdForSelectedDevice, querySelectedDeviceSignals} from "../store/selectors";
 import {
   addSelectedDeviceSignal,
   removeSelectedDeviceSignal,
@@ -203,9 +203,9 @@ const SignalsRunPanel = (props: Props) => {
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    selectedSignalId: querySelectedSignalId(state),
-    signals: querySignals(state),
-    assignedSignals: queryAssignedSignals(state),
+    selectedSignalId: querySelectedSignalIdForSelectedDevice(state),
+    signals: querySelectedDeviceSignals(state),
+    assignedSignals: querySelectedDeviceAssignedSignals(state),
   };
 };
 

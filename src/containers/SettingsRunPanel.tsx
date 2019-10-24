@@ -2,7 +2,7 @@ import classNames from "classnames";
 import {constant} from "lodash";
 import * as React from "react";
 import {ChangeEvent, ComponentType, useCallback} from "react";
-import {Button, FormGroup, MenuItem, Switch} from "@blueprintjs/core";
+import {FormGroup, Switch} from "@blueprintjs/core";
 import {
   DisplaySettings,
   getDisplaySettingConstraints,
@@ -13,10 +13,10 @@ import {
 import {connect} from "react-redux";
 import {queryDisplaySettings} from "../store/selectors";
 import {SparkDispatch} from "../store/actions";
-import {IItemRendererProps, Select} from "@blueprintjs/select";
-import {Dictionary, getWordText, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
+import {Dictionary, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {setAndPersistDisplaySetting} from "../store/actions/display-actions";
+import DictionarySelect from "../components/DictionarySelect";
 
 interface Props {
   settings: DisplaySettings;
@@ -98,10 +98,6 @@ const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary:
   } = props;
 
   const className = classNames("form-group-setting", `form-group-setting--${align || "left"}`);
-  const itemRenderer = useCallback(
-    (item: IDictionaryWord, itemProps: IItemRendererProps) =>
-      <MenuItem key={item.id} text={item.text} onClick={itemProps.handleClick}/>,
-    []);
 
   const onChange = useCallback((item: IDictionaryWord) => onValueChange(item.id), []);
 
@@ -113,18 +109,7 @@ const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary:
       inline={true}
       labelFor="input"
     >
-      <Select
-        itemRenderer={itemRenderer}
-        filterable={false}
-        disabled={disabled}
-        items={dictionary.seq()}
-        onItemSelect={onChange}
-      >
-        <Button fill={true}
-                disabled={disabled}
-                text={value != null ? getWordText(dictionary.get(value)) : ""}
-                rightIcon="double-caret-vertical"/>
-      </Select>
+      <DictionarySelect dictionary={dictionary} value={value} onValueChange={onChange}/>
     </FormGroup>
   );
 }) as ComponentType<SettingProps & { dictionary: Dictionary }>;

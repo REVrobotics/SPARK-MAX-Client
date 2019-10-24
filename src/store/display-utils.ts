@@ -1,6 +1,6 @@
 import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, pick, pickBy} from "lodash";
 import {
-  createSignalInstance,
+  createSignalInstance, DEFAULT_DEVICE_RUN,
   DEFAULT_DISPLAY_SETTINGS,
   getVirtualDeviceId,
   IApplicationState,
@@ -8,9 +8,9 @@ import {
   ISignalState,
   PanelName,
 } from "./state";
-import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceSignalDto} from "../models/dto";
+import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceDto, DisplayDeviceSignalDto} from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
-import {queryDeviceId, queryDevicesByDeviceId, querySignalNewStyle} from "./selectors";
+import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalNewStyle} from "./selectors";
 
 /**
  * This method merges settings from next display to the current one.
@@ -24,7 +24,10 @@ export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDispl
     const nextDeviceSignalById = keyBy(nextDeviceSignals, (signal) => signal.id);
 
     // Update set of existing signals
-    const withExistingSignals = setField(device, "signals", nextDeviceSignals);
+    const withExistingSignals = setFields(device, {
+      signals: nextDeviceSignals,
+      quickBar: nextDevice ? nextDevice.quickBar : [],
+    });
 
     // Ensure that non-existent signal is not selected
     const withSelectedSignal = setField(
@@ -74,28 +77,33 @@ export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
 export const createDisplayState = (state: IApplicationState,
                                    allSignals: ISignalState[] = [],
                                    config?: DisplayConfigDto): IDisplayState => {
+  // Build display state only for connected devices
+  const connectedDeviceVirtualIds = queryConnectedDevices(state).map(getVirtualDeviceId);
+
   // Group devices by device id
-  const devicesByVirtualId = config ? mapDeviceIdKeyToVirtualId(state, config.devices) : {};
+  const configDevicesByVirtualId = config ? mapDeviceIdKeyToVirtualId(state, config.devices) : {};
   // Group all signals by device and by signal id
   const signalsByVirtualId = mapDeviceIdKeyToVirtualId(state, groupBy(allSignals, (signal) => signal.deviceId));
 
-  // We save raw settings without found devices
+  // We save raw settings without connected devices.
   const raw = config ?
-    {...config, devices: omit(config.devices, keys(devicesByVirtualId))} as DisplayConfigDto
+    {...config, devices: omit(config.devices, connectedDeviceVirtualIds)} as DisplayConfigDto
     : undefined;
 
   return {
     selectedPanel: PanelName.Run,
     raw,
     settings: config ? config.settings : DEFAULT_DISPLAY_SETTINGS,
-    devices: mapValues(devicesByVirtualId, (device, virtualDeviceId) => {
+    devices: fromPairs(connectedDeviceVirtualIds.map((virtualDeviceId) => {
+      const configDevice: DisplayDeviceDto = configDevicesByVirtualId[virtualDeviceId] || {quickBar: {}, signals: []};
+
       // Take all existing signals
-      const deviceSignals = signalsByVirtualId[virtualDeviceId];
+      const deviceSignals = signalsByVirtualId[virtualDeviceId] || [];
       const deviceSignalsById = keyBy(deviceSignals, (signal) => signal.id);
       // Filter saved instances
-      const configInstances = pickBy(device.signals, (_, id) => deviceSignalsById[id]);
+      const configInstances = pickBy(configDevice.signals, (_, id) => deviceSignalsById[id]);
 
-      return {
+      return [virtualDeviceId, {
         selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
         assignedSignals: mapValues(
           configInstances,
@@ -109,9 +117,10 @@ export const createDisplayState = (state: IApplicationState,
             autoScaled: configInstance.autoScaled,
           })),
         signals: deviceSignals,
-        quickBar: device.quickBar,
-      };
-    }),
+        quickBar: configDevice.quickBar,
+        run: DEFAULT_DEVICE_RUN,
+      }];
+    })),
   };
 };
 

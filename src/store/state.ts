@@ -8,6 +8,7 @@ import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {
   ConfigParamGroupName,
+  CtrlType,
   DisplayConfigDto,
   DisplaySettingsDto,
   ExtendedListResponseDto,
@@ -231,6 +232,12 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   timeSpan: 30
 };
 
+export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
+  mode: CtrlType.DutyCycle,
+  value: 0,
+  running: false,
+};
+
 export type SignalId = number;
 
 export interface ISignalInstanceState {
@@ -257,7 +264,16 @@ export interface IDeviceDisplayState {
   assignedSignals: { [id: number]: ISignalInstanceState };
   signals: ISignalState[];
   quickBar: ConfigParam[];
+  run: IDeviceRunState;
 }
+
+export interface IDeviceRunState {
+  mode: CtrlType;
+  value: number;
+  running: boolean;
+}
+
+export type ControlField = "mode" | "value";
 
 export type DisplaySettings = DisplaySettingsDto;
 
@@ -471,6 +487,12 @@ export enum ProfileConfigParam {
   P, I, D, F
 }
 
+export const CONTROL_MODE_CONSTRAINTS = {
+  [CtrlType.DutyCycle]: {min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
+  [CtrlType.Velocity]: {},
+  [CtrlType.Position]: {},
+};
+
 export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
   rampRateEnabled: false,
   configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
@@ -522,6 +544,7 @@ export const createDeviceDisplayState = (): IDeviceDisplayState => ({
   assignedSignals: {},
   quickBar: [],
   selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
+  run: DEFAULT_DEVICE_RUN,
 });
 
 export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,
