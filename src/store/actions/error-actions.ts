@@ -1,5 +1,11 @@
 import {SparkAction, SparkDispatch} from "./action-types";
-import {isApplicationError, isLogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../../models/errors";
+import {
+  isApplicationError,
+  isLogicError,
+  isSystemError,
+  SYSTEM_ERROR_SPARKMAX_CATEGORY,
+  SystemError
+} from "../../models/errors";
 import {showToast, showToastError} from "./ui-actions";
 import {severityToIntent} from "../../models/Message";
 import {addLog} from "./atom-actions";
@@ -33,7 +39,7 @@ export const handleError = <T>(reason: any,
     reason.setHandled();
     dispatch(addLog(reason.text));
     return Promise.reject(reason);
-  } else if (!onlyExpectedErrors) {
+  } else if (isSystemError(reason) || !onlyExpectedErrors) {
     // All system errors should be shown as toast notifications
     const error = SystemError.from(reason);
     handleSystemError(error);
