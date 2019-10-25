@@ -17,13 +17,12 @@ import {
   updateGlobalIsProcessing,
   updateGlobalProcessStatus,
   updateIsProcessingByDescriptor,
-  updateProcessStatusByDescriptor
 } from "./atom-actions";
 import SparkManager from "../../managers/SparkManager";
 import {
   queryConnectedDescriptor,
   queryDevice,
-  queryDevicesByDescriptor,
+  queryDevicesByDescriptor, queryDevicesInOrder,
   queryIsDeviceConnected,
   queryPathDescriptor,
   querySelectedVirtualDeviceId
@@ -58,7 +57,7 @@ export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<v
         dispatch(updateIsProcessingByDescriptor(descriptor, false));
 
         // Resync list of devices after connection
-        return dispatch(syncDevices(descriptor));
+        return dispatch(syncDevices());
       })
       .catch(useErrorHandler(dispatch));
   };
@@ -97,8 +96,8 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
     dispatch(updateIsProcessingByDescriptor(descriptor, true));
     return SparkManager.disconnect()
       .then(() => {
-        const devices = queryDevicesByDescriptor(getState(), descriptor);
-        dispatch(replaceDevices(descriptor, devices.map(resetDeviceState)));
+        const devices = queryDevicesInOrder(getState());
+        dispatch(replaceDevices(devices.map(resetDeviceState)));
 
         dispatch(setConnectedDescriptor());
       })
@@ -111,25 +110,31 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
   };
 }
 
-export function syncDevices(descriptor: PathDescriptor,
-                            showNotifications: boolean = false): SparkAction<Promise<void>> {
+export function syncDevices(showNotifications: boolean = false): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
+    const descriptor = queryConnectedDescriptor(getState());
     // Update status of all devices for the given descriptor
-    dispatch(updateProcessStatusByDescriptor(descriptor, tt("lbl_status_syncing")));
-    dispatch(updateIsProcessingByDescriptor(descriptor, true));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_syncing")));
+    dispatch(updateGlobalIsProcessing(true));
+    if (descriptor) {
+      dispatch(updateIsProcessingByDescriptor(descriptor, true));
+    }
 
-    return SparkManager.listDevicesByDescriptor(toDtoDescriptor(descriptor))
+    return SparkManager.listAllDevices()
       .then(({extendedList}) => {
         // Here we need only SPARK MAX controllers
         const nextDevices = extendedList.filter((extended) => extended.updateable);
         // Generate device state for each connected device
         const nextDeviceStates = nextDevices.map(createDeviceState);
-        const currentDeviceStates = queryDevicesByDescriptor(getState(), descriptor);
+        const currentDeviceStates = queryDevicesInOrder(getState());
         const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
         // Merge list of devices for the given descriptor
-        dispatch(replaceDevices(descriptor, added.concat(merged)));
-        dispatch(updateProcessStatusByDescriptor(descriptor, ""));
-        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+        dispatch(replaceDevices(added.concat(merged)));
+        dispatch(updateGlobalProcessStatus(""));
+        dispatch(updateGlobalIsProcessing(false));
+        if (descriptor) {
+          dispatch(updateIsProcessingByDescriptor(descriptor, false));
+        }
 
         if (showNotifications) {
           added.forEach((device) => showToastWarning(tt("msg_device_added", {
@@ -144,8 +149,11 @@ export function syncDevices(descriptor: PathDescriptor,
         }
       })
       .catch(onError(() => {
-        dispatch(updateProcessStatusByDescriptor(descriptor, tt("lbl_status_failed_to_sync")));
-        dispatch(updateIsProcessingByDescriptor(descriptor, false));
+        dispatch(updateGlobalProcessStatus(tt("lbl_status_failed_to_sync")));
+        dispatch(updateGlobalIsProcessing(false));
+        if (descriptor) {
+          dispatch(updateIsProcessingByDescriptor(descriptor, false));
+        }
       }))
       .then(() => {
         const selectedDeviceId = querySelectedVirtualDeviceId(getState());

@@ -80,10 +80,6 @@ class SparkManager {
     ipcRenderer.send("open-url", url);
   }
 
-  public listDevicesByDescriptor(pathDescriptor?: string): Promise<ListResponseDto> {
-    return this.listDevices({all: true, pathDescriptor})
-  }
-
   public listAllDevices(): Promise<ListResponseDto> {
     return this.listDevices({all: true});
   }

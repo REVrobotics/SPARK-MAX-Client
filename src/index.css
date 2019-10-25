@@ -58,6 +58,7 @@
 .status-bar__device-selector {
     min-width: 200px;
     max-width: 200px;
+    margin-right: 5px;
 }
 
 .status-bar__device-selector .bp3-popover-target {

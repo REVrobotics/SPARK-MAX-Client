@@ -53,7 +53,7 @@ export function initApplication(): SparkAction<void> {
     SparkManager.onResync(() => {
       const descriptor = queryConnectedDescriptor(getState());
       if (descriptor) {
-        dispatch(syncDevices(descriptor, true));
+        dispatch(syncDevices(true));
       }
     });
 

@@ -3,7 +3,7 @@ import {Reducer} from "redux";
 import {getVirtualDeviceId, IApplicationState, IContextState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {setField, setNestedField} from "../../utils/object-utils";
-import {queryDevicesByDescriptor} from "../selectors";
+import {queryConnectedDescriptor, queryDevicesByDescriptor, queryDevicesInOrder} from "../selectors";
 
 const initialContextState: IContextState = {
   isProcessing: false,
@@ -34,7 +34,10 @@ const syncSelectedVirtualDeviceIdReducer = (state: IApplicationState,
       if (selectedVirtualDeviceId && state.deviceSet.devices[selectedVirtualDeviceId]) {
         return state;
       }
-      const firstDevice = first(queryDevicesByDescriptor(state, action.payload.descriptor));
+      const connectedDescriptor = queryConnectedDescriptor(state);
+      const firstDevice = first(connectedDescriptor ?
+        queryDevicesByDescriptor(state, connectedDescriptor)
+        : queryDevicesInOrder(state));
       return setNestedField(
         state,
         ["context", "selectedVirtualDeviceId"],

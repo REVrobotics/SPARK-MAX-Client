@@ -152,7 +152,6 @@ export interface IAddDevices extends Action {
 export interface IReplaceDevices extends Action {
   type: ActionType.REPLACE_DEVICES,
   payload: {
-    descriptor: PathDescriptor,
     devices: IDeviceState[],
   }
 }
