@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState, ControlField, QuickPanelName
+  VirtualDeviceId, IDisplayState, QuickPanelName
 } from "../state";
 
 /**
@@ -91,7 +91,7 @@ export enum ActionType {
   SET_DISPLAY_SELECTED_PARAM_GROUP = "SET_DISPLAY_SELECTED_PARAM_GROUP",
   SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
   SET_DISPLAY = "SET_DISPLAY",
-  SET_CONTROL_FIELD = "SET_CONTROL_FIELD",
+  SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
 }
 
@@ -511,11 +511,10 @@ export interface ISetDisplay {
   },
 }
 
-export interface ISetControlField extends IDeviceAwareAction {
-  type: ActionType.SET_CONTROL_FIELD,
+export interface ISetControlValue extends IDeviceAwareAction {
+  type: ActionType.SET_CONTROL_VALUE,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    field: ControlField,
     value: any,
   },
 }
@@ -548,5 +547,5 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
   | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlField
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
   | IAddLog;

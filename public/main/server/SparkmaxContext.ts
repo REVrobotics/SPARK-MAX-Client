@@ -3,6 +3,10 @@ import {noop, values} from "lodash";
 export type ResourceFactory = (device: string) => IResource;
 
 export interface IResource {
+  setAttribute(name: string, value: any): void;
+
+  getAttribute(name: string): any;
+
   setOwner?(device: string): void;
 
   pause(): Promise<void>|undefined;
@@ -108,6 +112,13 @@ export class SparkmaxContext {
    */
   public isResourceExist(name: string): boolean {
     return this.temporaryResources[name] != null;
+  }
+
+  /**
+   * Returns true if temporary resource exists, otherwise false.
+   */
+  public getResource(name: string): IResource {
+    return this.temporaryResources[name];
   }
 
   /**

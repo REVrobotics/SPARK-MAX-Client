@@ -3,7 +3,7 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {filter, find, first, flatMap, isEmpty, keys, toPairs, values} from "lodash";
+import {countBy, filter, find, first, flatMap, isEmpty, keys, toPairs, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
@@ -22,7 +22,7 @@ import {
   IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured,
+  isDeviceNotConfigured, ISignalInstanceState, ISignalState,
   ISignalStyle,
   PathDescriptor,
   ProcessType,
@@ -31,6 +31,7 @@ import {
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {ConfigParam} from "../models/ConfigParam";
+import {colors} from "./colors";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
@@ -496,8 +497,24 @@ export const queryHasAssignedSignalsForSelectedDevice = (state: IApplicationStat
 export const querySignalNewStyle = (state: IApplicationState,
                                     virtualDeviceId: VirtualDeviceId,
                                     signalId: SignalId): ISignalStyle => {
+  const colorToCount = countBy(querySignalsWithInstances(state).map(([_, instance]) => instance.style.color));
+  let foundColor = colors[0];
+  let foundCount = Number.MAX_SAFE_INTEGER;
+
+  for (const color of colors) {
+    const count = colorToCount[color] || 0;
+    if (count === 0) {
+      foundColor = color;
+      break;
+    }
+    if (count < foundCount) {
+      foundColor = color;
+      foundCount = count;
+    }
+  }
+
   return {
-    color: "red",
+    color: foundColor,
   };
 };
 
@@ -509,11 +526,11 @@ export const querySelectedSignal = (state: IApplicationState) => {
   return querySelectedDeviceSignal(state, deviceDisplay.selectedSignalId);
 };
 
-export const querySignalsWithInstances = (state: IApplicationState) => {
+export const querySignalsWithInstances = (state: IApplicationState): Array<[ISignalState, ISignalInstanceState]> => {
   return flatMap(
     values(state.display.devices),
     ({assignedSignals, signals}) => values(assignedSignals).map((instance) => [
-      signals.find((signal) => getSignalId(signal) === instance.signalId),
+      signals.find((signal) => getSignalId(signal) === instance.signalId)!,
       instance,
     ]));
 };

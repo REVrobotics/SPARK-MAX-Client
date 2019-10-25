@@ -239,7 +239,6 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
 };
 
 export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
-  mode: CtrlType.DutyCycle,
   value: 0,
   running: false,
 };
@@ -275,12 +274,9 @@ export interface IDeviceDisplayState {
 }
 
 export interface IDeviceRunState {
-  mode: CtrlType;
   value: number;
   running: boolean;
 }
-
-export type ControlField = "mode" | "value";
 
 export type DisplaySettings = DisplaySettingsDto;
 
@@ -510,6 +506,8 @@ export enum ConfirmationAnswer {
   Yes = "Yes",
   Cancel = "Cancel"
 }
+
+export const getDestinationId = (destination: IDestination) => `${destination.virtualDeviceId}:${destination.signalId}`;
 
 export const DISPLAY_SETTING_CONSTRAINTS: { [name: string]: IFieldConstraints } = {
   timeSpan: {min: 1, max: 1000},

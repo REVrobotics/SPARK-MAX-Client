@@ -1,53 +1,48 @@
 import classNames from "classnames";
-import {
-  CONTROL_MODE_CONSTRAINTS,
-  ControlField,
-  DEFAULT_DEVICE_RUN,
-  IApplicationState,
-  IDeviceRunState
-} from "../store/state";
+import {CONTROL_MODE_CONSTRAINTS, DEFAULT_DEVICE_RUN, IApplicationState, IDeviceRunState} from "../store/state";
 import {connect} from "react-redux";
-import {burnSelectedDeviceConfiguration, SparkDispatch} from "../store/actions";
+import {burnSelectedDeviceConfiguration, setSelectedDeviceParameterValue, SparkDispatch} from "../store/actions";
 import * as React from "react";
-import {useCallback} from "react";
 import {Button, FormGroup, Intent, Slider} from "@blueprintjs/core";
 import DictionarySelect from "../components/DictionarySelect";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {CONTROL_MODES} from "../store/dictionaries";
-import {CtrlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ConfigParam, CtrlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {
   queryHasAssignedSignalsForSelectedDevice,
   queryHasRunningDevices,
+  querySelectedDeviceCurrentConfig,
   querySelectedDeviceRun
 } from "../store/selectors";
 import {
-  sendSelectedDeviceControlField,
+  sendSelectedDeviceControlValue,
   startSelectedDevice,
   stopAllDevices,
   stopSelectedDevice
 } from "../store/actions/display-actions";
 import {PlayCircleOutlineIcon, StopCircleRegularIcon, StopIcon} from "../icons";
+import {getDeviceParamValueOrDefault} from "../store/param-rules/config-param-helpers";
 
 interface IProps {
   className?: string;
+  mode: CtrlType;
   run: IDeviceRunState;
   hasSignalsForSelectedDevice: boolean;
   hasRunningDevices: boolean;
   start(): void;
   stop(): void;
   stopAll(): void;
-  onControlFieldChange(name: ControlField, value: any): void;
+  onControlModeChange(type: CtrlType): void;
+  onControlValueChange(value: any): void;
   burnConfiguration(): void;
 }
 
 const RunControlArea = (props: IProps) => {
   const {
-    hasRunningDevices, hasSignalsForSelectedDevice,
+    mode, hasRunningDevices, hasSignalsForSelectedDevice,
     start, stop, stopAll, run, burnConfiguration,
+    onControlModeChange, onControlValueChange,
   } = props;
-
-  const modeChange = useCallback((mode: CtrlType) => props.onControlFieldChange("mode", mode), []);
-  const valueChange = useCallback((value: number) => props.onControlFieldChange("value", value), []);
 
   const canStartSelectedDevice = hasSignalsForSelectedDevice;
   const canStopDevices = hasRunningDevices;
@@ -72,27 +67,27 @@ const RunControlArea = (props: IProps) => {
       <div className="control-area__field-list flex-1 flex-column flex-cross-center flex-space-between">
         <div className="flex-column">
           <FormGroup className="control-area__field-group" inline={true} label={tt("lbl_control_mode")}>
-            <DictionarySelect value={run.mode} dictionary={CONTROL_MODES} onValueChange={modeChange}/>
+            <DictionarySelect value={mode} dictionary={CONTROL_MODES} onValueChange={onControlModeChange}/>
           </FormGroup>
           <FormGroup className="control-area__field-group" inline={true} label={tt("lbl_set_point")}>
             <SafeNumericInput
-              min={CONTROL_MODE_CONSTRAINTS[run.mode].min}
-              max={CONTROL_MODE_CONSTRAINTS[run.mode].max}
-              minorStepSize={CONTROL_MODE_CONSTRAINTS[run.mode].minorStepSize}
-              stepSize={CONTROL_MODE_CONSTRAINTS[run.mode].stepSize || 1}
+              min={CONTROL_MODE_CONSTRAINTS[mode].min}
+              max={CONTROL_MODE_CONSTRAINTS[mode].max}
+              minorStepSize={CONTROL_MODE_CONSTRAINTS[mode].minorStepSize}
+              stepSize={CONTROL_MODE_CONSTRAINTS[mode].stepSize || 1}
               value={run.value}
               safeInvalidValue={run.value}
               safeBehavior={SafeNumericBehavior.Clamp}
-              onValueChange={valueChange}/>
+              onValueChange={onControlValueChange}/>
           </FormGroup>
           {
-            run.mode === CtrlType.DutyCycle ?
+            mode === CtrlType.DutyCycle ?
               <Slider className="control-area__field-slider"
                       value={run.value}
-                      min={CONTROL_MODE_CONSTRAINTS[run.mode].min}
-                      max={CONTROL_MODE_CONSTRAINTS[run.mode].max}
-                      stepSize={CONTROL_MODE_CONSTRAINTS[run.mode].stepSize || 1}
-                      onChange={valueChange}/>
+                      min={CONTROL_MODE_CONSTRAINTS[mode].min}
+                      max={CONTROL_MODE_CONSTRAINTS[mode].max}
+                      stepSize={CONTROL_MODE_CONSTRAINTS[mode].stepSize || 1}
+                      onChange={onControlValueChange}/>
               : null
           }
         </div>
@@ -104,6 +99,7 @@ const RunControlArea = (props: IProps) => {
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
+    mode: getDeviceParamValueOrDefault(querySelectedDeviceCurrentConfig(state), ConfigParam.kCtrlType),
     run: querySelectedDeviceRun(state) || DEFAULT_DEVICE_RUN,
     hasSignalsForSelectedDevice: queryHasAssignedSignalsForSelectedDevice(state),
     hasRunningDevices: queryHasRunningDevices(state),
@@ -115,7 +111,8 @@ const mapDispatchToProps = (dispatch: SparkDispatch) => {
     start: () => dispatch(startSelectedDevice()),
     stop: () => dispatch(stopSelectedDevice()),
     stopAll: () => dispatch(stopAllDevices()),
-    onControlFieldChange: (name: ControlField, value: any) => dispatch(sendSelectedDeviceControlField(name, value)),
+    onControlModeChange: (mode: CtrlType) => dispatch(setSelectedDeviceParameterValue(ConfigParam.kCtrlType, mode)),
+    onControlValueChange: (value: number) => dispatch(sendSelectedDeviceControlValue(value)),
     burnConfiguration: () => dispatch(burnSelectedDeviceConfiguration()),
   };
 };

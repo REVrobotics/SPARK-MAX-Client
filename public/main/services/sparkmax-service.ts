@@ -25,8 +25,7 @@ const opn = require("opn");
 const isWin: boolean = process.platform === "win32";
 const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
 
-let usbProc: ChildProcess|null = null;
-let setpoint: number = 0;
+let usbProc: ChildProcess | null = null;
 let firmwareID: any = null;
 
 const getDeviceIdWithNewCanId = (device: string, newCanId: number) => {
@@ -65,10 +64,24 @@ const pingResourceFactory = timerResourceFactory((device) =>
     }),
   1000);
 
+const heartbeatProcessor = (device: string, attributes: { [name: string]: any }) =>
+  new Promise<void>((resolve, reject) =>
+    server.setpoint({root: {device}, enable: true, setpoint: attributes.setpoint}, (err: any, response: any) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      notifyCallback(getTargetWindow(), "heartbeat", device, response);
+      resolve(response);
+    }));
+
 const context = new SparkmaxContext([pingResourceFactory]);
 
 // all URLs should be relative ./build directory
 const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
+
+const getHeartbeatResourceName = (device: string) => `heartbeat:${device}`;
 
 onTwoWayCall("start-server", (cb, port: any) => {
   if (!port) {
@@ -225,29 +238,30 @@ onTwoWayCall("restore-defaults", (cb, device: string) => {
   });
 });
 
-onOneWayCall("enable-heartbeat", (interval) => {
-  if (!context.isResourceExist("heartbeat")) {
-    console.log("Enabling heartbeat for every " + interval + "ms");
-    context.newDeviceResource("heartbeat", timerResourceFactory(
-      () => new Promise((resolve) =>
-        server.setpoint({enable: true, setpoint}, (err: any, response: any) => {
-          notifyCallback(getTargetWindow(), "heartbeat", response);
-          resolve(response);
-        })),
-      interval));
+onOneWayCall("enable-heartbeat", (device, interval) => {
+  if (!context.isResourceExist(getHeartbeatResourceName(device))) {
+    console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);
+    context.newDeviceResource(
+      getHeartbeatResourceName(device),
+      timerResourceFactory(heartbeatProcessor, interval, {setpoint: 0}));
   }
 });
 
-onOneWayCall("disable-heartbeat", () => {
-  if (context.isResourceExist("heartbeat")) {
-    console.log("Disabling heartbeat");
-    context.releaseDeviceResource("heartbeat");
+onOneWayCall("disable-heartbeat", (device: string) => {
+  if (context.isResourceExist(getHeartbeatResourceName(device))) {
+    console.log(`Disabling heartbeat for '${device}'`);
+    context.releaseDeviceResource(getHeartbeatResourceName(device));
   }
-  setpoint = 0.0;
+  server.setpoint({root: {device}, enable: false, setpoint: 0}, (err: any, response: any) => {
+    notifyCallback(getTargetWindow(), "heartbeat", device, response);
+  })
 });
 
-onOneWayCall("set-setpoint", (newSetpoint: number) => {
-  setpoint = newSetpoint;
+onOneWayCall("set-setpoint", (device: string, newSetpoint: number) => {
+  if (context.isResourceExist(getHeartbeatResourceName(device))) {
+    const resource = context.getResource(getHeartbeatResourceName(device));
+    resource.setAttribute("setpoint", newSetpoint);
+  }
 });
 
 onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) => {
@@ -342,9 +356,9 @@ onTwoWayCall("download", (cb, url: string) => {
           console.log(msg);
           cb(null, msg);
         }).catch((error: any) => {
-          console.error(error);
-          cb(error);
-        });
+        console.error(error);
+        cb(error);
+      });
     }
   });
 });

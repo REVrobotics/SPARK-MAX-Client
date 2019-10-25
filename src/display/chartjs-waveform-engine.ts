@@ -284,7 +284,7 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   private buildDataQuery(): any {
-    return this.timeSpan;
+    return {timeSpan: this.timeSpan * 1000};
   }
 
   private updateDatasetData(dataSetId: DataSetId, data: DataPoint[]): void {

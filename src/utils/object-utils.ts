@@ -1,4 +1,4 @@
-import {constant, difference, findIndex, intersection, isFunction, keyBy, omit, sortedIndex, sortedIndexOf} from "lodash";
+import {constant, difference, findIndex, identity, intersection, isFunction, keyBy, omit, sortedIndex, sortedIndexOf} from "lodash";
 
 export const EMPTY_ARRAY: any[] = [];
 
@@ -138,7 +138,7 @@ interface IDiffArrayResult<T> {
 /**
  * Analyzes two set of objects and returns detailed description of all changes
  */
-export function diffArrays<T>(previous: T[], next: T[], by: (obj: T) => any): IDiffArrayResult<T> {
+export function diffArrays<T>(previous: T[], next: T[], by: (obj: T) => any = identity): IDiffArrayResult<T> {
   const previousIds = previous.map(by);
   const nextIds = next.map(by);
 

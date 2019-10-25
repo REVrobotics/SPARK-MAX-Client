@@ -1,3 +1,4 @@
+import {cloneDeep} from "lodash";
 import {IResource} from "./SparkmaxContext";
 
 /**
@@ -9,11 +10,22 @@ export class TimerResource implements IResource {
   private intervalId: any;
   private currentProcessing?: Promise<void>;
   private destroyed: boolean = false;
+  private attributes: {[name: string]: any} = {};
 
   constructor(private device: string,
-              private processor: (device: string) => Promise<void>,
-              private ms: number) {
+              private processor: (this: TimerResource, device: string, attributes: {[name: string]: any}) => Promise<void>,
+              private ms: number,
+              attributes: {[name: string]: any} = {}) {
     this.start();
+    this.attributes = cloneDeep(attributes);
+  }
+
+  public setAttribute(name: string, value: any): void {
+    this.attributes.set(name, value);
+  }
+
+  public getAttribute(name: string): void {
+    return this.attributes.get(name);
   }
 
   /**
@@ -59,7 +71,7 @@ export class TimerResource implements IResource {
     this.checkAlive();
 
     this.intervalId = setInterval(() => {
-      this.currentProcessing = this.processor(this.device)
+      this.currentProcessing = this.processor(this.device, this.attributes)
         .finally(() => {
           this.currentProcessing = undefined;
         });
@@ -81,5 +93,7 @@ export class TimerResource implements IResource {
   }
 }
 
-export const timerResourceFactory = (processor: (device: string) => Promise<void>, ms: number) =>
-  (device: string) => new TimerResource(device, processor, ms);
+export const timerResourceFactory = (processor: (device: string, attributes: {[name: string]: any}) => Promise<void>,
+                                     ms: number,
+                                     attributes: {[name: string]: any} = {}) =>
+  (device: string) => new TimerResource(device, processor, ms, attributes);

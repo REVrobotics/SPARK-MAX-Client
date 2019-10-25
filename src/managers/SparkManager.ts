@@ -139,7 +139,7 @@ class SparkManager {
     return onCallback("resync", listener);
   }
 
-  public onHeartbeat(listener: (error: any, response: any) => void): () => void {
+  public onHeartbeat(listener: (error: any, device: string, response: any) => void): () => void {
     return onCallback("heartbeat", listener);
   }
 
@@ -156,15 +156,15 @@ class SparkManager {
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
-  public setSetpoint(setpoint: number) {
-    return sendOneWay("set-setpoint", setpoint);
+  public setSetpoint(device: string, setpoint: number) {
+    return sendOneWay("set-setpoint", device, setpoint);
   }
 
-  public enableHeartbeat(interval: number) {
-    sendOneWay("enable-heartbeat", interval);
+  public enableHeartbeat(device: string, interval: number) {
+    sendOneWay("enable-heartbeat", device, interval);
   }
 
-  public disableHeartbeat(listener?: (event: any, error: any, response: any) => void) {
+  public disableHeartbeat(device: string) {
     sendOneWay("disable-heartbeat");
   }
 

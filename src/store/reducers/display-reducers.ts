@@ -1,4 +1,4 @@
-import {difference, fromPairs} from "lodash";
+import {difference, fromPairs, isEmpty} from "lodash";
 import {
   createDeviceDisplayState,
   DEFAULT_DISPLAY_SETTINGS,
@@ -47,7 +47,7 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.ADD_SIGNAL_INSTANCE:
     case ActionType.REMOVE_SIGNAL_INSTANCE:
     case ActionType.SET_SIGNAL_INSTANCE_FIELD:
-    case ActionType.SET_CONTROL_FIELD:
+    case ActionType.SET_CONTROL_VALUE:
     case ActionType.SET_RUNNING_STATUS:
     case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
       return setNestedField(
@@ -65,17 +65,8 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
       return setField(state, "pidProfile", action.payload.profile);
     case ActionType.SET_RUNNING_STATUS:
       return setField(state, "run", setField(state.run, "running", action.payload.running));
-    case ActionType.SET_CONTROL_FIELD: {
-      const {field, value} = action.payload;
-      switch (field) {
-        case "mode":
-          return setField(state, "run", setFields(state.run, {mode: value, value: 0}));
-        case "value":
-          return setField(state, "run", setField(state.run, "value", roundDecimal(value || 0, 2)));
-        default:
-          return setField(state, "run", setField(state.run, "value", value));
-      }
-    }
+    case ActionType.SET_CONTROL_VALUE:
+      return setField(state, "run", setField(state.run, "value", roundDecimal(action.payload.value || 0, 2)));
     case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
       return setField(
         state,
@@ -98,11 +89,20 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
         state,
         "assignedSignals",
         setField(state.assignedSignals, action.payload.instance.signalId, action.payload.instance));
-    case ActionType.REMOVE_SIGNAL_INSTANCE:
-      return setField(
+    case ActionType.REMOVE_SIGNAL_INSTANCE: {
+      const withoutSignal = setField(
         state,
         "assignedSignals",
         removeField(state.assignedSignals, action.payload.signalId));
+      // Stop device if there is no more signals
+      return setField(
+        withoutSignal,
+        "run",
+        setField(
+          withoutSignal.run,
+          "running",
+          isEmpty(withoutSignal.assignedSignals) ? false : withoutSignal.run.running));
+    }
     case ActionType.SET_SIGNAL_INSTANCE_FIELD: {
       const {key, value, signalId} = action.payload;
 

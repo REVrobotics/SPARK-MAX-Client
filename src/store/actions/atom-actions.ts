@@ -21,15 +21,18 @@ import {
   ISetConfigurations,
   ISetConnectedDescriptor,
   ISetConsoleOutput,
-  ISetControlField,
+  ISetControlValue,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
   ISetDeviceProcessing,
+  ISetDeviceRunningStatus,
   ISetDisplay,
   ISetDisplayQuickParam,
   ISetDisplaySelectedPanel,
   ISetDisplaySelectedParamGroup,
+  ISetDisplaySelectedPidProfile,
+  ISetDisplaySelectedQuickPanel,
   ISetDisplaySetting,
   ISetFirmwareDownloaded,
   ISetFirmwareDownloadError,
@@ -41,7 +44,6 @@ import {
   ISetNetworkScanInProgress,
   ISetParameters,
   ISetProcessingByDescriptor,
-  ISetDeviceRunningStatus,
   ISetSelectedDevice,
   ISetSelectedSignal,
   ISetSelectedTab,
@@ -53,12 +55,11 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor, ISetDisplaySelectedQuickPanel, ISetDisplaySelectedPidProfile,
+  IUpdateProcessStatusByDescriptor,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
 import {
-  ControlField,
   DeviceId,
   DisplaySettings,
   IDeviceConfiguration,
@@ -70,7 +71,8 @@ import {
   ISignalInstanceState,
   PanelName,
   PathDescriptor,
-  ProcessType, QuickPanelName,
+  ProcessType,
+  QuickPanelName,
   SignalId,
   TabId,
   VirtualDeviceId
@@ -417,11 +419,9 @@ export const setDisplay = (display: IDisplayState): ISetDisplay => ({
   payload: {display},
 });
 
-export const setControlField = (virtualDeviceId: VirtualDeviceId,
-                                field: ControlField,
-                                value: any): ISetControlField => ({
-  type: ActionType.SET_CONTROL_FIELD,
-  payload: {virtualDeviceId, field, value},
+export const setControlValue = (virtualDeviceId: VirtualDeviceId, value: any): ISetControlValue => ({
+  type: ActionType.SET_CONTROL_VALUE,
+  payload: {virtualDeviceId, value},
 });
 
 export const setDeviceRunning = (virtualDeviceId: VirtualDeviceId) => setDeviceRunningStatus(virtualDeviceId, true);
