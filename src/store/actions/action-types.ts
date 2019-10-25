@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState, ControlField
+  VirtualDeviceId, IDisplayState, ControlField, QuickPanelName
 } from "../state";
 
 /**
@@ -78,9 +78,11 @@ export enum ActionType {
   RESET_MESSAGE_QUEUE = "RESET_MESSAGE_QUEUE",
   ADD_TO_MESSAGE_QUEUE = "ADD_TO_MESSAGE_QUEUE",
 
+  SET_DISPLAY_SELECTED_QUICK_PANEL = "SET_DISPLAY_SELECTED_QUICK_PANEL",
   SET_DISPLAY_SELECTED_PANEL = "SET_DISPLAY_SELECTED_PANEL",
   SET_DISPLAY_SETTING = "SET_DISPLAY_SETTING",
   SET_SELECTED_SIGNAL = "SET_SELECTED_SIGNAL",
+  SET_DISPLAY_SELECTED_PID_PROFILE = "SET_DISPLAY_SELECTED_PID_PROFILE",
 
   ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
   REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
@@ -421,6 +423,21 @@ export interface IAddToMessageQueue extends Action {
   },
 }
 
+export interface ISetDisplaySelectedQuickPanel {
+  type: ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL,
+  payload: {
+    panel: QuickPanelName,
+  },
+}
+
+export interface ISetDisplaySelectedPidProfile extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    profile: number;
+  },
+}
+
 export interface ISetDisplaySelectedPanel {
   type: ActionType.SET_DISPLAY_SELECTED_PANEL,
   payload: {
@@ -528,7 +545,8 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | IInitMessageQueue | IResetMessageQueue | IAddToMessageQueue
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
-  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDeviceRunningStatus
+  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
+  | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
   | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlField
   | IAddLog;

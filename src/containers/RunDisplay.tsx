@@ -43,7 +43,7 @@ const RunDisplay = (props: IProps) => {
                              color={instance.style.color}/>
               <DataSet scaleId={instance.scaleId}
                        dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
-                       label={signal.name}
+                       label={`ID ${signal.deviceId}, ${signal.name}, ${signal.units}`}
                        color={instance.style.color}/>
             </React.Fragment>
           ))
@@ -66,7 +66,7 @@ const RunDisplay = (props: IProps) => {
                          color={instance.style.color}/>
           <DataSet scaleId={instance.scaleId}
                    dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
-                   label={signal.name}
+                   label={`ID ${signal.deviceId}, ${signal.name}, ${signal.units}`}
                    color={instance.style.color}/>
         </WaveformChart>
       )

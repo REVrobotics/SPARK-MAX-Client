@@ -68,3 +68,8 @@ export const CONTROL_MODES = Dictionary.from(
   DictionaryName.ControlModes,
   [CtrlType.DutyCycle, CtrlType.Velocity, CtrlType.Position],
 );
+
+export const PID_PROFILES = Dictionary.from(
+  DictionaryName.PidProfiles,
+  [0, 1, 2, 3],
+)

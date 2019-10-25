@@ -53,7 +53,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor,
+  IUpdateProcessStatusByDescriptor, ISetDisplaySelectedQuickPanel, ISetDisplaySelectedPidProfile,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -70,7 +70,7 @@ import {
   ISignalInstanceState,
   PanelName,
   PathDescriptor,
-  ProcessType,
+  ProcessType, QuickPanelName,
   SignalId,
   TabId,
   VirtualDeviceId
@@ -360,6 +360,17 @@ export const setDisplaySelectedPanel = (panel: PanelName): ISetDisplaySelectedPa
   type: ActionType.SET_DISPLAY_SELECTED_PANEL,
 });
 
+export const setDisplaySelectedQuickPanel = (panel: QuickPanelName): ISetDisplaySelectedQuickPanel => ({
+  payload: {panel},
+  type: ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL,
+});
+
+export const setDisplaySelectedPidProfile = (virtualDeviceId: VirtualDeviceId,
+                                             profile: number): ISetDisplaySelectedPidProfile => ({
+  payload: {virtualDeviceId, profile},
+  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+});
+
 export const setDisplaySetting = (key: keyof DisplaySettings, value: any): ISetDisplaySetting => ({
   payload: {key, value},
   type: ActionType.SET_DISPLAY_SETTING,
@@ -427,3 +438,4 @@ export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
 export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
+export const setSelectedDeviceDisplayPidProfile = forSelectedDevice(setDisplaySelectedPidProfile);

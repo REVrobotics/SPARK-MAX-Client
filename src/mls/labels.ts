@@ -144,14 +144,16 @@ const labels = {
   "lbl_device_blocked_title": "Configuration Issue",
   "lbl_device_blocked_description": "Selected device has configuration issue. Fix it to continue working with the device. Look for the details under \"i\" icon on the top of the window",
   "lbl_quick_bar": "Quick Bar",
+  "lbl_pidf": "PIDF",
   "lbl_control_mode": "Control Mode",
   "lbl_set_point": "Set Point",
-  "lbl_start_device": "Run this device",
-  "lbl_stop_device": "Stop this device",
-  "lbl_stop_devices": "Stop all running devices",
+  "lbl_start_device": "Run",
+  "lbl_stop_device": "Stop",
   "lbl_pause_devices": "Stop all running devices with possibility to restart by a single click",
   "lbl_resume_devices": "Run all paused devices",
   "lbl_stop_all": "Stop All",
+  "lbl_stop_all_tooltip": "Stop all running devices (Esc)",
+  "lbl_device_loading": "Wait until device data is loaded",
 };
 
 export default labels;

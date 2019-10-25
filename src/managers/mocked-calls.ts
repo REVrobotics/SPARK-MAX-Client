@@ -67,7 +67,7 @@ mockTwoWayCall("telemetry-list", () => {
       {deviceId: 20501, id: 3, name: "Motor Temperature", units: "C", expectedMin: 0, expectedMax: 80},
       {deviceId: 0, id: 4, name: "Motor Velocity", units: "M/s", expectedMin: 0, expectedMax: 60},
       {deviceId: 20512, id: 5, name: "Input Voltage", units: "V", expectedMin: 0, expectedMax: 70},
-      {deviceId: 20512, id: 6, name: "Motor Output %", units: "%", expectedMin: 0, expectedMax: 80},
+      {deviceId: 20512, id: 6, name: "Motor Output", units: "%", expectedMin: 0, expectedMax: 80},
     ],
   });
 });

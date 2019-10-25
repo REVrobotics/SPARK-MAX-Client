@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import bindRamConfigRule from "../hocs/bind-ram-config-rule";
 import {withDirty} from "../hocs/with-dirty";
 import ValidationFormGroup from "../components/groups/ValidationFormGroup";
@@ -10,31 +11,51 @@ import * as React from "react";
 import {IConfigParamProps} from "../components/config-param-props";
 import {getConfigParamReadableName} from "../models/ConfigParam";
 
-const DisplayConfigParamFieldGroup = (props: IConfigParamProps) => {
+interface IDisplayConfigParamFieldGroupProps extends IConfigParamProps {
+  inline?: boolean;
+  groupClassName?: string;
+  fieldClassName?: string;
+}
+
+interface IDisplayConfigParamFieldProps extends IConfigParamProps {
+  className?: string;
+}
+
+const DirtyValidationFormGroup = withDirty(ValidationFormGroup);
+
+const DisplayConfigParamFieldGroup = (props: IDisplayConfigParamFieldGroupProps) => {
+  const {inline, fieldClassName, groupClassName, ...other} = props;
+
   return (
-    <ValidationFormGroup {...props}
-                         className="display-param-group"
-                         title={getConfigParamReadableName(props.parameter)}
-                         inline={true}>
-      <DisplayConfigParamField {...props}/>
-    </ValidationFormGroup>
+    <DirtyValidationFormGroup {...other}
+                              className={classNames("display-param-group", groupClassName)}
+                              title={getConfigParamReadableName(props.parameter)}
+                              inline={inline}>
+      <DisplayConfigParamField {...other} className={fieldClassName}/>
+    </DirtyValidationFormGroup>
   );
 };
 
-const DisplayConfigParamField = (props: IConfigParamProps) => {
-  const {parameter} = props;
+const DisplayConfigParamField = (props: IDisplayConfigParamFieldProps) => {
+  const {parameter, className, ...other} = props;
   const {type} = getConfigParamRule(parameter);
 
   switch (type) {
     case ConfigParamRuleType.Enum:
-      return <SelectParamField {...props} className="display-param__field--select"/>;
+      return <SelectParamField parameter={parameter}
+                               className={classNames("display-param__field--select", className)}
+                               {...other}/>;
     case ConfigParamRuleType.Numeric:
-      return <NumericParamField {...props} className="display-param__field--numeric"/>;
+      return <NumericParamField parameter={parameter}
+                                className={classNames("display-param__field--numeric", className)}
+                                {...other}/>;
     case ConfigParamRuleType.Boolean:
-      return <SwitchParamField {...props} className="display-param__field--boolean"/>;
+      return <SwitchParamField parameter={parameter}
+                               className={classNames("display-param__field--boolean", className)}
+                               {...other}/>;
     default:
       throw new Error(`Unknown type of field: parameter = "${parameter}", type = "${type}"`)
   }
 };
 
-export default bindRamConfigRule(withDirty(DisplayConfigParamFieldGroup));
+export default bindRamConfigRule(DisplayConfigParamFieldGroup);

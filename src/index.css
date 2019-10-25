@@ -548,6 +548,10 @@ label.modified::after {
     text-overflow: ellipsis;
 }
 
+.ml-5 {
+    margin-left: 5px;
+}
+
 .mr-5 {
     margin-right: 5px;
 }
@@ -798,7 +802,7 @@ button.link {
 
 .display-param-group .bp3-label {
     overflow: hidden;
-    width: 160px;
+    width: 150px;
 
     text-overflow: ellipsis;
 }
@@ -807,19 +811,29 @@ button.link {
     width: 80px;
 }
 
+.display-param-group.display-param-group--minimal .bp3-label {
+    width: 60px;
+}
+
+.display-param-group--minimal .display-param__field--numeric .bp3-input-group {
+    width: 60px;
+}
+
+.display-param__field--boolean.bp3-switch {
+    margin-bottom: 0;
+}
+
 .run-quick-bar {
-    padding: 0 10px 0 5px;
+    padding: 0;
 }
 
-.run-quick-bar__header {
-    padding: 0 5px;
-    line-height: 25px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-    font-weight: bold;
+.run-quick-bar__pid-row {
+    padding-left: 10px;
+    margin-bottom: 10px;
 }
 
-.run-quick-bar__body {
-    padding-top: 5px;
+.run-quick-bar__pid-row .bp3-form-group + .bp3-form-group {
+    margin-left: 10px;
 }
 
 .run-main-panel__quick {
@@ -827,10 +841,15 @@ button.link {
     border-right: 2px solid rgba(0, 0, 0, 0.38);
 }
 
-.control-area__button-list {
-    padding: 10px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.38);
-    background: rgba(0, 0, 0, 0.12);
+.run-main-panel__quick .bp3-tab-list {
+    margin-left: 10px;
+}
+
+.run-main-panel__quick .bp3-tab-panel {
+    margin-top: 5px;
+    padding: 0 10px 0 5px;
+    height: 100%;
+    overflow: auto;
 }
 
 .control-area__field-list {
@@ -852,4 +871,8 @@ button.link {
 .control-area__field-slider {
     margin-left: 15px;
     width: calc(100% - 30px);
+}
+
+.main-control-btn {
+    width: 80px;
 }

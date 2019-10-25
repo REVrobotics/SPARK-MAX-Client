@@ -10,6 +10,7 @@ export enum DictionaryName {
   LegendPositions = "LegendPositions",
   IdleModes = "IdleModes",
   ControlModes = "ControlModes",
+  PidProfiles = "PidProfiles",
 }
 
 const dictionarySet = {
@@ -52,6 +53,12 @@ const dictionarySet = {
     [CtrlType.DutyCycle]: "Percent",
     [CtrlType.Velocity]: "Velocity",
     [CtrlType.Position]: "Position",
+  },
+  [DictionaryName.PidProfiles]: {
+    0: "0",
+    1: "1",
+    2: "2",
+    3: "3",
   },
 };
 

@@ -6,12 +6,12 @@ import {setDisplaySelectedPanel, SparkDispatch} from "../store/actions";
 import {
   queryDisplaySelectedPanel,
   queryHasSignalForSelectedDevice,
-  queryIsHasConnectedDevice,
-  queryIsSelectedDeviceBlocked
+  queryIsSelectedDeviceBlocked, queryIsSelectedDeviceConnected,
+  queryIsSelectedDeviceLoaded
 } from "../store/selectors";
 import List from "../components/List";
 import Tool, {ListItemAlignment} from "../components/Tool";
-import {IconName, NonIdealState} from "@blueprintjs/core";
+import {IconName, NonIdealState, Spinner} from "@blueprintjs/core";
 import PanelContainer from "../components/PanelContainer";
 import RunDisplay from "./RunDisplay";
 import ParametersRunPanel from "./ParametersRunPanel";
@@ -22,6 +22,7 @@ import RunControlArea from "./RunControlArea";
 
 interface IProps {
   connected: boolean;
+  isLoaded: boolean;
   selectedPanel: PanelName;
   selectedDeviceIsBlocked: boolean;
   hasSignalForSelectedDevice: boolean;
@@ -92,12 +93,17 @@ const MainRunPanel = () => {
 class RunTab extends React.Component<IProps> {
 
   public render() {
-    const {connected, selectedPanel, hasSignalForSelectedDevice, selectedDeviceIsBlocked, onSelectPanel} = this.props;
+    const {connected, isLoaded, selectedPanel, hasSignalForSelectedDevice, selectedDeviceIsBlocked, onSelectPanel} = this.props;
 
     if (!connected) {
       return <NonIdealState icon="disable"
                             title={tt("lbl_no_device_connected_title")}
                             description={tt("lbl_no_device_connected_description")}/>;
+    }
+
+    if (!isLoaded) {
+      return <NonIdealState icon={<Spinner/>}
+                            title={tt("lbl_device_loading")}/>;
     }
 
     return (
@@ -355,7 +361,8 @@ class RunTab extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: queryIsHasConnectedDevice(state),
+    connected: queryIsSelectedDeviceConnected(state),
+    isLoaded: queryIsSelectedDeviceLoaded(state),
     selectedPanel: queryDisplaySelectedPanel(state),
     selectedDeviceIsBlocked: queryIsSelectedDeviceBlocked(state),
     hasSignalForSelectedDevice: queryHasSignalForSelectedDevice(state),

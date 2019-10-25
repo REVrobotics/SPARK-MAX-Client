@@ -215,11 +215,17 @@ export enum PanelName {
   Settings = "settings",
 }
 
+export enum QuickPanelName {
+  PIDF = "pidf",
+  Quick = "quick",
+}
+
 /**
  * State of display on run tab
  */
 export interface IDisplayState {
   selectedPanel: PanelName;
+  selectedQuickPanel: QuickPanelName;
   settings: DisplaySettings;
   devices: { [deviceId: string]: IDeviceDisplayState };
   raw?: DisplayConfigDto;
@@ -265,6 +271,7 @@ export interface IDeviceDisplayState {
   signals: ISignalState[];
   quickBar: ConfigParam[];
   run: IDeviceRunState;
+  pidProfile: number;
 }
 
 export interface IDeviceRunState {
@@ -472,6 +479,7 @@ export interface INumericFieldConstraints {
   min?: number;
   max?: number;
   integral?: boolean;
+  stepSize?: number;
 }
 
 export interface IEnumFieldConstraints {
@@ -545,6 +553,7 @@ export const createDeviceDisplayState = (): IDeviceDisplayState => ({
   quickBar: [],
   selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
   run: DEFAULT_DEVICE_RUN,
+  pidProfile: 0,
 });
 
 export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,

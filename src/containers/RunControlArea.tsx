@@ -10,7 +10,7 @@ import {connect} from "react-redux";
 import {burnSelectedDeviceConfiguration, SparkDispatch} from "../store/actions";
 import * as React from "react";
 import {useCallback} from "react";
-import {Button, FormGroup, Slider} from "@blueprintjs/core";
+import {Button, FormGroup, Intent, Slider} from "@blueprintjs/core";
 import DictionarySelect from "../components/DictionarySelect";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {CONTROL_MODES} from "../store/dictionaries";
@@ -54,17 +54,20 @@ const RunControlArea = (props: IProps) => {
 
   return (
     <div className={classNames("flex-column", props.className)}>
-      <div className="control-area__button-list flex-row flex-center">
-        <Button minimal={true}
-                icon={run.running ? <StopCircleRegularIcon/> : <PlayCircleOutlineIcon/>}
-                title={run.running ? tt("lbl_stop_device") : tt("lbl_start_device")}
+      <div className="p-10 flex-row flex-center">
+        <Button className="rev-btn main-control-btn"
+                icon={run.running ? <StopCircleRegularIcon size={20}/> : <PlayCircleOutlineIcon size={20}/>}
+                text={run.running ? tt("lbl_stop_device") : tt("lbl_start_device")}
                 disabled={!canStartSelectedDevice}
                 onClick={run.running ? stop : start}/>
-        <Button minimal={true}
+        <Button className="ml-5"
+                minimal={true}
                 icon={<StopIcon/>}
-                title={tt("lbl_stop_devices")}
+                intent={canStopDevices ? Intent.DANGER : undefined}
                 disabled={!canStopDevices}
-                onClick={stopAll}/>
+                onClick={stopAll}
+                title={tt("lbl_stop_all_tooltip")}
+                text={tt("lbl_stop_all")}/>
       </div>
       <div className="control-area__field-list flex-1 flex-column flex-cross-center flex-space-between">
         <div className="flex-column">

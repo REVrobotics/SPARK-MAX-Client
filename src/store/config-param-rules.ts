@@ -87,6 +87,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 0.3,
+      stepSize: 0.01,
     },
   }),
   createNumericRule(ConfigParam.kRampRate, {
@@ -135,6 +136,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_1, {
@@ -142,6 +144,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_2, {
@@ -149,6 +152,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_3, {
@@ -156,6 +160,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_0, {
@@ -163,6 +168,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_1, {
@@ -170,6 +176,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_2, {
@@ -177,6 +184,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_3, {
@@ -184,6 +192,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_0, {
@@ -191,6 +200,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_1, {
@@ -198,6 +208,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_2, {
@@ -205,6 +216,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_3, {
@@ -212,6 +224,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_0, {
@@ -219,6 +232,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_1, {
@@ -226,6 +240,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_2, {
@@ -233,6 +248,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_3, {
@@ -240,6 +256,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
 ];

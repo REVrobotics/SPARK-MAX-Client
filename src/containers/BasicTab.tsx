@@ -50,10 +50,6 @@ interface IBasicSwitchFieldGroupProps extends IBasicFormGroupProps {
   inverted?: boolean;
 }
 
-interface IBasicSliderFieldGroupProps extends IBasicFormGroupProps {
-  stepSize: number;
-}
-
 const getBasicParamTitle = (param: ConfigParam) => translateWord(DictionaryName.ConfigParams, param);
 
 const DirtySwitchParamField = withDirty(SwitchParamField);
@@ -101,12 +97,12 @@ const BasicSwitchFieldGroup = bindRamConfigRule((props: IBasicSwitchFieldGroupPr
   );
 });
 
-const BasicSliderFieldGroup = bindRamConfigRule((props: IBasicSliderFieldGroupProps) => {
-  const {groupClassName, fieldClassName, stepSize, ...otherProps} = props;
+const BasicSliderFieldGroup = bindRamConfigRule((props: IBasicFormGroupProps) => {
+  const {groupClassName, fieldClassName, ...otherProps} = props;
 
   return (
     <DirtyValidationFormGroup {...otherProps} title={getBasicParamTitle(props.parameter)} className={groupClassName}>
-      <SliderParamField {...otherProps} className={fieldClassName} stepSize={stepSize}/>
+      <SliderParamField {...otherProps} className={fieldClassName}/>
     </DirtyValidationFormGroup>
   );
 });
@@ -175,8 +171,7 @@ class BasicTab extends React.Component<IProps> {
                                   groupClassName="form-group-quarter"/>
           <BasicSliderFieldGroup parameter={ConfigParam.kInputDeadband}
                                  disabled={!canEditOtherFields}
-                                 groupClassName="form-group-half"
-                                 stepSize={0.01}/>
+                                 groupClassName="form-group-half"/>
         </div>
         <div className="form form-top form-space-between">
           <div className="form-column form-column-third no-wrap">

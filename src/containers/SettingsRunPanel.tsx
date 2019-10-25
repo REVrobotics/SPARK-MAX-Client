@@ -13,7 +13,7 @@ import {
 import {connect} from "react-redux";
 import {queryDisplaySettings} from "../store/selectors";
 import {SparkDispatch} from "../store/actions";
-import {Dictionary, IDictionaryWord, LEGEND_POSITIONS} from "../store/dictionaries";
+import {Dictionary, LEGEND_POSITIONS} from "../store/dictionaries";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {setAndPersistDisplaySetting} from "../store/actions/display-actions";
 import DictionarySelect from "../components/DictionarySelect";
@@ -99,8 +99,6 @@ const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary:
 
   const className = classNames("form-group-setting", `form-group-setting--${align || "left"}`);
 
-  const onChange = useCallback((item: IDictionaryWord) => onValueChange(item.id), []);
-
   return (
     <FormGroup
       className={className}
@@ -109,7 +107,7 @@ const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary:
       inline={true}
       labelFor="input"
     >
-      <DictionarySelect dictionary={dictionary} value={value} onValueChange={onChange}/>
+      <DictionarySelect dictionary={dictionary} value={value} onValueChange={onValueChange}/>
     </FormGroup>
   );
 }) as ComponentType<SettingProps & { dictionary: Dictionary }>;

@@ -1,12 +1,14 @@
 import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, pick, pickBy} from "lodash";
 import {
-  createSignalInstance, DEFAULT_DEVICE_RUN,
+  createSignalInstance,
+  DEFAULT_DEVICE_RUN,
   DEFAULT_DISPLAY_SETTINGS,
   getVirtualDeviceId,
   IApplicationState,
   IDisplayState,
   ISignalState,
   PanelName,
+  QuickPanelName,
 } from "./state";
 import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceDto, DisplayDeviceSignalDto} from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
@@ -92,6 +94,7 @@ export const createDisplayState = (state: IApplicationState,
 
   return {
     selectedPanel: PanelName.Run,
+    selectedQuickPanel: QuickPanelName.PIDF,
     raw,
     settings: config ? config.settings : DEFAULT_DISPLAY_SETTINGS,
     devices: fromPairs(connectedDeviceVirtualIds.map((virtualDeviceId) => {
@@ -119,6 +122,7 @@ export const createDisplayState = (state: IApplicationState,
         signals: deviceSignals,
         quickBar: configDevice.quickBar,
         run: DEFAULT_DEVICE_RUN,
+        pidProfile: 0,
       }];
     })),
   };

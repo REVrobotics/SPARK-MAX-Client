@@ -15,6 +15,8 @@ const NumericParamField = ({className, parameter, constraints, disabled, value, 
 
   const min = typedConstraints ? typedConstraints.min : Number.MIN_VALUE;
   const max = typedConstraints ? typedConstraints.max : Number.MAX_VALUE;
+  const stepSize = (typedConstraints ? typedConstraints.stepSize : undefined) || 1;
+  const minorStepSize = stepSize < 1 ? stepSize : undefined;
 
   const onChange = useCallback((newValue) => onValueChange(parameter, newValue), []);
 
@@ -25,6 +27,8 @@ const NumericParamField = ({className, parameter, constraints, disabled, value, 
       onValueChange={onChange}
       min={min}
       max={max}
+      stepSize={stepSize}
+      minorStepSize={minorStepSize}
       disabled={disabled}
       className={`${message && message.severity === MessageSeverity.Error ? "field-error" : ""} ${className}`}
     />

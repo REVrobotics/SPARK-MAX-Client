@@ -77,13 +77,17 @@ const MainAction = (props: IProps) => {
   const loading = hasRunningDevices ? false : processing;
   const action = hasRunningDevices ? onStopAll : (connected ? onDisconnect : onConnect);
   const text = hasRunningDevices ? tt("lbl_stop_all") : (connected ? tt("lbl_disconnect") : tt("lbl_connect"));
+  const tooltip = hasRunningDevices ? tt("lbl_stop_all_tooltip") : undefined;
   const icon = hasRunningDevices ? "stop" : undefined;
+  const intent = hasRunningDevices ? Intent.DANGER : undefined;
 
   return (
     <Button fill={true}
             icon={icon}
+            intent={intent}
             disabled={disabled}
             loading={loading}
+            title={tooltip}
             onClick={action}>
       {text}
     </Button>

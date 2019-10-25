@@ -8,7 +8,8 @@ import {
   IDeviceDisplayState,
   IDisplayState,
   ISignalInstanceState,
-  PanelName
+  PanelName,
+  QuickPanelName
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {
@@ -25,6 +26,7 @@ import {roundDecimal} from "../../utils/number-utils";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
+  selectedQuickPanel: QuickPanelName.PIDF,
   settings: DEFAULT_DISPLAY_SETTINGS,
   devices: {},
 };
@@ -35,6 +37,8 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
       return action.payload.display;
     case ActionType.SET_DISPLAY_SELECTED_PANEL:
       return setField(state, "selectedPanel", action.payload.panel);
+    case ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL:
+      return setField(state, "selectedQuickPanel", action.payload.panel);
     case ActionType.SET_DISPLAY_SETTING:
       return setField(state, "settings", setField(state.settings, action.payload.key, action.payload.value));
     case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
@@ -45,6 +49,7 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.SET_SIGNAL_INSTANCE_FIELD:
     case ActionType.SET_CONTROL_FIELD:
     case ActionType.SET_RUNNING_STATUS:
+    case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
       return setNestedField(
         state,
         ["devices", action.payload.virtualDeviceId],
@@ -56,6 +61,8 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
 
 const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationActions) => {
   switch (action.type) {
+    case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
+      return setField(state, "pidProfile", action.payload.profile);
     case ActionType.SET_RUNNING_STATUS:
       return setField(state, "run", setField(state.run, "running", action.payload.running));
     case ActionType.SET_CONTROL_FIELD: {
