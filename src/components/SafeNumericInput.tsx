@@ -1,13 +1,18 @@
 import {clamp, isString} from "lodash";
 import * as React from "react";
-import {useCallback, useRef} from "react";
+import {FocusEvent, useCallback, useRef} from "react";
 import {INumericInputProps, NumericInput} from "@blueprintjs/core";
 import {HTMLInputProps} from "@blueprintjs/core/src/common/props";
 import {coalesce} from "../utils/object-utils";
+import {findAncestorElement} from "../utils/dom-utils";
 
 export enum SafeNumericBehavior {
-  Ignore,
-  Clamp,
+  // Do not clamp bounds, emit NaN values when value is invalid
+  NoClampAndNan,
+  // Do not clamp bounds, do not emit NaN values until Blur
+  NoClampAndNoNan,
+  // Clamp bounds, do not emit NaN values until Blur
+  ClampAndNoNan,
 }
 
 const isValidNumber = (str: string) => /^(-|\+)?(\d+(\.\d*)?)|(\.\d+)$/.test(str);
@@ -32,7 +37,7 @@ const toDisplayedValue = (behavior: SafeNumericBehavior,
   }
 
   const numValue = Number(value);
-  if (behavior === SafeNumericBehavior.Clamp) {
+  if (behavior === SafeNumericBehavior.ClampAndNoNan) {
     return clamp(numValue, min == null ? Number.NEGATIVE_INFINITY : min, max == null ? Number.POSITIVE_INFINITY : max);
   } else {
     return numValue;
@@ -59,6 +64,8 @@ const isSameNumber = (a?: number, b?: number) => {
   return an === bn || isNaN(an) === isNaN(bn);
 };
 
+const isNumericInputRoot = (el: HTMLElement) => el.classList.contains("bp3-numeric-input");
+
 /**
  * Returns either value or `invalid` if value is `null` or `NaN`
  */
@@ -80,7 +87,15 @@ type Props = HTMLInputProps & Omit<Omit<INumericInputProps, "clampValueOnBlur">,
  * (`number` and fits into `min`/`max` constraints).
  */
 const SafeNumericInput = (props: Props) => {
-  const { safeBehavior = SafeNumericBehavior.Ignore, safeInvalidValue = NaN, ...otherProps } = props;
+  const { safeBehavior = SafeNumericBehavior.NoClampAndNoNan, safeInvalidValue = NaN, ...otherProps } = props;
+
+  const inputRef = useRef<HTMLInputElement | null>();
+  const setInputRef = useCallback((el: HTMLInputElement | null) => {
+    if (props.inputRef) {
+      props.inputRef(el);
+    }
+    inputRef.current = el;
+  }, []);
 
   const lastValueRef = useRef<number | undefined>();
   const valueChange = useCallback((valueAsNumber: number, valueAsString: string) => {
@@ -107,18 +122,37 @@ const SafeNumericInput = (props: Props) => {
       nextStrValue = String(toDisplayedValue(safeBehavior, nextValue, props.min, props.max));
     }
 
-    // We never emit NaN value until blur.
-    // NaN value is emit only on blur when user finished typing.
-    if (!isNaN(nextValue) && lastValueRef.current !== nextValue) {
-      lastValueRef.current = nextValue;
-      props.onValueChange(nextValue, nextStrValue);
+    // If our strategy is to avoid NaNs:
+    // * We never emit NaN value until blur.
+    // * NaN value is emit only on blur when user finished typing
+    // Otherwise we emit Nan immediately
+    if (lastValueRef.current !== nextValue) {
+      if (isNaN(nextValue)) {
+        lastValueRef.current = nextValue;
+        if (safeBehavior === SafeNumericBehavior.NoClampAndNan) {
+          props.onValueChange(nextValue, nextStrValue);
+        }
+      } else {
+        lastValueRef.current = nextValue;
+        props.onValueChange(nextValue, nextStrValue);
+      }
     } else {
       lastValueRef.current = nextValue;
     }
 
   }, [props.min, props.max, props.onValueChange, safeBehavior]);
 
-  const onBlur = useCallback((event) => {
+  const onBlur = useCallback((event: FocusEvent<HTMLInputElement>) => {
+    // If one of control buttons was pressed, back focus to input and DO NOT trigger onBlur handle
+    if (inputRef.current && event.relatedTarget) {
+      const rootEl = findAncestorElement(inputRef.current, isNumericInputRoot);
+      const buttonRootEl = findAncestorElement(event.relatedTarget as HTMLElement, isNumericInputRoot);
+      if (rootEl === buttonRootEl) {
+        inputRef.current.focus();
+        return;
+      }
+    }
+
     const displayedValue = toDisplayedValue(safeBehavior, props.value, props.min, props.max);
     if (props.onValueChange && !isSameNumber(lastValueRef.current, displayedValue)) {
       props.onValueChange(
@@ -134,6 +168,7 @@ const SafeNumericInput = (props: Props) => {
   lastValueRef.current = toDisplayedValue(safeBehavior, props.value, props.min, props.max);
 
   return <NumericInput {...otherProps}
+                       inputRef={setInputRef}
                        value={toDisplayedValue(safeBehavior, props.value, props.min, props.max)}
                        allowNumericCharactersOnly={true}
                        clampValueOnBlur={false}

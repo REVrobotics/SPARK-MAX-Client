@@ -56,7 +56,7 @@ export interface PipeObserver<T> {
   pipe: Pipe<T>;
 }
 
-function useObserver<T>(): PipeObserver<T> {
+function useObserver<T>(replay: boolean): PipeObserver<T> {
   return useMemo(() => {
     let hasLastValue = false;
     let lastValue: T | undefined;
@@ -65,15 +65,17 @@ function useObserver<T>(): PipeObserver<T> {
 
     const pipe = (subscriber: PipeSubscriber<T>): PipeUnsubscribe => {
       subscribers.push(subscriber);
-      if (hasLastValue) {
+      if (replay && hasLastValue) {
         subscriber(lastValue!);
       }
       return () => pull(subscribers, subscriber);
     };
 
     const next = (value: T) => {
-      hasLastValue = true;
-      lastValue = value;
+      if (replay) {
+        hasLastValue = true;
+        lastValue = value;
+      }
       subscribers.forEach((subscriber) => subscriber(value));
     };
     return { next, pipe };
@@ -82,12 +84,40 @@ function useObserver<T>(): PipeObserver<T> {
 
 /**
  * {@link Pipe} allows to couple UI entities having different lifecycles.
+ * Replay pipe remember the latest emitted value.
  */
-export function usePipe<T>(): [Pipe<T>, (value: T) => void] {
-  const observer = useObserver<T>();
+export function useReplayPipe<T>(): [Pipe<T>, (value: T) => void] {
+  const observer = useObserver<T>(true);
   return [observer.pipe, observer.next];
 }
 
-export function subscribePipe<T>(pipe: Pipe<T>, onNext: (value: T) => void, deps: DependencyList = []): void {
+/**
+ * {@link Pipe} allows to couple UI entities having different lifecycles.
+ */
+export function usePipe<T>(): [Pipe<T>, (value: T) => void] {
+  const observer = useObserver<T>(false);
+  return [observer.pipe, observer.next];
+}
+
+/**
+ * Subscribes to pipe. Provided callback gets emitted value.
+ */
+export function useOnNext<T>(pipe: Pipe<T>, onNext: (value: T) => void, deps: DependencyList = []): void {
   useEffect(() => pipe(onNext), deps);
+}
+
+export interface CallbackRef<T> {
+  (ref: T): void;
+  current: T;
+}
+
+/**
+ * Hook which returns {@link CallbackRef} to work with legacy references
+ */
+export function useCallbackRef<T>(): CallbackRef<T> {
+  const setRef = useCallback((newRef) => {
+    ref.current.current = newRef;
+  }, []);
+  const ref = useRef<CallbackRef<T>>(setRef as any);
+  return ref.current;
 }

@@ -85,7 +85,7 @@ const NumericSetting = bindRunSetting((props: NumericSettingProps) => {
         value={value}
         disabled={disabled}
         onValueChange={onValueChange}
-        safeBehavior={SafeNumericBehavior.Clamp}
+        safeBehavior={SafeNumericBehavior.ClampAndNoNan}
         safeInvalidValue={safeInvalidValue}
         min={min}
         max={max}

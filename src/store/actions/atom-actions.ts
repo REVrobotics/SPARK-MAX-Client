@@ -18,6 +18,7 @@ import {
   IReplaceDevices,
   IResetMessageQueue,
   IResetTransientState,
+  ISetAdvancedSearchString,
   ISetConfigurations,
   ISetConnectedDescriptor,
   ISetConsoleOutput,
@@ -439,6 +440,12 @@ export const setLastSyncedConsumers = (destinations: IDestination[]): ISetLastSy
   payload: {destinations},
 });
 
+export const setAdvancedSearchString = (virtualDeviceId: VirtualDeviceId,
+                                        search: string): ISetAdvancedSearchString => ({
+  type: ActionType.SET_ADVANCED_SEARCH_STRING,
+  payload: {virtualDeviceId, search},
+});
+
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);
 export const updateSelectedDeviceProcessStatus = forSelectedDevice(updateDeviceProcessStatus);
 export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
@@ -446,3 +453,4 @@ export const setSelectedDeviceParameterResponse = forSelectedDevice(setDevicePar
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
 export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
 export const setSelectedDeviceDisplayPidProfile = forSelectedDevice(setDisplaySelectedPidProfile);
+export const setSelectedDeviceAdvancedSearchString = forSelectedDevice(setAdvancedSearchString);

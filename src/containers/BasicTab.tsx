@@ -11,11 +11,8 @@ import {
   SparkDispatch
 } from "../store/actions";
 import {
-  queryIsFirmwareLoading,
   queryIsSelectedDeviceBlocked,
-  queryIsSelectedDeviceConnected,
-  queryIsSelectedDeviceInProcessing,
-  queryIsSelectedDeviceLoaded,
+  queryIsSelectedDeviceEnabled,
   querySelectedDeviceProcessType,
   querySelectedDeviceTransientParameters
 } from "../store/selectors";
@@ -116,16 +113,16 @@ interface IProps {
   processType?: ProcessType;
   transient: IDeviceTransientState;
 
-  burnConfiguration(): void;
+  onBurn(): void;
 
-  resetConfiguration(): void;
+  onReset(): void;
 
-  setTransientParameter(field: keyof IDeviceTransientState, value: any): void;
+  onSetTransientParameter(field: keyof IDeviceTransientState, value: any): void;
 }
 
 class BasicTab extends React.Component<IProps> {
   private onChangeRampRateEnabled = () => {
-    this.props.setTransientParameter("rampRateEnabled", !this.props.transient.rampRateEnabled);
+    this.props.onSetTransientParameter("rampRateEnabled", !this.props.transient.rampRateEnabled);
   };
 
   public render() {
@@ -226,11 +223,11 @@ class BasicTab extends React.Component<IProps> {
           <Button className="rev-btn"
                   disabled={!canSave || processType === ProcessType.Reset}
                   loading={processType === ProcessType.Save}
-                  onClick={this.props.burnConfiguration}>{tt("lbl_save_configuration")}</Button>
+                  onClick={this.props.onBurn}>{tt("lbl_save_configuration")}</Button>
           <Button className="bad-btn"
                   disabled={!enabled || processType === ProcessType.Save}
                   loading={processType === ProcessType.Reset}
-                  onClick={this.props.resetConfiguration}>{tt("lbl_restore_factory_defaults")}</Button>
+                  onClick={this.props.onReset}>{tt("lbl_restore_factory_defaults")}</Button>
         </div>
       </div>
     );
@@ -239,10 +236,7 @@ class BasicTab extends React.Component<IProps> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    enabled: queryIsSelectedDeviceConnected(state)
-      && !queryIsSelectedDeviceInProcessing(state)
-      && queryIsSelectedDeviceLoaded(state)
-      && !queryIsFirmwareLoading(state),
+    enabled: queryIsSelectedDeviceEnabled(state),
     blocked: queryIsSelectedDeviceBlocked(state),
     processType: querySelectedDeviceProcessType(state),
     transient: querySelectedDeviceTransientParameters(state),
@@ -251,9 +245,9 @@ export function mapStateToProps(state: IApplicationState) {
 
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    burnConfiguration: () => dispatch(burnSelectedDeviceConfiguration()),
-    resetConfiguration: () => dispatch(resetSelectedDeviceConfiguration()),
-    setTransientParameter: (field: keyof IDeviceTransientState, value: any) =>
+    onBurn: () => dispatch(burnSelectedDeviceConfiguration()),
+    onReset: () => dispatch(resetSelectedDeviceConfiguration()),
+    onSetTransientParameter: (field: keyof IDeviceTransientState, value: any) =>
       dispatch(setSelectedDeviceTransientParameter(field, value)),
   }
 }

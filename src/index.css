@@ -245,6 +245,10 @@ input:checked ~ .bp3-control-indicator {
     background-color: orange !important;
 }
 
+.bp3-control.bp3-switch input:disabled ~ .bp3-control-indicator {
+    background-color: rgba(206, 217, 224, 0.5) !important;
+}
+
 .numeric-form-field .bp3-input-group > input {
     max-width: 100%;
 }
@@ -369,6 +373,10 @@ h4.form-title {
     margin-top: 0;
 }
 
+.bp3-form-group.form-group-full .bp3-form-content {
+    width: 100%;
+}
+
 .inline {
     flex-direction: row;
 }
@@ -423,7 +431,7 @@ h4.form-title {
 }
 
 .update-container {
-    margin-top: 30px;
+    margin: 30px 0 10px;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -539,13 +547,33 @@ label.modified::after {
     margin: -20px -10px 0 -10px;
 }
 
+.text-bold {
+    font-weight: bold;
+}
+
 .text-center {
     text-align: center;
+}
+
+.text-right {
+    text-align: right;
 }
 
 .text-ellipsis {
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.text-underline {
+    text-decoration: underline;
+}
+
+.text-underline-on-hover:hover {
+    text-decoration: underline;
+}
+
+.text-pre {
+    white-space: pre;
 }
 
 .ml-5 {
@@ -876,4 +904,125 @@ button.link {
 
 .main-control-btn {
     width: 80px;
+}
+
+.parameter-table {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 0;
+}
+
+.parameter-table .bp3-table-selection-enabled.bp3-table-row-headers .bp3-table-header {
+    cursor: pointer;
+}
+
+.parameter-table .bp3-table-cell,
+.parameter-table .bp3-table-row-headers .bp3-table-header {
+    line-height: 25px;
+}
+
+.parameter-table .bp3-table-row-name {
+    text-align: center;
+}
+
+.highlight {
+    background: yellow;
+}
+
+.table-container {
+    display: flex;
+}
+
+.table-container > .bp3-table-container {
+    width: 100%;
+}
+
+.table-container.table-container--editing .bp3-table-focus-region,
+.table-container.table-container--editing .bp3-table-selection-region {
+    background-color: transparent;
+}
+
+.editable-cell--editing {
+    padding: 0;
+}
+
+.editable-cell--editable::after {
+    content: " ";
+
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 3px;
+    border-bottom: 2px solid orange;
+    pointer-events: none;
+}
+.bp3-table-selection-enabled .bp3-table-cell.cell--clickable {
+    cursor: pointer;
+}
+
+.editable-cell__value {
+    margin: 0 -10px;
+    padding: 0 10px;
+}
+
+.editable-cell .bp3-numeric-input {
+    margin-top: -1px;
+}
+
+.editable-cell .bp3-numeric-input .bp3-input-group {
+    width: calc(100% - 30px);
+}
+
+.editable-cell .bp3-numeric-input input,
+.editable-cell .bp3-numeric-input input:focus {
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.editable-cell .bp3-numeric-input input {
+    height: 25px;
+
+    font-size: 12px;
+    line-height: 25px;
+}
+
+.select-cell-editor.bp3-popover-wrapper {
+    display: block;
+    width: 100%;
+}
+
+.select-cell-editor .bp3-popover-target {
+    width: 100%;
+}
+
+.select-cell-editor .bp3-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 25px;
+    padding: 0 10px;
+
+    box-shadow: none;
+    line-height: 25px;
+    font-size: 12px;
+}
+
+.cell--dirty {
+    background: rgba(255, 165, 0, 0.5);
+}
+
+.cell__dirty-icon {
+    position: relative;
+    top: -3px;
+}
+
+.cell__open-btn {
+    position: relative;
+    top: 4px;
+}
+
+.cell__open-btn--disabled {
+    color: rgb(206, 217, 224);
 }

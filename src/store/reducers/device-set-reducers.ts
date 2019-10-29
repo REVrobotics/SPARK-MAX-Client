@@ -61,6 +61,7 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
     case ActionType.RECALCULATE_DEVICE_ID:
     case ActionType.SET_TRANSIENT_PARAMETER:
     case ActionType.RESET_TRANSIENT_STATE:
+    case ActionType.SET_ADVANCED_SEARCH_STRING:
       return setField(
         state,
         "devices",
@@ -131,6 +132,8 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
         uniqueId: 0,
       });
     }
+    case ActionType.SET_ADVANCED_SEARCH_STRING:
+      return setField(state, "advanced", setField(state.advanced, "search", action.payload.search));
     default:
       return state;
   }

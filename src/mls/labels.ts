@@ -154,6 +154,11 @@ const labels = {
   "lbl_stop_all": "Stop All",
   "lbl_stop_all_tooltip": "Stop all running devices (Esc)",
   "lbl_device_loading": "Wait until device data is loaded",
+  "lbl_search": "Search",
+  "lbl_parameter_name": "Parameter Name",
+  "lbl_value": "Value",
+  "lbl_search_no_results_title": "No Search Results Found",
+  "lbl_clear": "Clear",
 };
 
 export default labels;

@@ -83,7 +83,7 @@ const RunControlArea = (props: IProps) => {
               stepSize={CONTROL_MODE_CONSTRAINTS[mode].stepSize || 1}
               value={run.value}
               safeInvalidValue={run.value}
-              safeBehavior={SafeNumericBehavior.Clamp}
+              safeBehavior={SafeNumericBehavior.ClampAndNoNan}
               onValueChange={onControlValueChange}/>
           </FormGroup>
           {

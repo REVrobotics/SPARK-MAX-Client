@@ -14,11 +14,10 @@ interface IBindRamConfigParamProps {
 
 /**
  * This HOC binds wrapped component to the requested parameter
- *
- * @param Component
  */
-const bindRamConfigRule = (Component: ComponentType<IConfigParamProps>): ComponentType<any> => {
-  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: IBindRamConfigParamProps) => {
+function bindRamConfigRule<T>(Component: ComponentType<T & IConfigParamProps>): ComponentType<any> {
+
+  const mapStateToProps = (state: IApplicationState, {parameter, disabled}: T & IBindRamConfigParamProps) => {
     const rule = getRamConfigParamRule(parameter);
     const ctx = createRamConfigParamContext(state);
     const value = rule.getValue(ctx);
@@ -36,7 +35,7 @@ const bindRamConfigRule = (Component: ComponentType<IConfigParamProps>): Compone
     };
   };
 
-  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: IBindRamConfigParamProps) => {
+  const mapDispatchToProps = (dispatch: SparkDispatch, {parameter}: T & IBindRamConfigParamProps) => {
     const rule = getRamConfigParamRule(parameter);
 
     return {
@@ -45,7 +44,7 @@ const bindRamConfigRule = (Component: ComponentType<IConfigParamProps>): Compone
     };
   };
 
-  return connect(mapStateToProps, mapDispatchToProps)(Component);
-};
+  return connect(mapStateToProps, mapDispatchToProps)(Component as any) as any;
+}
 
 export default bindRamConfigRule;

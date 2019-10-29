@@ -1,4 +1,4 @@
-import {Switch} from "@blueprintjs/core";
+import {ISwitchProps, Switch} from "@blueprintjs/core";
 import {isFunction} from "lodash";
 import * as React from "react";
 import {useCallback} from "react";
@@ -8,9 +8,10 @@ interface IProps extends IConfigParamProps {
   className?: string;
   label?: string | ((checked: boolean) => string);
   inverted?: boolean;
+  inputProps?: ISwitchProps;
 }
 
-const SwitchParamField = ({label, inverted, className, parameter, disabled, value, onValueChange}: IProps) => {
+const SwitchParamField = ({inputProps, label, inverted, className, parameter, disabled, value, onValueChange}: IProps) => {
   const checked = inverted ? 0 : 1;
   const unchecked = inverted ? 1 : 0;
 
@@ -20,6 +21,7 @@ const SwitchParamField = ({label, inverted, className, parameter, disabled, valu
 
   return (
     <Switch checked={value === checked}
+            {...inputProps}
             disabled={disabled}
             label={isFunction(label) ? label(value === checked) : label}
             className={className}

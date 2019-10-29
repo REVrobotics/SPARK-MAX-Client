@@ -3,14 +3,19 @@ import {useCallback} from "react";
 import {IFieldConstraints, INumericFieldConstraints} from "../../store/state";
 import {getParameterId, IConfigParamProps} from "../config-param-props";
 import {MessageSeverity} from "../../models/Message";
-import SafeNumericInput from "../SafeNumericInput";
+import SafeNumericInput, {SafeNumericBehavior} from "../SafeNumericInput";
+import {INumericInputProps} from "@blueprintjs/core";
 
 interface IProps extends IConfigParamProps {
   className?: string;
   constraints?: IFieldConstraints;
+  inputProps?: INumericInputProps & {safeBehavior?: SafeNumericBehavior};
 }
 
-const NumericParamField = ({className, parameter, constraints, disabled, value, message, onValueChange}: IProps) => {
+const NumericParamField = ({
+                             className, parameter, constraints, disabled, value, message,
+                             onValueChange, inputProps,
+                           }: IProps) => {
   const typedConstraints = constraints as INumericFieldConstraints;
 
   const min = typedConstraints ? typedConstraints.min : Number.MIN_VALUE;
@@ -23,6 +28,7 @@ const NumericParamField = ({className, parameter, constraints, disabled, value, 
   return (
     <SafeNumericInput
       id={getParameterId(parameter)}
+      {...inputProps}
       value={value}
       onValueChange={onChange}
       min={min}

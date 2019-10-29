@@ -1,5 +1,5 @@
 import {ReactElement, useState} from "react";
-import {Pipe, subscribePipe} from "../utils/react-utils";
+import {Pipe, useOnNext} from "../utils/react-utils";
 
 interface IFocusableElement {
   select?(): void;
@@ -29,7 +29,7 @@ const Focus = (props: IProps) => {
   const [focusedOnce, setFocusedOnce] = useState(false);
 
   // Focus target element as soon as it will be created
-  subscribePipe(props.pipe, (el: IFocusableElement) => {
+  useOnNext(props.pipe, (el: IFocusableElement) => {
     if (el && !focusedOnce) {
       el.focus();
       // Select element as soon as it becomes focused

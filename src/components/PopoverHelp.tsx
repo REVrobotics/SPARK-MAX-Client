@@ -4,7 +4,7 @@ import {MessageSeverity} from "../models/Message";
 
 interface IProps {
   content: string | JSX.Element,
-  title: string,
+  title?: string,
   enabled?: boolean
   severity?: MessageSeverity;
 }
@@ -21,7 +21,7 @@ class PopoverHelp extends React.Component<IProps> {
 
     return (
       <div className="popover-container">
-        <span className="popover-title">{title}</span>
+        {title ? <span className="popover-title">{title}</span> : null}
         {
           !disabled &&
           <Popover
