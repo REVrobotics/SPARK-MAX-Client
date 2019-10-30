@@ -11,7 +11,13 @@ import {
   isDeviceBlocked,
   PathDescriptor
 } from "../store/state";
-import {connectToSelectedDevice, disconnectCurrentDevice, selectDevice, SparkDispatch} from "../store/actions";
+import {
+  connectToSelectedDevice,
+  disconnectCurrentDevice,
+  selectDevice,
+  SparkDispatch,
+  syncDevices
+} from "../store/actions";
 import {
   queryConnectedDescriptor,
   queryDevicesInOrder,
@@ -42,6 +48,8 @@ interface IProps {
 
   onDisconnect(): void;
 
+  onRescan(): void;
+
   onSelectDevice(device: IDeviceState): void;
 }
 
@@ -58,7 +66,7 @@ const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processing, processStatus, connected, connectable, hasGlobalError,
     connectedDescriptor,
-    onConnect, onDisconnect, onSelectDevice,
+    onConnect, onDisconnect, onSelectDevice, onRescan,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
@@ -145,6 +153,11 @@ const ConnectionStatusBar = (props: IProps) => {
                     onSelect={onSelectDevice}
                     onOpened={onDeviceSelectOpened}
                     onClosed={onDeviceSelectClosed}/>
+      <Button minimal={true}
+              small={true}
+              title={tt("lbl_rescan")}
+              icon="refresh"
+              onClick={onRescan}/>
       <div className={classNames("status-bar__status", {"status-bar__status--global-error": displayGlobalError})}>
         {
           displayGlobalError ?
@@ -185,6 +198,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     onConnect: () => dispatch(connectToSelectedDevice()),
     onDisconnect: () => dispatch(disconnectCurrentDevice()),
+    onRescan: () => dispatch(syncDevices()),
     onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
   };
 }

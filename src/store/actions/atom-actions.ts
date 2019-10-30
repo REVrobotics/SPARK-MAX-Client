@@ -137,9 +137,8 @@ export const addDevices = (devices: IDeviceState[]): IAddDevices => ({
   type: ActionType.ADD_DEVICES
 });
 
-export const replaceDevices = (descriptor: PathDescriptor, devices: IDeviceState[]): IReplaceDevices => ({
+export const replaceDevices = (devices: IDeviceState[]): IReplaceDevices => ({
   payload: {
-    descriptor,
     devices,
   },
   type: ActionType.REPLACE_DEVICES

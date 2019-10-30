@@ -1,17 +1,19 @@
 import {filter, fromPairs, keyBy, sortBy, values} from "lodash";
 import {Reducer} from "redux";
 import {
-  DeviceId, getDeviceId,
+  DeviceId,
+  getDeviceId,
   getDeviceParamValue,
   getTransientState,
   getVirtualDeviceId,
   IApplicationState,
   IDeviceParameterState,
   IDeviceSetState,
-  IDeviceState, VirtualDeviceId
+  IDeviceState,
+  VirtualDeviceId
 } from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {removeFields, setArrayElement, setField, setFields, setNestedField} from "../../utils/object-utils";
+import {setArrayElement, setField, setFields, setNestedField} from "../../utils/object-utils";
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {createRamConfigParamContext, getRamConfigParamRule, IRamConfigParamContext} from "../ram-config-param-rules";
 
@@ -33,15 +35,11 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
       const devices = setFields(state.devices, keyBy(action.payload.devices, getVirtualDeviceId));
       return setField(state, "devices", devices);
     }
-    case ActionType.REPLACE_DEVICES: {
-      const oldDevices = filter(state.devices, (device) => device.descriptor === action.payload.descriptor);
-      const withoutOldDevices = removeFields(state.devices, oldDevices.map(getVirtualDeviceId));
-
-      const withNewDevices = setFields(
-        withoutOldDevices,
+    case ActionType.REPLACE_DEVICES:
+      return setField(
+        state,
+        "devices",
         fromPairs(action.payload.devices.map((device) => [getVirtualDeviceId(device), device])));
-      return setField(state, "devices", withNewDevices);
-    }
     case ActionType.SET_PROCESSING_BY_DESCRIPTOR:
     case ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR: {
       // Find all devices having the same descriptor

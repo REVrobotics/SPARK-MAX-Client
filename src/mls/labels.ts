@@ -7,6 +7,7 @@ const labels = {
   "lbl_driver_name": "Driver Name",
   "lbl_connected": "Connected",
   "lbl_not_connected": "Not Connected",
+  "lbl_rescan": "Rescan",
   "lbl_status": "Status",
   "lbl_global_config_error": "Some devices have issues",
   "lbl_disconnect": "Disconnect",
