@@ -21,7 +21,7 @@ import {
   setFields,
   setNestedField
 } from "../../utils/object-utils";
-import {queryDevicesByDescriptor} from "../selectors";
+import {queryDevicesInOrder} from "../selectors";
 import {roundDecimal} from "../../utils/number-utils";
 
 const displayInitialState: IDisplayState = {
@@ -162,7 +162,7 @@ export const rootDisplayReducer = (state: IApplicationState, action: Application
         createDeviceDisplayState(),
       ])));
     case ActionType.REPLACE_DEVICES: {
-      const existingDevices = queryDevicesByDescriptor(state, action.payload.descriptor);
+      const existingDevices = queryDevicesInOrder(state);
       const displayDevices = Object.keys(state.display.devices);
       const displayDevicesToBeRemoved = difference(displayDevices, existingDevices.map(getVirtualDeviceId));
 
