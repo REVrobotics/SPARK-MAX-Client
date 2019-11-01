@@ -9,7 +9,7 @@ import * as path from "path";
 import * as util from "util";
 
 import SparkServer from "../server/sparkmax-server";
-import {HOST, PORT, USE_GRPC} from "../../program-args";
+import {HOST, PORT} from "../../program-args";
 import {ListRequestDto} from "../../proto-gen";
 import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall} from "./ipc-main-calls";
 import {SparkmaxContext} from "../server/SparkmaxContext";
@@ -17,13 +17,14 @@ import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
 import {getAppDataPath} from "../config";
 import {logger} from "../loggers";
+import {TelemetryResource, telemetryResourceFactory} from "../server/TelemetryResource";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
 const opn = require("opn");
 
 const isWin: boolean = process.platform === "win32";
-const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
+const server: SparkServer = new SparkServer(HOST, PORT);
 
 let usbProc: ChildProcess | null = null;
 let firmwareID: any = null;
@@ -82,6 +83,15 @@ const context = new SparkmaxContext([pingResourceFactory]);
 const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
 
 const getHeartbeatResourceName = (device: string) => `heartbeat:${device}`;
+
+const tryTelemetryResource = () => context.getResource("telemetry") as TelemetryResource | undefined;
+const getTelemetryResource = () => {
+  const resource = tryTelemetryResource();
+  if (resource == null) {
+    throw new Error("TelemetryResource does not exist");
+  }
+  return resource;
+};
 
 onTwoWayCall("start-server", (cb, port: any) => {
   if (!port) {
@@ -262,6 +272,45 @@ onOneWayCall("set-setpoint", (device: string, newSetpoint: number) => {
     const resource = context.getResource(getHeartbeatResourceName(device));
     resource.setAttribute("setpoint", newSetpoint);
   }
+});
+
+onTwoWayCall("telemetry-list", (cb, device: string) => {
+  server.telemetryList({root: {device}}, (error: any, response: any) => {
+    if (error) {
+      cb(error);
+      return;
+    }
+
+    cb(null, response);
+  });
+});
+
+onOneWayCall("telemetry-start", () => {
+  context.newDeviceResource(
+    "telemetry",
+    () =>
+      telemetryResourceFactory(
+        server.telemetryStream(),
+        (event) => notifyCallback(getTargetWindow(), "telemetry-event", event)));
+});
+
+onOneWayCall("telemetry-stop", () => {
+  context.releaseDeviceResource("telemetry");
+});
+
+onOneWayCall("telemetry-signal-add", (deviceId: string, signalId: number) => {
+  const resource = getTelemetryResource();
+  resource.addSignal(deviceId, signalId);
+});
+
+onOneWayCall("telemetry-signal-remove", (deviceId: string, signalId: number) => {
+  const resource = getTelemetryResource();
+  resource.removeSignal(deviceId, signalId);
+});
+
+onTwoWayCall("telemetry-running-signals", (cb) => {
+  const resource = tryTelemetryResource();
+  cb(null, resource ? resource.getSignals() : []);
 });
 
 onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) => {

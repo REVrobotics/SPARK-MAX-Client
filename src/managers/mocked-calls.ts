@@ -2,7 +2,7 @@
  * In this file developer can mock or change response of calls to main process.
  * Calls are mocked ONLY IN DEV environment.
  */
-import {mockTwoWayCall} from "./mock-renderer-calls";
+// import {mockTwoWayCall} from "./mock-renderer-calls";
 
 // import {mockTwoWayCall} from "./mock-renderer-calls";
 // import {ListResponseDto} from "../../public/proto-gen";
@@ -59,18 +59,18 @@ import {mockTwoWayCall} from "./mock-renderer-calls";
 // //
 // // mockCallbackCall("load-firmware-progress", CB_ONLY_MOCK_CALL);
 
-mockTwoWayCall("telemetry-list", () => {
-  return Promise.resolve({
-    signalsAvailable: [
-      {deviceId: 20501, id: 1, name: "Signal 1", units: "M", expectedMin: 0, expectedMax: 100},
-      {deviceId: 20501, id: 2, name: "Motor Current", units: "A", expectedMin: 0, expectedMax: 100},
-      {deviceId: 20501, id: 3, name: "Motor Temperature", units: "C", expectedMin: 0, expectedMax: 80},
-      {deviceId: 0, id: 4, name: "Motor Velocity", units: "M/s", expectedMin: 0, expectedMax: 60},
-      {deviceId: 20512, id: 5, name: "Input Voltage", units: "V", expectedMin: 0, expectedMax: 70},
-      {deviceId: 20512, id: 6, name: "Motor Output", units: "%", expectedMin: 0, expectedMax: 80},
-    ],
-  });
-});
+// mockTwoWayCall("telemetry-list", () => {
+//   return Promise.resolve({
+//     signalsAvailable: [
+//       {deviceId: 20501, id: 1, name: "Signal 1", units: "M", expectedMin: 0, expectedMax: 100},
+//       {deviceId: 20501, id: 2, name: "Motor Current", units: "A", expectedMin: 0, expectedMax: 100},
+//       {deviceId: 20501, id: 3, name: "Motor Temperature", units: "C", expectedMin: 0, expectedMax: 80},
+//       {deviceId: 0, id: 4, name: "Motor Velocity", units: "M/s", expectedMin: 0, expectedMax: 60},
+//       {deviceId: 20512, id: 5, name: "Input Voltage", units: "V", expectedMin: 0, expectedMax: 70},
+//       {deviceId: 20512, id: 6, name: "Motor Output", units: "%", expectedMin: 0, expectedMax: 80},
+//     ],
+//   });
+// });
 //
 // mockCallbackCall("resync", CB_ONLY_MOCK_CALL);
 //

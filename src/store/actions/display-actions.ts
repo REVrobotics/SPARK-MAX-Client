@@ -1,4 +1,4 @@
-import {flatMap, isEmpty, toPairs, uniq} from "lodash";
+import {uniq} from "lodash";
 import {
   ConfirmationAnswer,
   createSignalInstance,
@@ -6,6 +6,7 @@ import {
   getDestinationId,
   ISignalInstanceState,
   SignalId,
+  toDtoDeviceId,
   VirtualDeviceId
 } from "../state";
 import {SparkAction} from "./action-types";
@@ -15,9 +16,12 @@ import {
   queryDeviceId,
   queryDisplay,
   queryDisplaySettings,
+  queryIsDeviceRunning,
   queryIsHasConnectedDevice,
+  queryLastSyncedConsumers,
   queryRunningVirtualDeviceIds,
   querySelectedDeviceSignal,
+  querySignalDestinations,
   querySignalNewStyle
 } from "../selectors";
 import {
@@ -28,27 +32,33 @@ import {
   setDeviceStopped,
   setDisplay,
   setDisplayQuickParam,
-  setDisplaySetting,
+  setDisplaySetting, setLastSyncedConsumers,
   setSelectedSignal,
   setSignalInstanceField
 } from "./atom-actions";
-import {showConfirmation} from "./ui-actions";
+import {showConfirmation, showToastError} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import SparkManager from "../../managers/SparkManager";
 import ConfigManager, {CONFIG_DISPLAY} from "../../managers/ConfigManager";
-import {ConfigParam, DisplayConfigDto} from "../../models/dto";
+import {ConfigParam, DisplayConfigDto, TelemetryEvent, TelemetryEventType} from "../../models/dto";
 import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
-import {addDestination, changeDestination, removeDestination, setStreamOptions, writeDataChunk} from "../data-stream";
+import {
+  addDataBuffer,
+  changeDataBuffer,
+  markDataBufferAsStale,
+  removeDataBuffer,
+  setDataBufferOptions,
+  writeDataChunk
+} from "../data-stream";
 import {diffArrays} from "../../utils/object-utils";
 
 export const syncSignals = (): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     // If we do not have connected device => clean display and remove all destinations
     if (!queryIsHasConnectedDevice(getState())) {
-      dispatch(runAndSyncDestinations(() =>
-        dispatch(setDisplay(mergeDisplays(queryDisplay(getState()), createDisplayState(getState()))))));
-      return Promise.resolve();
+      dispatch(setDisplay(mergeDisplays(queryDisplay(getState()), createDisplayState(getState()))));
+      return dispatch(syncDataParticipants());
     }
 
     // Load all signals from server and merge with saved list of signals
@@ -57,10 +67,10 @@ export const syncSignals = (): SparkAction<Promise<void>> =>
       ConfigManager.get<DisplayConfigDto | undefined>(CONFIG_DISPLAY),
     ]).then(([{signalsAvailable}, displayConfig]) => {
       // Build list of available and assigned signals, sync list of destinations
-      dispatch(runAndSyncDestinations(() =>
-        dispatch(setDisplay(mergeDisplays(
-          queryDisplay(getState()),
-          createDisplayState(getState(), signalsAvailable, displayConfig))))));
+      dispatch(setDisplay(mergeDisplays(
+        queryDisplay(getState()),
+        createDisplayState(getState(), signalsAvailable, displayConfig))));
+      return dispatch(syncDataParticipants());
     }).catch(useErrorHandler(dispatch));
   };
 
@@ -86,11 +96,11 @@ export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId):
   (dispatch, getState) => {
     const signal = querySelectedDeviceSignal(getState(), signalId);
     if (signal) {
-      const color = querySignalNewStyle(getState(), virtualDeviceId, signalId);
-      dispatch(runAndSyncDestinations(() =>
-        dispatch(addSignalInstance(createSignalInstance(virtualDeviceId, signal, color)))));
+      const color = querySignalNewStyle(getState());
+      dispatch(addSignalInstance(createSignalInstance(virtualDeviceId, signal, color)));
       dispatch(setSelectedSignal(virtualDeviceId, signalId));
-      return dispatch(persistDisplayConfig());
+      return dispatch(syncDataParticipants())
+        .then(() => dispatch(persistDisplayConfig()));
     } else {
       return Promise.resolve();
     }
@@ -106,8 +116,9 @@ export const removeSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalI
     }))
       .then((answer) => {
         if (answer === ConfirmationAnswer.Yes) {
-          dispatch(runAndSyncDestinations(() => dispatch(removeSignalInstance(virtualDeviceId, signalId))));
-          return dispatch(persistDisplayConfig());
+          dispatch(removeSignalInstance(virtualDeviceId, signalId));
+          return dispatch(syncDataParticipants())
+            .then(() => dispatch(persistDisplayConfig()));
         } else {
           return Promise.resolve();
         }
@@ -125,8 +136,9 @@ export const setSignalField = (virtualDeviceId: VirtualDeviceId,
 
 export const setAndPersistDisplaySetting = (key: keyof DisplaySettings, value: any): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
-    dispatch(runAndSyncDestinations(() => dispatch(setDisplaySetting(key, value))));
-    return dispatch(persistDisplayConfig());
+    dispatch(setDisplaySetting(key, value));
+    return dispatch(syncDataParticipants())
+      .then(() => dispatch(persistDisplayConfig()));
   };
 
 export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
@@ -142,34 +154,43 @@ export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): 
     dispatch(setControlValue(virtualDeviceId, value));
   };
 
-export const startDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<void> =>
+export const startDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     dispatch(setDeviceRunning(virtualDeviceId));
-    dispatch(syncStreams());
+    return dispatch(syncDataParticipants());
   };
 
-export const stopDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<void> =>
+export const stopDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     dispatch(setDeviceStopped(virtualDeviceId));
-    dispatch(syncStreams());
+    return dispatch(syncDataParticipants());
   };
 
-export const stopAllDevices = (): SparkAction<void> =>
+export const stopAllDevices = (): SparkAction<Promise<void>> =>
+  (dispatch) => {
+    dispatch(terminateStreaming());
+    return dispatch(syncDataParticipants());
+  };
+
+export const terminateStreaming = (): SparkAction<void> =>
   (dispatch, getState) => {
     queryRunningVirtualDeviceIds(getState()).forEach((id) => dispatch(setDeviceStopped(id)));
-    dispatch(syncStreams());
+  };
+
+const syncDataParticipants = (): SparkAction<Promise<void>> =>
+  (dispatch) => {
+    dispatch(syncDataConsumers());
+    return dispatch(syncDataProducers());
   };
 
 /**
- * This action runs specified operation (potentially mutable) and analyzes if list of signal instances was changed.
- * If some signals were added/removed, corresponding destinations are added/removed correspondingly.
+ * This method synchronizes list of data buffers used by chart library.
  */
-const runAndSyncDestinations = (run: () => void): SparkAction<void> =>
+const syncDataConsumers = (): SparkAction<void> =>
   (dispatch, getState) => {
-    const oldDestinations = queryDestinations(getState());
-    run();
+    const oldDestinations = queryLastSyncedConsumers(getState());
     const displaySettings = queryDisplaySettings(getState());
-    setStreamOptions({
+    setDataBufferOptions({
       timeSpan: displaySettings.timeSpan * 1000,
     });
     const newDestinations = queryDestinations(getState());
@@ -177,128 +198,80 @@ const runAndSyncDestinations = (run: () => void): SparkAction<void> =>
     const result = diffArrays(oldDestinations, newDestinations, getDestinationId);
 
     // Sync destinations
-    result.added.forEach(addDestination);
-    result.removed.forEach(removeDestination);
+    result.added.forEach(addDataBuffer);
+    result.removed.forEach(removeDataBuffer);
     // Consider the case of modified deviceId
     result.modified.forEach(({previous, next}) => {
       if (previous.deviceId !== next.deviceId) {
-        changeDestination(next);
+        changeDataBuffer(next);
       }
     });
 
-    dispatch(syncStreams());
+    dispatch(setLastSyncedConsumers(newDestinations));
+
+    newDestinations.forEach((destination) => {
+      if (!queryIsDeviceRunning(getState(), destination.virtualDeviceId)) {
+        markDataBufferAsStale(destination);
+      }
+    })
   };
 
-const syncStreams = (): SparkAction<void> =>
+/**
+ * This methods sets up data producer.
+ */
+const syncDataProducers = (): SparkAction<Promise<void>> =>
   (_, getState) => {
-    // Take ids of running devices
-    const runningVirtualDeviceIds = queryRunningVirtualDeviceIds(getState());
-    // Take all destinations of running devices
-    const streamingDestinations = queryDestinations(getState())
-      .filter(({virtualDeviceId}) => runningVirtualDeviceIds.includes(virtualDeviceId));
+    return SparkManager.telemetryRunningSignals().then((previousDestinations) => {
+      // Take ids of running devices
+      const runningDeviceIds = queryRunningVirtualDeviceIds(getState())
+        .map((virtualDeviceId) => queryDeviceId(getState(), virtualDeviceId)!)
+        .map(toDtoDeviceId);
+      // Take all destinations of running devices
+      const destinationsForRunningDevices = querySignalDestinations(getState())
+        .filter(({deviceId}) => runningDeviceIds.includes(deviceId));
 
-    // Take all previous destinations
-    const previousStreamingDestinations = flatMap(
-      toPairs(mockedStreams),
-      ([virtualDeviceId, signalStreams]) => toPairs(signalStreams).map(([signalId, stream]) => ({
-        virtualDeviceId,
-        deviceId: stream.getDeviceId(),
-        signalId: Number(signalId),
-      })));
-    // Extract all previous running devices
-    const previousRunningVirtualDeviceIds = uniq(previousStreamingDestinations.map(({virtualDeviceId}) =>
-      virtualDeviceId));
+      // Extract all previous running devices
+      const previousRunningDeviceIds = uniq(previousDestinations.map(({deviceId}) => deviceId));
 
-    const virtualDeviceIdDiff = diffArrays(previousRunningVirtualDeviceIds, runningVirtualDeviceIds);
-    const streamingToBeStartedFor = virtualDeviceIdDiff.added;
-    const streamingToBeStoppedFor = virtualDeviceIdDiff.removed;
-
-    // Take all previous destinations for devices still running
-    // const onlyRunningPreviousDestinations = previousStreamingDestinations
-    //   .filter(({virtualDeviceId}) => !streamingToBeStoppedFor.includes(virtualDeviceId));
-    // const destinationDiff = diffArrays(onlyRunningPreviousDestinations, streamingDestinations, getDestinationId);
-    const destinationDiff = diffArrays(previousStreamingDestinations, streamingDestinations, getDestinationId);
-
-    streamingToBeStartedFor.forEach((id) => console.log("start device", queryDeviceId(getState(), id)));
-    streamingToBeStoppedFor.forEach((id) => console.log("stop device", queryDeviceId(getState(), id)));
-
-    // TODO: mocked streams, should be removed in future
-    destinationDiff.added.forEach((destination) => {
-      ensureMockStream(destination.virtualDeviceId)[destination.signalId] = createMockedStream(
-        destination.deviceId,
-        destination.signalId);
-      console.log("add signal", destination.deviceId, destination.signalId);
-    });
-    destinationDiff.removed.forEach((destination) => {
-      const streamsForDevice = ensureMockStream(destination.virtualDeviceId);
-      streamsForDevice[destination.signalId].destroy();
-      delete streamsForDevice[destination.signalId];
-      if (isEmpty(streamsForDevice)) {
-        removeMockStream(destination.virtualDeviceId);
+      if (previousRunningDeviceIds.length === 0 && runningDeviceIds.length > 0) {
+        SparkManager.telemetryStart();
+      } else if (previousRunningDeviceIds.length > 0 && runningDeviceIds.length === 0) {
+        SparkManager.telemetryStop();
+        return;
       }
-      console.log("remove signal", destination.deviceId, destination.signalId);
+
+      const destinationDiff = diffArrays(
+        previousDestinations,
+        destinationsForRunningDevices,
+        ({deviceId, signalId}) => `${deviceId}:${signalId}`);
+
+      destinationDiff.added.forEach((destination) => {
+        SparkManager.telemetryAddSignal(destination.deviceId, destination.signalId);
+      });
+      destinationDiff.removed.forEach((destination) => {
+        SparkManager.telemetryRemoveSignal(destination.deviceId, destination.signalId);
+      });
     });
-    destinationDiff.modified.forEach(({previous, next}) => {
-      if (previous.deviceId !== next.deviceId) {
-        ensureMockStream(next.virtualDeviceId)[next.signalId].setDeviceId(next.deviceId);
-      }
-    });
   };
 
-const ensureMockStream = (virtualDeviceId: VirtualDeviceId) => {
-  const byDevice = mockedStreams[virtualDeviceId] || {};
-  mockedStreams[virtualDeviceId] = byDevice;
-  return byDevice;
-};
-
-const removeMockStream = (virtualDeviceId: VirtualDeviceId) => {
-  delete mockedStreams[virtualDeviceId];
-};
-
-const createMockedStream = (deviceId: number, signalId: number): MockedStream => {
-  let timeoutId: any;
-  const startTime = new Date().getTime();
-  const maxLimit = 40 + Math.floor(Math.random() * 60);
-
-  const nextTick = (deviceIdToUse: number) => {
-    timeoutId = setTimeout(() => {
-      writeDataChunk([{
-        deviceId: deviceIdToUse,
-        id: signalId,
-        expectedMin: 0,
-        expectedMax: 0,
-        name: "",
-        timestamp_ms: new Date().getTime() - startTime,
-        units: "",
-        updateRate_ms: 0,
-        value: Math.random() * maxLimit,
-      }]);
-      nextTick(deviceId);
-    }, 300);
+export const telemetryEvent = (event: TelemetryEvent): SparkAction<void> =>
+  (dispatch, getState) => {
+    console.log("telemetry event", event);
+    switch(event.type) {
+      case TelemetryEventType.Start:
+        break;
+      case TelemetryEventType.Stop:
+        terminateStreaming();
+        break;
+      case TelemetryEventType.Error:
+        showToastError(tt("msg_streaming_error"));
+        terminateStreaming();
+        break;
+      case TelemetryEventType.Data:
+        writeDataChunk(event.data);
+        break;
+    }
   };
-
-  nextTick(deviceId);
-
-  return {
-    getDeviceId: () => deviceId,
-    setDeviceId: (newDeviceId: number) => {
-      deviceId = newDeviceId;
-    },
-    destroy: () => {
-      clearTimeout(timeoutId);
-    },
-  };
-};
-
-interface MockedStream {
-  getDeviceId(): number;
-
-  setDeviceId(deviceId: number): void;
-
-  destroy(): void;
-}
-
-const mockedStreams: { [virtualDeviceId: string]: { [signalId: number]: MockedStream } } = {};
 
 export const addSelectedDeviceSignal = forSelectedDevice(addSignal);
 export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);

@@ -2,8 +2,12 @@
 // @ts-ignore
 import * as SPARK_MAX_TypesDto from "./SPARK-MAX-Types_dto_pb";
 
-export enum TelemetryId {
-  SensorPosition = 0,
+export enum TelemetryStreamCommand {
+  StreamNone = 0,
+  StreamStart = 1,
+  StreamStop = 2,
+  StreamAddSignal = 3,
+  StreamRemoveSignal = 4,
 }
 
 export interface ConnectRequestDto {
@@ -144,6 +148,10 @@ export interface SetpointResponseDto {
   setpoint?: number;
   isRunning?: boolean;
   root?: RootResponseDto;
+  enableable?: boolean;
+  enableReason?: string;
+  settable?: boolean;
+  settableReason?: string;
 }
 
 export interface FollowerRequestDto {
@@ -219,21 +227,6 @@ export interface DRVStat1Dto {
   SA_OC?: boolean;
 }
 
-export interface TelemetryDataDto {
-  id?: TelemetryId;
-  value?: number;
-}
-
-export interface TelemetryRequestDto {
-  root?: RootCommandDto;
-  data?: TelemetryDataDto;
-}
-
-export interface TelemetryResponseDto {
-  root?: RootResponseDto;
-  data: TelemetryDataDto[];
-}
-
 export interface FactoryResetRequestDto {
   root?: RootCommandDto;
   fullWipe?: boolean;
@@ -249,6 +242,44 @@ export interface IdAssignmentRequestDto {
 export interface IdentifyRequestDto {
   uniqueId?: number;
   canId?: number;
+}
+
+export interface TelemetryRequestDto {
+  root?: RootCommandDto;
+  id?: number;
+  updateRateMs?: number;
+}
+
+export interface TelemetryResponseDto {
+  root?: RootResponseDto;
+  deviceId?: string;
+  id?: number;
+  value?: number;
+  timestampMs?: number;
+  name?: string;
+  units?: string;
+  expectedMin?: number;
+  expectedMax?: number;
+  updateRateMs?: number;
+}
+
+export interface TelemetryStreamRequestDto {
+  command?: TelemetryStreamCommand;
+  config?: TelemetryRequestDto;
+}
+
+export interface TelemetryStreamResponseDto {
+  root?: RootResponseDto;
+  data: TelemetryResponseDto[];
+}
+
+export interface TelemetryListRequestDto {
+  root?: RootCommandDto;
+}
+
+export interface TelemetryListResponseDto {
+  root?: RootResponseDto;
+  signalsAvailable: TelemetryResponseDto[];
 }
 
 

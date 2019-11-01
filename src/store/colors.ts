@@ -1,3 +1,4 @@
+import {toPairs} from "lodash";
 
 export const colors = [
   "#aa00aa",
@@ -28,3 +29,5 @@ export const colors = [
   "#7d314c",
   "#6b8e23",
 ];
+
+export const colorToIndex = toPairs(colors.map((color, i) => [color, i]));

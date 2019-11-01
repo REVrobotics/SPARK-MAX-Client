@@ -79,7 +79,7 @@ function toMessageFieldSetter(text, label) {
   if (isUppercasedFieldName(text)) {
     return `set${_.upperFirst(_.camelCase(text))}${suffix}`
   } else {
-    return `set${_.upperFirst(text.toLowerCase().replace("_", ""))}${suffix}`;
+    return `set${_.upperFirst(_.camelCase(text.toLowerCase()))}${suffix}`;
   }
 }
 
@@ -89,7 +89,7 @@ function toMessageFieldGetter(text, label) {
   if (isUppercasedFieldName(text)) {
     return `get${_.upperFirst(_.camelCase(text))}${suffix}`
   } else {
-    return `get${_.upperFirst(text.toLowerCase().replace("_", ""))}${suffix}`;
+    return `get${_.upperFirst(_.camelCase(text.toLowerCase()))}${suffix}`;
   }
 }
 

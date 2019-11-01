@@ -40,6 +40,7 @@ import {
   ISetFirmwareLoading,
   ISetGlobalProcessing,
   ISetLastFirmwareLoadingMessage,
+  ISetLastSyncedConsumers,
   ISetNetworkDevices,
   ISetNetworkScanInProgress,
   ISetParameters,
@@ -62,6 +63,7 @@ import {forSelectedDevice} from "./action-creators";
 import {
   DeviceId,
   DisplaySettings,
+  IDestination,
   IDeviceConfiguration,
   IDeviceState,
   IDeviceTransientState,
@@ -430,6 +432,11 @@ export const setDeviceStopped = (virtualDeviceId: VirtualDeviceId) => setDeviceR
 const setDeviceRunningStatus = (virtualDeviceId: VirtualDeviceId, running: boolean): ISetDeviceRunningStatus => ({
   type: ActionType.SET_RUNNING_STATUS,
   payload: {virtualDeviceId, running},
+});
+
+export const setLastSyncedConsumers = (destinations: IDestination[]): ISetLastSyncedConsumers => ({
+  type: ActionType.SET_LAST_SYNCED_CONSUMERS,
+  payload: {destinations},
 });
 
 export const updateSelectedDeviceIsProcessing = forSelectedDevice(updateDeviceIsProcessing);

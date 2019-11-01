@@ -18,20 +18,26 @@ import {
   getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState, IDestination, IDeviceDisplayState,
+  IApplicationState,
+  IDestination,
+  IDeviceDisplayState,
   IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured, ISignalInstanceState, ISignalState,
+  isDeviceNotConfigured,
+  ISignalInstanceState,
+  ISignalState,
   ISignalStyle,
   PathDescriptor,
   ProcessType,
   SignalId,
+  toDtoDeviceId,
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {ConfigParam} from "../models/ConfigParam";
-import {colors} from "./colors";
+import {colors, colorToIndex} from "./colors";
+import {ISignalDestinationDto} from "../models/dto";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
@@ -432,6 +438,9 @@ export const querySelectedDeviceDisplay = (state: IApplicationState) => {
 export const queryDeviceDisplay = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
   state.display.devices[virtualDeviceId];
 
+export const queryIsDeviceRunning = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
+  queryDeviceDisplay(state, virtualDeviceId).run.running;
+
 export const queryHasSignalForSelectedDevice = (state: IApplicationState) => {
   const display = querySelectedDeviceDisplay(state);
   return display ? display.signals.length > 0 : false;
@@ -494,28 +503,17 @@ export const queryHasAssignedSignalsForSelectedDevice = (state: IApplicationStat
   return display ? !isEmpty(display.assignedSignals) : false;
 };
 
-export const querySignalNewStyle = (state: IApplicationState,
-                                    virtualDeviceId: VirtualDeviceId,
-                                    signalId: SignalId): ISignalStyle => {
+export const querySignalNewStyle = (state: IApplicationState): ISignalStyle => querySignalStylePalette(state)();
+
+export const querySignalStylePalette = (state: IApplicationState) => {
   const colorToCount = countBy(querySignalsWithInstances(state).map(([_, instance]) => instance.style.color));
-  let foundColor = colors[0];
-  let foundCount = Number.MAX_SAFE_INTEGER;
-
-  for (const color of colors) {
-    const count = colorToCount[color] || 0;
-    if (count === 0) {
-      foundColor = color;
-      break;
-    }
-    if (count < foundCount) {
-      foundColor = color;
-      foundCount = count;
-    }
-  }
-
-  return {
-    color: foundColor,
-  };
+  const copiedColors = colors.slice();
+  copiedColors.sort((a, b) => {
+    const diffUsage = (colorToCount[a] || 0) - (colorToCount[b] || 0);
+    return diffUsage ? diffUsage : colorToIndex[a] - colorToIndex[b];
+  });
+  let lastColorIndex = 0;
+  return () => ({color: copiedColors[lastColorIndex === copiedColors.length ? 0 : lastColorIndex++]});
 };
 
 export const querySelectedSignal = (state: IApplicationState) => {
@@ -545,3 +543,13 @@ export const queryDestinations = (state: IApplicationState): IDestination[] =>
       deviceId: queryDeviceId(state, virtualDeviceId)!,
       signalId,
     })));
+
+export const querySignalDestinations = (state: IApplicationState): ISignalDestinationDto[] =>
+  flatMap(
+    keys(state.display.devices),
+    (virtualDeviceId) => keys(state.display.devices[virtualDeviceId].assignedSignals).map(Number).map((signalId) => ({
+      deviceId: toDtoDeviceId(queryDeviceId(state, virtualDeviceId)!),
+      signalId,
+    })));
+
+export const queryLastSyncedConsumers = (state: IApplicationState): IDestination[] => state.display.lastSyncedConsumers;

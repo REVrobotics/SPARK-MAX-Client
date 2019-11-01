@@ -2,9 +2,9 @@ import {ConfigParam} from "../models/ConfigParam";
 import {
   FirmwareResponseDto,
   getErrorText,
-  hasError,
+  hasError, ISignalDestinationDto,
   ListRequestDto,
-  ListResponseDto,
+  ListResponseDto, TelemetryEvent,
   TelemetryListResponseDto
 } from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
@@ -125,6 +125,30 @@ class SparkManager {
 
   public telemetryList(): Promise<TelemetryListResponseDto> {
     return wrapSparkError(sendTwoWay("telemetry-list"));
+  }
+
+  public telemetryStart(): void {
+    sendOneWay("telemetry-start");
+  }
+
+  public telemetryStop(): void {
+    sendOneWay("telemetry-stop");
+  }
+
+  public telemetryAddSignal(device: string, signalId: number): void {
+    sendOneWay("telemetry-signal-add", device, signalId);
+  }
+
+  public telemetryRemoveSignal(device: string, signalId: number): void {
+    sendOneWay("telemetry-signal-remove", device, signalId);
+  }
+
+  public telemetryRunningSignals(): Promise<ISignalDestinationDto[]> {
+    return sendTwoWay("telemetry-running-signals");
+  }
+
+  public onTelemetryEvent(listener: (event: TelemetryEvent) => void): void {
+    onCallback("telemetry-event", listener);
   }
 
   public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {

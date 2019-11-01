@@ -97,7 +97,7 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
   const remove = useCallback(() => onRemove(getSignalId(signal)), [signal]);
 
   return (
-    <div className={classNames("form-column p-20", className)}>
+    <div className={classNames("form-column p-10", className)}>
       <div className="flex-row flex-cross-center">
         <Checkbox checked={instance.autoScaled} onChange={autoScaleChange}>{tt("lbl_auto_scaled")}</Checkbox>
         <div className="flex-column">

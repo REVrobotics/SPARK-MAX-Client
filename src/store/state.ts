@@ -13,7 +13,7 @@ import {
   DisplaySettingsDto,
   ExtendedListResponseDto,
   SignalDto,
-  TelemetryDataItemDto
+  TelemetryResponseDto
 } from "../models/dto";
 import {diffArrays, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
@@ -229,6 +229,7 @@ export interface IDisplayState {
   settings: DisplaySettings;
   devices: { [deviceId: string]: IDeviceDisplayState };
   raw?: DisplayConfigDto;
+  lastSyncedConsumers: IDestination[];
 }
 
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
@@ -259,9 +260,11 @@ export interface ISignalStyle {
   color: string;
 }
 
+export type SignalStylePalette = () => ISignalStyle;
+
 export type ISignalState = SignalDto;
 
-export type ITelemetryDataItem = TelemetryDataItemDto;
+export type ITelemetryDataItem = TelemetryResponseDto;
 
 export interface IDeviceDisplayState {
   selectedSignalId?: SignalId;

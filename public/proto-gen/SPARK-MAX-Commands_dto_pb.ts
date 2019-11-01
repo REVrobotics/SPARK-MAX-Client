@@ -6,8 +6,12 @@ import * as SPARK_MAX_Commands from "./SPARK-MAX-Commands_pb";
 // @ts-ignore
 import * as SPARK_MAX_Types from "./SPARK-MAX-Types_pb";
 
-export enum TelemetryId {
-  SensorPosition = 0,
+export enum TelemetryStreamCommand {
+  StreamNone = 0,
+  StreamStart = 1,
+  StreamStop = 2,
+  StreamAddSignal = 3,
+  StreamRemoveSignal = 4,
 }
 
 export interface ConnectRequestDto {
@@ -148,6 +152,10 @@ export interface SetpointResponseDto {
   setpoint?: number;
   isRunning?: boolean;
   root?: RootResponseDto;
+  enableable?: boolean;
+  enableReason?: string;
+  settable?: boolean;
+  settableReason?: string;
 }
 
 export interface FollowerRequestDto {
@@ -223,21 +231,6 @@ export interface DRVStat1Dto {
   SA_OC?: boolean;
 }
 
-export interface TelemetryDataDto {
-  id?: TelemetryId;
-  value?: number;
-}
-
-export interface TelemetryRequestDto {
-  root?: RootCommandDto;
-  data?: TelemetryDataDto;
-}
-
-export interface TelemetryResponseDto {
-  root?: RootResponseDto;
-  data: TelemetryDataDto[];
-}
-
 export interface FactoryResetRequestDto {
   root?: RootCommandDto;
   fullWipe?: boolean;
@@ -255,12 +248,50 @@ export interface IdentifyRequestDto {
   canId?: number;
 }
 
-export function telemetryIdFromDto(value: TelemetryId): SPARK_MAX_Commands.telemetryId {
-  return value as unknown as SPARK_MAX_Commands.telemetryId;
+export interface TelemetryRequestDto {
+  root?: RootCommandDto;
+  id?: number;
+  updateRateMs?: number;
 }
 
-export function telemetryIdToDto(value: SPARK_MAX_Commands.telemetryId): TelemetryId {
-  return value as unknown as TelemetryId;
+export interface TelemetryResponseDto {
+  root?: RootResponseDto;
+  deviceId?: string;
+  id?: number;
+  value?: number;
+  timestampMs?: number;
+  name?: string;
+  units?: string;
+  expectedMin?: number;
+  expectedMax?: number;
+  updateRateMs?: number;
+}
+
+export interface TelemetryStreamRequestDto {
+  command?: TelemetryStreamCommand;
+  config?: TelemetryRequestDto;
+}
+
+export interface TelemetryStreamResponseDto {
+  root?: RootResponseDto;
+  data: TelemetryResponseDto[];
+}
+
+export interface TelemetryListRequestDto {
+  root?: RootCommandDto;
+}
+
+export interface TelemetryListResponseDto {
+  root?: RootResponseDto;
+  signalsAvailable: TelemetryResponseDto[];
+}
+
+export function telemetryStreamCommandFromDto(value: TelemetryStreamCommand): SPARK_MAX_Commands.telemetryStreamCommand {
+  return value as unknown as SPARK_MAX_Commands.telemetryStreamCommand;
+}
+
+export function telemetryStreamCommandToDto(value: SPARK_MAX_Commands.telemetryStreamCommand): TelemetryStreamCommand {
+  return value as unknown as TelemetryStreamCommand;
 }
 
 export function connectRequestFromDto(dto: ConnectRequestDto): SPARK_MAX_Commands.connectRequest {
@@ -970,6 +1001,18 @@ export function setpointResponseFromDto(dto: SetpointResponseDto): SPARK_MAX_Com
   if (dto.root != null) {
     message.setRoot(rootResponseFromDto(dto.root));
   }
+  if (dto.enableable != null) {
+    message.setEnableable(dto.enableable);
+  }
+  if (dto.enableReason != null) {
+    message.setEnablereason(dto.enableReason);
+  }
+  if (dto.settable != null) {
+    message.setSettable(dto.settable);
+  }
+  if (dto.settableReason != null) {
+    message.setSettablereason(dto.settableReason);
+  }
   return message;
 }
 
@@ -986,6 +1029,22 @@ export function setpointResponseToDto(message: SPARK_MAX_Commands.setpointRespon
   const field2 = message.getRoot();
   if (field2 != null) {
     dto.root = rootResponseToDto(field2);
+  }
+  const field3 = message.getEnableable();
+  if (field3 != null) {
+    dto.enableable = message.getEnableable();
+  }
+  const field4 = message.getEnablereason();
+  if (field4 != null) {
+    dto.enableReason = message.getEnablereason();
+  }
+  const field5 = message.getSettable();
+  if (field5 != null) {
+    dto.settable = message.getSettable();
+  }
+  const field6 = message.getSettablereason();
+  if (field6 != null) {
+    dto.settableReason = message.getSettablereason();
   }
   return dto;
 }
@@ -1413,78 +1472,6 @@ export function drvStat1ToDto(message: SPARK_MAX_Commands.DRVStat1): DRVStat1Dto
   return dto;
 }
 
-export function telemetryDataFromDto(dto: TelemetryDataDto): SPARK_MAX_Commands.telemetryData {
-  const message = new SPARK_MAX_Commands.telemetryData();
-  if (dto.id != null) {
-    message.setId(telemetryIdFromDto(dto.id));
-  }
-  if (dto.value != null) {
-    message.setValue(dto.value);
-  }
-  return message;
-}
-
-export function telemetryDataToDto(message: SPARK_MAX_Commands.telemetryData): TelemetryDataDto {
-  const dto: TelemetryDataDto = {} as any;
-  const field0 = message.getId();
-  if (field0 != null) {
-    dto.id = telemetryIdToDto(field0);
-  }
-  const field1 = message.getValue();
-  if (field1 != null) {
-    dto.value = message.getValue();
-  }
-  return dto;
-}
-
-export function telemetryRequestFromDto(dto: TelemetryRequestDto): SPARK_MAX_Commands.telemetryRequest {
-  const message = new SPARK_MAX_Commands.telemetryRequest();
-  if (dto.root != null) {
-    message.setRoot(rootCommandFromDto(dto.root));
-  }
-  if (dto.data != null) {
-    message.setData(telemetryDataFromDto(dto.data));
-  }
-  return message;
-}
-
-export function telemetryRequestToDto(message: SPARK_MAX_Commands.telemetryRequest): TelemetryRequestDto {
-  const dto: TelemetryRequestDto = {} as any;
-  const field0 = message.getRoot();
-  if (field0 != null) {
-    dto.root = rootCommandToDto(field0);
-  }
-  const field1 = message.getData();
-  if (field1 != null) {
-    dto.data = telemetryDataToDto(field1);
-  }
-  return dto;
-}
-
-export function telemetryResponseFromDto(dto: TelemetryResponseDto): SPARK_MAX_Commands.telemetryResponse {
-  const message = new SPARK_MAX_Commands.telemetryResponse();
-  if (dto.root != null) {
-    message.setRoot(rootResponseFromDto(dto.root));
-  }
-  if (dto.data != null) {
-    message.setDataList(dto.data.map((item) => telemetryDataFromDto(item)));
-  }
-  return message;
-}
-
-export function telemetryResponseToDto(message: SPARK_MAX_Commands.telemetryResponse): TelemetryResponseDto {
-  const dto: TelemetryResponseDto = {} as any;
-  const field0 = message.getRoot();
-  if (field0 != null) {
-    dto.root = rootResponseToDto(field0);
-  }
-  const field1 = message.getDataList();
-  if (field1 != null) {
-    dto.data = field1.map((item) => telemetryDataToDto(item));
-  }
-  return dto;
-}
-
 export function factoryResetRequestFromDto(dto: FactoryResetRequestDto): SPARK_MAX_Commands.factoryResetRequest {
   const message = new SPARK_MAX_Commands.factoryResetRequest();
   if (dto.root != null) {
@@ -1567,6 +1554,206 @@ export function identifyRequestToDto(message: SPARK_MAX_Commands.identifyRequest
   const field1 = message.getCanid();
   if (field1 != null) {
     dto.canId = message.getCanid();
+  }
+  return dto;
+}
+
+export function telemetryRequestFromDto(dto: TelemetryRequestDto): SPARK_MAX_Commands.telemetryRequest {
+  const message = new SPARK_MAX_Commands.telemetryRequest();
+  if (dto.root != null) {
+    message.setRoot(rootCommandFromDto(dto.root));
+  }
+  if (dto.id != null) {
+    message.setId(dto.id);
+  }
+  if (dto.updateRateMs != null) {
+    message.setUpdaterateMs(dto.updateRateMs);
+  }
+  return message;
+}
+
+export function telemetryRequestToDto(message: SPARK_MAX_Commands.telemetryRequest): TelemetryRequestDto {
+  const dto: TelemetryRequestDto = {} as any;
+  const field0 = message.getRoot();
+  if (field0 != null) {
+    dto.root = rootCommandToDto(field0);
+  }
+  const field1 = message.getId();
+  if (field1 != null) {
+    dto.id = message.getId();
+  }
+  const field2 = message.getUpdaterateMs();
+  if (field2 != null) {
+    dto.updateRateMs = message.getUpdaterateMs();
+  }
+  return dto;
+}
+
+export function telemetryResponseFromDto(dto: TelemetryResponseDto): SPARK_MAX_Commands.telemetryResponse {
+  const message = new SPARK_MAX_Commands.telemetryResponse();
+  if (dto.root != null) {
+    message.setRoot(rootResponseFromDto(dto.root));
+  }
+  if (dto.deviceId != null) {
+    message.setDeviceid(dto.deviceId);
+  }
+  if (dto.id != null) {
+    message.setId(dto.id);
+  }
+  if (dto.value != null) {
+    message.setValue(dto.value);
+  }
+  if (dto.timestampMs != null) {
+    message.setTimestampMs(dto.timestampMs);
+  }
+  if (dto.name != null) {
+    message.setName(dto.name);
+  }
+  if (dto.units != null) {
+    message.setUnits(dto.units);
+  }
+  if (dto.expectedMin != null) {
+    message.setExpectedmin(dto.expectedMin);
+  }
+  if (dto.expectedMax != null) {
+    message.setExpectedmax(dto.expectedMax);
+  }
+  if (dto.updateRateMs != null) {
+    message.setUpdaterateMs(dto.updateRateMs);
+  }
+  return message;
+}
+
+export function telemetryResponseToDto(message: SPARK_MAX_Commands.telemetryResponse): TelemetryResponseDto {
+  const dto: TelemetryResponseDto = {} as any;
+  const field0 = message.getRoot();
+  if (field0 != null) {
+    dto.root = rootResponseToDto(field0);
+  }
+  const field1 = message.getDeviceid();
+  if (field1 != null) {
+    dto.deviceId = message.getDeviceid();
+  }
+  const field2 = message.getId();
+  if (field2 != null) {
+    dto.id = message.getId();
+  }
+  const field3 = message.getValue();
+  if (field3 != null) {
+    dto.value = message.getValue();
+  }
+  const field4 = message.getTimestampMs();
+  if (field4 != null) {
+    dto.timestampMs = message.getTimestampMs();
+  }
+  const field5 = message.getName();
+  if (field5 != null) {
+    dto.name = message.getName();
+  }
+  const field6 = message.getUnits();
+  if (field6 != null) {
+    dto.units = message.getUnits();
+  }
+  const field7 = message.getExpectedmin();
+  if (field7 != null) {
+    dto.expectedMin = message.getExpectedmin();
+  }
+  const field8 = message.getExpectedmax();
+  if (field8 != null) {
+    dto.expectedMax = message.getExpectedmax();
+  }
+  const field9 = message.getUpdaterateMs();
+  if (field9 != null) {
+    dto.updateRateMs = message.getUpdaterateMs();
+  }
+  return dto;
+}
+
+export function telemetryStreamRequestFromDto(dto: TelemetryStreamRequestDto): SPARK_MAX_Commands.telemetryStreamRequest {
+  const message = new SPARK_MAX_Commands.telemetryStreamRequest();
+  if (dto.command != null) {
+    message.setCommand(telemetryStreamCommandFromDto(dto.command));
+  }
+  if (dto.config != null) {
+    message.setConfig(telemetryRequestFromDto(dto.config));
+  }
+  return message;
+}
+
+export function telemetryStreamRequestToDto(message: SPARK_MAX_Commands.telemetryStreamRequest): TelemetryStreamRequestDto {
+  const dto: TelemetryStreamRequestDto = {} as any;
+  const field0 = message.getCommand();
+  if (field0 != null) {
+    dto.command = telemetryStreamCommandToDto(field0);
+  }
+  const field1 = message.getConfig();
+  if (field1 != null) {
+    dto.config = telemetryRequestToDto(field1);
+  }
+  return dto;
+}
+
+export function telemetryStreamResponseFromDto(dto: TelemetryStreamResponseDto): SPARK_MAX_Commands.telemetryStreamResponse {
+  const message = new SPARK_MAX_Commands.telemetryStreamResponse();
+  if (dto.root != null) {
+    message.setRoot(rootResponseFromDto(dto.root));
+  }
+  if (dto.data != null) {
+    message.setDataList(dto.data.map((item) => telemetryResponseFromDto(item)));
+  }
+  return message;
+}
+
+export function telemetryStreamResponseToDto(message: SPARK_MAX_Commands.telemetryStreamResponse): TelemetryStreamResponseDto {
+  const dto: TelemetryStreamResponseDto = {} as any;
+  const field0 = message.getRoot();
+  if (field0 != null) {
+    dto.root = rootResponseToDto(field0);
+  }
+  const field1 = message.getDataList();
+  if (field1 != null) {
+    dto.data = field1.map((item) => telemetryResponseToDto(item));
+  }
+  return dto;
+}
+
+export function telemetryListRequestFromDto(dto: TelemetryListRequestDto): SPARK_MAX_Commands.telemetryListRequest {
+  const message = new SPARK_MAX_Commands.telemetryListRequest();
+  if (dto.root != null) {
+    message.setRoot(rootCommandFromDto(dto.root));
+  }
+  return message;
+}
+
+export function telemetryListRequestToDto(message: SPARK_MAX_Commands.telemetryListRequest): TelemetryListRequestDto {
+  const dto: TelemetryListRequestDto = {} as any;
+  const field0 = message.getRoot();
+  if (field0 != null) {
+    dto.root = rootCommandToDto(field0);
+  }
+  return dto;
+}
+
+export function telemetryListResponseFromDto(dto: TelemetryListResponseDto): SPARK_MAX_Commands.telemetryListResponse {
+  const message = new SPARK_MAX_Commands.telemetryListResponse();
+  if (dto.root != null) {
+    message.setRoot(rootResponseFromDto(dto.root));
+  }
+  if (dto.signalsAvailable != null) {
+    message.setSignalsavailableList(dto.signalsAvailable.map((item) => telemetryResponseFromDto(item)));
+  }
+  return message;
+}
+
+export function telemetryListResponseToDto(message: SPARK_MAX_Commands.telemetryListResponse): TelemetryListResponseDto {
+  const dto: TelemetryListResponseDto = {} as any;
+  const field0 = message.getRoot();
+  if (field0 != null) {
+    dto.root = rootResponseToDto(field0);
+  }
+  const field1 = message.getSignalsavailableList();
+  if (field1 != null) {
+    dto.signalsAvailable = field1.map((item) => telemetryResponseToDto(item));
   }
   return dto;
 }

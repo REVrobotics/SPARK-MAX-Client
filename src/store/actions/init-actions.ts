@@ -9,7 +9,7 @@ import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./net
 import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {loadConfigurations} from "./configuration-actions";
-import {stopAllDevices} from "./display-actions";
+import {stopAllDevices, telemetryEvent} from "./display-actions";
 
 /**
  * Loads necessary application data.
@@ -60,6 +60,8 @@ export function initApplication(): SparkAction<void> {
 
     SparkManager.onLoadFirmwareProgress((error, response) =>
       dispatch(updateLoadFirmwareProgress(error, response)));
+
+    SparkManager.onTelemetryEvent((event) => dispatch(telemetryEvent(event)));
 
     registerShortcuts(dispatch);
   };

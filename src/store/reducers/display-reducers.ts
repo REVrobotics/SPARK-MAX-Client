@@ -29,6 +29,7 @@ const displayInitialState: IDisplayState = {
   selectedQuickPanel: QuickPanelName.PIDF,
   settings: DEFAULT_DISPLAY_SETTINGS,
   devices: {},
+  lastSyncedConsumers: [],
 };
 
 const displayReducer = (state: IDisplayState = displayInitialState, action: ApplicationActions) => {

@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState, QuickPanelName
+  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination
 } from "../state";
 
 /**
@@ -93,6 +93,7 @@ export enum ActionType {
   SET_DISPLAY = "SET_DISPLAY",
   SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
+  SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -527,6 +528,13 @@ export interface ISetDeviceRunningStatus extends IDeviceAwareAction {
   }
 }
 
+export interface ISetLastSyncedConsumers extends Action {
+  type: ActionType.SET_LAST_SYNCED_CONSUMERS,
+  payload: {
+    destinations: IDestination[],
+  },
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -547,5 +555,5 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
   | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetLastSyncedConsumers
   | IAddLog;

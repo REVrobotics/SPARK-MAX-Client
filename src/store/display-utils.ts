@@ -12,7 +12,7 @@ import {
 } from "./state";
 import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceDto, DisplayDeviceSignalDto} from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
-import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalNewStyle} from "./selectors";
+import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalStylePalette} from "./selectors";
 
 /**
  * This method merges settings from next display to the current one.
@@ -92,6 +92,8 @@ export const createDisplayState = (state: IApplicationState,
     {...config, devices: omit(config.devices, connectedDeviceVirtualIds)} as DisplayConfigDto
     : undefined;
 
+  const stylePalette = querySignalStylePalette(state);
+
   return {
     selectedPanel: PanelName.Run,
     selectedQuickPanel: QuickPanelName.PIDF,
@@ -114,7 +116,7 @@ export const createDisplayState = (state: IApplicationState,
             ...createSignalInstance(
               virtualDeviceId,
               deviceSignalsById[signalId],
-              querySignalNewStyle(state, virtualDeviceId, Number(signalId))),
+              stylePalette()),
             min: configInstance.min,
             max: configInstance.max,
             autoScaled: configInstance.autoScaled,
@@ -125,6 +127,7 @@ export const createDisplayState = (state: IApplicationState,
         pidProfile: 0,
       }];
     })),
+    lastSyncedConsumers: [],
   };
 };
 

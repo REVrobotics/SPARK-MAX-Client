@@ -4,67 +4,73 @@ import {waveformEngine} from "../display";
 import {DataPoint, DataStream} from "../display/display-interfaces";
 import {truncateByTime} from "../utils/object-utils";
 
-export interface IStreamOptions {
+export interface IBufferOptions {
   timeSpan: number;
 }
 
-interface IStreamRegistry {
+interface IBufferRegistry {
   [virtualDeviceId: string]: {
-    [signalId: number]: IStream;
+    [signalId: number]: IBuffer;
   };
 }
 
-interface IStream {
+interface IBuffer {
   deviceId: DeviceId;
   data: DataPoint[];
   nextCallbacks: Array<(data: DataPoint[]) => void>;
   completeCallbacks: Array<() => void>;
+  stale: boolean;
 }
 
-const streamOptions: IStreamOptions = {
+const bufferOptions: IBufferOptions = {
   timeSpan: 30000,
 };
 
-const streams: IStreamRegistry = {};
+const buffers: IBufferRegistry = {};
 const deviceIdToVirtualDeviceId: {[deviceId: number]: VirtualDeviceId} = {};
 
 export const getDataSource = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) =>
   waveformEngine.createDataSource(getDataStream(virtualDeviceId, signalId));
 
-export const setStreamOptions = (options: IStreamOptions) => {
-  Object.assign(streamOptions, options);
+export const setDataBufferOptions = (options: IBufferOptions) => {
+  Object.assign(bufferOptions, options);
 };
 
-export const addDestination = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
-  const destination = ensureDestination(virtualDeviceId, signalId);
-  destination.deviceId = deviceId;
+export const addDataBuffer = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
+  const buffer = ensureDataBuffer(virtualDeviceId, signalId);
+  buffer.deviceId = deviceId;
   deviceIdToVirtualDeviceId[deviceId] = virtualDeviceId;
 };
 
-export const changeDestination = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
-  const destination = getDestination(virtualDeviceId, signalId);
-  if (destination.deviceId === deviceId) {
+export const changeDataBuffer = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
+  const buffer = getDataBuffer(virtualDeviceId, signalId);
+  if (buffer.deviceId === deviceId) {
     return;
   }
 
-  delete deviceIdToVirtualDeviceId[destination.deviceId];
-  destination.deviceId = deviceId;
+  delete deviceIdToVirtualDeviceId[buffer.deviceId];
+  buffer.deviceId = deviceId;
   deviceIdToVirtualDeviceId[deviceId] = virtualDeviceId;
 };
 
-export const removeDestination = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
-  const deviceDestinations = streams[virtualDeviceId];
-  if (deviceDestinations) {
-    const destination = deviceDestinations[signalId];
-    if (destination) {
-      closeDestination(destination);
-      delete deviceDestinations[signalId];
-      if (isEmpty(deviceDestinations)) {
-        delete streams[virtualDeviceId];
+export const removeDataBuffer = ({virtualDeviceId, deviceId, signalId}: IDestination) => {
+  const deviceBuffers = buffers[virtualDeviceId];
+  if (deviceBuffers) {
+    const buffer = deviceBuffers[signalId];
+    if (buffer) {
+      disposeDataBuffer(buffer);
+      delete deviceBuffers[signalId];
+      if (isEmpty(deviceBuffers)) {
+        delete buffers[virtualDeviceId];
         delete deviceIdToVirtualDeviceId[deviceId];
       }
     }
   }
+};
+
+export const markDataBufferAsStale = ({virtualDeviceId, signalId}: IDestination) => {
+  const buffer = getDataBuffer(virtualDeviceId, signalId);
+  buffer.stale = true;
 };
 
 export const writeDataChunk = (mixedItems: ITelemetryDataItem[]) => {
@@ -81,20 +87,24 @@ export const writeDataChunk = (mixedItems: ITelemetryDataItem[]) => {
 const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, items: ITelemetryDataItem[]) => {
   const virtualDeviceId = getVirtualDeviceId(deviceId);
 
-  const byDevice = streams[virtualDeviceId];
+  const byDevice = buffers[virtualDeviceId];
   if (byDevice == null) {
-    throw new Error(`No destination registered for "${virtualDeviceId}"`);
+    throw new Error(`No buffer registered for "${virtualDeviceId}"`);
   }
 
-  const bySignal = byDevice[signalId];
-  if (bySignal == null) {
-    throw new Error(`No destination registered for "${virtualDeviceId}:${signalId}"`);
+  const buffer = byDevice[signalId];
+  if (buffer == null) {
+    throw new Error(`No buffer registered for "${virtualDeviceId}:${signalId}"`);
   }
 
-  const points = items.map((item) => ({ x: new Date(item.timestamp_ms), y: item.value}));
-  bySignal.data.push(...points);
-  truncateByTime(bySignal.data, streamOptions.timeSpan, (point) => point.x.getTime());
-  bySignal.nextCallbacks.forEach((cb) => cb(points));
+  const points = items.map((item) => ({ x: new Date(item.timestampMs || 0), y: item.value || 0}));
+  if (buffer.stale) {
+    buffer.stale = false;
+    buffer.data = [];
+  }
+  buffer.data.push(...points);
+  truncateByTime(buffer.data, bufferOptions.timeSpan, (point) => point.x.getTime());
+  buffer.nextCallbacks.forEach((cb) => cb(points));
 };
 
 const getVirtualDeviceId = (deviceId: DeviceId): VirtualDeviceId => {
@@ -105,52 +115,54 @@ const getVirtualDeviceId = (deviceId: DeviceId): VirtualDeviceId => {
   return virtualId;
 };
 
-const ensureDestination = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) => {
-  const deviceDestinations = streams[virtualDeviceId] || {};
-  streams[virtualDeviceId] = deviceDestinations;
+const ensureDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) => {
+  const deviceBuffers = buffers[virtualDeviceId] || {};
+  buffers[virtualDeviceId] = deviceBuffers;
 
-  const destination = deviceDestinations[signalId] || openDestination();
-  deviceDestinations[signalId] = destination;
-  return destination;
+  const buffer = deviceBuffers[signalId] || newDataBuffer();
+  deviceBuffers[signalId] = buffer;
+  return buffer;
 };
 
-const openDestination = (deviceId: DeviceId = -1): IStream => ({
+const newDataBuffer = (deviceId: DeviceId = -1): IBuffer => ({
   deviceId,
   data: [],
   nextCallbacks: [],
   completeCallbacks: [],
+  stale: false,
 });
 
-const closeDestination = (destination: IStream) => {
-  destination.completeCallbacks.forEach((cb) => cb());
-  destination.nextCallbacks.length = 0;
-  destination.completeCallbacks.length = 0;
-  destination.data = [];
-  destination.deviceId = -1;
+const disposeDataBuffer = (buffer: IBuffer) => {
+  buffer.completeCallbacks.forEach((cb) => cb());
+  buffer.nextCallbacks.length = 0;
+  buffer.completeCallbacks.length = 0;
+  buffer.data = [];
+  buffer.deviceId = -1;
 };
 
-const getDestination = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IStream => {
-  const deviceDestinations = streams[virtualDeviceId];
-  if (deviceDestinations == null) {
-    throw new Error(`Destination was not found by virtual device id: ${virtualDeviceId}`);
+const getDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IBuffer => {
+  const deviceBuffers = buffers[virtualDeviceId];
+  if (deviceBuffers == null) {
+    throw new Error(`Buffer was not found by virtual device id: ${virtualDeviceId}`);
   }
 
-  const destination = deviceDestinations[signalId];
-  if (destination == null) {
-    throw new Error(`Destination was not found by virtual device id and signal id: ${virtualDeviceId}, ${signalId}`);
+  const buffer = deviceBuffers[signalId];
+  if (buffer == null) {
+    throw new Error(`Buffer was not found by virtual device id and signal id: ${virtualDeviceId}, ${signalId}`);
   }
 
-  return destination;
+  return buffer;
 };
 
 const getDataStream = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): DataStream<DataPoint[]> => (cb) => {
-  ensureDestination(virtualDeviceId, signalId);
-  const destination = getDestination(virtualDeviceId, signalId);
+  ensureDataBuffer(virtualDeviceId, signalId);
+  const buffer = getDataBuffer(virtualDeviceId, signalId);
   const unsubscribe = once(() => {
-    pull(destination.nextCallbacks, cb);
-    pull(destination.completeCallbacks, unsubscribe);
+    pull(buffer.nextCallbacks, cb);
+    pull(buffer.completeCallbacks, unsubscribe);
   });
-  destination.nextCallbacks.push(cb);
-  destination.completeCallbacks.push(unsubscribe);
+  buffer.nextCallbacks.push(cb);
+  buffer.completeCallbacks.push(unsubscribe);
+  cb(buffer.data);
   return unsubscribe;
 };
