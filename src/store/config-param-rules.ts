@@ -1,9 +1,9 @@
-import {ConfigParam, enumValues, MotorType, ParamType, SensorType} from "../models/dto";
+import {ConfigParam, enumValues, IdleMode, MotorType, ParamType, SensorType} from "../models/dto";
 import {createRuleRegistry, overrideRuleRegistry} from "./param-rules/ConfigParamRule";
 import {createNumericRule} from "./param-rules/NumericParamRule";
 import {createEnumRule} from "./param-rules/EnumParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
-import {MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
+import {IDLE_MODES, MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
 import {configParamNames, getConfigParamType} from "../models/ConfigParam";
 
 /**
@@ -65,6 +65,11 @@ const OVERRIDDEN_RULES = [
       return sensorType === SensorType.HallSensor ? motorType : MotorType.Brushed;
     },
   }),
+  createEnumRule(ConfigParam.kIdleMode, {
+    default: IdleMode.Coast,
+    options: IDLE_MODES.seq(),
+    values: enumValues(IdleMode),
+  }),
   createEnumRule(ConfigParam.kSensorType, {
     default: SensorType.HallSensor,
     options: SENSOR_TYPES.seq(),
@@ -82,6 +87,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 0.3,
+      stepSize: 0.01,
     },
   }),
   createNumericRule(ConfigParam.kRampRate, {
@@ -130,6 +136,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_1, {
@@ -137,6 +144,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_2, {
@@ -144,6 +152,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kP_3, {
@@ -151,6 +160,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_0, {
@@ -158,6 +168,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_1, {
@@ -165,6 +176,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_2, {
@@ -172,6 +184,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kI_3, {
@@ -179,6 +192,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_0, {
@@ -186,6 +200,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_1, {
@@ -193,6 +208,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_2, {
@@ -200,6 +216,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kD_3, {
@@ -207,6 +224,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_0, {
@@ -214,6 +232,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_1, {
@@ -221,6 +240,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_2, {
@@ -228,6 +248,7 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
   createNumericRule(ConfigParam.kF_3, {
@@ -235,9 +256,17 @@ const OVERRIDDEN_RULES = [
     constraints: {
       min: 0,
       max: 3,
+      stepSize: 0.1,
     },
   }),
 ];
 
 export const getGeneratedConfigParamRule = createRuleRegistry(GENERATED_RULES);
 export const getConfigParamRule = overrideRuleRegistry(getGeneratedConfigParamRule, OVERRIDDEN_RULES);
+export const toConfigParamDefaultValue = (param: ConfigParam, value?: number) => {
+  if (value == null || isNaN(value)) {
+    return getConfigParamRule(param).default;
+  } else {
+    return value;
+  }
+};

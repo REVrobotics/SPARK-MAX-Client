@@ -722,6 +722,18 @@ export class setpointResponse extends jspb.Message {
     getRoot(): rootResponse | undefined;
     setRoot(value?: rootResponse): void;
 
+    getEnableable(): boolean;
+    setEnableable(value: boolean): void;
+
+    getEnablereason(): string;
+    setEnablereason(value: string): void;
+
+    getSettable(): boolean;
+    setSettable(value: boolean): void;
+
+    getSettablereason(): string;
+    setSettablereason(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): setpointResponse.AsObject;
@@ -738,6 +750,10 @@ export namespace setpointResponse {
         setpoint: number,
         isrunning: boolean,
         root?: rootResponse.AsObject,
+        enableable: boolean,
+        enablereason: string,
+        settable: boolean,
+        settablereason: string,
     }
 }
 
@@ -1100,92 +1116,6 @@ export namespace DRVStat1 {
     }
 }
 
-export class telemetryData extends jspb.Message { 
-    getId(): telemetryId;
-    setId(value: telemetryId): void;
-
-    getValue(): number;
-    setValue(value: number): void;
-
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): telemetryData.AsObject;
-    static toObject(includeInstance: boolean, msg: telemetryData): telemetryData.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: telemetryData, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): telemetryData;
-    static deserializeBinaryFromReader(message: telemetryData, reader: jspb.BinaryReader): telemetryData;
-}
-
-export namespace telemetryData {
-    export type AsObject = {
-        id: telemetryId,
-        value: number,
-    }
-}
-
-export class telemetryRequest extends jspb.Message { 
-
-    hasRoot(): boolean;
-    clearRoot(): void;
-    getRoot(): rootCommand | undefined;
-    setRoot(value?: rootCommand): void;
-
-
-    hasData(): boolean;
-    clearData(): void;
-    getData(): telemetryData | undefined;
-    setData(value?: telemetryData): void;
-
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): telemetryRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: telemetryRequest): telemetryRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: telemetryRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): telemetryRequest;
-    static deserializeBinaryFromReader(message: telemetryRequest, reader: jspb.BinaryReader): telemetryRequest;
-}
-
-export namespace telemetryRequest {
-    export type AsObject = {
-        root?: rootCommand.AsObject,
-        data?: telemetryData.AsObject,
-    }
-}
-
-export class telemetryResponse extends jspb.Message { 
-
-    hasRoot(): boolean;
-    clearRoot(): void;
-    getRoot(): rootResponse | undefined;
-    setRoot(value?: rootResponse): void;
-
-    clearDataList(): void;
-    getDataList(): Array<telemetryData>;
-    setDataList(value: Array<telemetryData>): void;
-    addData(value?: telemetryData, index?: number): telemetryData;
-
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): telemetryResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: telemetryResponse): telemetryResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: telemetryResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): telemetryResponse;
-    static deserializeBinaryFromReader(message: telemetryResponse, reader: jspb.BinaryReader): telemetryResponse;
-}
-
-export namespace telemetryResponse {
-    export type AsObject = {
-        root?: rootResponse.AsObject,
-        dataList: Array<telemetryData.AsObject>,
-    }
-}
-
 export class factoryResetRequest extends jspb.Message { 
 
     hasRoot(): boolean;
@@ -1275,6 +1205,214 @@ export namespace identifyRequest {
     }
 }
 
-export enum telemetryId {
-    SENSORPOSITION = 0,
+export class telemetryRequest extends jspb.Message { 
+
+    hasRoot(): boolean;
+    clearRoot(): void;
+    getRoot(): rootCommand | undefined;
+    setRoot(value?: rootCommand): void;
+
+    getId(): number;
+    setId(value: number): void;
+
+    getUpdaterateMs(): number;
+    setUpdaterateMs(value: number): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryRequest): telemetryRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryRequest;
+    static deserializeBinaryFromReader(message: telemetryRequest, reader: jspb.BinaryReader): telemetryRequest;
+}
+
+export namespace telemetryRequest {
+    export type AsObject = {
+        root?: rootCommand.AsObject,
+        id: number,
+        updaterateMs: number,
+    }
+}
+
+export class telemetryResponse extends jspb.Message { 
+
+    hasRoot(): boolean;
+    clearRoot(): void;
+    getRoot(): rootResponse | undefined;
+    setRoot(value?: rootResponse): void;
+
+    getDeviceid(): string;
+    setDeviceid(value: string): void;
+
+    getId(): number;
+    setId(value: number): void;
+
+    getValue(): number;
+    setValue(value: number): void;
+
+    getTimestampMs(): number;
+    setTimestampMs(value: number): void;
+
+    getName(): string;
+    setName(value: string): void;
+
+    getUnits(): string;
+    setUnits(value: string): void;
+
+    getExpectedmin(): number;
+    setExpectedmin(value: number): void;
+
+    getExpectedmax(): number;
+    setExpectedmax(value: number): void;
+
+    getUpdaterateMs(): number;
+    setUpdaterateMs(value: number): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryResponse): telemetryResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryResponse;
+    static deserializeBinaryFromReader(message: telemetryResponse, reader: jspb.BinaryReader): telemetryResponse;
+}
+
+export namespace telemetryResponse {
+    export type AsObject = {
+        root?: rootResponse.AsObject,
+        deviceid: string,
+        id: number,
+        value: number,
+        timestampMs: number,
+        name: string,
+        units: string,
+        expectedmin: number,
+        expectedmax: number,
+        updaterateMs: number,
+    }
+}
+
+export class telemetryStreamRequest extends jspb.Message { 
+    getCommand(): telemetryStreamCommand;
+    setCommand(value: telemetryStreamCommand): void;
+
+
+    hasConfig(): boolean;
+    clearConfig(): void;
+    getConfig(): telemetryRequest | undefined;
+    setConfig(value?: telemetryRequest): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryStreamRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryStreamRequest): telemetryStreamRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryStreamRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryStreamRequest;
+    static deserializeBinaryFromReader(message: telemetryStreamRequest, reader: jspb.BinaryReader): telemetryStreamRequest;
+}
+
+export namespace telemetryStreamRequest {
+    export type AsObject = {
+        command: telemetryStreamCommand,
+        config?: telemetryRequest.AsObject,
+    }
+}
+
+export class telemetryStreamResponse extends jspb.Message { 
+
+    hasRoot(): boolean;
+    clearRoot(): void;
+    getRoot(): rootResponse | undefined;
+    setRoot(value?: rootResponse): void;
+
+    clearDataList(): void;
+    getDataList(): Array<telemetryResponse>;
+    setDataList(value: Array<telemetryResponse>): void;
+    addData(value?: telemetryResponse, index?: number): telemetryResponse;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryStreamResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryStreamResponse): telemetryStreamResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryStreamResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryStreamResponse;
+    static deserializeBinaryFromReader(message: telemetryStreamResponse, reader: jspb.BinaryReader): telemetryStreamResponse;
+}
+
+export namespace telemetryStreamResponse {
+    export type AsObject = {
+        root?: rootResponse.AsObject,
+        dataList: Array<telemetryResponse.AsObject>,
+    }
+}
+
+export class telemetryListRequest extends jspb.Message { 
+
+    hasRoot(): boolean;
+    clearRoot(): void;
+    getRoot(): rootCommand | undefined;
+    setRoot(value?: rootCommand): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryListRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryListRequest): telemetryListRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryListRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryListRequest;
+    static deserializeBinaryFromReader(message: telemetryListRequest, reader: jspb.BinaryReader): telemetryListRequest;
+}
+
+export namespace telemetryListRequest {
+    export type AsObject = {
+        root?: rootCommand.AsObject,
+    }
+}
+
+export class telemetryListResponse extends jspb.Message { 
+
+    hasRoot(): boolean;
+    clearRoot(): void;
+    getRoot(): rootResponse | undefined;
+    setRoot(value?: rootResponse): void;
+
+    clearSignalsavailableList(): void;
+    getSignalsavailableList(): Array<telemetryResponse>;
+    setSignalsavailableList(value: Array<telemetryResponse>): void;
+    addSignalsavailable(value?: telemetryResponse, index?: number): telemetryResponse;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): telemetryListResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: telemetryListResponse): telemetryListResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: telemetryListResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): telemetryListResponse;
+    static deserializeBinaryFromReader(message: telemetryListResponse, reader: jspb.BinaryReader): telemetryListResponse;
+}
+
+export namespace telemetryListResponse {
+    export type AsObject = {
+        root?: rootResponse.AsObject,
+        signalsavailableList: Array<telemetryResponse.AsObject>,
+    }
+}
+
+export enum telemetryStreamCommand {
+    STREAMNONE = 0,
+    STREAMSTART = 1,
+    STREAMSTOP = 2,
+    STREAMADDSIGNAL = 3,
+    STREAMREMOVESIGNAL = 4,
 }

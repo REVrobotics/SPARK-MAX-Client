@@ -1,4 +1,4 @@
-import {initial, isString} from "lodash";
+import {initial} from "lodash";
 import {
   createNetworkDevice,
   DeviceId,
@@ -41,6 +41,7 @@ import {
   renderNetworkDeviceHelpText
 } from "./actions-rendered-content";
 import {onError, useErrorHandler} from "./error-actions";
+import {ApplicationError} from "../../models/errors";
 
 /**
  * Selects firmware and starts loading process
@@ -196,12 +197,6 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
             const deviceId = getNetworkDeviceId(device);
 
             return SparkManager.getFirmware(toDtoDeviceId(deviceId))
-              .then((response) => {
-                if (hasError(response)) {
-                  return Promise.reject(getErrorText(response));
-                }
-                return Promise.resolve(response);
-              })
               // Determine status of device based on retrieved firmware version
               .then((response) => {
                 const firmwareVersion = response.version!.substring(1);
@@ -224,7 +219,7 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
               .catch((error) => dispatch(updateNetworkDevice(deviceId, {
                 loading: false,
                 status: NetworkDeviceStatus.Error,
-                error: isString(error) ? error : "",
+                error: ApplicationError.from(error).message,
               })));
           });
       })

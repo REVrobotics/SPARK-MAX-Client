@@ -9,7 +9,7 @@ import * as path from "path";
 import * as util from "util";
 
 import SparkServer from "../server/sparkmax-server";
-import {HOST, PORT, USE_GRPC} from "../../program-args";
+import {HOST, PORT} from "../../program-args";
 import {ListRequestDto} from "../../proto-gen";
 import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall} from "./ipc-main-calls";
 import {SparkmaxContext} from "../server/SparkmaxContext";
@@ -17,16 +17,16 @@ import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
 import {getAppDataPath} from "../config";
 import {logger} from "../loggers";
+import {TelemetryResource, telemetryResourceFactory} from "../server/TelemetryResource";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
 const opn = require("opn");
 
 const isWin: boolean = process.platform === "win32";
-const server: SparkServer = new SparkServer(HOST, PORT, USE_GRPC);
+const server: SparkServer = new SparkServer(HOST, PORT);
 
-let usbProc: ChildProcess|null = null;
-let setpoint: number = 0;
+let usbProc: ChildProcess | null = null;
 let firmwareID: any = null;
 
 const getDeviceIdWithNewCanId = (device: string, newCanId: number) => {
@@ -65,10 +65,46 @@ const pingResourceFactory = timerResourceFactory((device) =>
     }),
   1000);
 
+/**
+ * Heartbeat processor is used by `heartbeat` {@link IResource} to send the latest setpoint value
+ */
+const heartbeatProcessor = (device: string, attributes: { [name: string]: any }) =>
+  new Promise<void>((resolve, reject) =>
+    server.setpoint({root: {device}, enable: true, setpoint: attributes.setpoint}, (err: any, response: any) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      notifyCallback(getTargetWindow(), "heartbeat", device, response);
+      resolve(response);
+    }));
+
 const context = new SparkmaxContext([pingResourceFactory]);
 
 // all URLs should be relative ./build directory
 const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
+
+/**
+ * Return unique name of heartbeat resource for each device
+ * @param device
+ */
+const getHeartbeatResourceName = (device: string) => `heartbeat:${device}`;
+
+/**
+ * Returns `TelemetryResource` if it exists
+ */
+const tryTelemetryResource = () => context.getResource("telemetry") as TelemetryResource | undefined;
+/**
+ * Returns `TelemetryResource` if it exists, otherwise throws an error
+ */
+const getTelemetryResource = () => {
+  const resource = tryTelemetryResource();
+  if (resource == null) {
+    throw new Error("TelemetryResource does not exist");
+  }
+  return resource;
+};
 
 onTwoWayCall("start-server", (cb, port: any) => {
   if (!port) {
@@ -225,29 +261,75 @@ onTwoWayCall("restore-defaults", (cb, device: string) => {
   });
 });
 
-onOneWayCall("enable-heartbeat", (interval) => {
-  if (!context.isResourceExist("heartbeat")) {
-    console.log("Enabling heartbeat for every " + interval + "ms");
-    context.newDeviceResource("heartbeat", timerResourceFactory(
-      () => new Promise((resolve) =>
-        server.setpoint({enable: true, setpoint}, (err: any, response: any) => {
-          notifyCallback(getTargetWindow(), "heartbeat", response);
-          resolve(response);
-        })),
-      interval));
+onOneWayCall("enable-heartbeat", (device, setpoint, interval) => {
+  if (!context.isResourceExist(getHeartbeatResourceName(device))) {
+    console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);
+    // Create and start heartbeat resource
+    context.newDeviceResource(
+      getHeartbeatResourceName(device),
+      timerResourceFactory(heartbeatProcessor, interval, {setpoint}));
   }
 });
 
-onOneWayCall("disable-heartbeat", () => {
-  if (context.isResourceExist("heartbeat")) {
-    console.log("Disabling heartbeat");
-    context.releaseDeviceResource("heartbeat");
+onOneWayCall("disable-heartbeat", (device: string) => {
+  if (context.isResourceExist(getHeartbeatResourceName(device))) {
+    console.log(`Disabling heartbeat for '${device}'`);
+    // Stop heartbeat resource
+    context.releaseDeviceResource(getHeartbeatResourceName(device))
+      .then(() => {
+        server.setpoint({root: {device}, enable: false, setpoint: 0}, (err: any, response: any) => {
+          notifyCallback(getTargetWindow(), "heartbeat", device, response);
+        })
+      });
   }
-  setpoint = 0.0;
 });
 
-onOneWayCall("set-setpoint", (newSetpoint: number) => {
-  setpoint = newSetpoint;
+onOneWayCall("set-setpoint", (device: string, newSetpoint: number) => {
+  if (context.isResourceExist(getHeartbeatResourceName(device))) {
+    // Use given setpoint for the specified device
+    const resource = context.getResource(getHeartbeatResourceName(device));
+    resource.setAttribute("setpoint", newSetpoint);
+  }
+});
+
+onTwoWayCall("telemetry-list", (cb, device: string) => {
+  server.telemetryList({root: {device}}, (error: any, response: any) => {
+    if (error) {
+      cb(error);
+      return;
+    }
+
+    cb(null, response);
+  });
+});
+
+onOneWayCall("telemetry-start", () => {
+  // Create and start "telemetry" resource
+  context.newDeviceResource(
+    "telemetry",
+    () =>
+      telemetryResourceFactory(
+        server.telemetryStream(),
+        (event) => notifyCallback(getTargetWindow(), "telemetry-event", event)));
+});
+
+onOneWayCall("telemetry-stop", () => {
+  context.releaseDeviceResource("telemetry");
+});
+
+onOneWayCall("telemetry-signal-add", (deviceId: string, signalId: number) => {
+  const resource = getTelemetryResource();
+  resource.addSignal(deviceId, signalId);
+});
+
+onOneWayCall("telemetry-signal-remove", (deviceId: string, signalId: number) => {
+  const resource = getTelemetryResource();
+  resource.removeSignal(deviceId, signalId);
+});
+
+onTwoWayCall("telemetry-running-signals", (cb) => {
+  const resource = tryTelemetryResource();
+  cb(null, resource ? resource.getSignals() : []);
 });
 
 onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) => {
@@ -342,9 +424,9 @@ onTwoWayCall("download", (cb, url: string) => {
           console.log(msg);
           cb(null, msg);
         }).catch((error: any) => {
-          console.error(error);
-          cb(error);
-        });
+        console.error(error);
+        cb(error);
+      });
     }
   });
 });

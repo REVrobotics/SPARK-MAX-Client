@@ -26,6 +26,8 @@ interface IsparkMaxServerService extends grpc.ServiceDefinition<grpc.UntypedServ
     factoryReset: IsparkMaxServerService_IFactoryReset;
     iDAssignment: IsparkMaxServerService_IIDAssignment;
     identify: IsparkMaxServerService_IIdentify;
+    telemetryList: IsparkMaxServerService_ITelemetryList;
+    telemetryStream: IsparkMaxServerService_ITelemetryStream;
 }
 
 interface IsparkMaxServerService_IConnect extends grpc.MethodDefinition<SPARK_MAX_Commands_pb.connectRequest, SPARK_MAX_Commands_pb.connectResponse> {
@@ -190,6 +192,24 @@ interface IsparkMaxServerService_IIdentify extends grpc.MethodDefinition<SPARK_M
     responseSerialize: grpc.serialize<SPARK_MAX_Commands_pb.rootResponse>;
     responseDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.rootResponse>;
 }
+interface IsparkMaxServerService_ITelemetryList extends grpc.MethodDefinition<SPARK_MAX_Commands_pb.telemetryListRequest, SPARK_MAX_Commands_pb.telemetryListResponse> {
+    path: string; // "/sparkmax.sparkMaxServer/TelemetryList"
+    requestStream: boolean; // false
+    responseStream: boolean; // false
+    requestSerialize: grpc.serialize<SPARK_MAX_Commands_pb.telemetryListRequest>;
+    requestDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.telemetryListRequest>;
+    responseSerialize: grpc.serialize<SPARK_MAX_Commands_pb.telemetryListResponse>;
+    responseDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.telemetryListResponse>;
+}
+interface IsparkMaxServerService_ITelemetryStream extends grpc.MethodDefinition<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse> {
+    path: string; // "/sparkmax.sparkMaxServer/TelemetryStream"
+    requestStream: boolean; // true
+    responseStream: boolean; // true
+    requestSerialize: grpc.serialize<SPARK_MAX_Commands_pb.telemetryStreamRequest>;
+    requestDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.telemetryStreamRequest>;
+    responseSerialize: grpc.serialize<SPARK_MAX_Commands_pb.telemetryStreamResponse>;
+    responseDeserialize: grpc.deserialize<SPARK_MAX_Commands_pb.telemetryStreamResponse>;
+}
 
 export const sparkMaxServerService: IsparkMaxServerService;
 
@@ -212,6 +232,8 @@ export interface IsparkMaxServerServer {
     factoryReset: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.factoryResetRequest, SPARK_MAX_Commands_pb.rootResponse>;
     iDAssignment: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.idAssignmentRequest, SPARK_MAX_Commands_pb.rootResponse>;
     identify: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.identifyRequest, SPARK_MAX_Commands_pb.rootResponse>;
+    telemetryList: grpc.handleUnaryCall<SPARK_MAX_Commands_pb.telemetryListRequest, SPARK_MAX_Commands_pb.telemetryListResponse>;
+    telemetryStream: grpc.handleBidiStreamingCall<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
 }
 
 export interface IsparkMaxServerClient {
@@ -269,6 +291,12 @@ export interface IsparkMaxServerClient {
     identify(request: SPARK_MAX_Commands_pb.identifyRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
     identify(request: SPARK_MAX_Commands_pb.identifyRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
     identify(request: SPARK_MAX_Commands_pb.identifyRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
+    telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    telemetryStream(): grpc.ClientDuplexStream<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
+    telemetryStream(options: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
+    telemetryStream(metadata: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
 }
 
 export class sparkMaxServerClient extends grpc.Client implements IsparkMaxServerClient {
@@ -327,4 +355,9 @@ export class sparkMaxServerClient extends grpc.Client implements IsparkMaxServer
     public identify(request: SPARK_MAX_Commands_pb.identifyRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
     public identify(request: SPARK_MAX_Commands_pb.identifyRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
     public identify(request: SPARK_MAX_Commands_pb.identifyRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.rootResponse) => void): grpc.ClientUnaryCall;
+    public telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    public telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    public telemetryList(request: SPARK_MAX_Commands_pb.telemetryListRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: SPARK_MAX_Commands_pb.telemetryListResponse) => void): grpc.ClientUnaryCall;
+    public telemetryStream(options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
+    public telemetryStream(metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<SPARK_MAX_Commands_pb.telemetryStreamRequest, SPARK_MAX_Commands_pb.telemetryStreamResponse>;
 }

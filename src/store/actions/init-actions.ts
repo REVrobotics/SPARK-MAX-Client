@@ -1,4 +1,4 @@
-import {SparkAction} from "./action-types";
+import {SparkAction, SparkDispatch} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
 import {initMessageQueue, setConnectedDescriptor, setSelectedTab} from "./atom-actions";
 import {connectDevice, findAllDevices, selectDevice, syncDevices} from "./connection-actions";
@@ -9,6 +9,7 @@ import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./net
 import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {loadConfigurations} from "./configuration-actions";
+import {stopAllDevices, telemetryEvent} from "./display-actions";
 
 /**
  * Loads necessary application data.
@@ -59,6 +60,10 @@ export function initApplication(): SparkAction<void> {
 
     SparkManager.onLoadFirmwareProgress((error, response) =>
       dispatch(updateLoadFirmwareProgress(error, response)));
+
+    SparkManager.onTelemetryEvent((event) => dispatch(telemetryEvent(event)));
+
+    registerShortcuts(dispatch);
   };
 }
 
@@ -87,4 +92,12 @@ function checkForFirmwareUpdate(): SparkAction<void> {
         }
       });
   };
+}
+
+function registerShortcuts(dispatch: SparkDispatch): void {
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      dispatch(stopAllDevices());
+    }
+  });
 }

@@ -5,13 +5,26 @@
 import {Action} from "redux";
 import {IServerResponse} from "../../managers/SparkManager";
 import {ThunkAction, ThunkDispatch} from "redux-thunk";
-import {ConfigParam} from "../../models/ConfigParam";
+import {ConfigParam, ConfigParamGroupId} from "../../models/ConfigParam";
 import {
-  ConfirmationAnswer, DeviceId, IAlertDialogConfig,
+  ConfirmationAnswer,
+  DeviceId,
+  IAlertDialogConfig,
   IApplicationState,
-  IConfirmationDialogConfig, IDeviceConfiguration,
-  IDeviceState, IDeviceTransientState, IMessageQueueConfig, INetworkDevice, PathDescriptor,
-  ProcessType, TabId, VirtualDeviceId
+  IConfirmationDialogConfig,
+  IDeviceConfiguration,
+  IDeviceState,
+  IDeviceTransientState,
+  DisplaySettings,
+  IMessageQueueConfig,
+  INetworkDevice,
+  ISignalInstanceState,
+  PanelName,
+  PathDescriptor,
+  ProcessType,
+  SignalId,
+  TabId,
+  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination
 } from "../state";
 
 /**
@@ -64,6 +77,23 @@ export enum ActionType {
   INIT_MESSAGE_QUEUE = "INIT_MESSAGE_QUEUE",
   RESET_MESSAGE_QUEUE = "RESET_MESSAGE_QUEUE",
   ADD_TO_MESSAGE_QUEUE = "ADD_TO_MESSAGE_QUEUE",
+
+  SET_DISPLAY_SELECTED_QUICK_PANEL = "SET_DISPLAY_SELECTED_QUICK_PANEL",
+  SET_DISPLAY_SELECTED_PANEL = "SET_DISPLAY_SELECTED_PANEL",
+  SET_DISPLAY_SETTING = "SET_DISPLAY_SETTING",
+  SET_SELECTED_SIGNAL = "SET_SELECTED_SIGNAL",
+  SET_DISPLAY_SELECTED_PID_PROFILE = "SET_DISPLAY_SELECTED_PID_PROFILE",
+
+  ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
+  REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
+  SET_SIGNAL_INSTANCE_FIELD = "SET_SIGNAL_INSTANCE_FIELD",
+
+  SET_DISPLAY_SELECTED_PARAM_GROUP = "SET_DISPLAY_SELECTED_PARAM_GROUP",
+  SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
+  SET_DISPLAY = "SET_DISPLAY",
+  SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
+  SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
+  SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -394,6 +424,117 @@ export interface IAddToMessageQueue extends Action {
   },
 }
 
+export interface ISetDisplaySelectedQuickPanel {
+  type: ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL,
+  payload: {
+    panel: QuickPanelName,
+  },
+}
+
+export interface ISetDisplaySelectedPidProfile extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    profile: number;
+  },
+}
+
+export interface ISetDisplaySelectedPanel {
+  type: ActionType.SET_DISPLAY_SELECTED_PANEL,
+  payload: {
+    panel: PanelName,
+  },
+}
+
+export interface ISetDisplaySetting {
+  type: ActionType.SET_DISPLAY_SETTING,
+  payload: {
+    key: keyof DisplaySettings,
+    value: any,
+  },
+}
+
+export interface ISetSelectedSignal extends IDeviceAwareAction {
+  type: ActionType.SET_SELECTED_SIGNAL,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+  }
+}
+
+export interface IAddSignalInstance extends IDeviceAwareAction {
+  type: ActionType.ADD_SIGNAL_INSTANCE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    instance: ISignalInstanceState,
+  }
+}
+
+export interface IRemoveSignalInstance extends IDeviceAwareAction {
+  type: ActionType.REMOVE_SIGNAL_INSTANCE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+  }
+}
+
+export interface ISetSignalInstanceField extends IDeviceAwareAction {
+  type: ActionType.SET_SIGNAL_INSTANCE_FIELD,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    signalId: SignalId,
+    key: keyof ISignalInstanceState,
+    value: any,
+  }
+}
+
+export interface ISetDisplaySelectedParamGroup extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    paramGroupId: ConfigParamGroupId,
+  },
+}
+
+export interface ISetDisplayQuickParam extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_QUICK_PARAM,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    param: ConfigParam,
+    quick: boolean,
+  },
+}
+
+export interface ISetDisplay {
+  type: ActionType.SET_DISPLAY,
+  payload: {
+    display: IDisplayState,
+  },
+}
+
+export interface ISetControlValue extends IDeviceAwareAction {
+  type: ActionType.SET_CONTROL_VALUE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    value: any,
+  },
+}
+
+export interface ISetDeviceRunningStatus extends IDeviceAwareAction {
+  type: ActionType.SET_RUNNING_STATUS,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    running: boolean;
+  }
+}
+
+export interface ISetLastSyncedConsumers extends Action {
+  type: ActionType.SET_LAST_SYNCED_CONSUMERS,
+  payload: {
+    destinations: IDestination[],
+  },
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -411,4 +552,8 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | IInitMessageQueue | IResetMessageQueue | IAddToMessageQueue
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
+  | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
+  | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
+  | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetLastSyncedConsumers
   | IAddLog;

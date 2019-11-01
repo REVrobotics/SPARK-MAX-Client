@@ -14,6 +14,17 @@ interface ISystemErrorOptions {
  * Base class for all application-specific errors
  */
 class ApplicationError extends Error {
+  /**
+   * Wraps any error to the instance of {@link ApplicationError}
+   */
+  public static from(reason: any): ApplicationError {
+    if (reason instanceof ApplicationError) {
+      return reason;
+    } else {
+      return SystemError.from(reason);
+    }
+  }
+
   private _handled = false;
 
   constructor(message: string) {

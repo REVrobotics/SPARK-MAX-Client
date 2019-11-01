@@ -26,16 +26,20 @@ import {
 import {MOTOR_TYPES} from "../dictionaries";
 import {onSchedule} from "../../utils/redux-scheduler";
 import {onError, useErrorHandler} from "./error-actions";
+import {toConfigParamDefaultValue} from "../config-param-rules";
+import {syncSignalDeviceId} from "./display-actions";
 
 export const setParameterValue = (virtualDeviceId: VirtualDeviceId,
                                   param: ConfigParam,
                                   value: number): SparkAction<Promise<number>> =>
   (dispatch) => {
+    const normalizedValue = toConfigParamDefaultValue(param, value);
+
     // Change device parameter value immediately for better UX
-    dispatch(setDeviceParameter(virtualDeviceId, param, value));
+    dispatch(setDeviceParameter(virtualDeviceId, param, normalizedValue));
 
     // Set value for requested and all dependent parameters
-    return dispatch(scheduleSetParameterValue(virtualDeviceId, param, value));
+    return dispatch(scheduleSetParameterValue(virtualDeviceId, param, normalizedValue));
   };
 
 const scheduleSetParameterValue = (virtualDeviceId: VirtualDeviceId,
@@ -102,10 +106,15 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
         .then((res: IServerResponse) => {
           const responseValue = res.responseValue as number;
           dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
+          return responseValue;
+        })
+        .then((value) => {
           if (param === ConfigParam.kCanID) {
             dispatch(recalculateDeviceId(virtualDeviceId));
+            return dispatch(syncSignalDeviceId(virtualDeviceId)).then(() => value);
+          } else {
+            return value;
           }
-          return responseValue;
         })
         .catch(useErrorHandler(dispatch));
     }

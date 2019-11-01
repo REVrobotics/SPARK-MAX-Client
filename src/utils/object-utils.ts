@@ -1,4 +1,6 @@
-import {constant, difference, findIndex, intersection, isFunction, keyBy, omit} from "lodash";
+import {constant, difference, findIndex, identity, intersection, isFunction, keyBy, omit, sortedIndex, sortedIndexOf} from "lodash";
+
+export const EMPTY_ARRAY: any[] = [];
 
 /**
  * Immutable setter of object field.
@@ -49,7 +51,7 @@ export function removeFields<T extends object, P extends keyof T>(entity: T, key
 /**
  * Applies function to the provided object iff object is not nil.
  */
-export function maybeMap<T, R>(entity: T | undefined | null, map: (entity: T) => R): R | undefined | null {
+export function maybeMap<T, R>(entity: T | undefined, map: (entity: T) => R): R | undefined {
   if (entity == null) {
     return entity as any;
   }
@@ -91,6 +93,44 @@ export function setArrayElementWith<T>(array: T[],
 }
 
 /**
+ * Immutable insert element into array
+ */
+export function insertArrayElement<T>(array: T[], index: number, element: T): T[] {
+  return array.slice(0, index).concat([element]).concat(array.slice(index));
+}
+
+/**
+ * Immutable remove element from array
+ */
+export function removeArrayElement<T>(array: T[], index: number): T[] {
+  return array.slice(0, index).concat(array.slice(index + 1));
+}
+
+/**
+ * Immutable insert element into sorted array
+ */
+export function insertArrayElementSorted<T>(array: T[], element: T): T[] {
+  const index = sortedIndexOf(array, element);
+  if (index >= 0) {
+    return array;
+  }
+
+  return insertArrayElement(array, sortedIndex(array, element), element);
+}
+
+/**
+ * Immutable remove element from array
+ */
+export function removeArrayElementSorted<T>(array: T[], element: T): T[] {
+  const index = sortedIndexOf(array, element);
+  if (index < 0) {
+    return array;
+  }
+
+  return removeArrayElement(array, index);
+}
+
+/**
  * Returns `value` if it is not `null` or `undefined`, otherwise returns `otherwise`.
  */
 export function coalesce<T, O extends T>(value: T | null | undefined, otherwise: O): T {
@@ -100,7 +140,7 @@ export function coalesce<T, O extends T>(value: T | null | undefined, otherwise:
 /**
  * Describes result of `diffObjects` operation
  */
-interface IDiffResult<T> {
+interface IDiffArrayResult<T> {
   added: T[];
   unmodified: T[];
   modified: Array<{previous: T, next: T}>;
@@ -110,7 +150,7 @@ interface IDiffResult<T> {
 /**
  * Analyzes two set of objects and returns detailed description of all changes
  */
-export function diffObjects<T>(previous: T[], next: T[], by: (obj: T) => any): IDiffResult<T> {
+export function diffArrays<T>(previous: T[], next: T[], by: (obj: T) => any = identity): IDiffArrayResult<T> {
   const previousIds = previous.map(by);
   const nextIds = next.map(by);
 
@@ -129,4 +169,20 @@ export function diffObjects<T>(previous: T[], next: T[], by: (obj: T) => any): I
     unmodified: existingIds.filter((id) => previousById[id] === nextById[id]).map((id) => previousById[id]),
     removed: removedIds.map((id) => previousById[id]),
   };
-};
+}
+
+/**
+ * Remove all elements from the array that does not fit into specific time span
+ */
+export function truncateByTime<T>(data: T[], timeSpan: number, getTime: (item: T) => number) {
+  const lastPoint = data[data.length - 1];
+
+  while (data.length > 2) {
+    const nextPoint = data[1];
+    if ((getTime(lastPoint) - getTime(nextPoint)) <= timeSpan) {
+      break;
+    }
+
+    data.shift();
+  }
+}

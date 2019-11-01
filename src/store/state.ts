@@ -5,12 +5,19 @@
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
 import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
-import {ConfigParam, configParamNames, getConfigParamName} from "../models/ConfigParam";
-import {ExtendedListResponseDto} from "../models/dto";
-import {diffObjects, setField} from "../utils/object-utils";
+import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
+import {
+  ConfigParamGroupName,
+  CtrlType,
+  DisplayConfigDto,
+  DisplaySettingsDto,
+  ExtendedListResponseDto, TelemetryResponseDto,
+} from "../models/dto";
+import {diffArrays, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {Message, MessageSeverity} from "../models/Message";
+import {LegendPosition} from "../display/display-interfaces";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -196,6 +203,100 @@ export interface IApplicationState {
   logs: string[],
   ui: IUiState;
   configurations: IDeviceConfiguration[],
+  display: IDisplayState
+}
+
+/**
+ * Name of panel available on "Run Tab"
+ */
+export enum PanelName {
+  Run = "run",
+  Parameters = "parameters",
+  Signals = "signals",
+  Settings = "settings",
+}
+
+/**
+ * Name of quick panel available on "Run" panel of "Run Tab"
+ */
+export enum QuickPanelName {
+  PIDF = "pidf",
+  Quick = "quick",
+}
+
+/**
+ * State of all device displays
+ */
+export interface IDisplayState {
+  selectedPanel: PanelName;
+  selectedQuickPanel: QuickPanelName;
+  settings: DisplaySettings;
+  devices: { [deviceId: string]: IDeviceDisplayState };
+  raw?: DisplayConfigDto;
+  lastSyncedConsumers: IDestination[];
+}
+
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
+  showLegend: true,
+  legendPosition: LegendPosition.Top,
+  singleChart: true,
+  timeSpan: 30
+};
+
+export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
+  value: 0,
+  running: false,
+};
+
+export type SignalId = number;
+
+/**
+ * State of assigned signal
+ */
+export interface ISignalInstanceState {
+  signalId: SignalId;
+  virtualDeviceId: VirtualDeviceId;
+  autoScaled: boolean;
+  min: number;
+  max: number;
+  style: ISignalStyle;
+  scaleId: string;
+}
+
+export interface ISignalStyle {
+  color: string;
+}
+
+export type SignalStylePalette = () => ISignalStyle;
+
+export type ISignalState = TelemetryResponseDto;
+
+export type ITelemetryDataItem = TelemetryResponseDto;
+
+/**
+ * Device specific state of display
+ */
+export interface IDeviceDisplayState {
+  selectedSignalId?: SignalId;
+  selectedParamGroupId: ConfigParamGroupId;
+  assignedSignals: { [id: number]: ISignalInstanceState };
+  signals: ISignalState[];
+  quickBar: ConfigParam[];
+  run: IDeviceRunState;
+  pidProfile: number;
+}
+
+export interface IDeviceRunState {
+  value: number;
+  running: boolean;
+}
+
+export type DisplaySettings = DisplaySettingsDto;
+
+export interface IDestination {
+  virtualDeviceId: VirtualDeviceId;
+  deviceId: DeviceId;
+  signalId: SignalId;
 }
 
 /**
@@ -387,6 +488,7 @@ export interface INumericFieldConstraints {
   min?: number;
   max?: number;
   integral?: boolean;
+  stepSize?: number;
 }
 
 export interface IEnumFieldConstraints {
@@ -402,6 +504,12 @@ export enum ProfileConfigParam {
   P, I, D, F
 }
 
+export const CONTROL_MODE_CONSTRAINTS = {
+  [CtrlType.DutyCycle]: {min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
+  [CtrlType.Velocity]: {},
+  [CtrlType.Position]: {},
+};
+
 export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
   rampRateEnabled: false,
   configurationId: DEFAULT_DEVICE_CONFIGURATION_ID,
@@ -411,6 +519,12 @@ export enum ConfirmationAnswer {
   Yes = "Yes",
   Cancel = "Cancel"
 }
+
+export const getDestinationId = (destination: IDestination) => `${destination.virtualDeviceId}:${destination.signalId}`;
+
+export const DISPLAY_SETTING_CONSTRAINTS: { [name: string]: IFieldConstraints } = {
+  timeSpan: {min: 1, max: 1000},
+};
 
 /**
  * Creates initial state for device.
@@ -442,6 +556,27 @@ export const resetDeviceState = (state: IDeviceState) => ({
   ...state,
   uniqueId: 0,
   isLoaded: false,
+});
+
+export const createDeviceDisplayState = (): IDeviceDisplayState => ({
+  signals: [],
+  assignedSignals: {},
+  quickBar: [],
+  selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
+  run: DEFAULT_DEVICE_RUN,
+  pidProfile: 0,
+});
+
+export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,
+                                     signal: ISignalState,
+                                     style: ISignalStyle): ISignalInstanceState => ({
+  virtualDeviceId,
+  signalId: getSignalId(signal)!,
+  scaleId: `${virtualDeviceId}:${getSignalId(signal)}`,
+  autoScaled: true,
+  min: signal.expectedMin!,
+  max: signal.expectedMax!,
+  style,
 });
 
 /**
@@ -564,10 +699,10 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
     (device) => getCanIdFromDeviceId(getDeviceId(device)) === 0);
 
   // Analyze devices having CAN ID != 0
-  const diffNon0 = diffObjects(previousNotZero, nextNotZero, getDeviceId);
+  const diffNon0 = diffArrays(previousNotZero, nextNotZero, getDeviceId);
 
   // Analyze devices having CAN ID = 0
-  const diff0 = diffObjects(previousZero, nextZero, (device) => device.uniqueId);
+  const diff0 = diffArrays(previousZero, nextZero, (device) => device.uniqueId);
 
   return {
     added: diffNon0.added.concat(diff0.added),
@@ -734,3 +869,8 @@ export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
 export const isDefaultDescriptor = (descriptor: PathDescriptor) => descriptor === DEFAULT_PATH_DESCRIPTOR;
 export const toDtoDescriptor = (descriptor: PathDescriptor) => isDefaultDescriptor(descriptor) ? undefined : descriptor;
 export const fromDtoDescriptor = (descriptor?: PathDescriptor) => descriptor ? descriptor : DEFAULT_PATH_DESCRIPTOR;
+
+export const getDisplaySettingConstraints = <S extends keyof DisplaySettings>(name: S) =>
+  DISPLAY_SETTING_CONSTRAINTS[name];
+
+export const getSignalId = (signal: ISignalState) => signal.id!;

@@ -3,27 +3,41 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {filter, find, first} from "lodash";
+import {countBy, filter, find, first, flatMap, isEmpty, keys, toPairs, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
-  DeviceId, FirmwareTag,
+  DeviceId,
+  FirmwareTag,
   getDeviceBlockedReason,
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue, getNetworkDeviceId,
+  getDeviceParamValue,
+  getNetworkDeviceId,
+  getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
-  IApplicationState, IFirmwareEntry,
+  IApplicationState,
+  IDestination,
+  IDeviceDisplayState,
+  IFirmwareEntry,
   isDeviceBlocked,
   isDeviceInvalid,
-  isDeviceNotConfigured, PathDescriptor,
+  isDeviceNotConfigured,
+  ISignalInstanceState,
+  ISignalState,
+  ISignalStyle,
+  PathDescriptor,
   ProcessType,
+  SignalId,
+  toDtoDeviceId,
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
 import {ConfigParam} from "../models/ConfigParam";
+import {colors, colorToIndex} from "./colors";
+import {ISignalDestinationDto} from "../models/dto";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
@@ -38,6 +52,12 @@ export const queryFirstVirtualDeviceId = ({deviceSet: {orderedDevices, devices}}
  */
 export const queryDevicesByDescriptor = ({deviceSet: {devices}}: IApplicationState, descriptor: PathDescriptor) =>
   filter(devices, (device) => device.descriptor === descriptor);
+
+/**
+ * Returns all devices having given descriptor
+ */
+export const queryDevicesByDeviceId = ({deviceSet: {devices}}: IApplicationState, deviceId: DeviceId) =>
+  filter(devices, (device) => getDeviceId(device) === deviceId);
 
 /**
  * Returns true if at least one device exists, otherwise false
@@ -405,4 +425,188 @@ export const queryMessageQueueConfig = (state: IApplicationState) => state.ui.me
 export const queryIsMessageQueueOpened = (state: IApplicationState) => {
   const {messageQueue} = state.ui;
   return messageQueue ? messageQueue.messages.length > 0 : false;
+};
+
+/**
+ * Returns ID of selected panel
+ */
+export const queryDisplaySelectedPanel = (state: IApplicationState) => state.display.selectedPanel;
+/**
+ * Returns shared chart settings
+ */
+export const queryDisplaySettings = (state: IApplicationState) => state.display.settings;
+
+/**
+ * Returns display settings for selected device
+ */
+export const querySelectedDeviceDisplay = (state: IApplicationState) => {
+  const selectedDeviceId = querySelectedVirtualDeviceId(state);
+  return selectedDeviceId == null ? undefined : queryDeviceDisplay(state, selectedDeviceId);
+};
+
+/**
+ * Returns display settings for requested device
+ */
+export const queryDeviceDisplay = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
+  state.display.devices[virtualDeviceId];
+
+/**
+ * Returns whether given device is running
+ */
+export const queryIsDeviceRunning = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
+  queryDeviceDisplay(state, virtualDeviceId).run.running;
+
+/**
+ * Returns whether signal exists for selected device
+ */
+export const queryHasSignalForSelectedDevice = (state: IApplicationState) => {
+  const display = querySelectedDeviceDisplay(state);
+  return display ? display.signals.length > 0 : false;
+};
+
+/**
+ * Returns set of available signals for selected device
+ */
+export const querySelectedDeviceSignals = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.signals;
+};
+
+/**
+ * Returns set of assigned signals for selected device
+ */
+export const querySelectedDeviceAssignedSignals = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.assignedSignals;
+};
+
+/**
+ * Returns ID of selected signal for selected device
+ */
+export const querySelectedSignalIdForSelectedDevice = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.selectedSignalId;
+};
+
+/**
+ * Returns requested signal for selected device
+ */
+export const querySelectedDeviceSignal = (state: IApplicationState, signalId: SignalId) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.signals.find((signal) => getSignalId(signal) === signalId);
+};
+
+/**
+ * Returns run configuration for selected device
+ */
+export const querySelectedDeviceRun = (state: IApplicationState) => {
+  const deviceDisplay = querySelectedDeviceDisplay(state);
+  if (deviceDisplay == null) {
+    return;
+  }
+  return deviceDisplay.run;
+};
+
+/**
+ * Returns IDs of devices matching given predicate
+ */
+export const queryVirtualDeviceIdsByDisplayPredicate = (state: IApplicationState,
+                                                        displayFn: (display: IDeviceDisplayState) => boolean): VirtualDeviceId[] => {
+  return toPairs(state.display.devices)
+    .filter(([virtualDeviceId, deviceDisplay]) => displayFn(deviceDisplay))
+    .map(([virtualDeviceId]) => virtualDeviceId);
+};
+
+/**
+ * Returns IDs of running devices
+ */
+export const queryRunningVirtualDeviceIds = (state: IApplicationState) =>
+  queryVirtualDeviceIdsByDisplayPredicate(state, (display) => display.run.running);
+
+/**
+ * Returns whether there is any running device or not
+ */
+export const queryHasRunningDevices = (state: IApplicationState) => queryRunningVirtualDeviceIds(state).length > 0;
+
+/**
+ * Returns whether there is at least one assigned signal for selected device
+ */
+export const queryHasAssignedSignalsForSelectedDevice = (state: IApplicationState) => {
+  const display = querySelectedDeviceDisplay(state);
+  return display ? !isEmpty(display.assignedSignals) : false;
+};
+
+/**
+ * Returns unique chart style
+ */
+export const querySignalNewStyle = (state: IApplicationState): ISignalStyle => querySignalStylePalette(state)();
+
+/**
+ * Returns palette to enumerate all unused styles
+ */
+export const querySignalStylePalette = (state: IApplicationState) => {
+  const colorToCount = countBy(querySignalsWithInstances(state).map(([_, instance]) => instance.style.color));
+  const copiedColors = colors.slice();
+  copiedColors.sort((a, b) => {
+    const diffUsage = (colorToCount[a] || 0) - (colorToCount[b] || 0);
+    return diffUsage ? diffUsage : colorToIndex[a] - colorToIndex[b];
+  });
+  let lastColorIndex = 0;
+  return () => ({color: copiedColors[lastColorIndex === copiedColors.length ? 0 : lastColorIndex++]});
+};
+
+/**
+ * Returns information about all assigned signals
+ */
+export const querySignalsWithInstances = (state: IApplicationState): Array<[ISignalState, ISignalInstanceState]> => {
+  return flatMap(
+    values(state.display.devices),
+    ({assignedSignals, signals}) => values(assignedSignals).map((instance) => [
+      signals.find((signal) => getSignalId(signal) === instance.signalId)!,
+      instance,
+    ]));
+};
+
+export const queryDisplay = (state: IApplicationState) => state.display;
+
+/**
+ * Returns all destinations
+ */
+export const queryDestinations = (state: IApplicationState): IDestination[] =>
+  flatMap(
+    keys(state.display.devices),
+    (virtualDeviceId) => keys(state.display.devices[virtualDeviceId].assignedSignals).map(Number).map((signalId) => ({
+      virtualDeviceId,
+      deviceId: queryDeviceId(state, virtualDeviceId)!,
+      signalId,
+    })));
+
+export const querySignalDestinations = (state: IApplicationState): ISignalDestinationDto[] =>
+  flatMap(
+    keys(state.display.devices),
+    (virtualDeviceId) => keys(state.display.devices[virtualDeviceId].assignedSignals).map(Number).map((signalId) => ({
+      deviceId: toDtoDeviceId(queryDeviceId(state, virtualDeviceId)!),
+      signalId,
+    })));
+
+export const queryLastSyncedConsumers = (state: IApplicationState): IDestination[] => state.display.lastSyncedConsumers;
+
+/**
+ * Returns control value by device ID
+ */
+export const queryControlValueByDeviceId = (state: IApplicationState, deviceId: DeviceId) => {
+  const device = first(queryDevicesByDeviceId(state, deviceId));
+  return device ? queryDeviceDisplay(state, getVirtualDeviceId(device)).run.value : 0;
 };

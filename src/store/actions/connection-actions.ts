@@ -31,6 +31,7 @@ import {loadParameters} from "./parameter-actions";
 import {SparkAction} from "./action-types";
 import {showToastWarning} from "./ui-actions";
 import {onError, useErrorHandler} from "./error-actions";
+import {syncSignals} from "./display-actions";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -100,6 +101,9 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
         dispatch(replaceDevices(devices.map(resetDeviceState)));
 
         dispatch(setConnectedDescriptor());
+
+        // When there is no connected device, syncSignals just cleans display and removes all destinations
+        return dispatch(syncSignals());
       })
       .catch(useErrorHandler(dispatch))
       .finally(() => {
@@ -121,6 +125,8 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
     }
 
     return SparkManager.listAllDevices()
+    // Syncing of signals is a part of device syncing
+      .then((response) => dispatch(syncSignals()).then(() => response))
       .then(({extendedList}) => {
         // Here we need only SPARK MAX controllers
         const nextDevices = extendedList.filter((extended) => extended.updateable);

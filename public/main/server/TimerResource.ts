@@ -1,65 +1,29 @@
-import {IResource} from "./SparkmaxContext";
+import {AbstractResource} from "./AbstractResource";
 
 /**
  * Resource used by {@link SparkmaxContext} based on interval.
  *
  * {@link TimerResource} periodically (`ms`) starts action (`processor`).
  */
-export class TimerResource implements IResource {
+export class TimerResource extends AbstractResource {
   private intervalId: any;
   private currentProcessing?: Promise<void>;
-  private destroyed: boolean = false;
 
-  constructor(private device: string,
-              private processor: (device: string) => Promise<void>,
-              private ms: number) {
-    this.start();
-  }
+  constructor(device: string,
+              private processor: (this: TimerResource, device: string, attributes: {[name: string]: any}) => Promise<void>,
+              private ms: number,
+              attributes: {[name: string]: any} = {}) {
+    super(device, attributes);
 
-  /**
-   * Waits until current processing is completed and stops timer
-   */
-  public destroy(): Promise<void> {
-    this.destroyed = true;
-    return this.stop();
-  }
-
-  /**
-   * Waits until current processing is completed and stops timer.
-   * Processing can be resumed later.
-   */
-  public pause(): Promise<void>|undefined {
-    this.checkAlive();
-
-    return this.stop();
-  }
-
-  /**
-   * Resumes processing.
-   */
-  public resume(): void {
-    this.checkAlive();
-
-    this.start();
-  }
-
-  /**
-   * Changes target device
-   */
-  public setOwner(device: string): void {
-    this.checkAlive();
-
-    this.device = device;
+    this.setPauseable();
   }
 
   /**
    * Starts timer
    */
-  private start(): void {
-    this.checkAlive();
-
+  protected _start(): void {
     this.intervalId = setInterval(() => {
-      this.currentProcessing = this.processor(this.device)
+      this.currentProcessing = this.processor(this.device, this.getAttributes())
         .finally(() => {
           this.currentProcessing = undefined;
         });
@@ -69,17 +33,13 @@ export class TimerResource implements IResource {
   /**
    * Stops timer
    */
-  private stop(): Promise<void> {
+  protected _stop(): Promise<void> {
     clearInterval(this.intervalId);
     return this.currentProcessing || Promise.resolve();
   }
-
-  private checkAlive(): void {
-    if (this.destroyed) {
-      throw new Error("Cannot use destroyed resource");
-    }
-  }
 }
 
-export const timerResourceFactory = (processor: (device: string) => Promise<void>, ms: number) =>
-  (device: string) => new TimerResource(device, processor, ms);
+export const timerResourceFactory = (processor: (device: string, attributes: {[name: string]: any}) => Promise<void>,
+                                     ms: number,
+                                     attributes: {[name: string]: any} = {}) =>
+  (device: string) => new TimerResource(device, processor, ms, attributes);

@@ -2,13 +2,54 @@ import {noop, values} from "lodash";
 
 export type ResourceFactory = (device: string) => IResource;
 
+/**
+ * Resource allows to manage lifecycle of entities associated with the connected device,
+ * like streams, ping requests, etc.
+ */
 export interface IResource {
+  /**
+   * Attributes allows to associate custom data with the resource
+   */
+  setAttribute(name: string, value: any): void;
+
+  /**
+   * Returns custom data associated with the resource
+   */
+  getAttribute(name: string): any;
+
+  /**
+   * Changes ID of running device
+   * @param device
+   */
   setOwner?(device: string): void;
 
-  pause(): Promise<void>|undefined;
+  /**
+   * Pauses this resource.
+   * This method should stop all resource activity.
+   * Returned Promise should be resolved as soon as all activity is stopped.
+   */
+  pause(): Promise<void>;
 
+  /**
+   * Resumes paused resource
+   */
   resume(): void;
 
+  /**
+   * Stars this resource activity
+   */
+  start(): void;
+
+  /**
+   * Stops all resource activity.
+   * Returned Promise should be resolved as soon as all activity is stopped.
+   */
+  stop(): Promise<void>;
+
+  /**
+   * Stops resource and release all allocated resources.
+   * Returned Promise should be resolved as soon as all activity is stopped.
+   */
   destroy(): Promise<void>|undefined;
 }
 
@@ -48,7 +89,11 @@ export class SparkmaxContext {
     // If device is changed, release old resources and allocate a new one
     return this.disconnectDevice().then(() => {
       this.device = device;
-      this.permanentResources = this.permanentResourceFactories.map((factory) => factory(device));
+      this.permanentResources = this.permanentResourceFactories.map((factory) => {
+        const resource = factory(device);
+        resource.start();
+        return resource;
+      });
     });
   }
 
@@ -85,7 +130,9 @@ export class SparkmaxContext {
     }
 
     if (this.device) {
-      this.temporaryResources[name] = factory(this.device);
+      const resource = factory(this.device);
+      resource.start();
+      this.temporaryResources[name] = resource;
     }
   }
 
@@ -108,6 +155,13 @@ export class SparkmaxContext {
    */
   public isResourceExist(name: string): boolean {
     return this.temporaryResources[name] != null;
+  }
+
+  /**
+   * Returns true if temporary resource exists, otherwise false.
+   */
+  public getResource(name: string): IResource {
+    return this.temporaryResources[name];
   }
 
   /**

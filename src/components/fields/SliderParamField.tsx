@@ -9,16 +9,16 @@ import {MessageSeverity} from "../../models/Message";
 interface IProps extends IConfigParamProps {
   className?: string;
   constraints?: IFieldConstraints;
-  stepSize?: number;
 }
 
-const SliderParamField = ({className, parameter, constraints, disabled, value, stepSize, message, onValueChange}: IProps) => {
+const SliderParamField = ({className, parameter, constraints, disabled, value, message, onValueChange}: IProps) => {
   const onChange = useCallback((newValue) => onValueChange(parameter, newValue), []);
 
   const typedConstraints = constraints as INumericFieldConstraints;
 
   const min = typedConstraints ? typedConstraints.min : Number.MIN_SAFE_INTEGER;
   const max = typedConstraints ? typedConstraints.max : Number.MAX_SAFE_INTEGER;
+  const stepSize = typedConstraints ? typedConstraints.stepSize : undefined;
 
   const sliderClassName = classNames(className, {"field-error": message && message.severity === MessageSeverity.Error});
 

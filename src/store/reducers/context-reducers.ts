@@ -26,8 +26,8 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialCo
   }
 };
 
-const syncSelectedVirtualDeviceIdReducer = (state: IApplicationState,
-                                            action: ApplicationActions): IApplicationState => {
+export const rootContextReducer = (state: IApplicationState,
+                            action: ApplicationActions): IApplicationState => {
   switch (action.type) {
     case ActionType.REPLACE_DEVICES: {
       const {selectedVirtualDeviceId} = state.context;
@@ -47,7 +47,5 @@ const syncSelectedVirtualDeviceIdReducer = (state: IApplicationState,
       return state;
   }
 };
-
-export { syncSelectedVirtualDeviceIdReducer };
 
 export default contextReducer;

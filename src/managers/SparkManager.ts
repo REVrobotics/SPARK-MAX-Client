@@ -1,5 +1,12 @@
 import {ConfigParam} from "../models/ConfigParam";
-import {FirmwareResponseDto, getErrorText, hasError, ListRequestDto, ListResponseDto} from "../models/dto";
+import {
+  FirmwareResponseDto,
+  getErrorText,
+  hasError, ISignalDestinationDto,
+  ListRequestDto,
+  ListResponseDto, TelemetryEvent,
+  TelemetryListResponseDto
+} from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 import {LogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../models/errors";
 
@@ -116,6 +123,34 @@ class SparkManager {
     return wrapSparkError(sendTwoWay("load-firmware", filename, devicesToUpdate));
   }
 
+  public telemetryList(): Promise<TelemetryListResponseDto> {
+    return wrapSparkError(sendTwoWay("telemetry-list"));
+  }
+
+  public telemetryStart(): void {
+    sendOneWay("telemetry-start");
+  }
+
+  public telemetryStop(): void {
+    sendOneWay("telemetry-stop");
+  }
+
+  public telemetryAddSignal(device: string, signalId: number): void {
+    sendOneWay("telemetry-signal-add", device, signalId);
+  }
+
+  public telemetryRemoveSignal(device: string, signalId: number): void {
+    sendOneWay("telemetry-signal-remove", device, signalId);
+  }
+
+  public telemetryRunningSignals(): Promise<ISignalDestinationDto[]> {
+    return sendTwoWay("telemetry-running-signals");
+  }
+
+  public onTelemetryEvent(listener: (event: TelemetryEvent) => void): void {
+    onCallback("telemetry-event", listener);
+  }
+
   public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {
     onCallback("load-firmware-progress", listener);
   }
@@ -128,7 +163,7 @@ class SparkManager {
     return onCallback("resync", listener);
   }
 
-  public onHeartbeat(listener: (error: any, response: any) => void): () => void {
+  public onHeartbeat(listener: (error: any, device: string, response: any) => void): () => void {
     return onCallback("heartbeat", listener);
   }
 
@@ -145,16 +180,16 @@ class SparkManager {
   }
 
   // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
-  public setSetpoint(setpoint: number) {
-    return sendOneWay("set-setpoint", setpoint);
+  public setSetpoint(device: string, setpoint: number) {
+    return sendOneWay("set-setpoint", device, setpoint);
   }
 
-  public enableHeartbeat(interval: number) {
-    sendOneWay("enable-heartbeat", interval);
+  public enableHeartbeat(device: string, controlValue: number, interval: number) {
+    sendOneWay("enable-heartbeat", device, controlValue, interval);
   }
 
-  public disableHeartbeat(listener?: (event: any, error: any, response: any) => void) {
-    sendOneWay("disable-heartbeat");
+  public disableHeartbeat(device: string) {
+    sendOneWay("disable-heartbeat", device);
   }
 
   public burnFlash(device: string): Promise<any> {

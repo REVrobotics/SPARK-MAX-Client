@@ -31,7 +31,7 @@ export const downloadLatestFirmware = (): SparkAction<Promise<void>> => {
     }
 
     dispatch(setFirmwareDownloading());
-    dispatch(consoleOutput(tt("msg_console_output:check_latest_firmware_version")));
+    dispatch(consoleOutput(tt("msg_console_output:check_firmware_version")));
     configLoadPromise = WebProvider.get("content/sw/max/sparkmax-gui-cfg.json")
       .then((firmwareJSON: any) => {
         dispatch(setFirmwareDownloaded(firmwareJSON));

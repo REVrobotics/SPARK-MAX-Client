@@ -15,3 +15,10 @@ export function onChangeReducer<S, A extends Action = AnyAction>(mainReducer: Re
     return otherReducers.reduce((stageState, reducer) => reducer(stageState, action), newState);
   };
 }
+
+/**
+ * Creates reducer that calls provided reducers in order
+ */
+export function composeReducers<S, A extends Action = AnyAction>(...reducers: Array<Reducer<S, A>>): Reducer<S, A> {
+  return (state, action) => reducers.reduce((previousState, reducer) => reducer(previousState, action), state) as S;
+}

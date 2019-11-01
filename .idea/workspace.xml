@@ -2,26 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-10]">
-      <change afterPath="$PROJECT_DIR$/src/models/Message.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/errors.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/usb-client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/usb-client.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/main/services/ipc-main-calls.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/main/services/ipc-main-calls.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ConnectionStatusBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DeviceSelect.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/config-param-props.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/config-param-props.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/managers/SparkManager.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/managers/SparkManager.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/managers/ipc-renderer-calls.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/managers/ipc-renderer-calls.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/device-config/device-config-validator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/device-config/device-config-validator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/device-config/device-config-violations.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/device-config/device-config-violations.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/param-rules/ConfigParamRule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/param-rules/ConfigParamRule.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/param-rules/EnumParamRule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/param-rules/EnumParamRule.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/param-rules/NumericParamRule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/param-rules/NumericParamRule.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/ram-config-param-rules.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/ram-config-param-rules.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/startup-messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/startup-messages.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/RunDisplay.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunDisplay.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/RunTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mls/labels.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/mls/labels.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/connection-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/connection-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/display-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/display-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/data-stream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/data-stream.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/display-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/display-utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/selectors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/selectors.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/store/state.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/state.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/validation-config-param-rules.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/validation-config-param-rules.ts" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -41,7 +32,7 @@
     </option>
   </component>
   <component name="Git.Rebase.Settings">
-    <option name="ONTO" value="refs/remotes/origin/incoming" />
+    <option name="ONTO" value="refs/heads/feature/REVROBO-7-multiple-devices" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -58,7 +49,7 @@
     <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="10.16.3" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/scripts/proto-gen" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/containers" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.tslint" value="$PROJECT_DIR$/node_modules/tslint" />
@@ -71,11 +62,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\containers" />
+      <recent name="D:\workspaces\SPARK-MAX-Client\src\components" />
       <recent name="D:\workspaces\SPARK-MAX-Client\scripts\proto-gen" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\store\param-rules" />
       <recent name="D:\workspaces\SPARK-MAX-Client\src\components\fields" />
-      <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin" />
-      <recent name="D:\workspaces\SPARK-MAX-Client\scripts\protoc-dto-plugin\test\output" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\workspaces\SPARK-MAX-Client\public\main\context" />
@@ -118,34 +109,8 @@
       <workItem from="1568926688449" duration="80704000" />
       <workItem from="1569329621469" duration="108746000" />
       <workItem from="1571295320588" duration="27324000" />
-    </task>
-    <task id="LOCAL-00007" summary="Implement first version of .proto files generation">
-      <created>1568748443737</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1568748443737</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Implement first version of .proto files generation">
-      <created>1568748697585</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1568748697585</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Implement first version of .proto files generation">
-      <created>1568753932626</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1568753932626</updated>
-    </task>
-    <task id="LOCAL-00010" summary="Implement protoc DTO generation plugin">
-      <created>1568795153491</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1568795153491</updated>
+      <workItem from="1571405376779" duration="7058000" />
+      <workItem from="1571637055045" duration="59023000" />
     </task>
     <task id="LOCAL-00011" summary="Implement protoc DTO generation plugin">
       <created>1568795299307</created>
@@ -462,7 +427,35 @@
       <option name="project" value="LOCAL" />
       <updated>1571320462494</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="[REVROBO-13] Implement assigning of signals">
+      <created>1571730335427</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1571730335428</updated>
+    </task>
+    <task id="LOCAL-00057" summary="[REVROBO-13] Implement support of parameters on Run tab">
+      <created>1571740565678</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1571740565678</updated>
+    </task>
+    <task id="LOCAL-00058" summary="[REVROBO-13] Implement SafeNumericInput">
+      <created>1571820932047</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1571820932047</updated>
+    </task>
+    <task id="LOCAL-00059" summary="[REVROBO-13] Implement saving and loading of display configuration">
+      <created>1571846321895</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1571846321895</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -550,11 +543,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Initial version of refactoring for multiple devices" />
-    <MESSAGE value="Refactoring to support connection to several devices" />
-    <MESSAGE value="Implement select for devices" />
-    <MESSAGE value="[REVROBO-7] Implement selection of devices" />
-    <MESSAGE value="[REVROBO-5] Fix documentation" />
     <MESSAGE value="[REVROBO-7] Implement actions for save and burn configuration" />
     <MESSAGE value="[REVROBO-7] Implement actions for settings of parameters" />
     <MESSAGE value="Implement validation for CAN ID field" />
@@ -574,7 +562,12 @@
     <MESSAGE value="[REVROBO-7] Queue device actions in renderer process to avoid problems with device id" />
     <MESSAGE value="[REVROBO-7] Update gRPC client from the latest .proto files" />
     <MESSAGE value="[REVROBO-7] Support of descriptor and ping.updateRequired fields" />
+    <MESSAGE value="[REVROBO-13] Implement assigning of signals" />
     <MESSAGE value="[REVROBO-7] Support of descriptor and pingResponse.updateRequired fields" />
-    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-7] Support of descriptor and pingResponse.updateRequired fields" />
+    <MESSAGE value="[REVROBO-13] Implement support of parameters on Run tab" />
+    <MESSAGE value="[REVROBO-13] Implement SafeNumericInput" />
+    <MESSAGE value="[REVROBO-10]" />
+    <MESSAGE value="[REVROBO-13] Implement saving and loading of display configuration" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-13] Implement saving and loading of display configuration" />
   </component>
 </project>
