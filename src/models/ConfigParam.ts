@@ -35,6 +35,9 @@ export const getConfigParamValue = (name: string): ConfigParam => ConfigParam[na
  */
 export const getConfigParamName = (param: ConfigParam): string => ConfigParam[param];
 
+/**
+ * Returns readable name of parameter
+ */
 export const getConfigParamReadableName = (param: ConfigParam) => translateWord(DictionaryName.ConfigParams, param);
 
 // Track all groups of parameters which depend each other.
@@ -60,8 +63,17 @@ const configParamDependencyIndex = buildConfigParamDependencyIndex();
  */
 export const getDependentParams = (param: ConfigParam) => configParamDependencyIndex[param] || [];
 
+/**
+ * All groups
+ */
 export const configParamGroups = enumValues(ConfigParamGroupName);
+/**
+ * Returns group name
+ */
 export const getConfigParamGroupName = (group: ConfigParamGroupName) => ConfigParamGroupName[group];
+/**
+ * Returns readable group name
+ */
 export const getConfigParamGroupReadableName = memoize((group: ConfigParamGroupName) => {
   const groupName = getConfigParamGroupName(group);
   return groupName.substring("GROUPNAME_".length).replace(/_/g, " ");
@@ -71,4 +83,7 @@ const configParamInGroups = groupBy(
   configParamValues,
   (param) => ConfigParamGroup[`GROUP_${getConfigParamName(param)}`]);
 
+/**
+ * Returns parameters that belongs to specific group
+ */
 export const getConfigParamsInGroup = (groupId: ConfigParamGroupId) => configParamInGroups[groupId];

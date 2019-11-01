@@ -11,9 +11,7 @@ import {
   CtrlType,
   DisplayConfigDto,
   DisplaySettingsDto,
-  ExtendedListResponseDto,
-  SignalDto,
-  TelemetryResponseDto
+  ExtendedListResponseDto, TelemetryResponseDto,
 } from "../models/dto";
 import {diffArrays, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
@@ -208,6 +206,9 @@ export interface IApplicationState {
   display: IDisplayState
 }
 
+/**
+ * Name of panel available on "Run Tab"
+ */
 export enum PanelName {
   Run = "run",
   Parameters = "parameters",
@@ -215,13 +216,16 @@ export enum PanelName {
   Settings = "settings",
 }
 
+/**
+ * Name of quick panel available on "Run" panel of "Run Tab"
+ */
 export enum QuickPanelName {
   PIDF = "pidf",
   Quick = "quick",
 }
 
 /**
- * State of display on run tab
+ * State of all device displays
  */
 export interface IDisplayState {
   selectedPanel: PanelName;
@@ -246,6 +250,9 @@ export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
 
 export type SignalId = number;
 
+/**
+ * State of assigned signal
+ */
 export interface ISignalInstanceState {
   signalId: SignalId;
   virtualDeviceId: VirtualDeviceId;
@@ -262,10 +269,13 @@ export interface ISignalStyle {
 
 export type SignalStylePalette = () => ISignalStyle;
 
-export type ISignalState = SignalDto;
+export type ISignalState = TelemetryResponseDto;
 
 export type ITelemetryDataItem = TelemetryResponseDto;
 
+/**
+ * Device specific state of display
+ */
 export interface IDeviceDisplayState {
   selectedSignalId?: SignalId;
   selectedParamGroupId: ConfigParamGroupId;
@@ -561,11 +571,11 @@ export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,
                                      signal: ISignalState,
                                      style: ISignalStyle): ISignalInstanceState => ({
   virtualDeviceId,
-  signalId: getSignalId(signal),
+  signalId: getSignalId(signal)!,
   scaleId: `${virtualDeviceId}:${getSignalId(signal)}`,
   autoScaled: true,
-  min: signal.expectedMin,
-  max: signal.expectedMax,
+  min: signal.expectedMin!,
+  max: signal.expectedMax!,
   style,
 });
 
@@ -863,4 +873,4 @@ export const fromDtoDescriptor = (descriptor?: PathDescriptor) => descriptor ? d
 export const getDisplaySettingConstraints = <S extends keyof DisplaySettings>(name: S) =>
   DISPLAY_SETTING_CONSTRAINTS[name];
 
-export const getSignalId = (signal: ISignalState) => signal.id;
+export const getSignalId = (signal: ISignalState) => signal.id!;

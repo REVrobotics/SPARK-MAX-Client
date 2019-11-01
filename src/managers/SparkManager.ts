@@ -184,12 +184,12 @@ class SparkManager {
     return sendOneWay("set-setpoint", device, setpoint);
   }
 
-  public enableHeartbeat(device: string, interval: number) {
-    sendOneWay("enable-heartbeat", device, interval);
+  public enableHeartbeat(device: string, controlValue: number, interval: number) {
+    sendOneWay("enable-heartbeat", device, controlValue, interval);
   }
 
   public disableHeartbeat(device: string) {
-    sendOneWay("disable-heartbeat");
+    sendOneWay("disable-heartbeat", device);
   }
 
   public burnFlash(device: string): Promise<any> {

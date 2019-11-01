@@ -92,14 +92,23 @@ export function setArrayElementWith<T>(array: T[],
   return setArrayElement(array, index, value);
 }
 
+/**
+ * Immutable insert element into array
+ */
 export function insertArrayElement<T>(array: T[], index: number, element: T): T[] {
   return array.slice(0, index).concat([element]).concat(array.slice(index));
 }
 
+/**
+ * Immutable remove element from array
+ */
 export function removeArrayElement<T>(array: T[], index: number): T[] {
   return array.slice(0, index).concat(array.slice(index + 1));
 }
 
+/**
+ * Immutable insert element into sorted array
+ */
 export function insertArrayElementSorted<T>(array: T[], element: T): T[] {
   const index = sortedIndexOf(array, element);
   if (index >= 0) {
@@ -109,6 +118,9 @@ export function insertArrayElementSorted<T>(array: T[], element: T): T[] {
   return insertArrayElement(array, sortedIndex(array, element), element);
 }
 
+/**
+ * Immutable remove element from array
+ */
 export function removeArrayElementSorted<T>(array: T[], element: T): T[] {
   const index = sortedIndexOf(array, element);
   if (index < 0) {
@@ -157,8 +169,11 @@ export function diffArrays<T>(previous: T[], next: T[], by: (obj: T) => any = id
     unmodified: existingIds.filter((id) => previousById[id] === nextById[id]).map((id) => previousById[id]),
     removed: removedIds.map((id) => previousById[id]),
   };
-};
+}
 
+/**
+ * Remove all elements from the array that does not fit into specific time span
+ */
 export function truncateByTime<T>(data: T[], timeSpan: number, getTime: (item: T) => number) {
   const lastPoint = data[data.length - 1];
 

@@ -26,6 +26,7 @@ const createEmptyConfiguration = (): ChartConfiguration => ({
   options: {
     // responsive: true,
     maintainAspectRatio: false,
+    // Styles of displayed primitives
     elements: {
       line: {
         tension: 0,
@@ -64,6 +65,9 @@ const createEmptyConfiguration = (): ChartConfiguration => ({
   },
 });
 
+/**
+ * Configures X axes for given set of data
+ */
 const fitIntoXAxe = (axe: ChartXAxe, data: DataPoint[], timeScale: number): ChartXAxe => {
   const rightBound = data.length === 0 ? 0 : Math.ceil((last(data)!.x.getTime()) / 1000) * 1000;
   const leftBound = rightBound - timeScale * 1000;
@@ -92,6 +96,9 @@ const createEmptyYAxe = (id: string): ChartYAxe => ({
   },
 });
 
+/**
+ * Configures Y axes for given set of data
+ */
 const updateYAxe = (axe: ChartYAxe, options: WaveformScaleOptions): ChartYAxe => ({
   ...axe,
   scaleLabel: options.label ?
@@ -133,6 +140,9 @@ const toChartjsPosition = (position: LegendPosition): PositionType => {
   }
 }
 
+/**
+ * Integration of chart.js library
+ */
 class ChartjsEngineChart implements WaveformEngineChart {
   private configuration: ChartConfiguration;
   private chart: Chart;

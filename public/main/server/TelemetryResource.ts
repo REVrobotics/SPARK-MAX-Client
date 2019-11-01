@@ -8,6 +8,9 @@ import {
 import * as grpc from "grpc";
 import {logger} from "../loggers";
 
+/**
+ * Resource used to manage telemetry stream and emit telemetry events.
+ */
 export class TelemetryResource extends AbstractResource {
   private signals: Array<{deviceId: string, signalId: number}> = [];
 

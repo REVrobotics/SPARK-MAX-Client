@@ -36,6 +36,9 @@ const DisplayConfigParamFieldGroup = (props: IDisplayConfigParamFieldGroupProps)
   );
 };
 
+/**
+ * Component for configuration parameter used in different places on Run tab
+ */
 const DisplayConfigParamField = (props: IDisplayConfigParamFieldProps) => {
   const {parameter, className, ...other} = props;
   const {type} = getConfigParamRule(parameter);

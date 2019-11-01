@@ -10,6 +10,9 @@ interface IProps {
   children: ReactNode;
 }
 
+/**
+ * The simplest component displaying content (on the right) and header of this content (on the left)
+ */
 const PanelContainer = (props: IProps) => {
   return (
     <div className={classNames("panel-container flex-row", props.className)}>

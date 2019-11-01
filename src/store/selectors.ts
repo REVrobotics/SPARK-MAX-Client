@@ -427,25 +427,46 @@ export const queryIsMessageQueueOpened = (state: IApplicationState) => {
   return messageQueue ? messageQueue.messages.length > 0 : false;
 };
 
+/**
+ * Returns ID of selected panel
+ */
 export const queryDisplaySelectedPanel = (state: IApplicationState) => state.display.selectedPanel;
+/**
+ * Returns shared chart settings
+ */
 export const queryDisplaySettings = (state: IApplicationState) => state.display.settings;
 
+/**
+ * Returns display settings for selected device
+ */
 export const querySelectedDeviceDisplay = (state: IApplicationState) => {
   const selectedDeviceId = querySelectedVirtualDeviceId(state);
   return selectedDeviceId == null ? undefined : queryDeviceDisplay(state, selectedDeviceId);
 };
 
+/**
+ * Returns display settings for requested device
+ */
 export const queryDeviceDisplay = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
   state.display.devices[virtualDeviceId];
 
+/**
+ * Returns whether given device is running
+ */
 export const queryIsDeviceRunning = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) =>
   queryDeviceDisplay(state, virtualDeviceId).run.running;
 
+/**
+ * Returns whether signal exists for selected device
+ */
 export const queryHasSignalForSelectedDevice = (state: IApplicationState) => {
   const display = querySelectedDeviceDisplay(state);
   return display ? display.signals.length > 0 : false;
 };
 
+/**
+ * Returns set of available signals for selected device
+ */
 export const querySelectedDeviceSignals = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
@@ -454,6 +475,9 @@ export const querySelectedDeviceSignals = (state: IApplicationState) => {
   return deviceDisplay.signals;
 };
 
+/**
+ * Returns set of assigned signals for selected device
+ */
 export const querySelectedDeviceAssignedSignals = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
@@ -462,6 +486,9 @@ export const querySelectedDeviceAssignedSignals = (state: IApplicationState) => 
   return deviceDisplay.assignedSignals;
 };
 
+/**
+ * Returns ID of selected signal for selected device
+ */
 export const querySelectedSignalIdForSelectedDevice = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
@@ -470,6 +497,9 @@ export const querySelectedSignalIdForSelectedDevice = (state: IApplicationState)
   return deviceDisplay.selectedSignalId;
 };
 
+/**
+ * Returns requested signal for selected device
+ */
 export const querySelectedDeviceSignal = (state: IApplicationState, signalId: SignalId) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
@@ -478,6 +508,9 @@ export const querySelectedDeviceSignal = (state: IApplicationState, signalId: Si
   return deviceDisplay.signals.find((signal) => getSignalId(signal) === signalId);
 };
 
+/**
+ * Returns run configuration for selected device
+ */
 export const querySelectedDeviceRun = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   if (deviceDisplay == null) {
@@ -486,6 +519,9 @@ export const querySelectedDeviceRun = (state: IApplicationState) => {
   return deviceDisplay.run;
 };
 
+/**
+ * Returns IDs of devices matching given predicate
+ */
 export const queryVirtualDeviceIdsByDisplayPredicate = (state: IApplicationState,
                                                         displayFn: (display: IDeviceDisplayState) => boolean): VirtualDeviceId[] => {
   return toPairs(state.display.devices)
@@ -493,18 +529,33 @@ export const queryVirtualDeviceIdsByDisplayPredicate = (state: IApplicationState
     .map(([virtualDeviceId]) => virtualDeviceId);
 };
 
+/**
+ * Returns IDs of running devices
+ */
 export const queryRunningVirtualDeviceIds = (state: IApplicationState) =>
   queryVirtualDeviceIdsByDisplayPredicate(state, (display) => display.run.running);
 
+/**
+ * Returns whether there is any running device or not
+ */
 export const queryHasRunningDevices = (state: IApplicationState) => queryRunningVirtualDeviceIds(state).length > 0;
 
+/**
+ * Returns whether there is at least one assigned signal for selected device
+ */
 export const queryHasAssignedSignalsForSelectedDevice = (state: IApplicationState) => {
   const display = querySelectedDeviceDisplay(state);
   return display ? !isEmpty(display.assignedSignals) : false;
 };
 
+/**
+ * Returns unique chart style
+ */
 export const querySignalNewStyle = (state: IApplicationState): ISignalStyle => querySignalStylePalette(state)();
 
+/**
+ * Returns palette to enumerate all unused styles
+ */
 export const querySignalStylePalette = (state: IApplicationState) => {
   const colorToCount = countBy(querySignalsWithInstances(state).map(([_, instance]) => instance.style.color));
   const copiedColors = colors.slice();
@@ -516,14 +567,9 @@ export const querySignalStylePalette = (state: IApplicationState) => {
   return () => ({color: copiedColors[lastColorIndex === copiedColors.length ? 0 : lastColorIndex++]});
 };
 
-export const querySelectedSignal = (state: IApplicationState) => {
-  const deviceDisplay = querySelectedDeviceDisplay(state);
-  if (deviceDisplay == null || deviceDisplay.selectedSignalId == null) {
-    return;
-  }
-  return querySelectedDeviceSignal(state, deviceDisplay.selectedSignalId);
-};
-
+/**
+ * Returns information about all assigned signals
+ */
 export const querySignalsWithInstances = (state: IApplicationState): Array<[ISignalState, ISignalInstanceState]> => {
   return flatMap(
     values(state.display.devices),
@@ -535,6 +581,9 @@ export const querySignalsWithInstances = (state: IApplicationState): Array<[ISig
 
 export const queryDisplay = (state: IApplicationState) => state.display;
 
+/**
+ * Returns all destinations
+ */
 export const queryDestinations = (state: IApplicationState): IDestination[] =>
   flatMap(
     keys(state.display.devices),
@@ -553,3 +602,11 @@ export const querySignalDestinations = (state: IApplicationState): ISignalDestin
     })));
 
 export const queryLastSyncedConsumers = (state: IApplicationState): IDestination[] => state.display.lastSyncedConsumers;
+
+/**
+ * Returns control value by device ID
+ */
+export const queryControlValueByDeviceId = (state: IApplicationState, deviceId: DeviceId) => {
+  const device = first(queryDevicesByDeviceId(state, deviceId));
+  return device ? queryDeviceDisplay(state, getVirtualDeviceId(device)).run.value : 0;
+};

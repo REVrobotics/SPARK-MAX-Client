@@ -14,6 +14,8 @@ export class TimerResource extends AbstractResource {
               private ms: number,
               attributes: {[name: string]: any} = {}) {
     super(device, attributes);
+
+    this.setPauseable();
   }
 
   /**

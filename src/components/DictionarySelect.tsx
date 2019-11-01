@@ -16,6 +16,11 @@ interface IProps {
 const wordRenderer = (item: IDictionaryWord, itemProps: IItemRendererProps) =>
   <MenuItem key={item.id} text={item.text} onClick={itemProps.handleClick}/>;
 
+/**
+ * This component declares `Select` component based on `Dictionary`.
+ * `Dictionary` describes finite, constant and sorted set of allowed items.
+ * Actually the most of `Select`s are fit into this concept.
+ */
 const DictionarySelect = (props: IProps) => {
   const {
     className,

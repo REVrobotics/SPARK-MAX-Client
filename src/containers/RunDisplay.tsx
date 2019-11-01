@@ -14,6 +14,9 @@ interface IProps {
   signalsWithInstances: Array<[ISignalState, ISignalInstanceState]>;
 }
 
+/**
+ * This component displays chart(s) with all requested signals
+ */
 const RunDisplay = (props: IProps) => {
   const {className, settings, signalsWithInstances} = props;
 
@@ -25,6 +28,8 @@ const RunDisplay = (props: IProps) => {
   }
 
   let children: ReactNode;
+  // Display single chart if user wants to show only single chart
+  // or if number of signals > 2 (anyway, in this case displaying of such number of charts will be inconvenient).
   if (settings.singleChart || signalsWithInstances.length > 2) {
     children = (
       <WaveformChart timeSpan={settings.timeSpan}

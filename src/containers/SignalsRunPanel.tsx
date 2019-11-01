@@ -82,6 +82,9 @@ interface SignalPaneProps {
   onSetField(id: SignalId, key: keyof ISignalInstanceState, value: any): void;
 }
 
+/**
+ * This component displays signal-specific settings
+ */
 const SignalAssignedPane = (props: SignalPaneProps) => {
   const {className, onRemove, onSetField} = props;
   const signal = props.signal!;
@@ -171,6 +174,9 @@ const SignalPane = (props: SignalPaneProps) => {
   return <SignalAssignedPane {...props}/>;
 };
 
+/**
+ * Component for "Signals" panel of "Run Tab"
+ */
 const SignalsRunPanel = (props: Props) => {
   const {selectedSignalId, signals, assignedSignals, onSignalSelect, onSignalAdd, onSignalRemove, setSignalField} = props;
 
@@ -187,7 +193,7 @@ const SignalsRunPanel = (props: Props) => {
           <Signal key={signal.id}
                   signal={signal}
                   value={getSignalId(signal)}
-                  assigned={!!assignedSignals[signal.id]}
+                  assigned={!!assignedSignals[signal.id!]}
                   onAdd={onSignalAdd}
                   onRemove={onSignalRemove}/>)}
       </List>

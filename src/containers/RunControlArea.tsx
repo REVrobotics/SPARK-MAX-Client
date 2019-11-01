@@ -37,6 +37,12 @@ interface IProps {
   burnConfiguration(): void;
 }
 
+/**
+ * Component used on "Run" panel of "Run Tab". This components allows to manage
+ * * running mode
+ * * control mode
+ * * `setpoint`
+ */
 const RunControlArea = (props: IProps) => {
   const {
     mode, hasRunningDevices, hasSignalsForSelectedDevice,

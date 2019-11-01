@@ -2,7 +2,7 @@ import {uniq} from "lodash";
 import {
   ConfirmationAnswer,
   createSignalInstance,
-  DisplaySettings,
+  DisplaySettings, fromDtoDeviceId,
   getDestinationId,
   ISignalInstanceState,
   SignalId,
@@ -12,6 +12,7 @@ import {
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
 import {
+  queryControlValueByDeviceId,
   queryDestinations,
   queryDeviceId,
   queryDisplay,
@@ -53,6 +54,9 @@ import {
 } from "../data-stream";
 import {diffArrays} from "../../utils/object-utils";
 
+/**
+ * This action synchronizes set of saved signals with the set of available signals and display only existing ones.
+ */
 export const syncSignals = (): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     // If we do not have connected device => clean display and remove all destinations
@@ -92,6 +96,9 @@ export const syncSignalDeviceId = (virtualDeviceId: VirtualDeviceId): SparkActio
       .then(() => dispatch(persistDisplayConfig()));
   };
 
+/**
+ * Adds signal and updates telemetry streaming if necessary
+ */
 export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     const signal = querySelectedDeviceSignal(getState(), signalId);
@@ -106,6 +113,9 @@ export const addSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId):
     }
   };
 
+/**
+ * Removes signal and updates telemetry streaming if necessary
+ */
 export const removeSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     return dispatch(showConfirmation({
@@ -125,6 +135,9 @@ export const removeSignal = (virtualDeviceId: VirtualDeviceId, signalId: SignalI
       });
   };
 
+/**
+ * Sets and persist signal-specific settings
+ */
 export const setSignalField = (virtualDeviceId: VirtualDeviceId,
                                signalId: SignalId,
                                key: keyof ISignalInstanceState,
@@ -134,6 +147,9 @@ export const setSignalField = (virtualDeviceId: VirtualDeviceId,
     return dispatch(persistDisplayConfig());
   };
 
+/**
+ * Set and persist shared signal settings
+ */
 export const setAndPersistDisplaySetting = (key: keyof DisplaySettings, value: any): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     dispatch(setDisplaySetting(key, value));
@@ -141,6 +157,9 @@ export const setAndPersistDisplaySetting = (key: keyof DisplaySettings, value: a
       .then(() => dispatch(persistDisplayConfig()));
   };
 
+/**
+ * Set and persist parameter-specific display settings
+ */
 export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
                                                param: ConfigParam,
                                                quick: boolean): SparkAction<Promise<void>> =>
@@ -149,8 +168,12 @@ export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
     return dispatch(persistDisplayConfig());
   };
 
+/**
+ * Sets control value
+ */
 export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): SparkAction<void> =>
   (dispatch, getState) => {
+    SparkManager.setSetpoint(toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!), value);
     dispatch(setControlValue(virtualDeviceId, value));
   };
 
@@ -177,6 +200,11 @@ export const terminateStreaming = (): SparkAction<void> =>
     queryRunningVirtualDeviceIds(getState()).forEach((id) => dispatch(setDeviceStopped(id)));
   };
 
+/**
+ * There are two kind of participants in data streaming:
+ * * *producer* emits data points
+ * * *consumer* buffers all emitted data points to display it on the chart
+ */
 const syncDataParticipants = (): SparkAction<Promise<void>> =>
   (dispatch) => {
     dispatch(syncDataConsumers());
@@ -232,6 +260,13 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
 
       // Extract all previous running devices
       const previousRunningDeviceIds = uniq(previousDestinations.map(({deviceId}) => deviceId));
+
+      const deviceIdDiff = diffArrays(previousRunningDeviceIds, runningDeviceIds);
+
+      deviceIdDiff.added.forEach((deviceId) => {
+        SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(getState(), fromDtoDeviceId(deviceId)), 40);
+      });
+      deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
 
       if (previousRunningDeviceIds.length === 0 && runningDeviceIds.length > 0) {
         SparkManager.telemetryStart();

@@ -1,9 +1,19 @@
 import {cloneDeep} from "lodash";
 import {IResource} from "./SparkmaxContext";
 
+/**
+ * Base class for all {@link IResource}s.
+ * Implementation of this class should implement `_start` and `_stop` methods at least.
+ */
 export abstract class AbstractResource implements IResource {
   private attributes: {[name: string]: any} = {};
   private destroyed: boolean;
+
+  /**
+   * Whether this resource is pauseable.
+   * If resource is pauseable, it is allowed to call pause/resume methods.
+   */
+  private pauseable: boolean = false;
 
   constructor(public device: string,
               attributes: {[name: string]: any} = {}) {
@@ -37,13 +47,21 @@ export abstract class AbstractResource implements IResource {
     return this._stop();
   }
 
-  public pause(): Promise<void>|undefined {
+  public pause(): Promise<void> {
+    if (!this.pauseable) {
+      throw new Error("This resource does not support pause");
+    }
+
     this.checkAlive();
 
     return this.stop();
   }
 
   public resume(): void {
+    if (!this.pauseable) {
+      throw new Error("This resource does not support pause");
+    }
+
     this.checkAlive();
 
     this.start();
@@ -60,6 +78,10 @@ export abstract class AbstractResource implements IResource {
 
   protected abstract _start(): void;
   protected abstract _stop(): Promise<void>;
+
+  protected setPauseable(): void {
+    this.pauseable = true;
+  }
 
   private checkAlive(): void {
     if (this.destroyed) {

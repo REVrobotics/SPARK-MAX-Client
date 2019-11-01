@@ -658,6 +658,7 @@ button.link {
 }
 
 .list__gap {
+    flex: 1;
     order: 1;
 }
 

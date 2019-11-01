@@ -56,6 +56,9 @@ const GroupParameter = (props: GroupParameterProps) => {
   );
 };
 
+/**
+ * Component for "Parameters" panel of "Run Tab"
+ */
 const ParametersRunPanel = (props: Props) => {
   const {quickBar, selectedParamGroupId, onSelectParamGroup, onQuickChange} = props;
 

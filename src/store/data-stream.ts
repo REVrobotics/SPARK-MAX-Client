@@ -4,6 +4,10 @@ import {waveformEngine} from "../display";
 import {DataPoint, DataStream} from "../display/display-interfaces";
 import {truncateByTime} from "../utils/object-utils";
 
+/**
+ * This file defines data buffers used to cache emitted data points
+ */
+
 export interface IBufferOptions {
   timeSpan: number;
 }
@@ -84,6 +88,9 @@ export const writeDataChunk = (mixedItems: ITelemetryDataItem[]) => {
   });
 };
 
+/**
+ * Writes data to subscribers
+ */
 const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, items: ITelemetryDataItem[]) => {
   const virtualDeviceId = getVirtualDeviceId(deviceId);
 

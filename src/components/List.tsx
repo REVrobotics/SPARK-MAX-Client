@@ -2,6 +2,9 @@ import classNames from "classnames";
 import * as React from "react";
 import {ReactElement, useCallback} from "react";
 
+/**
+ * Children of `List` should satisfy this interface
+ */
 interface ListItemProps {
   value: any;
   active?: boolean;
@@ -12,6 +15,9 @@ interface ListItemProps {
 interface Props {
   className?: string;
   selected: any;
+  /**
+   * Children of `List` should satisfy `ListItemProps` interface
+   */
   children: Array<ReactElement<ListItemProps>>;
 
   onSelect(value: any): void;
@@ -30,6 +36,9 @@ const ItemWithSelection = (props: ItemWithSelectionProps) => {
   return React.cloneElement(props.base, {...props.base.props, active: props.active, onClick: click});
 };
 
+/**
+ * This component declares component for list of selectable items.
+ */
 const List = (props: Props) => {
   const {selected, onSelect} = props;
 

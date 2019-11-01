@@ -59,6 +59,9 @@ type NumericSettingProps = ConnectedSettingProps & {
   safeInvalidValue?: number;
 };
 
+/**
+ * Component for `number` setting
+ */
 const NumericSetting = bindRunSetting((props: NumericSettingProps) => {
   const {
     label, value, constraints, disabled, align, safeInvalidValue,
@@ -91,6 +94,9 @@ const NumericSetting = bindRunSetting((props: NumericSettingProps) => {
   );
 });
 
+/**
+ * Component for setting having restricted set of values
+ */
 const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary: Dictionary }) => {
   const {
     label, value, dictionary, disabled, align,
@@ -112,6 +118,9 @@ const EnumSetting = bindRunSetting((props: ConnectedSettingProps & { dictionary:
   );
 }) as ComponentType<SettingProps & { dictionary: Dictionary }>;
 
+/**
+ * Component for `boolean` setting
+ */
 const BooleanSetting = bindRunSetting((props: ConnectedSettingProps) => {
   const {
     label, value, align,
@@ -135,6 +144,9 @@ const BooleanSetting = bindRunSetting((props: ConnectedSettingProps) => {
   );
 });
 
+/**
+ * Component for "Settings" panel of "Run Tab". This panel display common settings for all signals and devices
+ */
 const SettingsRunPanel = (props: Props) => {
   const {settings} = props;
 

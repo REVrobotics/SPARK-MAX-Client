@@ -59,6 +59,9 @@ const isSameNumber = (a?: number, b?: number) => {
   return an === bn || isNaN(an) === isNaN(bn);
 };
 
+/**
+ * Returns either value or `invalid` if value is `null` or `NaN`
+ */
 const valueOrInvalid = (value: number | undefined, invalid: number) => value == null || isNaN(value) ? invalid : value;
 
 type Props = HTMLInputProps & Omit<Omit<INumericInputProps, "clampValueOnBlur">, "allowNumericCharactersOnly"> & {
@@ -66,6 +69,16 @@ type Props = HTMLInputProps & Omit<Omit<INumericInputProps, "clampValueOnBlur">,
   safeInvalidValue?: number;
 };
 
+/**
+ * Wrapper around blueprint `NumericInput` that guarantees *safe* behavior for **invalid** values.
+ *
+ * **Motiivation** `NumericInput` sometimes emits `string` value if entered value is invalid,
+ * sometimes fires `NaN` value. This component defines different strategies that allows to *normalize* emitting of
+ * `number` value.
+ * 1. This component **always** emits `nil` or `number` (never `string`).
+ * 2. This component can guarantee that emitted value is **always** valid
+ * (`number` and fits into `min`/`max` constraints).
+ */
 const SafeNumericInput = (props: Props) => {
   const { safeBehavior = SafeNumericBehavior.Ignore, safeInvalidValue = NaN, ...otherProps } = props;
 
@@ -85,9 +98,11 @@ const SafeNumericInput = (props: Props) => {
       nextValue = NaN;
       nextStrValue = "";
     } else if (!isValidNumber(valueAsString) || isNaN(valueAsNumber)) {
+      // Use NaN for any invalid value
       nextValue = NaN;
       nextStrValue = "";
     } else {
+      // Clamp value if necessary
       nextValue = toLogicalValue(safeBehavior, valueAsNumber, props.min, props.max);
       nextStrValue = String(toDisplayedValue(safeBehavior, nextValue, props.min, props.max));
     }

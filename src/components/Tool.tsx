@@ -16,6 +16,9 @@ interface IProps {
   onClick?(): void;
 }
 
+/**
+ * Component that can be used as child of {@link List} component.
+ */
 const Tool = (props: IProps) => {
   const className = classNames("tool", {
     "tool--start": props.align !== ListItemAlignment.End,

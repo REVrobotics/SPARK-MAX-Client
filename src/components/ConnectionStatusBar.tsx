@@ -66,6 +66,14 @@ const getBlockedReasonText = (reason: DeviceBlockedReason) => {
   }
 };
 
+/**
+ * This component determines behavior of button located in the top right corner of the screen.
+ * When no connected device => it is "Connect" button.
+ * When any device is connected and running => it is "Stop All" button.
+ * When some device is connected, but not running => it is "Disconnect" button.
+ *
+ * This button guarantees that user always see "Stop" button when some device is running.
+ */
 const MainAction = (props: IProps) => {
   const {
     processing, connected, connectable,

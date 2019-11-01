@@ -14,6 +14,9 @@ interface IProps {
   onClick?(): void;
 }
 
+/**
+ * Component that can be used as child of {@link List} component.
+ */
 const ListItem = (props: IProps) => {
   const className = classNames("list-item", props.className, {
     "list-item--active": props.active,

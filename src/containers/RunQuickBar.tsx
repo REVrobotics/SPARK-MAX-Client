@@ -46,6 +46,9 @@ const QuickParameter = (props: IQuickParameterProps) => {
   );
 };
 
+/**
+ * Component displaying panel for *PIDF" parameters
+ */
 const PIDFPanel = (props: IProps) => {
   const pParam = ConfigParam.kP_0 + props.pidProfile * 8;
 
@@ -68,6 +71,9 @@ const PIDFPanel = (props: IProps) => {
   );
 };
 
+/**
+ * Component displaying parameters marked as `quick` on "Parameters" panel
+ */
 const QuickBarPanel = (props: IProps) => {
   const {onQuickUnset} = props;
 
@@ -81,6 +87,10 @@ const QuickBarPanel = (props: IProps) => {
   );
 };
 
+/**
+ * Quick bar component displayed on "Run" panel of "Run Tab".
+ * This component allows quick access to the most used parameters.
+ */
 const RunQuickBar = (props: IProps) => {
   return (
     <Tabs className={classNames("run-quick-bar", props.className)}

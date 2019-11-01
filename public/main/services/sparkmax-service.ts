@@ -65,6 +65,9 @@ const pingResourceFactory = timerResourceFactory((device) =>
     }),
   1000);
 
+/**
+ * Heartbeat processor is used by `heartbeat` {@link IResource} to send the latest setpoint value
+ */
 const heartbeatProcessor = (device: string, attributes: { [name: string]: any }) =>
   new Promise<void>((resolve, reject) =>
     server.setpoint({root: {device}, enable: true, setpoint: attributes.setpoint}, (err: any, response: any) => {
@@ -82,9 +85,19 @@ const context = new SparkmaxContext([pingResourceFactory]);
 // all URLs should be relative ./build directory
 const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
 
+/**
+ * Return unique name of heartbeat resource for each device
+ * @param device
+ */
 const getHeartbeatResourceName = (device: string) => `heartbeat:${device}`;
 
+/**
+ * Returns `TelemetryResource` if it exists
+ */
 const tryTelemetryResource = () => context.getResource("telemetry") as TelemetryResource | undefined;
+/**
+ * Returns `TelemetryResource` if it exists, otherwise throws an error
+ */
 const getTelemetryResource = () => {
   const resource = tryTelemetryResource();
   if (resource == null) {
@@ -248,27 +261,32 @@ onTwoWayCall("restore-defaults", (cb, device: string) => {
   });
 });
 
-onOneWayCall("enable-heartbeat", (device, interval) => {
+onOneWayCall("enable-heartbeat", (device, setpoint, interval) => {
   if (!context.isResourceExist(getHeartbeatResourceName(device))) {
     console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);
+    // Create and start heartbeat resource
     context.newDeviceResource(
       getHeartbeatResourceName(device),
-      timerResourceFactory(heartbeatProcessor, interval, {setpoint: 0}));
+      timerResourceFactory(heartbeatProcessor, interval, {setpoint}));
   }
 });
 
 onOneWayCall("disable-heartbeat", (device: string) => {
   if (context.isResourceExist(getHeartbeatResourceName(device))) {
     console.log(`Disabling heartbeat for '${device}'`);
-    context.releaseDeviceResource(getHeartbeatResourceName(device));
+    // Stop heartbeat resource
+    context.releaseDeviceResource(getHeartbeatResourceName(device))
+      .then(() => {
+        server.setpoint({root: {device}, enable: false, setpoint: 0}, (err: any, response: any) => {
+          notifyCallback(getTargetWindow(), "heartbeat", device, response);
+        })
+      });
   }
-  server.setpoint({root: {device}, enable: false, setpoint: 0}, (err: any, response: any) => {
-    notifyCallback(getTargetWindow(), "heartbeat", device, response);
-  })
 });
 
 onOneWayCall("set-setpoint", (device: string, newSetpoint: number) => {
   if (context.isResourceExist(getHeartbeatResourceName(device))) {
+    // Use given setpoint for the specified device
     const resource = context.getResource(getHeartbeatResourceName(device));
     resource.setAttribute("setpoint", newSetpoint);
   }
@@ -286,6 +304,7 @@ onTwoWayCall("telemetry-list", (cb, device: string) => {
 });
 
 onOneWayCall("telemetry-start", () => {
+  // Create and start "telemetry" resource
   context.newDeviceResource(
     "telemetry",
     () =>

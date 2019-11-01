@@ -2,7 +2,7 @@ import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, pick
 import {
   createSignalInstance,
   DEFAULT_DEVICE_RUN,
-  DEFAULT_DISPLAY_SETTINGS,
+  DEFAULT_DISPLAY_SETTINGS, getSignalId,
   getVirtualDeviceId,
   IApplicationState,
   IDisplayState,
@@ -58,6 +58,10 @@ export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDispl
     raw: nextDisplay.raw,
   };
 };
+
+/**
+ * Retrieves display settings to be saved into configuration file
+ */
 export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
   const {display} = state;
 
@@ -76,6 +80,9 @@ export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
   };
 };
 
+/**
+ * Creates display from the saved display configuration
+ */
 export const createDisplayState = (state: IApplicationState,
                                    allSignals: ISignalState[] = [],
                                    config?: DisplayConfigDto): IDisplayState => {
@@ -104,7 +111,7 @@ export const createDisplayState = (state: IApplicationState,
 
       // Take all existing signals
       const deviceSignals = signalsByVirtualId[virtualDeviceId] || [];
-      const deviceSignalsById = keyBy(deviceSignals, (signal) => signal.id);
+      const deviceSignalsById = keyBy(deviceSignals, getSignalId);
       // Filter saved instances
       const configInstances = pickBy(configDevice.signals, (_, id) => deviceSignalsById[id]);
 

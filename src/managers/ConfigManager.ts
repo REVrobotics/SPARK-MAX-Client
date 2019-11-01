@@ -1,5 +1,6 @@
 import {sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 
+// Key to save "Run Tab" configuration
 export const CONFIG_DISPLAY = "display";
 
 class ConfigManager {

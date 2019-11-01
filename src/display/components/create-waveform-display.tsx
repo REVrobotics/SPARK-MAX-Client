@@ -8,6 +8,9 @@ interface Props {
   children: ReactNode;
 }
 
+/**
+ * Creates component bound to the specified engine
+ */
 const createWaveformDisplay = (engine: WaveformEngine) => (props: Props) => {
   return (
     <WaveformDisplay engine={engine} {...props}>
