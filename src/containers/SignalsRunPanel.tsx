@@ -111,7 +111,7 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
             <div className="flex-row">
               <SafeNumericInput id="limit"
                                 disabled={instance.autoScaled}
-                                safeBehavior={SafeNumericBehavior.Clamp}
+                                safeBehavior={SafeNumericBehavior.ClampAndNoNan}
                                 min={0}
                                 value={instance.min}
                                 safeInvalidValue={instance.min}
@@ -126,7 +126,7 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
             <div className="flex-row">
               <SafeNumericInput id="limit"
                                 disabled={instance.autoScaled}
-                                safeBehavior={SafeNumericBehavior.Clamp}
+                                safeBehavior={SafeNumericBehavior.ClampAndNoNan}
                                 value={instance.max}
                                 safeInvalidValue={instance.max}
                                 onValueChange={maxChange}/>

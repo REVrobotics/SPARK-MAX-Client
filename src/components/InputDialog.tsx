@@ -2,7 +2,7 @@ import {Button, Classes, Dialog, FormGroup, InputGroup, Intent} from "@blueprint
 import * as React from "react";
 import {FormEvent, useCallback, useState} from "react";
 import Focus from "./Focus";
-import {usePipe} from "../utils/react-utils";
+import {useReplayPipe} from "../utils/react-utils";
 
 interface IProps {
   title: string;
@@ -50,7 +50,7 @@ const InputDialog = (props: IProps) => {
   const intent = isInputInvalid ? Intent.DANGER : undefined;
 
   // Declares pipe to focus input element
-  const [pipe, setRef] = usePipe<any>();
+  const [pipe, setRef] = useReplayPipe<any>();
 
   return (
     <Dialog isOpen={isOpened} onClose={onCancel} title={title}  style={{width: "300px"}}>

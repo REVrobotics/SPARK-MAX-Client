@@ -64,6 +64,7 @@ const messages = {
   "msg_system_error": "Unexpected system error has occurred. Check log for details or contact support team",
   "msg_remove_signal": "Are you sure you want to remove this signal?",
   "msg_streaming_error": "Error has occurred while streaming telemetry data",
+  "msg_group_has_error": "Some parameter in this group has an error",
 };
 
 export default messages;

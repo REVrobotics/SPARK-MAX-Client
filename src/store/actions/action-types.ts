@@ -94,6 +94,10 @@ export enum ActionType {
   SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
   SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
+
+  SET_ADVANCED_SEARCH_STRING = "SET_ADVANCED_SEARCH_STRING",
+  SET_ADVANCED_FIRST_VISIBLE_ROW = "SET_ADVANCED_FIRST_VISIBLE_ROW",
+  SET_ADVANCED_FOCUSED_CELL = "SET_ADVANCED_FOCUSED_CELL",
 }
 
 export interface IUpdateGlobalProcessStatus extends Action {
@@ -535,6 +539,14 @@ export interface ISetLastSyncedConsumers extends Action {
   },
 }
 
+export interface ISetAdvancedSearchString extends IDeviceAwareAction {
+  type: ActionType.SET_ADVANCED_SEARCH_STRING,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    search: string,
+  }
+}
+
 export type SparkAction<R> = ThunkAction<R, IApplicationState, void, ApplicationActions>;
 export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationActions>;
 
@@ -556,4 +568,6 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
   | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetLastSyncedConsumers
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
+  | ISetAdvancedSearchString
   | IAddLog;

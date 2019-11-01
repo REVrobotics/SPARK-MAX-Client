@@ -35,9 +35,10 @@ import {
   VirtualDeviceId
 } from "./state";
 import {maybeMap} from "../utils/object-utils";
-import {ConfigParam} from "../models/ConfigParam";
+import {ConfigParam, getConfigParamsInGroup} from "../models/ConfigParam";
 import {colors, colorToIndex} from "./colors";
-import {ISignalDestinationDto} from "../models/dto";
+import {ConfigParamGroupName, ISignalDestinationDto} from "../models/dto";
+import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
@@ -185,12 +186,24 @@ export const querySelectedDeviceBurnedConfig = (state: IApplicationState) => {
 };
 
 /**
+ * Is given parameter is dirty for the selected device
+ */
+export const queryIsDeviceParameterDirty = (state: IApplicationState,
+                                            virtualDeviceId: VirtualDeviceId,
+                                            parameter: ConfigParam) => {
+  const value = getDeviceParamValueOrDefault(queryDevice(state, virtualDeviceId).currentParameters, parameter);
+
+  const burnedParameters = querySelectedDeviceBurnedConfig(state);
+  return burnedParameters && burnedParameters[parameter] != null ? burnedParameters[parameter] !== value : false;
+};
+
+/**
  * Returns whether parameter has invalid value or does not
  */
 export const queryHasDeviceParameterError = (state: IApplicationState,
                                              virtualDeviceId: VirtualDeviceId,
                                              param: ConfigParam) =>
-  hasDeviceParamError(getDeviceParam(queryDevice(state, virtualDeviceId).currentParameters, param));
+  hasDeviceParamError(getDeviceParamOrDefault(queryDevice(state, virtualDeviceId).currentParameters, param));
 
 /**
  * Returns value of parameter for the given device
@@ -226,6 +239,16 @@ export const queryIsSelectedDeviceInvalid = (state: IApplicationState) => {
 export const queryIsSelectedDeviceNotConfigured = (state: IApplicationState) => {
   const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? false : isDeviceNotConfigured(selectedDevice);
+};
+
+/**
+ * Returns true if device can be used right now
+ */
+export const queryIsSelectedDeviceEnabled = (state: IApplicationState) => {
+  return queryIsSelectedDeviceConnected(state)
+    && !queryIsSelectedDeviceInProcessing(state)
+    && queryIsSelectedDeviceLoaded(state)
+    && !queryIsFirmwareLoading(state);
 };
 
 /**
@@ -609,4 +632,29 @@ export const queryLastSyncedConsumers = (state: IApplicationState): IDestination
 export const queryControlValueByDeviceId = (state: IApplicationState, deviceId: DeviceId) => {
   const device = first(queryDevicesByDeviceId(state, deviceId));
   return device ? queryDeviceDisplay(state, getVirtualDeviceId(device)).run.value : 0;
+};
+
+export const querySelectedDeviceSearchString = (state: IApplicationState) => {
+  const device = querySelectedDevice(state);
+  return device ? device.advanced.search : "";
+};
+
+/**
+ * Returns `true` if dirty parameter exists in the given group, otherwise `false`
+ */
+export const queryHasDeviceDirtyParameterInGroup = (state: IApplicationState,
+                                                    virtualDeviceId: VirtualDeviceId,
+                                                    group: ConfigParamGroupName) => {
+  const params = getConfigParamsInGroup(group);
+  return params.some((param) => queryIsDeviceParameterDirty(state, virtualDeviceId, param));
+};
+
+/**
+ * Returns `true` if invalid parameter exists in the given group, otherwise `false`
+ */
+export const queryHasDeviceParameterErrorInGroup = (state: IApplicationState,
+                                                    virtualDeviceId: VirtualDeviceId,
+                                                    group: ConfigParamGroupName) => {
+  const params = getConfigParamsInGroup(group);
+  return params.some((param) => queryHasDeviceParameterError(state, virtualDeviceId, param));
 };

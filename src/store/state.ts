@@ -11,7 +11,8 @@ import {
   CtrlType,
   DisplayConfigDto,
   DisplaySettingsDto,
-  ExtendedListResponseDto, TelemetryResponseDto,
+  ExtendedListResponseDto,
+  TelemetryResponseDto,
 } from "../models/dto";
 import {diffArrays, setField} from "../utils/object-utils";
 import {ReactNode} from "react";
@@ -413,6 +414,17 @@ export interface IDeviceState {
    * "Burned" parameter values.
    */
   burnedParameters: number[];
+  /**
+   * State of the advanced tab for the device
+   */
+  advanced: IDeviceAdvancedState;
+}
+
+/**
+ * State of the advanced tab for the device
+ */
+export interface IDeviceAdvancedState {
+  search: string;
 }
 
 /**
@@ -547,6 +559,9 @@ export const createDeviceState = (extended: ExtendedListResponseDto): IDeviceSta
   transientParameters: DEFAULT_TRANSIENT_STATE,
   currentParameters: [],
   burnedParameters: [],
+  advanced: {
+    search: "",
+  },
 });
 
 /**
