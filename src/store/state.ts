@@ -10,7 +10,7 @@ import {
   ConfigParamGroupName,
   CtrlType,
   DisplayConfigDto,
-  DisplaySettingsDto,
+  DisplaySettingsDto, ExtendedDfuResponseDto,
   ExtendedListResponseDto,
   TelemetryResponseDto,
 } from "../models/dto";
@@ -115,6 +115,14 @@ export interface INetworkState {
    * Devices visible on CAN bus
    */
   devices: INetworkDevice[];
+  /**
+   * DFU devices
+   */
+  dfuDevices: IDfuDevice[];
+  /**
+   * Is "all DFU devices" selected
+   */
+  isSelectAllDfuDevices: boolean;
   /**
    * Text displayed in the console
    */
@@ -308,7 +316,6 @@ export enum NetworkDeviceStatus {
   NotUpdateable,
   NotConfigured,
   RequiresRecoveryMode,
-  RecoveryMode,
   Updateable,
   Error,
 }
@@ -329,6 +336,10 @@ export interface INetworkDevice {
   status: NetworkDeviceStatus;
   error?: string;
 }
+
+export type IDfuDevice = ExtendedDfuResponseDto & {
+  selected: boolean;
+};
 
 /**
  * Short information about device
@@ -736,6 +747,11 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
 export const getNetworkDeviceId = (device: INetworkDevice) => device.deviceId;
 
 /**
+ * Returns identifier of DFU device
+ */
+export const getDfuDeviceId = (dfuDevice: IDfuDevice) => dfuDevice.identifier!;
+
+/**
  * Creates {@link INetworkDevice} based on DTO representation
  */
 export const createNetworkDevice = (extended: ExtendedListResponseDto): INetworkDevice => {
@@ -762,6 +778,11 @@ export const createNetworkDevice = (extended: ExtendedListResponseDto): INetwork
     selected: status === NetworkDeviceStatus.NotConfigured,
   };
 };
+
+export const createDfuDevice = (device: ExtendedDfuResponseDto): IDfuDevice => ({
+  ...device,
+  selected: false,
+});
 
 /**
  * Returns whether given device is updateable, or not.

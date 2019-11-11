@@ -17,7 +17,7 @@ import {
   IRemoveSignalInstance,
   IReplaceDevices,
   IResetMessageQueue,
-  IResetTransientState,
+  IResetTransientState, ISelectAllDfuDevices, ISelectDfuDevice,
   ISetAdvancedSearchString,
   ISetConfigurations,
   ISetConnectedDescriptor,
@@ -67,7 +67,7 @@ import {
   IDestination,
   IDeviceConfiguration,
   IDeviceState,
-  IDeviceTransientState,
+  IDeviceTransientState, IDfuDevice,
   IDisplayState,
   IMessageQueueConfig,
   INetworkDevice,
@@ -238,9 +238,10 @@ export const addLog = (log: string): IAddLog => ({
   type: ActionType.ADD_LOG
 });
 
-export const setNetworkDevices = (devices: INetworkDevice[]): ISetNetworkDevices => ({
+export const setNetworkDevices = (devices: INetworkDevice[], dfuDevices: IDfuDevice[]): ISetNetworkDevices => ({
   payload: {
     devices,
+    dfuDevices,
   },
   type: ActionType.SET_NETWORK_DEVICES,
 });
@@ -252,6 +253,16 @@ export const updateNetworkDevice = (deviceId: DeviceId,
     update,
   },
   type: ActionType.UPDATE_NETWORK_DEVICE,
+});
+
+export const selectDfuDevice = (id: string, selected: boolean): ISelectDfuDevice => ({
+  payload: {id, selected},
+  type: ActionType.SELECT_DFU_DEVICE,
+});
+
+export const selectAllDfuDevices = (selected: boolean): ISelectAllDfuDevices => ({
+  payload: {selected},
+  type: ActionType.SELECT_ALL_DFU_DEVICES,
 });
 
 export const setNetworkScanInProgress = (scanInProgress: boolean): ISetNetworkScanInProgress => ({
