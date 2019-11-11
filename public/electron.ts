@@ -1,16 +1,25 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, crashReporter, ipcMain } from "electron";
 import * as path from "path";
 import { HEADLESS } from './program-args';
 import {setTargetWindow} from "./main/services/ipc-main-calls";
 
 let mainWindow: Electron.BrowserWindow;
 
+const crashReporterOptions = {
+  productName: "SPARK MAX Client",
+  companyName: "REV Robotics",
+  uploadToServer: false,
+  submitURL: "",
+};
+crashReporter.start(crashReporterOptions);
+
 if (process.env.NODE_ENV !== "production") {
   require("electron-debug")({showDevTools: true});
 }
 
-// the following value is read in the renderer process
+// the following values are read in the renderer process
 (global as any).headless = HEADLESS;
+(global as any).crashReporterOptions = crashReporterOptions;
 
 /**
  * Simply put, creates the main window that our application resides in. Technically, this function can be called
