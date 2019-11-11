@@ -5,6 +5,8 @@ import {connect} from "react-redux";
 import SparkManager from "../managers/SparkManager";
 import {troubleshootContent} from "../mls/content";
 
+const SERVER_VERSION = "1.1.61";
+
 interface IProps {
   logs: string[]
 }
@@ -48,7 +50,7 @@ class HelpTab extends React.Component<IProps, IState> {
   public render() {
     const {checkingForUpdate, downloadJSON, downloadingUpdate, quitAndInstallAlertOpen, updateAlertOpen, updateAvailable, viewingLogs} = this.state;
     return (
-      <div>
+      <div className="page flex-column">
         <Alert
           isOpen={updateAlertOpen}
           cancelButtonText={tt("lbl_cancel")}
@@ -105,6 +107,7 @@ class HelpTab extends React.Component<IProps, IState> {
         <div className="form update-container">
           <Button className="rev-btn" disabled={checkingForUpdate} loading={checkingForUpdate} onClick={this.checkForUpdates}>{tt("lbl_check_for_updates")}</Button>
         </div>
+        <div className="flex-1">
         {
           downloadingUpdate &&
           <div id={"help-download"}>
@@ -119,6 +122,17 @@ class HelpTab extends React.Component<IProps, IState> {
             </div>
           </div>
         }
+        </div>
+        <div className="app-info">
+          <p>
+            <b>{tt("lbl_server_version")}</b>: v{SERVER_VERSION}
+            <br/>
+            <b>{tt("lbl_client_version")}</b>: v{SparkManager.getVersion()}
+          </p>
+          <p>
+            {tt("lbl_spark_max_client_copyright")}
+          </p>
+        </div>
       </div>
     );
   }

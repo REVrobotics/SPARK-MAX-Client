@@ -1026,3 +1026,8 @@ button.link {
 .cell__open-btn--disabled {
     color: rgb(206, 217, 224);
 }
+
+.app-info {
+    margin: 0 50px 10px;
+    text-align: center;
+}
