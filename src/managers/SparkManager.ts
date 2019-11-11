@@ -208,7 +208,7 @@ class SparkManager {
     return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
   }
 
-  private getParameter(device: string, id: number): Promise<number> {
+  public getParameter(device: string, id: number): Promise<number> {
     return wrapSparkError(sendTwoWay("get-param", device, id).then((response) => Number(response.value)));
   }
 

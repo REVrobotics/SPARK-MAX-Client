@@ -108,6 +108,12 @@ export const setOnlyParameterValue = (virtualDeviceId: VirtualDeviceId,
           dispatch(setDeviceParameterResponse(virtualDeviceId, param, res, res.responseValue !== res.requestValue));
           return responseValue;
         })
+        .catch(onError((error) => {
+          return SparkManager.getParameter(deviceId, param)
+            .then((value) => dispatch(setDeviceParameter(virtualDeviceId, param, value)))
+            .then(() => Promise.reject<number>(error))
+            .catch(() => Promise.reject<number>(error));
+        }))
         .then((value) => {
           if (param === ConfigParam.kCanID) {
             dispatch(recalculateDeviceId(virtualDeviceId));
