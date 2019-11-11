@@ -1026,3 +1026,12 @@ button.link {
 .cell__open-btn--disabled {
     color: rgb(206, 217, 224);
 }
+
+.cell--dfu-title {
+    min-width: calc(100% - 75px);
+    z-index: 1;
+    text-align: center;
+    background: white;
+    font-style: italic;
+    font-weight: bold;
+}

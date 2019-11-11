@@ -159,6 +159,7 @@ const labels = {
   "lbl_value": "Value",
   "lbl_search_no_results_title": "No Search Results Found",
   "lbl_clear": "Clear",
+  "lbl_dfu_devices_title": "Devices in Recovery Mode",
 };
 
 export default labels;

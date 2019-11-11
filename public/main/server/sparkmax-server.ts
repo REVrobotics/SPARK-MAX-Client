@@ -117,6 +117,18 @@ class SparkServer {
     this.grpcClient.firmware(firmwareRequestFromDto(firmwareCommand), wrapIntoGrpcCallback(cb, firmwareResponseToDto));
   }
 
+  public firmwareRecover(firmwareCommand: any, cb: Function) {
+    this.grpcClient.firmwareRecover(firmwareRequestFromDto(firmwareCommand), wrapIntoGrpcCallback(cb, firmwareResponseToDto));
+  }
+
+  public firmwareLoadOrRecover(recover: boolean, firmwareCommand: any, cb: Function) {
+    if (recover) {
+      return this.firmwareRecover(firmwareCommand, cb);
+    } else {
+      return this.firmware(firmwareCommand, cb);
+    }
+  }
+
   public factoryReset(factoryResetCommand: any, cb: Function) {
     this.grpcClient.factoryReset(factoryResetRequestFromDto(factoryResetCommand), wrapIntoGrpcCallback(cb, rootResponseToDto));
   }

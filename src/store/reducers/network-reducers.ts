@@ -1,10 +1,12 @@
 import {omit} from "lodash";
-import {getNetworkDeviceId, INetworkState} from "../state";
+import {getDfuDeviceId, getNetworkDeviceId, INetworkState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {setArrayElementBy, setField, setFields} from "../../utils/object-utils";
 
 const initialNetworkState: INetworkState = {
   devices: [],
+  dfuDevices: [],
+  isSelectAllDfuDevices: false,
   outputText: [],
   firmwareLoading: false,
   firmwareLoadingProgress: 0,
@@ -22,7 +24,21 @@ const networkReducer = (state: INetworkState = initialNetworkState, action: Appl
         return state;
       }
     case ActionType.SET_NETWORK_DEVICES:
-      return setField(state, "devices", action.payload.devices);
+      return setFields(state, {
+        devices: action.payload.devices,
+        dfuDevices: action.payload.dfuDevices,
+      });
+    case ActionType.SELECT_DFU_DEVICE:
+      return setField(
+        state,
+        "dfuDevices",
+        setArrayElementBy(
+          state.dfuDevices,
+          getDfuDeviceId,
+          action.payload.id,
+          (dfuDevice) => setField(dfuDevice, "selected", action.payload.selected)));
+    case ActionType.SELECT_ALL_DFU_DEVICES:
+      return setField(state, "isSelectAllDfuDevices", action.payload.selected);
     case ActionType.UPDATE_NETWORK_DEVICE:
       return setField(
         state,

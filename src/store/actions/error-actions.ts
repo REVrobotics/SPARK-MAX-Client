@@ -97,7 +97,7 @@ const handleSystemError = (error: SystemError) => {
     if (error.details.code === 14) {
       showToastError(tt("msg_sparkmax_connection_error"));
     } else {
-      showToastError(tt("msg_sparkmax_error", {message: error.details.details}));
+      showToastError(tt("msg_sparkmax_error", {message: error.details.details || error.message}));
     }
   } else {
     showToastError(tt("msg_system_error"));
