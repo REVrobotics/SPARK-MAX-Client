@@ -9,7 +9,6 @@ import HelpTab from "./containers/HelpTab";
 import RunTab from "./containers/RunTab";
 import {IApplicationState, TabId} from "./store/state";
 import WebProvider from "./providers/WebProvider";
-import AboutTab from "./containers/AboutTab";
 import {disconnectCurrentDevice, initApplication, setSelectedTab, SparkDispatch} from "./store/actions";
 import UiSupport from "./containers/UiSupport";
 import NetworkTab from "./containers/NetworkTab";
@@ -56,7 +55,6 @@ class App extends React.Component<IProps> {
           <Tab id={TabId.Run} title={tt("lbl_run_tab")} panel={<RunTab/>}/>
           <Tab id={TabId.Network} disabled={hasRunningDevices} title={tt("lbl_network_tab")} panel={<NetworkTab/>}/>
           <Tab id={TabId.Help} title={tt("lbl_help_tab")} panel={<HelpTab/>}/>
-          <Tab id={TabId.About} title={tt("lbl_about_tab")} panel={<AboutTab/>}/>
         </Tabs>
       </div>
     );

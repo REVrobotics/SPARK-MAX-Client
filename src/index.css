@@ -1027,6 +1027,11 @@ button.link {
     color: rgb(206, 217, 224);
 }
 
+.app-info {
+    margin: 0 50px 10px;
+    text-align: center;
+}
+
 .cell--dfu-title {
     min-width: calc(100% - 75px);
     z-index: 1;
