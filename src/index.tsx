@@ -26,8 +26,11 @@ const applicationStore = createStore(
   composeEnhancers(applyMiddleware(reduxScheduler(actionSchedule), errorHandler, thunk)));
 // read value passed from the main process
 const electron = (window as any).require("electron");
-const {remote} = electron;
+const {remote, crashReporter} = electron;
 const headless = !remote.getGlobal("remote");
+const crashReporterOptions = remote.getGlobal("crashReporterOptions");
+
+crashReporter.start(crashReporterOptions);
 
 if (headless) {
   ReactDOM.render(
