@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination
+  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination, IDfuDevice
 } from "../state";
 
 /**
@@ -59,6 +59,8 @@ export enum ActionType {
   RECALCULATE_DEVICE_ID = "RECALCULATE_DEVICE_ID",
   SET_NETWORK_DEVICES = "SET_NETWORK_DEVICES",
   UPDATE_NETWORK_DEVICE = "UPDATE_NETWORK_DEVICE",
+  SELECT_DFU_DEVICE = "SELECT_DFU_DEVICE",
+  SELECT_ALL_DFU_DEVICES = "SELECT_ALL_DFU_DEVICES",
   SET_NETWORK_SCAN_IN_PROGRESS = "SET_NETWORK_SCAN_IN_PROGRESS",
   SET_FIRMWARE_LOADING = "SET_FIRMWARE_LOADING",
   CONSOLE_OUTPUT = "CONSOLE_OUTPUT",
@@ -311,7 +313,8 @@ export interface ICloseAlert extends Action {
 export interface ISetNetworkDevices extends Action {
   type: ActionType.SET_NETWORK_DEVICES,
   payload: {
-    devices: INetworkDevice[]
+    devices: INetworkDevice[],
+    dfuDevices: IDfuDevice[]
   }
 }
 
@@ -320,6 +323,21 @@ export interface IUpdateNetworkDevice extends Action {
   payload: {
     deviceId: DeviceId,
     update: Partial<INetworkDevice>
+  }
+}
+
+export interface ISelectDfuDevice extends Action {
+  type: ActionType.SELECT_DFU_DEVICE,
+  payload: {
+    id: string,
+    selected: boolean
+  }
+}
+
+export interface ISelectAllDfuDevices extends Action {
+  type: ActionType.SELECT_ALL_DFU_DEVICES,
+  payload: {
+    selected: boolean
   }
 }
 
@@ -557,6 +575,7 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetTransientParameter | IResetTransientState
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing
   | ISetNetworkDevices | IUpdateNetworkDevice | ISetNetworkScanInProgress | IConsoleOutput | ISetConsoleOutput
+  | ISelectDfuDevice | ISelectAllDfuDevices
   | IUpdateFirmwareLoadingProgress | ISetLastFirmwareLoadingMessage | ISetFirmwareLoading
   | ISetFirmwareDownloading | ISetFirmwareDownloaded | ISetFirmwareDownloadError
   | ISetConfigurations | IAddConfiguration | IRemoveConfiguration | IUpdateConfiguration

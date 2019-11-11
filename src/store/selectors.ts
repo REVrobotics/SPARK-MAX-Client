@@ -13,7 +13,7 @@ import {
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue,
+  getDeviceParamValue, getDfuDeviceId,
   getNetworkDeviceId,
   getSignalId,
   getVirtualDeviceId,
@@ -334,10 +334,23 @@ export const queryNetwork = (state: IApplicationState) => state.network;
  */
 export const queryNetworkDevices = (state: IApplicationState) => state.network.devices;
 /**
+ * Returns DFU devices to update: either all or only one device can be selected.
+ */
+export const queryDfuDevicesToUpdate = (state: IApplicationState) => {
+  const {dfuDevices, isSelectAllDfuDevices} = state.network;
+  return isSelectAllDfuDevices ? ["all"] : dfuDevices.filter((dfuDevice) => dfuDevice.selected).map(getDfuDeviceId);
+};
+/**
  * Returns specific device on CAN bus
  */
 export const queryNetworkDevice = (state: IApplicationState, id: DeviceId) =>
   find(state.network.devices, (device) => getNetworkDeviceId(device) === id);
+
+/**
+ * Returns if some DFU device is selected
+ */
+export const queryHasSelectedDfuDevice = (state: IApplicationState) =>
+  state.network.dfuDevices.some((device) => device.selected);
 /**
  * Returns ALL console output. Displayed on network tab
  */

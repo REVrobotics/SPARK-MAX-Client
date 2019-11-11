@@ -332,42 +332,36 @@ onTwoWayCall("telemetry-running-signals", (cb) => {
   cb(null, resource ? resource.getSignals() : []);
 });
 
-onTwoWayCall("load-firmware", (cb, filename: string, devicesToUpdate: string[]) => {
+onTwoWayCall("load-firmware", (cb, recover: boolean, filename: string, devicesToUpdate: string[]) => {
   if (!fs.existsSync(filename)) {
     cb("Error loading firmware. Firmware file was not found on the file system.");
   } else {
     if (firmwareID === null) {
-      firmwareID = global.setInterval(() => {
-        server.firmware({}, (error: any, response: any) => {
+      const handler = () => {
+        server.firmwareLoadOrRecover(recover, {}, (error: any, response: any) => {
           if (error) {
-            notifyCallback(getTargetWindow(), "load-firmware-progress", error);
+            notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover);
             cb(error);
-            global.clearInterval(firmwareID);
+            global.clearTimeout(firmwareID);
             firmwareID = null;
             return;
           }
 
           if (response.isUpdating && !response.updateComplete) {
-            notifyCallback(getTargetWindow(), "load-firmware-progress", error, response);
+            notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover, response);
+            firmwareID = global.setTimeout(handler, 0);
           } else {
             setTimeout(() => {
               cb(null, response);
             }, 3000);
-            global.clearInterval(firmwareID);
+            global.clearTimeout(firmwareID);
             firmwareID = null;
           }
         });
-      }, 50);
+      };
+
       console.log("Starting firmware update...");
-      server.firmware({filename, devicesToUpdate}, (error: any, response: any) => {
-        if (error) {
-          cb(error);
-          global.clearInterval(firmwareID);
-          firmwareID = null;
-          return;
-        }
-        notifyCallback(getTargetWindow(), "load-firmware-progress", error, response);
-      });
+      server.firmwareLoadOrRecover(recover, {filename, devicesToUpdate}, handler);
     }
   }
 });

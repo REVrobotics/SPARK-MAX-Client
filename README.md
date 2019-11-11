@@ -66,10 +66,12 @@ Application supports the following parameters
 * `--host` specifies IP address if the SPARK-MAX server
 * `--port` specifies port of the SPAstaRK-MAX server
 * `--remote`. When `--remote` flag is set, application does not try to start bundled SPARK-MAX server and connects to the specified one (through `--host` and `--port` parameters).
-* `---grpc`. When `--grpc` flag is set, application runs gRPC client instead of ZeroMQ (default). **Note: this option will be removed in future, when support of ZeroMQ is terminated** 
+* `---grpc`. When `--grpc` flag is set, application runs gRPC client instead of ZeroMQ (default). **Note: this option will be removed in future, when support of ZeroMQ is terminated**
 
-## Using gulp.js
-The SPARK MAX Client repository comes with some pre-built gulpfile commands that may help during development.
+## Troubleshooting
+
+* All application errors are written into log files and can be found in the home application directory. For example for Windows operating system, you can look into `C:\Users\<user name>\AppData\Roaming\REV SPARK MAX Client\logs` directory.
+* If `electron` application is crashed, corresponding crash report can be found in the temporary directory. For example for Windows operating system, you can look into `C:\Users\<user name>\AppData\Local\Temp\SPARK MAX Client Crashes` directory.     
 
 ## SPARK MAX Client Changelog
 For detailed descriptions on what's changed between versions, head over to the repository's [CHANGELOG.md](https://github.com/REVrobotics/SPARK-MAX-Client/blob/master/CHANGELOG.md).

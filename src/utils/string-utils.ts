@@ -12,7 +12,7 @@ import {get} from "lodash";
  */
 export const substitute = (text: string, params: {[name: string]: any}) =>
   text.replace(
-    /\$(([a-zA-Z0-9_]+)|({([a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+)}))/g,
+    /\$(([a-zA-Z0-9_]+)|({([a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*)}))/g,
     (_1, _2, name, _3, path) => get(params, name || path, ""));
 
 /**

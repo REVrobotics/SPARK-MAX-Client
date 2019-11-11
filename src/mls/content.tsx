@@ -24,12 +24,6 @@ export const networkDeviceNotConfigured = (
   </p>
 );
 
-export const networkDeviceRecoveryMode = (
-  <p>
-    Some devices are <b>in Recovery Mode</b>. All devices in Recovery Mode will be forcibly updated on Load.
-  </p>
-);
-
 export const networkDeviceRequiresRecoveryMode = (
   <>
     <p>

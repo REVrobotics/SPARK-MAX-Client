@@ -58,8 +58,8 @@ export function initApplication(): SparkAction<void> {
       }
     });
 
-    SparkManager.onLoadFirmwareProgress((error, response) =>
-      dispatch(updateLoadFirmwareProgress(error, response)));
+    SparkManager.onLoadFirmwareProgress((error, recover, response) =>
+      dispatch(updateLoadFirmwareProgress(error, recover, response)));
 
     SparkManager.onTelemetryEvent((event) => dispatch(telemetryEvent(event)));
 

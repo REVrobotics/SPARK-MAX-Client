@@ -5,8 +5,7 @@ import List from "../components/List";
 import ListItem from "../components/ListItem";
 import {
   ConfigParam,
-  ConfigParamGroupId,
-  configParamGroups,
+  ConfigParamGroupId, configParamVisibleGroups,
   getConfigParamGroupReadableName,
   getConfigParamsInGroup
 } from "../models/ConfigParam";
@@ -67,7 +66,7 @@ const ParametersRunPanel = (props: Props) => {
   return (
     <div className="flex-row full-width no-wrap">
       <List className="param-group-list" selected={selectedParamGroupId} onSelect={onSelectParamGroup}>
-        {configParamGroups.map((paramGroup) =>
+        {configParamVisibleGroups.map((paramGroup) =>
           <ListItem key={paramGroup}
                     value={paramGroup}
                     title={getConfigParamGroupReadableName(paramGroup)}

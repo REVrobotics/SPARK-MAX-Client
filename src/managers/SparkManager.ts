@@ -119,8 +119,8 @@ class SparkManager {
     return wrapSparkError(sendTwoWay("get-firmware", device));
   }
 
-  public loadFirmware(filename: string, devicesToUpdate: string[]): Promise<FirmwareResponseDto> {
-    return wrapSparkError(sendTwoWay("load-firmware", filename, devicesToUpdate));
+  public loadFirmware(recover: boolean, filename: string, devicesToUpdate: string[]): Promise<FirmwareResponseDto> {
+    return wrapSparkError(sendTwoWay("load-firmware", recover, filename, devicesToUpdate));
   }
 
   public telemetryList(): Promise<TelemetryListResponseDto> {
@@ -151,7 +151,7 @@ class SparkManager {
     onCallback("telemetry-event", listener);
   }
 
-  public onLoadFirmwareProgress(listener: (error: any, response: FirmwareResponseDto) => void): void {
+  public onLoadFirmwareProgress(listener: (error: any, recover: boolean, response: FirmwareResponseDto) => void): void {
     onCallback("load-firmware-progress", listener);
   }
 
@@ -208,7 +208,7 @@ class SparkManager {
     return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
   }
 
-  private getParameter(device: string, id: number): Promise<number> {
+  public getParameter(device: string, id: number): Promise<number> {
     return wrapSparkError(sendTwoWay("get-param", device, id).then((response) => Number(response.value)));
   }
 
