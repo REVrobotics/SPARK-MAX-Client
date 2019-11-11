@@ -23,8 +23,7 @@ import {
 import {Column, ICellProps, IRowHeaderCellProps, RowHeaderCell} from "@blueprintjs/table";
 import {ISearchResultRecord, ISearchResultRecordItem, searchParams, WordType} from "../store/config-param-search";
 import {
-  ConfigParam,
-  configParamGroups,
+  ConfigParam, configParamVisibleGroups,
   getConfigParamGroupReadableName,
   getConfigParamName,
   getConfigParamReadableName,
@@ -152,7 +151,7 @@ const buildDisplayedRowsFromSearchResult = (records: ISearchResultRecord[]): Dis
  * Search result does not have groups.
  */
 const buildDisplayedRowsWithGroups = (openedGroups: { [group: number]: boolean }): DisplayedRow[] =>
-  flatMap(configParamGroups, (group) => {
+  flatMap(configParamVisibleGroups, (group) => {
     if (openedGroups[group]) {
       return [
         {grouped: true, group},

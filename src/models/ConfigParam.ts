@@ -67,6 +67,12 @@ export const getDependentParams = (param: ConfigParam) => configParamDependencyI
  * All groups
  */
 export const configParamGroups = enumValues(ConfigParamGroupName);
+
+/**
+ * All visible groups
+ */
+export const configParamVisibleGroups = configParamGroups.filter((group) => group !== ConfigParamGroupName.GROUPNAME_Hidden);
+
 /**
  * Returns group name
  */
