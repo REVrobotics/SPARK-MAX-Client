@@ -4,7 +4,7 @@ import * as React from "react";
 import {ReactElement, ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
 import {
-  DeviceId, getDfuDeviceId,
+  DeviceId, getCanIdFromDeviceId, getDfuDeviceId,
   getNetworkDeviceId,
   IApplicationState, IDfuDevice,
   INetworkDevice,
@@ -146,10 +146,11 @@ class NetworkTab extends React.Component<IProps> {
                  enableColumnResizing={false}
                  enableRowResizing={false}
                  numRows={Math.max(length, 10)}
-                 columnWidths={[75, 150, 150, 75]}>
+                 columnWidths={[75, 80, 70, 150, 75]}>
 
             <Column name={tt("lbl_interface")} cellRenderer={this.interfaceColumnRenderer}/>
             <Column name={tt("lbl_device")} cellRenderer={this.deviceColumnRenderer}/>
+            <Column name={tt("lbl_can_id")} cellRenderer={this.canIdColumnRenderer}/>
             <Column name={tt("lbl_firmware")} cellRenderer={this.firmwareColumnRenderer}/>
             <Column name={tt("lbl_update")} cellRenderer={this.updateColumnRenderer}/>
           </Table>
@@ -225,6 +226,10 @@ class NetworkTab extends React.Component<IProps> {
   private deviceColumnRenderer = this.wrapCellRenderer({
     device: (device) => <Cell>{device.deviceName}</Cell>,
     dfuDevice: (device) => <Cell>{device.deviceType}</Cell>,
+  });
+
+  private canIdColumnRenderer = this.wrapCellRenderer({
+    device: (device) => <Cell className="text-right">{getCanIdFromDeviceId(device.deviceId)}</Cell>,
   });
 
   private firmwareColumnRenderer = this.wrapCellRenderer({

@@ -83,6 +83,7 @@ const labels = {
   "lbl_run": "Run",
   "lbl_save_pidf": "Save PIDF",
   "lbl_device": "Device",
+  "lbl_can_id": "CAN ID",
   "lbl_firmware": "Firmware",
   "lbl_update": "Update",
   "lbl_scan_bus": "Scan Bus",
