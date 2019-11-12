@@ -138,7 +138,7 @@ class BasicTab extends React.Component<IProps> {
           <FormGroup
             label={tt("lbl_select_configuration")}
             labelFor="configuration-id"
-            className="form-group-half"
+            className="form-group-three-quarters configuration-select"
           >
             <ConfigurationSelect disabled={!canEditOtherFields}/>
           </FormGroup>

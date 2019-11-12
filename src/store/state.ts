@@ -10,7 +10,8 @@ import {
   ConfigParamGroupName,
   CtrlType,
   DisplayConfigDto,
-  DisplaySettingsDto, ExtendedDfuResponseDto,
+  DisplaySettingsDto,
+  ExtendedDfuResponseDto,
   ExtendedListResponseDto,
   TelemetryResponseDto,
 } from "../models/dto";
@@ -187,6 +188,7 @@ export interface IDeviceConfiguration {
   name: string;
   parameters: Array<number | undefined>;
   raw: IRawDeviceConfigDto;
+  template: boolean;
 }
 
 export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
@@ -196,9 +198,10 @@ export const DEFAULT_DEVICE_CONFIGURATION_ID = "ram";
  */
 export const DEFAULT_DEVICE_CONFIGURATION: IDeviceConfiguration = {
   id: DEFAULT_DEVICE_CONFIGURATION_ID,
-  name: "In RAM",
+  name: tt("lbl_in_ram"),
   parameters: [],
   raw: undefined as any,
+  template: false,
 };
 
 /**
@@ -825,6 +828,11 @@ export const isDefaultDeviceConfiguration = (config: IDeviceConfiguration) =>
   getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID;
 
 /**
+ * Returns whether given configuration is a template.
+ */
+export const isTemplateDeviceConfiguration = (config: IDeviceConfiguration) => config.template;
+
+/**
  * Returns whether configuration names are equal
  */
 export const eqDeviceConfigurationName = (a: string, b: string) => a.toLowerCase().trim() === b.toLowerCase().trim();
@@ -868,6 +876,7 @@ export const deviceConfigurationFromDto = (dto: IRawDeviceConfigDto): IDeviceCon
       const param = dtoParamById[name];
       return param ? param.value : undefined;
     }),
+    template: dto.template,
     raw: dto,
   };
 };
@@ -899,8 +908,27 @@ export const deviceToDeviceConfigurationDto = (basic: IRawDeviceConfigDto,
  * Sorts device configurations
  */
 export const sortConfigurations = (configurations: IDeviceConfiguration[]) =>
-  sortBy(configurations, (config) =>
-    getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID ? `0:${config.name}` : `1:${config.name}`);
+  sortBy(configurations, (config) => {
+    if (getDeviceConfigurationId(config) === DEFAULT_DEVICE_CONFIGURATION_ID) {
+      return `0:${config.name}`;
+    } else if (config.template) {
+      return `2:${config.name}`;
+    } else {
+      return `1:${config.name}`;
+    }
+  });
+
+export const configurationByGroup = (configuration: IDeviceConfiguration) => {
+  if (getDeviceConfigurationId(configuration) === DEFAULT_DEVICE_CONFIGURATION_ID) {
+    return "";
+  } else if (configuration.template) {
+    return "template";
+  } else {
+    return "user-defined";
+  }
+};
+
+export const configurationGroupTitle = (group: string) => tt(`lbl_configuration_group:${group}`);
 
 export const isDefaultDescriptor = (descriptor: PathDescriptor) => descriptor === DEFAULT_PATH_DESCRIPTOR;
 export const toDtoDescriptor = (descriptor: PathDescriptor) => isDefaultDescriptor(descriptor) ? undefined : descriptor;

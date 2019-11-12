@@ -1,10 +1,11 @@
 import {
+  configurationByGroup, configurationGroupTitle,
   findDeviceConfigurationByName,
   getDeviceConfigurationId,
   getDeviceConfigurationName,
   IApplicationState,
   IDeviceConfiguration,
-  isDefaultDeviceConfiguration
+  isDefaultDeviceConfiguration, isTemplateDeviceConfiguration
 } from "../store/state";
 import {connect} from "react-redux";
 import PersistentSelect from "../components/PersistentSelect";
@@ -50,7 +51,7 @@ const ConfigurationSelect = (props: IProps) => {
     onSelect, onRename, onOverwrite, onCreate, onRemove, onApply,
   } = props;
 
-  const isModifiable = selected ? !isDefaultDeviceConfiguration(selected) : false;
+  const isModifiable = selected ? !isDefaultDeviceConfiguration(selected) && !isTemplateDeviceConfiguration(selected) : false;
 
   const rename = useCallback((newName) => {
     setRenameOpened(false);
@@ -125,6 +126,8 @@ const ConfigurationSelect = (props: IProps) => {
                         disabled={disabled}
                         appliable={!isDefaultDeviceConfiguration(selected)}
                         modifiable={isModifiable}
+                        groupBy={configurationByGroup}
+                        groupTitle={configurationGroupTitle}
                         getKey={getDeviceConfigurationId}
                         getText={getDeviceConfigurationName}
                         onRename={openRenameDialog}
