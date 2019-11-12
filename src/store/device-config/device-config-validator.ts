@@ -110,6 +110,7 @@ const createConfigValidator = () => {
     properties: {
       fileName: {type: "string"},
       filePath: {type: "string"},
+      template: {type: "boolean"},
       name: {type: "string"},
       parameters: {
         type: "array",

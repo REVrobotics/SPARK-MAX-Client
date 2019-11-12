@@ -1,24 +1,23 @@
+import {constant, groupBy, identity, keys, without} from "lodash";
 import {Button, ButtonGroup, Menu, MenuItem, Popover, PopoverPosition} from "@blueprintjs/core";
-import {IItemRendererProps, Select} from "@blueprintjs/select";
+import {IItemRendererProps, ItemListRenderer, Select} from "@blueprintjs/select";
 import classNames from "classnames";
 import * as React from "react";
-import {ReactNode, useCallback} from "react";
+import {ReactNode, useCallback, useMemo} from "react";
 import {coalesce} from "../utils/object-utils";
-
-const createItemRenderer = (getKey: (item: any) => string, getText: (item: any) => string) => {
-  return (item: any, itemProps: IItemRendererProps) => (
-    <MenuItem
-      active={itemProps.modifiers.active}
-      key={getKey(item)}
-      onClick={itemProps.handleClick}
-      text={getText(item)}
-    />
-  );
-};
+import {IItemListRendererProps} from "@blueprintjs/select/src/common/itemListRenderer";
 
 interface IProps<T> {
   selected: T;
   items: T[];
+  /**
+   * If `groupBy` is defined, items are displayed in groups
+   */
+  groupBy?: (item: T) => string;
+  /**
+   * `groupTitle` allows to define translation for each item group
+   */
+  groupTitle?: (key: string) => string;
   disabled?: boolean;
   /**
    * If `isDirty` flag is set, then asterisk (`*`) is displayed on the right of a label in select.
@@ -74,12 +73,50 @@ interface IProps<T> {
   onApply(item: T): void;
 }
 
+const createItemRenderer = (getKey: (item: any) => string, getText: (item: any) => string) => {
+  return (item: any, itemProps: IItemRendererProps) => (
+    <MenuItem
+      active={itemProps.modifiers.active}
+      key={getKey(item)}
+      onClick={itemProps.handleClick}
+      text={getText(item)}
+    />
+  );
+};
+
+const createItemListRenderer = (by: (item: any) => string = constant(""),
+                                groupTitle: (key: string) => string = identity): ItemListRenderer<any> => {
+  const ItemList = (props: IItemListRendererProps<any>) => {
+    const [groups, itemsByGroup] = useMemo(() => {
+      const grouped = groupBy(props.items, by);
+      return [without(keys(grouped), ""), grouped];
+    }, [props.items, by, groupTitle]);
+
+    const defaultItems = itemsByGroup[""];
+    let index = 0;
+    return (
+      <Menu ulRef={props.itemsParentRef}>
+        {defaultItems.map((item) => props.renderItem(item, index++))}
+        {groups.map((group) => (
+          <React.Fragment key={group}>
+            <li className="bp3-menu-header"><h6 className="bp3-heading">{groupTitle(group)}</h6></li>
+            {itemsByGroup[group].map((item) => props.renderItem(item, index++))}
+          </React.Fragment>
+        ))}
+      </Menu>
+    );
+  };
+
+  return (props) => <ItemList {...props}/>;
+};
+
 /**
  * Dropdown of persisted values. Selected value has set of actions.
  */
 function PersistentSelect<T>(props: IProps<T>) {
   const {
     selected, appliable, modifiable, isDirty, getKey, getText, items, disabled,
+    groupBy: by, groupTitle,
     onRename, onOverwrite, onCreate, onRemove, onApply, onSelect,
   } = props;
 
@@ -87,6 +124,7 @@ function PersistentSelect<T>(props: IProps<T>) {
   const canModify = coalesce(modifiable, true);
 
   const itemRenderer = useCallback(createItemRenderer(getKey, getText), [getKey, getText]);
+  const itemListRenderer = useCallback(createItemListRenderer(by, groupTitle), [by, groupTitle]);
   const rename = useCallback(() => onRename(selected), [selected]);
   const overwrite = useCallback(() => onOverwrite(selected), [selected]);
   const create = useCallback(() => onCreate(selected), [selected]);
@@ -142,6 +180,7 @@ function PersistentSelect<T>(props: IProps<T>) {
               filterable={false}
               disabled={disabled}
               items={items}
+              itemListRenderer={itemListRenderer}
               itemRenderer={itemRenderer}
               onItemSelect={onSelect}>
         <Button className={classNames("no-wrap", {"modified": isDirty})}

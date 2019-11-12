@@ -1040,3 +1040,7 @@ button.link {
     font-style: italic;
     font-weight: bold;
 }
+
+.configuration-select {
+    padding-right: 35px;
+}

@@ -5,7 +5,7 @@
 import * as util from "util";
 import * as fs from "fs";
 import * as path from "path";
-import {deburr, omit, stubFalse, stubTrue} from "lodash";
+import {deburr, flatten, omit, stubFalse, stubTrue} from "lodash";
 
 // promisified fs methods
 const fsReadFile = util.promisify(fs.readFile);
@@ -21,18 +21,21 @@ import {getAppDataPath} from "../config";
 // Root path for device configurations
 const deviceConfigPath = getAppDataPath("device-configurations");
 
+// Root path for template configurations
+const templatePath = getAppDataPath("template-configurations");
+
 /**
  * Returns path for specific device configuration
- * @param name
  */
-const getDeviceConfigPath = (name: string) => path.join(deviceConfigPath, name);
+const getConfigFilePath = (template: boolean, name: string) =>
+  path.join(template ? templatePath : deviceConfigPath, name);
 
 const getFileNameFromPath = (filePath: string) => path.basename(filePath);
 
 /**
  * Converts device configuration to JSON representation
  */
-const deviceConfigToJson = (config: any) => JSON.stringify(omit(config, "filePath", "fileName", "error"), null, 2);
+const deviceConfigToJson = (config: any) => JSON.stringify(omit(config, "filePath", "fileName", "template", "error"), null, 2);
 
 /**
  * Normalizes name to be used as file name
@@ -43,17 +46,18 @@ const nameToFsName = (name: string) => deburr(name).toLowerCase().replace(/\s+/g
 /**
  * Converts JSON representation to device configuration
  */
-const jsonToDeviceConfig = (filePath: string, json: string) => {
+const jsonToDeviceConfig = (template: boolean, filePath: string, json: string) => {
   const fileName = getFileNameFromPath(filePath);
   try {
     const parsedContent = JSON.parse(json.toString());
     return {
+      template,
       filePath,
       fileName,
       ...parsedContent,
     };
   } catch (error) {
-    return createDeviceConfigError(filePath, error);
+    return createDeviceConfigError(template, filePath, error);
   }
 };
 
@@ -61,8 +65,10 @@ const jsonToDeviceConfig = (filePath: string, json: string) => {
  * Loads all device configurations
  */
 onTwoWayCallPromise("device-config:load", () => {
-  return existsDeviceConfigDir()
-    .then((exists) => exists ? readDeviceConfigs() : []);
+  return Promise.all([
+    existsDeviceConfigDir().then((exists) => exists ? readDeviceConfigs(false) : []),
+    existsTemplateDir().then((exists) => exists ? readDeviceConfigs(true) : []),
+  ]).then(flatten);
 });
 
 /**
@@ -75,7 +81,7 @@ onTwoWayCallPromise("device-config:create", (config) => {
     .then(() => generateUniqueFileName(config.name))
     .then((fileName) => {
       // Write device-configuration to file system
-      const filePath = getDeviceConfigPath(fileName);
+      const filePath = getConfigFilePath(false, fileName);
       const configWithFileName = {
         ...config,
         fileName,
@@ -90,7 +96,7 @@ onTwoWayCallPromise("device-config:overwrite", (config) => {
   // Ensure that root device configuration directory exists
   return ensureDeviceConfigDir()
     // Write device-configuration to file system
-    .then(() => fsWriteFile(getDeviceConfigPath(config.fileName), deviceConfigToJson(config)))
+    .then(() => fsWriteFile(getConfigFilePath(false, config.fileName), deviceConfigToJson(config)))
     .then(() => config);
 });
 
@@ -98,7 +104,7 @@ onTwoWayCallPromise("device-config:overwrite", (config) => {
  * Remove specific device configuration
  */
 onTwoWayCallPromise("device-config:remove", (fileName) => {
-  const configPath = getDeviceConfigPath(fileName);
+  const configPath = getConfigFilePath(false, fileName);
   // Check if root device configuration directory exists
   return existsDeviceConfigDir()
     // Check if given configuration exists
@@ -115,7 +121,7 @@ function generateUniqueFileName(name: string) {
 
   const tryName = (index: number): Promise<string> => {
     const nameToFind = index ? `${fsName}-${index}.json` : `${fsName}.json`;
-    return existsFsEntry(getDeviceConfigPath(nameToFind))
+    return existsFsEntry(getConfigFilePath(false, nameToFind))
       .then((exists) => exists ? tryName(index + 1) : nameToFind);
   };
 
@@ -125,30 +131,31 @@ function generateUniqueFileName(name: string) {
 /**
  * Read all device configurations
  */
-function readDeviceConfigs(): Promise<any[]> {
-  const deviceConfigPaths = fsReaddir(deviceConfigPath);
+function readDeviceConfigs(template: boolean): Promise<any[]> {
+  const deviceConfigPaths = template ? fsReaddir(templatePath) : fsReaddir(deviceConfigPath);
 
   return deviceConfigPaths
-    .then((fileNames) => Promise.all(fileNames.map(readDeviceConfig)));
+    .then((fileNames) => Promise.all(fileNames.map((fileName) => readDeviceConfig(template, fileName))));
 }
 
 /**
  * Read single device configuration
  */
-function readDeviceConfig(fileName: string) {
-  const filePath = getDeviceConfigPath(fileName);
+function readDeviceConfig(template: boolean, fileName: string) {
+  const filePath = getConfigFilePath(template, fileName);
   return fsReadFile(filePath)
-    .then((content) => jsonToDeviceConfig(filePath, content.toString()))
-    .catch((error) => createDeviceConfigError(filePath, error));
+    .then((content) => jsonToDeviceConfig(template, filePath, content.toString()))
+    .catch((error) => createDeviceConfigError(template, filePath, error));
 }
 
 /**
  * Creates device configuration error
  */
-function createDeviceConfigError(filePath: string, error: Error) {
+function createDeviceConfigError(template: boolean, filePath: string, error: Error) {
   const fileName = getFileNameFromPath(filePath);
   return {
     name: fileName,
+    template,
     filePath,
     fileName,
     parameters: [] as any[],
@@ -162,6 +169,10 @@ function existsFsEntry(pathToTest: string) {
 
 function existsDeviceConfigDir(): Promise<boolean> {
   return existsFsEntry(deviceConfigPath);
+}
+
+function existsTemplateDir(): Promise<boolean> {
+  return existsFsEntry(templatePath);
 }
 
 function ensureDeviceConfigDir() {

@@ -10,6 +10,7 @@ export interface IRawDeviceConfigDto {
   fileName: string;
   name: string;
   parameters: IRawDeviceConfigParamDto[];
+  template: boolean;
   error?: string;
 }
 
