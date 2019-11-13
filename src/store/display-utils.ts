@@ -1,14 +1,14 @@
-import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, pick, pickBy} from "lodash";
+import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, partition, pick, pickBy, uniq} from "lodash";
 import {
   createSignalInstance,
   DEFAULT_DEVICE_RUN,
-  DEFAULT_DISPLAY_SETTINGS, getSignalId,
+  DEFAULT_DISPLAY_SETTINGS, getDeviceId, getSignalId,
   getVirtualDeviceId,
   IApplicationState,
   IDisplayState,
   ISignalState,
   PanelName,
-  QuickPanelName,
+  QuickPanelName, toDtoDeviceId,
 } from "./state";
 import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceDto, DisplayDeviceSignalDto} from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
@@ -91,8 +91,9 @@ export const createDisplayState = (state: IApplicationState,
 
   // Group devices by device id
   const configDevicesByVirtualId = config ? mapDeviceIdKeyToVirtualId(state, config.devices) : {};
+  const normalizedSignals = normalizeAvailableSignals(state, allSignals);
   // Group all signals by device and by signal id
-  const signalsByVirtualId = mapDeviceIdKeyToVirtualId(state, groupBy(allSignals, (signal) => signal.deviceId));
+  const signalsByVirtualId = mapDeviceIdKeyToVirtualId(state, groupBy(normalizedSignals, (signal) => signal.deviceId));
 
   // We save raw settings without connected devices.
   const raw = config ?
@@ -150,4 +151,21 @@ export const mapDeviceIdKeyToVirtualId = <T>(state: IApplicationState,
       getVirtualDeviceId(device),
       obj[deviceId],
     ])));
+};
+
+/**
+ * Normalized given signals.
+ * If signal does not have device ID, it means that this signal available for ALL connected devices.
+ * If we have signals without device ID, we generate this signal for ALL connected devices.
+ */
+const normalizeAvailableSignals = (state: IApplicationState, signals: ISignalState[]) => {
+  const [withDeviceId, withoutDeviceId] = partition(signals, ({deviceId}) => deviceId);
+  if (withoutDeviceId.length) {
+    const allDeviceIds = uniq(queryConnectedDevices(state).map(getDeviceId));
+    return withDeviceId.concat(flatMap(
+      allDeviceIds,
+      (deviceId) => withoutDeviceId.map((signal) => ({...signal, deviceId: toDtoDeviceId(deviceId)}))));
+  } else {
+    return withDeviceId;
+  }
 };

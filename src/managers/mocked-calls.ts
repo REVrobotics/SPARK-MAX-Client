@@ -2,9 +2,8 @@
  * In this file developer can mock or change response of calls to main process.
  * Calls are mocked ONLY IN DEV environment.
  */
-// import {mockTwoWayCall} from "./mock-renderer-calls";
 
-import {mockTwoWayCall} from "./mock-renderer-calls";
+// import {mockTwoWayCall} from "./mock-renderer-calls";
 // import {ListResponseDto} from "../../public/proto-gen";
 // import {delayPromise} from "../utils/promise-utils";
 //
@@ -87,11 +86,11 @@ import {mockTwoWayCall} from "./mock-renderer-calls";
 // //
 // // mockCallbackCall("load-firmware-progress", CB_ONLY_MOCK_CALL);
 
-mockTwoWayCall("telemetry-list", () => {
-  return Promise.resolve({
-    signalsAvailable: [],
-  });
-});
+// mockTwoWayCall("telemetry-list", () => {
+//   return Promise.resolve({
+//     signalsAvailable: [],
+//   });
+// });
 
 //
 // mockCallbackCall("resync", CB_ONLY_MOCK_CALL);

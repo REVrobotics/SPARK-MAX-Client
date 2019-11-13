@@ -199,7 +199,7 @@ const SignalsRunPanel = (props: Props) => {
       </List>
       <SignalPane className="flex-1"
                   signal={selectedSignal}
-                  instance={selectedSignalId ? assignedSignals[selectedSignalId] : undefined}
+                  instance={selectedSignalId != null ? assignedSignals[selectedSignalId] : undefined}
                   onAdd={onSignalAdd}
                   onRemove={onSignalRemove}
                   onSetField={setSignalField}/>

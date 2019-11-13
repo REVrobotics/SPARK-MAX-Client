@@ -1,5 +1,5 @@
 import {forEach, groupBy, isEmpty, once, pull} from "lodash";
-import {DeviceId, IDestination, ITelemetryDataItem, SignalId, VirtualDeviceId} from "./state";
+import {DeviceId, fromDtoDeviceId, IDestination, ITelemetryDataItem, SignalId, VirtualDeviceId} from "./state";
 import {waveformEngine} from "../display";
 import {DataPoint, DataStream} from "../display/display-interfaces";
 import {truncateByTime} from "../utils/object-utils";
@@ -83,7 +83,7 @@ export const writeDataChunk = (mixedItems: ITelemetryDataItem[]) => {
     const bySignal = groupBy(signals, (signal) => signal.id);
 
     forEach(bySignal, (items, signalId) => {
-      writeDataChunkByDestination(Number(deviceId), Number(signalId), items);
+      writeDataChunkByDestination(fromDtoDeviceId(deviceId), Number(signalId), items);
     });
   });
 };
