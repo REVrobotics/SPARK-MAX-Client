@@ -17,6 +17,7 @@ export class TelemetryResource extends AbstractResource {
   constructor(private stream: grpc.ClientDuplexStream<any, any>,
               private listener: (event: any) => void) {
     super("");
+    console.log("[TELEMETRY] created new stream");
   }
 
   public addSignal(device: string, signalId: number) {
@@ -48,12 +49,14 @@ export class TelemetryResource extends AbstractResource {
   protected _start(): void {
     this.stream.on("data", (msg) => {
       const dto = telemetryStreamResponseToDto(msg);
+      console.log("[TELEMETRY] receive data: %j", dto);
       this.listener({
         type: "data",
         data: dto.data,
       });
     });
     this.stream.on("error", (error) => {
+      console.error("[TELEMETRY] error: %j", error);
       this.listener({
         type: "data",
         error,
@@ -76,6 +79,8 @@ export class TelemetryResource extends AbstractResource {
     });
 
     return new Promise((resolve) => this.stream.end(() => {
+      console.log("[TELEMETRY] stream stopped");
+
       this.listener({
         type: "stop",
       });
@@ -85,6 +90,7 @@ export class TelemetryResource extends AbstractResource {
   }
 
   private _write(request: TelemetryStreamRequestDto): void {
+    console.log("[TELEMETRY] send command: %j", request);
     this.stream.write(telemetryStreamRequestFromDto(request));
   }
 }
