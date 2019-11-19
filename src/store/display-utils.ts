@@ -18,8 +18,13 @@ import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySigna
  * This method merges settings from next display to the current one.
  */
 export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDisplayState): IDisplayState => {
-  // Remove ALL removed signals and signal instances from each device
-  const mergedDevices = mapValues(currentDisplay.devices, (device, virtualDeviceId) => {
+  // Remove ALL removed devices
+  const existingDevices = pickBy(
+    currentDisplay.devices,
+    ((_, virtualDeviceId) => nextDisplay.devices[virtualDeviceId]));
+
+  // Remove ALL removed signal instances from each device
+  const mergedDevices = mapValues(existingDevices, (device, virtualDeviceId) => {
     const nextDevice = nextDisplay.devices[virtualDeviceId];
     const nextDeviceInstances = nextDevice ? nextDevice.assignedSignals : {};
     const nextDeviceSignals = (nextDevice ? nextDevice.signals : undefined) || [];
@@ -51,9 +56,17 @@ export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDispl
         nextDeviceInstances));
   });
 
+  // Add new devices
+  const addedDevices = pickBy(
+    nextDisplay.devices,
+    (_, virtualDeviceId) => currentDisplay.devices[virtualDeviceId] == null);
+
   return {
     ...currentDisplay,
-    devices: mergedDevices,
+    devices: {
+      ...mergedDevices,
+      ...addedDevices,
+    },
     settings: nextDisplay.settings,
     raw: nextDisplay.raw,
   };
