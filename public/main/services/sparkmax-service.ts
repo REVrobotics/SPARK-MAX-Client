@@ -69,7 +69,8 @@ const pingResourceFactory = timerResourceFactory((device) =>
  * Heartbeat processor is used by `heartbeat` {@link IResource} to send the latest setpoint value
  */
 const heartbeatProcessor = (device: string, attributes: { [name: string]: any }) =>
-  new Promise<void>((resolve, reject) =>
+  new Promise<void>((resolve, reject) => {
+    console.log(`[TELEMETRY] SP = ${attributes.setpoint}`);
     server.setpoint({root: {device}, enable: true, setpoint: attributes.setpoint}, (err: any, response: any) => {
       if (err) {
         reject(err);
@@ -78,7 +79,8 @@ const heartbeatProcessor = (device: string, attributes: { [name: string]: any })
 
       notifyCallback(getTargetWindow(), "heartbeat", device, response);
       resolve(response);
-    }));
+    });
+  });
 
 const context = new SparkmaxContext([pingResourceFactory]);
 
