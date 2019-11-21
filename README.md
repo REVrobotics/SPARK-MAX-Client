@@ -40,6 +40,8 @@ This script is responsible for packaging all of the SPARK MAX Client's project f
 Most of this is done by the [electron-builder](https://github.com/electron-userland/electron-builder) module. Out of all the scripts,
 this one takes the most time to complete (approx. 5 minutes). It should also be noted that this runs `npm run build` and `npm run build-desktop` before the actual script itself.
 
+**Note:** In order to package SPARK MAX server with the client application, put all binaries along with `spakrmax.exe` into the `bin/` directory.
+
 ### `npm install`
 This is the typical, default installation command that the node package manager has. The SPARK MAX Client has a `npm run postinstall` script that is automatically
 run after `npm install` is finished, which builds the proper binaries for the electron environment. This provides native access to operating system calls such as
@@ -64,9 +66,8 @@ This script downloads file from GitHub repository and generates gRPC client usin
 
 Application supports the following parameters
 * `--host` specifies IP address if the SPARK-MAX server
-* `--port` specifies port of the SPAstaRK-MAX server
+* `--port` specifies port of the SPARK-MAX server
 * `--remote`. When `--remote` flag is set, application does not try to start bundled SPARK-MAX server and connects to the specified one (through `--host` and `--port` parameters).
-* `---grpc`. When `--grpc` flag is set, application runs gRPC client instead of ZeroMQ (default). **Note: this option will be removed in future, when support of ZeroMQ is terminated**
 
 ## Troubleshooting
 

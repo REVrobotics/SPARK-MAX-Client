@@ -27,7 +27,7 @@ const applicationStore = createStore(
 // read value passed from the main process
 const electron = (window as any).require("electron");
 const {remote, crashReporter} = electron;
-const headless = !remote.getGlobal("remote");
+const headless = remote.getGlobal("headless");
 const crashReporterOptions = remote.getGlobal("crashReporterOptions");
 
 crashReporter.start(crashReporterOptions);
