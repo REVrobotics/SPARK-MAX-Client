@@ -11,7 +11,7 @@ import * as util from "util";
 import SparkServer from "../server/sparkmax-server";
 import {HOST, PORT} from "../../program-args";
 import {ListRequestDto} from "../../proto-gen";
-import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall} from "./ipc-main-calls";
+import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall, onTwoWayCallPromise} from "./ipc-main-calls";
 import {SparkmaxContext} from "../server/SparkmaxContext";
 import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
@@ -334,36 +334,54 @@ onTwoWayCall("telemetry-running-signals", (cb) => {
   cb(null, resource ? resource.getSignals() : []);
 });
 
-onTwoWayCall("load-firmware", (cb, recover: boolean, filename: string, devicesToUpdate: string[]) => {
+onTwoWayCallPromise("load-firmware", (recover: boolean, filename: string, devicesToUpdate: string[]) => {
   if (!fs.existsSync(filename)) {
-    cb("Error loading firmware. Firmware file was not found on the file system.");
+    return Promise.reject("Error loading firmware. Firmware file was not found on the file system.");
   } else {
     if (firmwareID === null) {
-      const handler = () => {
-        server.firmwareLoadOrRecover(recover, {}, (error: any, response: any) => {
-          if (error) {
-            notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover);
-            cb(error);
-            global.clearTimeout(firmwareID);
-            firmwareID = null;
-            return;
-          }
+      let onResolve: (response: any) => void;
+      let onReject: (error: any) => void;
 
-          if (response.isUpdating && !response.updateComplete) {
-            notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover, response);
-            firmwareID = global.setTimeout(handler, 0);
-          } else {
-            setTimeout(() => {
-              cb(null, response);
-            }, 3000);
-            global.clearTimeout(firmwareID);
-            firmwareID = null;
-          }
-        });
+      const askForProgress = () => server.firmwareLoadOrRecover(recover, {}, (error: any, response: any) => {
+        if (error) {
+          notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover);
+          onReject(error);
+          return;
+        }
+
+        if (response.isUpdating && !response.updateComplete) {
+          notifyCallback(getTargetWindow(), "load-firmware-progress", error, recover, response);
+          scheduleFirmwareProgress();
+        } else {
+          setTimeout(() => onResolve(response), 3000);
+        }
+      });
+
+      const scheduleFirmwareProgress = () => {
+        firmwareID = global.setTimeout(askForProgress, 50);
       };
 
-      console.log("Starting firmware update...");
-      server.firmwareLoadOrRecover(recover, {filename, devicesToUpdate}, handler);
+      return context.pause()
+        .then(() => new Promise((resolve, reject) => {
+            onResolve = resolve;
+            onReject = reject;
+
+            server.firmwareLoadOrRecover(recover, {filename, devicesToUpdate}, (error: any) => {
+              if (error) {
+                onReject(error);
+                return;
+              }
+
+              scheduleFirmwareProgress();
+            })
+          })
+        )
+        .finally(() => {
+          context.resume();
+          firmwareID = null;
+        });
+    } else {
+      return Promise.resolve();
     }
   }
 });

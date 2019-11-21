@@ -404,7 +404,7 @@ export const queryFirmwareByTag = (state: IApplicationState, tag: FirmwareTag): 
 /**
  * Returns if firmware is updated currently.
  */
-export const queryIsFirmwareLoading = (state: IApplicationState) => state.firmware.loading;
+export const queryIsFirmwareLoading = (state: IApplicationState) => state.network.firmwareLoading;
 
 /**
  * Returns ID of currently selected configuration
