@@ -36,7 +36,7 @@ const dictionarySet = {
     [ConfigParam.kInputDeadband]: "PWM Input Deadband",
     [ConfigParam.kRampRate]: "Rate (seconds to full speed)",
     [ConfigParam.kSmartCurrentStallLimit]: "Smart Current Limit",
-    [ConfigParam.kEncoderCountsPerRev]: "Encoder CPR",
+    [ConfigParam.kEncoderCountsPerRev]: "Encoder Counts Per Rev",
     [ConfigParam.kHardLimitFwdEn]: "Forward Limit",
     [ConfigParam.kHardLimitRevEn]: "Reverse Limit",
     [ConfigParam.kSoftLimitFwdEn]: "Forward Limit",
