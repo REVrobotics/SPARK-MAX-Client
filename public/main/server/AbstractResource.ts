@@ -25,7 +25,7 @@ export abstract class AbstractResource implements IResource {
   }
 
   public setAttribute(name: string, value: any): void {
-    this.attributes.set(name, value);
+    this.attributes[name] = value;
   }
 
   public getAttribute(name: string): void {
