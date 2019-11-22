@@ -125,8 +125,6 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
     }
 
     return SparkManager.listAllDevices()
-    // Syncing of signals is a part of device syncing
-      .then((response) => dispatch(syncSignals()).then(() => response))
       .then(({extendedList}) => {
         // Here we need only SPARK MAX controllers
         const nextDevices = extendedList.filter((extended) => extended.updateable);
@@ -136,11 +134,6 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
         const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
         // Merge list of devices for the given descriptor
         dispatch(replaceDevices(added.concat(merged)));
-        dispatch(updateGlobalProcessStatus(""));
-        dispatch(updateGlobalIsProcessing(false));
-        if (descriptor) {
-          dispatch(updateIsProcessingByDescriptor(descriptor, false));
-        }
 
         if (showNotifications) {
           added.forEach((device) => showToastWarning(tt("msg_device_added", {
@@ -152,6 +145,15 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
             deviceId: device.info.deviceId,
             deviceName: device.info.deviceName
           })));
+        }
+      })
+      // Syncing of signals is a part of device syncing
+      .then((response) => dispatch(syncSignals()).then(() => response))
+      .then(() => {
+        dispatch(updateGlobalProcessStatus(""));
+        dispatch(updateGlobalIsProcessing(false));
+        if (descriptor) {
+          dispatch(updateIsProcessingByDescriptor(descriptor, false));
         }
       })
       .catch(onError(() => {
