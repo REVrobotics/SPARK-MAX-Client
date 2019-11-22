@@ -23,7 +23,7 @@ const NumericParamField = ({
   const stepSize = (typedConstraints ? typedConstraints.stepSize : undefined) || 1;
   const minorStepSize = stepSize < 1 ? stepSize : undefined;
 
-  const onChange = useCallback((newValue) => onValueChange(parameter, newValue), []);
+  const onChange = useCallback((newValue) => onValueChange(parameter, newValue), [parameter]);
 
   return (
     <SafeNumericInput

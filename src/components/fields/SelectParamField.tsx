@@ -33,7 +33,7 @@ const SelectParamField = ({
                             buttonProps, selectProps, className, parameter, disabled, value, options, placeholder,
                             onValueChange,
                           }: IProps) => {
-  const onChange = useCallback((item) => onValueChange(parameter, item.id), []);
+  const onChange = useCallback((item) => onValueChange(parameter, item.id), [parameter]);
 
   const selectedOption = find(options, {id: value});
 

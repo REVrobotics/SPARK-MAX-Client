@@ -12,7 +12,7 @@ interface IProps extends IConfigParamProps {
 }
 
 const SliderParamField = ({className, parameter, constraints, disabled, value, message, onValueChange}: IProps) => {
-  const onChange = useCallback((newValue) => onValueChange(parameter, newValue), []);
+  const onChange = useCallback((newValue) => onValueChange(parameter, newValue), [parameter]);
 
   const typedConstraints = constraints as INumericFieldConstraints;
 
