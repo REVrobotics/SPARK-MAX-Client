@@ -5,7 +5,7 @@ import {connect} from "react-redux";
 import SparkManager from "../managers/SparkManager";
 import {troubleshootContent} from "../mls/content";
 
-const SERVER_VERSION = "1.1.61";
+const SERVER_VERSION = "2.0.0";
 
 interface IProps {
   logs: string[]
