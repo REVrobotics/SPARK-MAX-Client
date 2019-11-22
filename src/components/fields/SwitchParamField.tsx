@@ -17,7 +17,7 @@ const SwitchParamField = ({inputProps, label, inverted, className, parameter, di
 
   const onChange = useCallback(
     (event) => onValueChange(parameter, event.target.checked ? checked : unchecked),
-    [inverted]);
+    [parameter, inverted]);
 
   return (
     <Switch checked={value === checked}
