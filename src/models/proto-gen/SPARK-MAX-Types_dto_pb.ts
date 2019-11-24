@@ -204,6 +204,15 @@ export enum ConfigParam {
   kAnalogSampleDelta = 124,
   kAnalogRsvd0 = 125,
   kAnalogRsvd1 = 126,
+  kDataPortConfig = 127,
+  kAltEncoderCountsPerRev = 128,
+  kAltEncoderAverageDepth = 129,
+  kAltEncoderSampleDelta = 130,
+  kAltEncoderInverted = 131,
+  kAltEncoderPositionFactor = 132,
+  kAltEncoderVelocityFactor = 133,
+  kAltEncoderRsvd0 = 134,
+  kAltEncoderRsvd1 = 135,
 }
 
 export enum ConfigParamTypes {
@@ -325,8 +334,8 @@ export enum ConfigParamTypes {
   kClosedLoopRampRate_t = 2,
   kSoftLimitFwd_t = 2,
   kSoftLimitRev_t = 2,
-  kSoftLimitRsvd0_t = 2,
-  kSoftLimitRsvd1_t = 2,
+  kSoftLimitRsvd0_t = 1,
+  kSoftLimitRsvd1_t = 1,
   kAnalogPositionConversion_t = 2,
   kAnalogVelocityConversion_t = 2,
   kAnalogAverageDepth_t = 1,
@@ -335,6 +344,15 @@ export enum ConfigParamTypes {
   kAnalogSampleDelta_t = 1,
   kAnalogRsvd0_t = 1,
   kAnalogRsvd1_t = 1,
+  kDataPortConfig_t = 1,
+  kAltEncoderCountsPerRev_t = 1,
+  kAltEncoderAverageDepth_t = 1,
+  kAltEncoderSampleDelta_t = 1,
+  kAltEncoderInverted_t = 3,
+  kAltEncoderPositionFactor_t = 2,
+  kAltEncoderVelocityFactor_t = 2,
+  kAltEncoderRsvd0_t = 1,
+  kAltEncoderRsvd1_t = 1,
 }
 
 export enum ConfigParamGroupName {
@@ -353,6 +371,7 @@ export enum ConfigParamGroupName {
   GROUPNAME_Encoder_Port_Sensor = 12,
   GROUPNAME_Smart_Motion = 13,
   GROUPNAME_Analog_Sensor = 14,
+  GROUPNAME_Alternate_Encoder = 15,
 }
 
 export enum ConfigParamGroup {
@@ -484,6 +503,15 @@ export enum ConfigParamGroup {
   GROUP_kAnalogSampleDelta = 14,
   GROUP_kAnalogRsvd0 = 3,
   GROUP_kAnalogRsvd1 = 3,
+  GROUP_kDataPortConfig = 15,
+  GROUP_kAltEncoderCountsPerRev = 15,
+  GROUP_kAltEncoderAverageDepth = 15,
+  GROUP_kAltEncoderSampleDelta = 15,
+  GROUP_kAltEncoderInverted = 15,
+  GROUP_kAltEncoderPositionFactor = 15,
+  GROUP_kAltEncoderVelocityFactor = 15,
+  GROUP_kAltEncoderRsvd0 = 3,
+  GROUP_kAltEncoderRsvd1 = 3,
 }
 
 export enum DRVStat0_Bits {

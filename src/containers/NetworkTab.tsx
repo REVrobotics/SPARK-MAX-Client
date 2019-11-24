@@ -203,8 +203,8 @@ class NetworkTab extends React.Component<IProps> {
     },
     dfuTitle: () => (
       <Cell className="text-center">
-        <NetworkSelector selected={this.props.isSelectAllDfuDevices}
-                         disabled={this.props.hasSelectedDfuDevice}
+        <NetworkSelector selected={false}
+                         disabled={true}
                          onSelected={this.props.selectAllDfuDevices}/>
       </Cell>
     ),
