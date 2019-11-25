@@ -68,18 +68,20 @@ const pingResourceFactory = timerResourceFactory((device) =>
 /**
  * Heartbeat processor is used by `heartbeat` {@link IResource} to send the latest setpoint value
  */
-const heartbeatProcessor = (device: string, attributes: { [name: string]: any }) =>
+const heartbeatProcessor = (_: string, attributes: { [name: string]: any }) =>
   new Promise<void>((resolve, reject) => {
     console.log(`[TELEMETRY] SP = ${attributes.setpoint}`);
-    server.setpoint({root: {device}, enable: true, setpoint: attributes.setpoint}, (err: any, response: any) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    server.setpoint(
+      {root: {device: attributes.device}, enable: true, setpoint: attributes.setpoint},
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
 
-      notifyCallback(getTargetWindow(), "heartbeat", device, response);
-      resolve(response);
-    });
+        notifyCallback(getTargetWindow(), "heartbeat", attributes.device, response);
+        resolve(response);
+      });
   });
 
 const context = new SparkmaxContext([pingResourceFactory]);
@@ -269,7 +271,7 @@ onOneWayCall("enable-heartbeat", (device, setpoint, interval) => {
     // Create and start heartbeat resource
     context.newDeviceResource(
       getHeartbeatResourceName(device),
-      timerResourceFactory(heartbeatProcessor, interval, {setpoint}));
+      timerResourceFactory(heartbeatProcessor, interval, {device, setpoint}));
   }
 });
 

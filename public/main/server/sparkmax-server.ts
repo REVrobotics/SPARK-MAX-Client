@@ -97,7 +97,6 @@ class SparkServer {
   }
 
   public setpoint(setpointCommand: any, cb?: Function) {
-    setpointCommand.setpoint = setpointCommand.setpoint / 1024;
     this.grpcClient.setpoint(setpointRequestFromDto(setpointCommand), wrapIntoGrpcCallback(cb, setpointResponseToDto));
   }
 
