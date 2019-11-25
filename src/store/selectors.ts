@@ -142,6 +142,17 @@ export const queryIsDeviceConnected = (state: IApplicationState, id: VirtualDevi
 };
 
 /**
+ * Returns index of descriptor
+ */
+export const queryDescriptorIndex = (state: IApplicationState, descriptor: PathDescriptor) =>
+  state.deviceSet.orderedDescriptors.indexOf(descriptor) + 1;
+
+/**
+ * Returns order of descriptors
+ */
+export const queryDescriptorsInOrder = (state: IApplicationState) => state.deviceSet.orderedDescriptors;
+
+/**
  * Returns whether any device is connected
  */
 export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedDescriptor(state) != null;

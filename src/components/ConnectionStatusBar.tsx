@@ -19,7 +19,7 @@ import {
   syncDevices
 } from "../store/actions";
 import {
-  queryConnectedDescriptor,
+  queryConnectedDescriptor, queryDescriptorsInOrder,
   queryDevicesInOrder,
   queryHasGlobalError, queryHasRunningDevices,
   queryIsConnectableToAnyDevice,
@@ -36,6 +36,7 @@ import {stopAllDevices} from "../store/actions/display-actions";
 
 interface IProps {
   selectedDevice?: IDeviceState,
+  descriptors: PathDescriptor[],
   devices: IDeviceState[],
   processStatus: string,
   processing: boolean,
@@ -105,8 +106,8 @@ const MainAction = (props: IProps) => {
 const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processStatus, connected, hasGlobalError,
-    connectedDescriptor,
-      onSelectDevice, onRescan,
+    descriptors, connectedDescriptor,
+    onSelectDevice, onRescan,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
@@ -115,7 +116,14 @@ const ConnectionStatusBar = (props: IProps) => {
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
   const onDeviceSelectClosed = useCallback(() => setSelectOpened(false), []);
 
-  const getDeviceMarker = useCallback(
+  const getDevicePrefix = useCallback((device: IDeviceState) => {
+    if (descriptors.length > 1) {
+      return `(${descriptors.indexOf(device.descriptor) + 1})`;
+    } else {
+      return "";
+    }
+  }, [descriptors]);
+  const getDeviceSuffix = useCallback(
     (device: IDeviceState) => {
       if (device.descriptor !== connectedDescriptor) {
         return Message.info("lbl_not_connected_lc");
@@ -187,7 +195,8 @@ const ConnectionStatusBar = (props: IProps) => {
       </Popover>
       <DeviceSelect className="status-bar__device-selector"
                     devices={devices}
-                    getMarker={getDeviceMarker}
+                    getPrefix={getDevicePrefix}
+                    getMarker={getDeviceSuffix}
                     selected={selectedDevice}
                     disabled={devices.length <= 1}
                     onSelect={onSelectDevice}
@@ -221,6 +230,7 @@ export function mapStateToProps(state: IApplicationState) {
   return {
     selectedDevice: querySelectedDevice(state),
     devices: queryDevicesInOrder(state),
+    descriptors: queryDescriptorsInOrder(state),
     connected: queryIsSelectedDeviceConnected(state),
     connectedDescriptor: queryConnectedDescriptor(state),
     hasGlobalError: queryHasGlobalError(state),

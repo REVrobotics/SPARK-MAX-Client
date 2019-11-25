@@ -152,16 +152,18 @@ export const updateIsProcessingByDescriptor = (descriptor: PathDescriptor,
   type: ActionType.SET_PROCESSING_BY_DESCRIPTOR
 });
 
-export const addDevices = (devices: IDeviceState[]): IAddDevices => ({
+export const addDevices = (devices: IDeviceState[], descriptors?: PathDescriptor[]): IAddDevices => ({
   payload: {
     devices,
+    descriptors,
   },
   type: ActionType.ADD_DEVICES
 });
 
-export const replaceDevices = (devices: IDeviceState[]): IReplaceDevices => ({
+export const replaceDevices = (devices: IDeviceState[], descriptors?: PathDescriptor[]): IReplaceDevices => ({
   payload: {
     devices,
+    descriptors,
   },
   type: ActionType.REPLACE_DEVICES
 });
