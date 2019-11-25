@@ -99,9 +99,14 @@ export interface IContextState {
 export interface IDeviceSetState {
   /**
    * Ordered list of device IDs.
-   * Devices on the top dropdown are displayed according to the order in this array.
+   * Devices in the top dropdown are displayed according to the order in this array.
    */
   orderedDevices: VirtualDeviceId[],
+  /**
+   * Ordered list of descriptors.
+   * It is necessary to sort devices in right order.
+   */
+  orderedDescriptors: string[],
   /**
    * Dictionary of all devices.
    */
@@ -635,6 +640,10 @@ export const toDtoDeviceId = (deviceId: DeviceId) => String(deviceId);
  */
 export const getDeviceId = (device: IDeviceState) => device.fullDeviceId;
 /**
+ * Returns group of "physical" device id and descriptor
+ */
+export const getDeviceSourceId = (device: IDeviceState) => `${device.descriptor}>>>${device.fullDeviceId}`;
+/**
  * Returns virtual id (client id) of the given device
  */
 export const getVirtualDeviceId = (device: IDeviceState) => device.id;
@@ -728,7 +737,7 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
     (device) => getCanIdFromDeviceId(getDeviceId(device)) === 0);
 
   // Analyze devices having CAN ID != 0
-  const diffNon0 = diffArrays(previousNotZero, nextNotZero, getDeviceId);
+  const diffNon0 = diffArrays(previousNotZero, nextNotZero, getDeviceSourceId);
 
   // Analyze devices having CAN ID = 0
   const diff0 = diffArrays(previousZero, nextZero, (device) => device.uniqueId);

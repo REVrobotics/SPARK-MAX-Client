@@ -17,8 +17,10 @@ import {setArrayElement, setField, setFields, setNestedField} from "../../utils/
 import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {createRamConfigParamContext, getRamConfigParamRule, IRamConfigParamContext} from "../ram-config-param-rules";
 import {composeReducers} from "../../utils/reducer-utils";
+import {queryDescriptorIndex} from "../selectors";
 
 const initialDeviceSetState: IDeviceSetState = {
+  orderedDescriptors: [],
   orderedDevices: [],
   devices: {},
 };
@@ -34,13 +36,16 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
   switch (action.type) {
     case ActionType.ADD_DEVICES: {
       const devices = setFields(state.devices, keyBy(action.payload.devices, getVirtualDeviceId));
-      return setField(state, "devices", devices);
+      return setFields(state, {
+        orderedDescriptors: action.payload.descriptors || state.orderedDescriptors,
+        devices,
+      });
     }
     case ActionType.REPLACE_DEVICES:
-      return setField(
-        state,
-        "devices",
-        fromPairs(action.payload.devices.map((device) => [getVirtualDeviceId(device), device])));
+      return setFields(state, {
+        devices: fromPairs(action.payload.devices.map((device) => [getVirtualDeviceId(device), device])),
+        orderedDescriptors: action.payload.descriptors || state.orderedDescriptors,
+      });
     case ActionType.SET_PROCESSING_BY_DESCRIPTOR:
     case ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR: {
       // Find all devices having the same descriptor
@@ -202,11 +207,16 @@ const orderedDevicesReducer = (state: IApplicationState, action: ApplicationActi
     case ActionType.REPLACE_DEVICES:
     case ActionType.SET_CONNECTED_DESCRIPTOR: {
       const devices = values(state.deviceSet.devices);
-      const descriptor = state.context.connectedDescriptor;
+      const connectedDescriptor = state.context.connectedDescriptor;
 
+      // Sort devices in the order of descriptor
+      // Always put connected devices to the top
       return sortBy(
         devices,
-        (device) => `${device.descriptor === descriptor ? "0": "1"}:${device.descriptor}:${getDeviceId(device)}`)
+        (device) => {
+          const index = device.descriptor === connectedDescriptor ? 0 : queryDescriptorIndex(state, device.descriptor);
+          return `${index}:${getDeviceId(device)}`;
+        })
         .map(getVirtualDeviceId);
     }
     default:

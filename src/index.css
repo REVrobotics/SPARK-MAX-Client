@@ -654,6 +654,10 @@ button.link {
     white-space: pre-line;
 }
 
+.device-prefix {
+    color: rgba(0, 0, 0, 0.54);
+}
+
 .device-marker {
     margin-left: 5px;
 }

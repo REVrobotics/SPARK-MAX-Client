@@ -11,9 +11,11 @@ const BpDeviceSelect = Select.ofType<IDeviceState>();
 const getDeviceText = (device: IDeviceState) =>
   `${tt("lbl_id")} ${getCanIdFromDeviceId(device.fullDeviceId)} ${device.info.deviceName}`;
 
-const createItemRenderer = ({getMarker}: { getMarker: (device: IDeviceState) => Message | undefined }) =>
+const createItemRenderer = ({getPrefix, getMarker}: { getPrefix: (device: IDeviceState) => string, getMarker: (device: IDeviceState) => Message | undefined }) =>
   (device: IDeviceState, itemProps: IItemRendererProps) => {
     const markerMessage = getMarker(device);
+    const prefixText = getPrefix(device);
+    const prefix = prefixText ? <span className="device-prefix">{prefixText}</span> : null;
     const marker = markerMessage ?
       <span className={classNames("device-marker", `device-marker--${markerMessage.severity}`)}>
         ({markerMessage.text})
@@ -24,7 +26,7 @@ const createItemRenderer = ({getMarker}: { getMarker: (device: IDeviceState) => 
       <MenuItem
         key={getVirtualDeviceId(device)}
         onClick={itemProps.handleClick}
-        text={<>{getDeviceText(device)}{marker}</>}
+        text={<>{prefix} {getDeviceText(device)}{marker}</>}
       />
     );
   };
@@ -34,6 +36,7 @@ interface IProps {
   disabled: boolean;
   devices: IDeviceState[]
   selected?: IDeviceState;
+  getPrefix: (device: IDeviceState) => string;
   getMarker: (device: IDeviceState) => Message | undefined;
 
   onOpened(): void;
@@ -44,11 +47,11 @@ interface IProps {
 }
 
 export const DeviceSelect: React.FC<IProps> = ({
-                                                 className, devices, disabled, selected, getMarker,
+                                                 className, devices, disabled, selected, getPrefix, getMarker,
                                                  onOpened, onClosed, onSelect,
                                                }) => {
   const popoverProps = useMemo(() => ({onOpened, onClosed}), []);
-  const itemRenderer = useMemo(() => createItemRenderer({getMarker}), [getMarker]);
+  const itemRenderer = useMemo(() => createItemRenderer({getPrefix, getMarker}), [getPrefix, getMarker]);
 
   return (
     <BpDeviceSelect className={className}
