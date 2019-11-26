@@ -147,7 +147,7 @@ const labels = {
   "lbl_quick_bar": "Quick Bar",
   "lbl_pidf": "PIDF",
   "lbl_control_mode": "Control Mode",
-  "lbl_set_point": "Set Point",
+  "lbl_set_point": "Setpoint",
   "lbl_start_device": "Run",
   "lbl_stop_device": "Stop",
   "lbl_pause_devices": "Stop all running devices with possibility to restart by a single click",
