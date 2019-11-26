@@ -55,7 +55,7 @@ const Signal = (props: SignalProps) => {
   } else if (assigned) {
     button = <Button icon="trash" minimal={true} title={tt("lbl_delete_signal")} onClick={remove}/>;
   } else {
-    button = <Button icon="small-plus" minimal={true} title={tt("lbl_add_signal")} onClick={add}/>;
+    button = <Button icon="small-plus" minimal={true} title={tt("lbl_add_signal")} disabled={true} onClick={add}/>;
   }
 
   return (
@@ -151,7 +151,7 @@ const SignalNotAssignedPane = (props: SignalPaneProps) => {
                    icon="plus"
                    title={tt("lbl_add_signal_title")}
                    description={tt("lbl_add_signal_description")}
-                   action={<Button text={tt("lbl_add_signal")} className="rev-btn" onClick={add}/>}/>
+                   action={<Button text={tt("lbl_add_signal")} className="rev-btn" disabled={true} onClick={add}/>}/>
   );
 };
 

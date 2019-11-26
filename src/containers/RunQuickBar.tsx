@@ -41,7 +41,7 @@ const QuickParameter = (props: IQuickParameterProps) => {
               small={true}
               icon="cross"
               onClick={quickUnset}/>
-      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}/>
+      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}  disabled={true}/>
     </div>
   );
 };
@@ -57,15 +57,20 @@ const PIDFPanel = (props: IProps) => {
       <FormGroup inline={true} label={tt("lbl_pid_profile")}>
         <DictionarySelect dictionary={PID_PROFILES}
                           value={props.pidProfile}
+                          disabled={true}
                           onValueChange={props.onSelectPidProfile}/>
       </FormGroup>
       <div className="run-quick-bar__pid-row flex-row">
-        <DisplayConfigParamFieldGroup parameter={pParam} groupClassName="display-param-group--minimal"/>
-        <DisplayConfigParamFieldGroup parameter={pParam + 1} groupClassName="display-param-group--minimal"/>
-        <DisplayConfigParamFieldGroup parameter={pParam + 2} groupClassName="display-param-group--minimal"/>
+        <DisplayConfigParamFieldGroup parameter={pParam} groupClassName="display-param-group--minimal"
+                                      disabled={true}/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 1} groupClassName="display-param-group--minimal"
+                                      disabled={true}/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 2} groupClassName="display-param-group--minimal"
+                                      disabled={true}/>
       </div>
       <div className="run-quick-bar__pid-row flex-row">
-        <DisplayConfigParamFieldGroup parameter={pParam + 3} groupClassName="display-param-group--minimal"/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 3} groupClassName="display-param-group--minimal"
+                                      disabled={true}/>
       </div>
     </div>
   );
