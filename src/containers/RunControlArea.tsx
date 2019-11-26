@@ -9,7 +9,6 @@ import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericIn
 import {CONTROL_MODES} from "../store/dictionaries";
 import {ConfigParam, CtrlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {
-  queryHasAssignedSignalsForSelectedDevice,
   queryHasRunningDevices,
   querySelectedDeviceCurrentConfig,
   querySelectedDeviceRun
@@ -27,7 +26,6 @@ interface IProps {
   className?: string;
   mode: CtrlType;
   run: IDeviceRunState;
-  hasSignalsForSelectedDevice: boolean;
   hasRunningDevices: boolean;
   start(): void;
   stop(): void;
@@ -45,12 +43,11 @@ interface IProps {
  */
 const RunControlArea = (props: IProps) => {
   const {
-    mode, hasRunningDevices, hasSignalsForSelectedDevice,
+    mode, hasRunningDevices,
     start, stop, stopAll, run, burnConfiguration,
     onControlModeChange, onControlValueChange,
   } = props;
 
-  const canStartSelectedDevice = hasSignalsForSelectedDevice;
   const canStopDevices = hasRunningDevices;
 
   return (
@@ -59,7 +56,6 @@ const RunControlArea = (props: IProps) => {
         <Button className="rev-btn main-control-btn"
                 icon={run.running ? <StopCircleRegularIcon size={20}/> : <PlayCircleOutlineIcon size={20}/>}
                 text={run.running ? tt("lbl_stop_device") : tt("lbl_start_device")}
-                disabled={!canStartSelectedDevice}
                 onClick={run.running ? stop : start}/>
         <Button className="ml-5"
                 minimal={true}
@@ -107,7 +103,6 @@ const mapStateToProps = (state: IApplicationState) => {
   return {
     mode: getDeviceParamValueOrDefault(querySelectedDeviceCurrentConfig(state), ConfigParam.kCtrlType),
     run: querySelectedDeviceRun(state) || DEFAULT_DEVICE_RUN,
-    hasSignalsForSelectedDevice: queryHasAssignedSignalsForSelectedDevice(state),
     hasRunningDevices: queryHasRunningDevices(state),
   };
 };
