@@ -11,6 +11,7 @@ import {
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
 import {
+  queryConnectedDescriptor,
   queryControlValueByDeviceId,
   queryDestinations,
   queryDeviceId,
@@ -253,6 +254,7 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       const runningDeviceIds = queryRunningVirtualDeviceIds(getState())
         .map((virtualDeviceId) => queryDeviceId(getState(), virtualDeviceId)!)
         .map(toDtoDeviceId);
+      const connectedDescriptor = queryConnectedDescriptor(getState());
       // Take all destinations of running devices
       const destinationsForRunningDevices = querySignalDestinations(getState())
         .filter(({deviceId}) => runningDeviceIds.includes(deviceId));
@@ -263,7 +265,10 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       const deviceIdDiff = diffArrays(previousRunningDeviceIds, runningDeviceIds);
 
       deviceIdDiff.added.forEach((deviceId) => {
-        SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(getState(), fromDtoDeviceId(deviceId)), 40);
+        SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(
+          getState(),
+          connectedDescriptor!,
+          fromDtoDeviceId(deviceId)), 40);
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
 
