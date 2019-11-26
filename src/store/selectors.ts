@@ -650,6 +650,8 @@ export const querySignalDestinations = (state: IApplicationState): ISignalDestin
 
 export const queryLastSyncedConsumers = (state: IApplicationState): IDestination[] => state.display.lastSyncedConsumers;
 
+export const queryLastRunningDeviceIds = (state: IApplicationState): DeviceId[] => state.display.lastRunningDeviceIds;
+
 /**
  * Returns control value by device ID
  */

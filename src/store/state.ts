@@ -251,6 +251,7 @@ export interface IDisplayState {
   devices: { [deviceId: string]: IDeviceDisplayState };
   raw?: DisplayConfigDto;
   lastSyncedConsumers: IDestination[];
+  lastRunningDeviceIds: DeviceId[];
 }
 
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {

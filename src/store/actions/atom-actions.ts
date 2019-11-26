@@ -41,7 +41,7 @@ import {
   ISetFirmwareLoading,
   ISetGlobalProcessing,
   ISetLastFirmwareLoadingMessage,
-  ISetLastSyncedConsumers,
+  ISetLastSyncedConsumers, ISetLastRunningDeviceIds,
   ISetNetworkDevices,
   ISetNetworkScanInProgress,
   ISetParameters,
@@ -451,6 +451,11 @@ const setDeviceRunningStatus = (virtualDeviceId: VirtualDeviceId, running: boole
 export const setLastSyncedConsumers = (destinations: IDestination[]): ISetLastSyncedConsumers => ({
   type: ActionType.SET_LAST_SYNCED_CONSUMERS,
   payload: {destinations},
+});
+
+export const setLastRunningDeviceIds = (deviceIds: DeviceId[]): ISetLastRunningDeviceIds => ({
+  type: ActionType.SET_LAST_RUNNING_DEVICE_IDS,
+  payload: {deviceIds},
 });
 
 export const setAdvancedSearchString = (virtualDeviceId: VirtualDeviceId,

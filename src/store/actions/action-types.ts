@@ -96,6 +96,7 @@ export enum ActionType {
   SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
   SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
+  SET_LAST_RUNNING_DEVICE_IDS = "SET_LAST_RUNNING_DEVICE_IDS",
 
   SET_ADVANCED_SEARCH_STRING = "SET_ADVANCED_SEARCH_STRING",
   SET_ADVANCED_FIRST_VISIBLE_ROW = "SET_ADVANCED_FIRST_VISIBLE_ROW",
@@ -559,6 +560,13 @@ export interface ISetLastSyncedConsumers extends Action {
   },
 }
 
+export interface ISetLastRunningDeviceIds extends Action {
+  type: ActionType.SET_LAST_RUNNING_DEVICE_IDS,
+  payload: {
+    deviceIds: DeviceId[],
+  },
+}
+
 export interface ISetAdvancedSearchString extends IDeviceAwareAction {
   type: ActionType.SET_ADVANCED_SEARCH_STRING,
   payload: {
@@ -588,7 +596,8 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
   | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetLastSyncedConsumers
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
+  | ISetLastSyncedConsumers | ISetLastRunningDeviceIds
   | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
   | ISetAdvancedSearchString
   | IAddLog;

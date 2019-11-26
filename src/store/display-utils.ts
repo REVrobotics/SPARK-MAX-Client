@@ -149,6 +149,7 @@ export const createDisplayState = (state: IApplicationState,
       }];
     })),
     lastSyncedConsumers: [],
+    lastRunningDeviceIds: [],
   };
 };
 

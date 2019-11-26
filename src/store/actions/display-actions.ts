@@ -1,4 +1,3 @@
-import {uniq} from "lodash";
 import {
   ConfirmationAnswer,
   createSignalInstance,
@@ -18,7 +17,7 @@ import {
   queryDisplay,
   queryDisplaySettings,
   queryIsDeviceRunning,
-  queryIsHasConnectedDevice,
+  queryIsHasConnectedDevice, queryLastRunningDeviceIds,
   queryLastSyncedConsumers,
   queryRunningVirtualDeviceIds,
   querySelectedDeviceSignal,
@@ -33,7 +32,7 @@ import {
   setDeviceStopped,
   setDisplay,
   setDisplayQuickParam,
-  setDisplaySetting, setLastSyncedConsumers,
+  setDisplaySetting, setLastRunningDeviceIds, setLastSyncedConsumers,
   setSelectedSignal,
   setSignalInstanceField
 } from "./atom-actions";
@@ -248,7 +247,7 @@ const syncDataConsumers = (): SparkAction<void> =>
  * This methods sets up data producer.
  */
 const syncDataProducers = (): SparkAction<Promise<void>> =>
-  (_, getState) => {
+  (dispatch, getState) => {
     return SparkManager.telemetryRunningSignals().then((previousDestinations) => {
       // Take ids of running devices
       const runningDeviceIds = queryRunningVirtualDeviceIds(getState())
@@ -259,7 +258,7 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
         .filter(({deviceId}) => runningDeviceIds.includes(deviceId));
 
       // Extract all previous running devices
-      const previousRunningDeviceIds = uniq(previousDestinations.map(({deviceId}) => deviceId));
+      const previousRunningDeviceIds = queryLastRunningDeviceIds(getState()).map(toDtoDeviceId);
 
       const deviceIdDiff = diffArrays(previousRunningDeviceIds, runningDeviceIds);
 
@@ -267,6 +266,8 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
         SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(getState(), fromDtoDeviceId(deviceId)), 40);
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
+
+      dispatch(setLastRunningDeviceIds(runningDeviceIds.map(fromDtoDeviceId)));
 
       if (previousRunningDeviceIds.length === 0 && runningDeviceIds.length > 0) {
         SparkManager.telemetryStart();

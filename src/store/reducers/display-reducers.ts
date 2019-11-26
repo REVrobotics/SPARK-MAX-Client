@@ -30,10 +30,13 @@ const displayInitialState: IDisplayState = {
   settings: DEFAULT_DISPLAY_SETTINGS,
   devices: {},
   lastSyncedConsumers: [],
+  lastRunningDeviceIds: [],
 };
 
 const displayReducer = (state: IDisplayState = displayInitialState, action: ApplicationActions) => {
   switch (action.type) {
+    case ActionType.SET_LAST_RUNNING_DEVICE_IDS:
+      return setField(state, "lastRunningDeviceIds", action.payload.deviceIds);
     case ActionType.SET_DISPLAY:
       return action.payload.display;
     case ActionType.SET_DISPLAY_SELECTED_PANEL:
