@@ -655,8 +655,10 @@ export const queryLastRunningDeviceIds = (state: IApplicationState): DeviceId[] 
 /**
  * Returns control value by device ID
  */
-export const queryControlValueByDeviceId = (state: IApplicationState, deviceId: DeviceId) => {
-  const device = first(queryDevicesByDeviceId(state, deviceId));
+export const queryControlValueByDeviceId = (state: IApplicationState,
+                                            descriptor: PathDescriptor,
+                                            deviceId: DeviceId) => {
+  const device = find(queryDevicesByDeviceId(state, deviceId), (found) => found.descriptor === descriptor);
   return device ? queryDeviceDisplay(state, getVirtualDeviceId(device)).run.value : 0;
 };
 
