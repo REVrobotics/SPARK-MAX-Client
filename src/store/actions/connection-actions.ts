@@ -131,20 +131,25 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
         // Generate device state for each connected device
         const nextDeviceStates = nextDevices.map(createDeviceState);
         const currentDeviceStates = queryDevicesInOrder(getState());
+        const connectedDescriptor = queryConnectedDescriptor(getState());
         const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
         // Merge list of devices for the given descriptor
         dispatch(replaceDevices(added.concat(merged), driverList));
 
         if (showNotifications) {
-          added.forEach((device) => showToastWarning(tt("msg_device_added", {
-            deviceId: device.info.deviceId,
-            deviceName: device.info.deviceName
-          })));
+          added
+            .filter((device) => device.descriptor === connectedDescriptor)
+            .forEach((device) => showToastWarning(tt("msg_device_added", {
+              deviceId: device.info.deviceId,
+              deviceName: device.info.deviceName
+            })));
 
-          removed.forEach((device) => showToastWarning(tt("msg_device_removed", {
-            deviceId: device.info.deviceId,
-            deviceName: device.info.deviceName
-          })));
+          removed
+            .filter((device) => device.descriptor === connectedDescriptor)
+            .forEach((device) => showToastWarning(tt("msg_device_removed", {
+              deviceId: device.info.deviceId,
+              deviceName: device.info.deviceName
+            })));
         }
       })
       // Syncing of signals is a part of device syncing
