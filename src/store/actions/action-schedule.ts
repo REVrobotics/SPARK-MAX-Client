@@ -3,6 +3,7 @@ import {asComposed, asCond, asDebounce, asExclusive, asLeastCommits} from "../..
 import {ConfigParam} from "../../models/ConfigParam";
 
 const setCanIdProcessor = asComposed(
+  asDebounce((task) => String(task.parameters[1]), 500),
   // Group tasks by device
   asLeastCommits((task) => task.parameters[0]),
   // Exclusive access mode is turned on for tasks suitable for single device
@@ -16,7 +17,7 @@ const schedule = {
     // Use exclusive access for settings of CanID parameter
     [(task) => task.parameters[1] === ConfigParam.kCanID, setCanIdProcessor],
     // Debounce settings of non-CanID parameter
-    [stubTrue, asDebounce((task) => String(task.parameters[1]), 300)]
+    [stubTrue, asDebounce((task) => String(task.parameters[1]), 500)]
   ),
 };
 
