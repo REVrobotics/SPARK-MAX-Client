@@ -50,7 +50,7 @@ const GroupParameter = (props: GroupParameterProps) => {
                   checked={quick}
                   onChange={quickChange}/>
       </Tooltip>
-      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}/>
+      <DisplayConfigParamFieldGroup parameter={parameter} disabled={true} inline={true}/>
     </div>
   );
 };

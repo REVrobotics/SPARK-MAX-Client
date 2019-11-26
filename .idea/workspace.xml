@@ -3,16 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-10]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/RunDisplay.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunDisplay.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/RunTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mls/labels.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/mls/labels.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/actions/connection-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/connection-actions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/actions/display-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/display-actions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/parameter-actions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/data-stream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/data-stream.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/display-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/display-utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/selectors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/selectors.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/state.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/state.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/RunControlArea.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunControlArea.tsx" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -37,7 +28,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="incoming" />
+        <entry key="$PROJECT_DIR$" value="bugfix/REVROBO-39-config-json" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -111,13 +102,6 @@
       <workItem from="1571295320588" duration="27324000" />
       <workItem from="1571405376779" duration="7058000" />
       <workItem from="1571637055045" duration="59023000" />
-    </task>
-    <task id="LOCAL-00011" summary="Implement protoc DTO generation plugin">
-      <created>1568795299307</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1568795299307</updated>
     </task>
     <task id="LOCAL-00012" summary="Implement protoc DTO generation plugin">
       <created>1568795335259</created>
@@ -455,7 +439,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571846321895</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="[REVROBO-39] Implement safe reading of config.json">
+      <created>1574786595146</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1574786595146</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -543,7 +534,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="[REVROBO-7] Implement actions for save and burn configuration" />
     <MESSAGE value="[REVROBO-7] Implement actions for settings of parameters" />
     <MESSAGE value="Implement validation for CAN ID field" />
     <MESSAGE value="[REVROBO-7] Refactor file names and locations" />
@@ -568,6 +558,7 @@
     <MESSAGE value="[REVROBO-13] Implement SafeNumericInput" />
     <MESSAGE value="[REVROBO-10]" />
     <MESSAGE value="[REVROBO-13] Implement saving and loading of display configuration" />
-    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-13] Implement saving and loading of display configuration" />
+    <MESSAGE value="[REVROBO-39] Implement safe reading of config.json" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-39] Implement safe reading of config.json" />
   </component>
 </project>

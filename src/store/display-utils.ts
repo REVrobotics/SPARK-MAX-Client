@@ -121,7 +121,7 @@ export const createDisplayState = (state: IApplicationState,
     raw,
     settings: config ? config.settings : DEFAULT_DISPLAY_SETTINGS,
     devices: fromPairs(connectedDeviceVirtualIds.map((virtualDeviceId) => {
-      const configDevice: DisplayDeviceDto = configDevicesByVirtualId[virtualDeviceId] || {quickBar: {}, signals: []};
+      const configDevice: DisplayDeviceDto = configDevicesByVirtualId[virtualDeviceId] || {quickBar: [], signals: []};
 
       // Take all existing signals
       const deviceSignals = signalsByVirtualId[virtualDeviceId] || [];
@@ -149,6 +149,7 @@ export const createDisplayState = (state: IApplicationState,
       }];
     })),
     lastSyncedConsumers: [],
+    lastRunningDeviceIds: [],
   };
 };
 
