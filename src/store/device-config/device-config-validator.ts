@@ -140,17 +140,18 @@ const configValidator = createConfigValidator();
  */
 const validateConfigurationFormatBySchema = (config: any) => {
   const isValid = configValidator(config);
-  return isValid ? [] : (configValidator.errors || []).map(errorToViolation);
+  return isValid ? [] : (configValidator.errors || []).map((error) => errorToViolation(error, config));
 };
 
 /**
  * Converts ajv {@link ErrorObject} to {@link Violation} using format error registry.
  * Entry from format error registry is found using {@link ErrorObject.schemaPath} field.
  * @param error
+ * @param config
  */
-const errorToViolation = (error: ErrorObject) => {
+const errorToViolation = (error: ErrorObject, config: any) => {
   const messageFactory = findViolationFactory(error.schemaPath);
-  return messageFactory ? messageFactory(error) : defaultViolationFactory(error);
+  return messageFactory ? messageFactory(error, config) : defaultViolationFactory(error, config);
 };
 
 /**
