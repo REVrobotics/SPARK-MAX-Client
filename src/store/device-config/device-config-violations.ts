@@ -1,5 +1,6 @@
 // tslint:disable-next-line:interface-over-type-literal
 import {ErrorObject} from "ajv";
+import {get} from "lodash";
 import {IRawDeviceConfigDto} from "../../models/device-config.dto";
 import {removeField, setArrayElement, setField} from "../../utils/object-utils";
 import {Message, MessageSeverity} from "../../models/Message";
@@ -22,7 +23,7 @@ export type ViolationFixFactory = (violation: Violation) => ViolationFix | undef
 /**
  * Builds {@link Violation} based on ajv {@link ErrorObject}
  */
-export type ViolationFactory = (error: ErrorObject) => Violation;
+export type ViolationFactory = (error: ErrorObject, config: any) => Violation;
 /**
  * ViolationContext allows to decouple fix from the context where it is used.
  */
@@ -77,10 +78,14 @@ export const createViolation = ({message, objectPath, fixFactory}: ViolationOpti
  * Creates format violation
  */
 export const createSchemaViolationFactory = ({text, severity, fixFactory}: SchemaViolationFactoryOptions): ViolationFactory =>
-  (error) => {
+  (error, config) => {
     const objectPath = getObjectPath(error);
     return createViolation({
-      message: Message.create(severity || MessageSeverity.Error, text, {objectPath, params: error.params}),
+      message: Message.create(severity || MessageSeverity.Error, text, {
+        objectPath,
+        value: get(config, objectPath),
+        params: error.params,
+      }),
       objectPath,
       fixFactory,
     });
@@ -89,7 +94,7 @@ export const createSchemaViolationFactory = ({text, severity, fixFactory}: Schem
 /**
  * Default format {@link ViolationFactory}
  */
-export const defaultViolationFactory: ViolationFactory = (error) => ({
+export const defaultViolationFactory: ViolationFactory = (error, config) => ({
   objectPath: getObjectPath(error),
   params: error.params,
   message: Message.errorFromText(error.message || ""),
