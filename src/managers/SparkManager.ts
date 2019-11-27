@@ -2,9 +2,11 @@ import {ConfigParam} from "../models/ConfigParam";
 import {
   FirmwareResponseDto,
   getErrorText,
-  hasError, ISignalDestinationDto,
+  hasError,
+  ISignalDestinationDto,
   ListRequestDto,
-  ListResponseDto, TelemetryEvent,
+  ListResponseDto,
+  TelemetryEvent,
   TelemetryListResponseDto
 } from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
@@ -204,7 +206,10 @@ class SparkManager {
                                   parameter: ConfigParam,
                                   value: number | string | boolean): Promise<IServerResponse> {
     const setResponse: any = await this.setParameter(device, parameter, value);
-    const getResponse: any = await this.getParameter(device, parameter);
+    // TODO: Often getParameter call returns error when it follows setParameter call and CAN ID was just modified.
+    //       We do not get CAN ID from the server in this case (as for other parameters) to make UI work as expected.
+    //       Potentially we can hide real error.
+    const getResponse: any = parameter === ConfigParam.kCanID ? value : await this.getParameter(device, parameter);
     return {requestValue: value, responseValue: getResponse, status: setResponse.status, type: setResponse.type};
   }
 

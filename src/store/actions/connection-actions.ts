@@ -32,6 +32,7 @@ import {SparkAction} from "./action-types";
 import {showToastWarning} from "./ui-actions";
 import {onError, useErrorHandler} from "./error-actions";
 import {syncSignals} from "./display-actions";
+import {onSchedule} from "../../utils/redux-scheduler/action";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -115,7 +116,7 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
 }
 
 export function syncDevices(showNotifications: boolean = false): SparkAction<Promise<void>> {
-  return (dispatch, getState) => {
+  return onSchedule("sync", (dispatch, getState) => {
     const descriptor = queryConnectedDescriptor(getState());
     // Update status of all devices for the given descriptor
     dispatch(updateGlobalProcessStatus(tt("lbl_status_syncing")));
@@ -177,7 +178,7 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
         }
       })
       .catch(useErrorHandler(dispatch));
-  };
+  });
 }
 
 export const selectDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<any>> =>
