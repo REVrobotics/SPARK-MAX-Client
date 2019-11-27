@@ -100,7 +100,7 @@
     ],
     "extraFiles": [
       {
-        "from": "bin/",
+        "from": "bin/${arch}/",
         "to": "."
       }
     ],
