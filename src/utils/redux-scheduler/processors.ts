@@ -15,22 +15,22 @@ export const asDebounce = (toKey: (task: IScheduledTask) => string,
   const keyToTimeout: {[key: string]: {timeout: any, task: IScheduledTask}} = {};
 
   return (schedule, task, next) => {
-    schedule.waitOnLock(task).then(() => {
-      const key = toKey(task);
+    const key = toKey(task);
 
-      const entry = keyToTimeout[key];
-      if (entry != null) {
-        schedule.cancel(entry.task);
-        clearTimeout(entry.timeout);
-      }
-      keyToTimeout[key] = {
-        timeout: setTimeout(() => {
+    const entry = keyToTimeout[key];
+    if (entry != null) {
+      schedule.cancel(entry.task);
+      clearTimeout(entry.timeout);
+    }
+    keyToTimeout[key] = {
+      timeout: setTimeout(() => {
+        schedule.waitOnLock(task).then(() => {
           delete keyToTimeout[key];
           next();
-        }, ms),
-        task,
-      };
-    });
+        });
+      }, ms),
+      task,
+    };
   };
 };
 

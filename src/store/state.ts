@@ -4,7 +4,7 @@
 
 import {IServerResponse} from "../managers/SparkManager";
 import {Intent} from "@blueprintjs/core";
-import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
+import {find, keyBy, padStart, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {
   ConfigParamGroupName,
@@ -725,6 +725,10 @@ export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(
  */
 // tslint:disable-next-line:no-bitwise
 export const getCanIdFromDeviceId = (device: DeviceId) => device % 100;
+/**
+ * Returns device ID for SPARK MAX controller using its CAN ID
+ */
+export const getSparkmaxDeviceIdFromCanId = (canId: number) => `205${padStart(String(canId), 2, "0")}`;
 
 /**
  * Analyzes two set of devices and determines which device was added, updated or removed
