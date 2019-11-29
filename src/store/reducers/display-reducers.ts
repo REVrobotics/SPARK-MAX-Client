@@ -1,4 +1,4 @@
-import {difference, fromPairs, isEmpty} from "lodash";
+import {clamp, difference, fromPairs, isEmpty} from "lodash";
 import {
   createDeviceDisplayState,
   DEFAULT_DISPLAY_SETTINGS,
@@ -21,8 +21,9 @@ import {
   setFields,
   setNestedField
 } from "../../utils/object-utils";
-import {queryDevicesInOrder} from "../selectors";
+import {queryDeviceDisplay, queryDeviceParameterValue, queryDevicesInOrder} from "../selectors";
 import {roundDecimal} from "../../utils/number-utils";
+import {ConfigParam} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
 const displayInitialState: IDisplayState = {
   selectedPanel: PanelName.Run,
@@ -52,6 +53,7 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.REMOVE_SIGNAL_INSTANCE:
     case ActionType.SET_SIGNAL_INSTANCE_FIELD:
     case ActionType.SET_CONTROL_VALUE:
+    case ActionType.SET_CONTROL_RANGE_VALUE:
     case ActionType.SET_RUNNING_STATUS:
     case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
       return setNestedField(
@@ -69,8 +71,27 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
       return setField(state, "pidProfile", action.payload.profile);
     case ActionType.SET_RUNNING_STATUS:
       return setField(state, "run", setField(state.run, "running", action.payload.running));
-    case ActionType.SET_CONTROL_VALUE:
-      return setField(state, "run", setField(state.run, "value", roundDecimal(action.payload.value || 0, 2)));
+    case ActionType.SET_CONTROL_VALUE: {
+      return setField(
+        state,
+        "run",
+        setField(state.run, "value", roundDecimal(action.payload.value || 0, 2)));
+    }
+    case ActionType.SET_CONTROL_RANGE_VALUE: {
+      const rangeValue = roundDecimal(action.payload.value || 0, 2);
+      const currentRange = state.run.ranges[action.payload.mode];
+      const nextRange = setField(
+        currentRange,
+        action.payload.field,
+        action.payload.field === "min" ?
+          clamp(rangeValue, Number.NEGATIVE_INFINITY, currentRange.max) :
+          clamp(rangeValue, currentRange.min, Number.POSITIVE_INFINITY));
+
+      return setField(
+        state,
+        "run",
+        setField(state.run, "ranges", setField(state.run.ranges, action.payload.mode, nextRange)));
+    }
     case ActionType.SET_DISPLAY_SELECTED_PARAM_GROUP:
       return setField(
         state,
@@ -173,6 +194,22 @@ export const rootDisplayReducer = (state: IApplicationState, action: Application
         state,
         ["display", "devices"],
         removeFields(state.display.devices, displayDevicesToBeRemoved));
+    }
+    case ActionType.SET_DEVICE_PARAMETER: {
+      if (action.payload.parameter !== ConfigParam.kCtrlType) {
+        return state;
+      }
+      const virtualDeviceId = action.payload.virtualDeviceId;
+      const deviceDisplay = queryDeviceDisplay(state, virtualDeviceId);
+      if (deviceDisplay == null) {
+        return state;
+      }
+      const mode = queryDeviceParameterValue(state, virtualDeviceId, ConfigParam.kCtrlType);
+      const range = deviceDisplay.run.ranges[mode];
+      return setNestedField(
+        state,
+        ["display", "devices", virtualDeviceId, "run", "value"],
+        (range.min + range.max) / 2);
     }
     default:
       return state;

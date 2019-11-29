@@ -17,8 +17,14 @@ export interface DisplayConfigDto {
   devices: {[deviceId: number]: DisplayDeviceDto};
 }
 
+export interface IDisplayDeviceValueRangeDto {
+  min: number;
+  max: number;
+}
+
 export interface DisplayDeviceDto {
   quickBar: number[];
+  ranges: {[type: number]: IDisplayDeviceValueRangeDto};
   signals: {[signalId: number]: DisplayDeviceSignalDto};
 }
 

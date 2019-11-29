@@ -1,4 +1,17 @@
-import {flatMap, fromPairs, groupBy, keyBy, keys, mapKeys, mapValues, omit, partition, pick, pickBy, uniq} from "lodash";
+import {
+  flatMap,
+  fromPairs,
+  groupBy,
+  keyBy,
+  keys,
+  mapKeys,
+  mapValues,
+  omit,
+  partition,
+  pick,
+  pickBy,
+  uniq
+} from "lodash";
 import {
   createSignalInstance,
   DEFAULT_DEVICE_RUN,
@@ -10,9 +23,21 @@ import {
   PanelName,
   QuickPanelName, toDtoDeviceId,
 } from "./state";
-import {ConfigParamGroupName, DisplayConfigDto, DisplayDeviceDto, DisplayDeviceSignalDto} from "../models/dto";
+import {
+  ConfigParamGroupName,
+  CtrlType,
+  DisplayConfigDto,
+  DisplayDeviceDto,
+  DisplayDeviceSignalDto
+} from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
 import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalStylePalette} from "./selectors";
+
+const CONTROL_MODE_CONSTRAINTS = [
+  {mode: CtrlType.DutyCycle, min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
+  {mode: CtrlType.Velocity, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: CtrlType.Position, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+];
 
 /**
  * This method merges settings from next display to the current one.
@@ -34,6 +59,7 @@ export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDispl
     const withExistingSignals = setFields(device, {
       signals: nextDeviceSignals,
       quickBar: nextDevice ? nextDevice.quickBar : [],
+      run: setField(device.run, "ranges", nextDevice.run.ranges),
     });
 
     // Ensure that non-existent signal is not selected
@@ -79,6 +105,7 @@ export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
   const {display} = state;
 
   const deviceByVirtualId = mapValues(display.devices, (device) => ({
+    ranges: mapValues(device.run.ranges, (range) => pick(range, "min", "max")),
     quickBar: device.quickBar,
     signals: mapValues(device.assignedSignals, (signal) => pick(signal, ["autoScaled", "min", "max"]))
   }));
@@ -144,7 +171,14 @@ export const createDisplayState = (state: IApplicationState,
           })),
         signals: deviceSignals,
         quickBar: configDevice.quickBar,
-        run: DEFAULT_DEVICE_RUN,
+        run: {
+          ...DEFAULT_DEVICE_RUN,
+          ranges: fromPairs(CONTROL_MODE_CONSTRAINTS.map((constraint) => [
+            constraint.mode,
+            // Use saved or default one configuration
+            {...omit(constraint, "mode"), ...(configDevice.ranges ? configDevice.ranges[constraint.mode] : {})},
+          ])),
+        },
         pidProfile: 0,
       }];
     })),

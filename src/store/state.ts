@@ -8,11 +8,10 @@ import {find, keyBy, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {
   ConfigParamGroupName,
-  CtrlType,
   DisplayConfigDto,
   DisplaySettingsDto,
   ExtendedDfuResponseDto,
-  ExtendedListResponseDto,
+  ExtendedListResponseDto, IDisplayDeviceValueRangeDto,
   TelemetryResponseDto,
 } from "../models/dto";
 import {diffArrays, setField} from "../utils/object-utils";
@@ -264,6 +263,7 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
 export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
   value: 0,
   running: false,
+  ranges: {},
 };
 
 export type SignalId = number;
@@ -304,9 +304,12 @@ export interface IDeviceDisplayState {
   pidProfile: number;
 }
 
+export type IDeviceValueRange = IDisplayDeviceValueRangeDto & { stepSize: number; minorStepSize: number };
+
 export interface IDeviceRunState {
   value: number;
   running: boolean;
+  ranges: {[type: number]: IDeviceValueRange};
 }
 
 export type DisplaySettings = DisplaySettingsDto;
@@ -535,12 +538,6 @@ export type IFieldConstraints = INumericFieldConstraints | IEnumFieldConstraints
 export enum ProfileConfigParam {
   P, I, D, F
 }
-
-export const CONTROL_MODE_CONSTRAINTS = {
-  [CtrlType.DutyCycle]: {min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
-  [CtrlType.Velocity]: {},
-  [CtrlType.Position]: {},
-};
 
 export const DEFAULT_TRANSIENT_STATE: IDeviceTransientState = {
   rampRateEnabled: false,

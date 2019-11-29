@@ -662,6 +662,14 @@ export const queryControlValueByDeviceId = (state: IApplicationState,
   return device ? queryDeviceDisplay(state, getVirtualDeviceId(device)).run.value : 0;
 };
 
+/**
+ * Returns control value by virtual device ID and mode
+ */
+export const queryControlValue = (state: IApplicationState, virtualDeviceId: VirtualDeviceId) => {
+  const device = queryDeviceDisplay(state, virtualDeviceId);
+  return device ? device.run.value : 0;
+};
+
 export const querySelectedDeviceSearchString = (state: IApplicationState) => {
   const device = querySelectedDevice(state);
   return device ? device.advanced.search : "";
