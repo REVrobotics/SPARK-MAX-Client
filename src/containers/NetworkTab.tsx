@@ -1,5 +1,5 @@
 import {Button, Checkbox, Icon, ProgressBar} from "@blueprintjs/core";
-import {Cell, Column, ICellProps, ICellRenderer, Table} from "@blueprintjs/table";
+import {Cell, Column, ColumnHeaderCell, ICellProps, ICellRenderer, Table} from "@blueprintjs/table";
 import * as React from "react";
 import {ReactElement, ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
@@ -15,17 +15,21 @@ import {
 } from "../store/state";
 import {
   requestFirmwareLoad,
-  scanCanBus, selectAllDfuDevices, selectDfuDevice,
+  scanCanBus, selectAllDfuDevices, selectAllNetworkDevices, selectDfuDevice,
   selectNetworkDevice,
   showNetworkDeviceHelp,
   SparkDispatch
 } from "../store/actions";
 import {
-  queryFirmwareDownloadError, queryHasSelectedDfuDevice,
+  queryFirmwareDownloadError,
+  queryHasSelectedNetworkDevices,
+  queryHasSelectedDfuDevice,
+  queryIsAllNetworkDevicesSelected,
   queryIsFirmwareDownloading,
   queryIsHasConnectedDevice,
   queryLatestFirmwareVersion,
-  queryNetwork
+  queryNetwork,
+  queryHasSelectableDevices
 } from "../store/selectors";
 import Console from "../components/Console";
 
@@ -33,6 +37,9 @@ interface IProps {
   connected: boolean;
   devices: INetworkDevice[];
   dfuDevices: IDfuDevice[];
+  isSelectAllDevices: boolean;
+  hasSelectedDevices: boolean;
+  hasSelectableDevices: boolean;
   isSelectAllDfuDevices: boolean;
   hasSelectedDfuDevice: boolean;
   outputText: string[];
@@ -51,6 +58,8 @@ interface IProps {
 
   selectDevice(id: DeviceId, selected: boolean): void;
 
+  selectAllDevices(selected: boolean): void;
+
   selectAllDfuDevices(selected: boolean): void;
 
   selectDfuDevice(id: string, selected: boolean): void;
@@ -59,8 +68,10 @@ interface IProps {
 }
 
 interface INetworkSelectorProps {
+  className?: string;
   selected: boolean;
-  disabled: boolean;
+  disabled?: boolean;
+  indeterminate?: boolean;
 
   onSelected(selected: boolean): void;
 }
@@ -68,7 +79,7 @@ interface INetworkSelectorProps {
 interface INetworkDeviceSelectorProps {
   value: any;
   selected: boolean;
-  disabled: boolean;
+  disabled?: boolean;
 
   onSelected(value: any, selected: boolean): void;
 }
@@ -77,11 +88,15 @@ interface INetworkDeviceSelectorProps {
  * Displays checkbox
  */
 const NetworkSelector = (props: INetworkSelectorProps) => {
-  const {selected, disabled, onSelected} = props;
+  const {className, selected, disabled, indeterminate, onSelected} = props;
 
   const onChange = useCallback((event) => onSelected(event.target.checked), []);
 
-  return <Checkbox checked={selected} disabled={disabled} onChange={onChange}/>;
+  return <Checkbox className={className}
+                   checked={selected}
+                   indeterminate={indeterminate}
+                   disabled={disabled}
+                   onChange={onChange}/>;
 };
 
 /**
@@ -152,7 +167,9 @@ class NetworkTab extends React.Component<IProps> {
             <Column name={tt("lbl_device")} cellRenderer={this.deviceColumnRenderer}/>
             <Column name={tt("lbl_can_id")} cellRenderer={this.canIdColumnRenderer}/>
             <Column name={tt("lbl_firmware")} cellRenderer={this.firmwareColumnRenderer}/>
-            <Column name={tt("lbl_update")} cellRenderer={this.updateColumnRenderer}/>
+            <Column name={tt("lbl_update")}
+                    columnHeaderCellRenderer={this.updateColumnHeaderRenderer}
+                    cellRenderer={this.updateColumnRenderer}/>
           </Table>
           <div>
             <Button className="rev-btn"
@@ -178,6 +195,20 @@ class NetworkTab extends React.Component<IProps> {
       </div>
     );
   }
+
+  private updateColumnHeaderRenderer = () => {
+    const {isSelectAllDevices, hasSelectableDevices, hasSelectedDevices, selectAllDevices} = this.props;
+
+    return (
+      <ColumnHeaderCell>
+        <NetworkSelector className="network--selector--header"
+                         selected={isSelectAllDevices}
+                         disabled={!hasSelectableDevices}
+                         indeterminate={hasSelectedDevices && !isSelectAllDevices}
+                         onSelected={selectAllDevices}/>
+      </ColumnHeaderCell>
+    )
+  };
 
   private updateColumnRenderer = this.wrapCellRenderer({
     device: (device) => {
@@ -333,6 +364,9 @@ export function mapStateToProps(state: IApplicationState) {
     connected: queryIsHasConnectedDevice(state),
     ...queryNetwork(state),
     hasSelectedDfuDevice: queryHasSelectedDfuDevice(state),
+    hasSelectedDevices: queryHasSelectedNetworkDevices(state),
+    isSelectAllDevices: queryIsAllNetworkDevicesSelected(state),
+    hasSelectableDevices: queryHasSelectableDevices(state),
     firmwareDownloading: queryIsFirmwareDownloading(state),
     latestFirmwareVersion: queryLatestFirmwareVersion(state),
     firmwareDownloadError: queryFirmwareDownloadError(state),
@@ -344,6 +378,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     scanCanBus: () => dispatch(scanCanBus()),
     requestFirmwareLoad: () => dispatch(requestFirmwareLoad()),
     selectDevice: (id: DeviceId, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
+    selectAllDevices: (selected: boolean) => dispatch(selectAllNetworkDevices(selected)),
     selectDfuDevice: (id: string, selected: boolean) => dispatch(selectDfuDevice(id, selected)),
     selectAllDfuDevices: (selected: boolean) => dispatch(selectAllDfuDevices(selected)),
     showDeviceHelp: (id: DeviceId) => dispatch(showNetworkDeviceHelp(id)),

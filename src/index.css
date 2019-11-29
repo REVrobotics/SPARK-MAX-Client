@@ -249,6 +249,10 @@ input:checked ~ .bp3-control-indicator {
     background-color: rgba(206, 217, 224, 0.5) !important;
 }
 
+.bp3-control.bp3-checkbox input:indeterminate ~ .bp3-control-indicator {
+    background-color: orange;
+}
+
 .numeric-form-field .bp3-input-group > input {
     max-width: 100%;
 }
@@ -616,6 +620,11 @@ label.modified::after {
 .network-table {
     width: 480px;
     height: 250px;
+}
+
+.network--selector--header {
+    margin: 0 auto;
+    width: 0;
 }
 
 button.link {
