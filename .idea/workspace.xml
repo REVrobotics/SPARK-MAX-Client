@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-10]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/RunControlArea.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/RunControlArea.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/store/reducers/display-reducers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducers/display-reducers.ts" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,9 +16,10 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="React TypeScript File" />
-        <option value="JavaScript File" />
         <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
+        <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -28,7 +29,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="bugfix/REVROBO-39-config-json" />
+        <entry key="$PROJECT_DIR$" value="bugfix/REVROBO-36-descriptor-not-updated" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -41,6 +42,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="10.16.3" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src/containers" />
+    <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.tslint" value="$PROJECT_DIR$/node_modules/tslint" />

@@ -11,7 +11,7 @@ import {
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
 import {
-  queryConnectedDescriptor,
+  queryConnectedDescriptor, queryControlValue,
   queryControlValueByDeviceId,
   queryDestinations,
   queryDeviceId,
@@ -27,7 +27,7 @@ import {
 } from "../selectors";
 import {
   addSignalInstance,
-  removeSignalInstance,
+  removeSignalInstance, setControlRangeValue,
   setControlValue,
   setDeviceRunning,
   setDeviceStopped,
@@ -41,7 +41,7 @@ import {showConfirmation, showToastError} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import SparkManager from "../../managers/SparkManager";
 import ConfigManager, {CONFIG_DISPLAY} from "../../managers/ConfigManager";
-import {ConfigParam, DisplayConfigDto, TelemetryEvent, TelemetryEventType} from "../../models/dto";
+import {ConfigParam, CtrlType, DisplayConfigDto, TelemetryEvent, TelemetryEventType} from "../../models/dto";
 import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
 import {
@@ -175,6 +175,19 @@ export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): 
   (dispatch, getState) => {
     SparkManager.setSetpoint(toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!), value);
     dispatch(setControlValue(virtualDeviceId, value));
+  };
+
+/**
+ * Sets control range value
+ */
+export const sendControlRangeValue = (virtualDeviceId: VirtualDeviceId,
+                                      mode: CtrlType,
+                                      field: "min" | "max",
+                                      value: any): SparkAction<Promise<void>> =>
+  (dispatch, getState) => {
+    dispatch(setControlRangeValue(virtualDeviceId, mode, field, value));
+    dispatch(sendControlValue(virtualDeviceId, queryControlValue(getState(), virtualDeviceId)));
+    return dispatch(persistDisplayConfig());
   };
 
 export const startDevice = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
@@ -319,5 +332,6 @@ export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
 export const setSelectedDeviceSignalField = forSelectedDevice(setSignalField);
 export const setAndPersistSelectedDeviceDisplayQuickParam = forSelectedDevice(setAndPersistDisplayQuickParam);
 export const sendSelectedDeviceControlValue = forSelectedDevice(sendControlValue);
+export const sendSelectedDeviceControlRangeValue = forSelectedDevice(sendControlRangeValue);
 export const startSelectedDevice = forSelectedDevice(startDevice);
 export const stopSelectedDevice = forSelectedDevice(stopDevice);

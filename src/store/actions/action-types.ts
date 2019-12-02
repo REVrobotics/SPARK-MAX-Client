@@ -26,6 +26,7 @@ import {
   TabId,
   VirtualDeviceId, IDisplayState, QuickPanelName, IDestination, IDfuDevice
 } from "../state";
+import {CtrlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
 /**
  * Each action (atom action) should have its own unique ActionType
@@ -94,6 +95,7 @@ export enum ActionType {
   SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
   SET_DISPLAY = "SET_DISPLAY",
   SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
+  SET_CONTROL_RANGE_VALUE = "SET_CONTROL_RANGE_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
   SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
   SET_LAST_RUNNING_DEVICE_IDS = "SET_LAST_RUNNING_DEVICE_IDS",
@@ -545,6 +547,16 @@ export interface ISetControlValue extends IDeviceAwareAction {
   },
 }
 
+export interface ISetControlRangeValue extends IDeviceAwareAction {
+  type: ActionType.SET_CONTROL_RANGE_VALUE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    mode: CtrlType,
+    field: "min" | "max",
+    value: any,
+  },
+}
+
 export interface ISetDeviceRunningStatus extends IDeviceAwareAction {
   type: ActionType.SET_RUNNING_STATUS,
   payload: {
@@ -596,8 +608,7 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
   | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetControlRangeValue
   | ISetLastSyncedConsumers | ISetLastRunningDeviceIds
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue
   | ISetAdvancedSearchString
   | IAddLog;

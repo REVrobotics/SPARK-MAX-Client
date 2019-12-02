@@ -57,7 +57,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor,
+  IUpdateProcessStatusByDescriptor, ISetControlRangeValue,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -81,6 +81,7 @@ import {
   VirtualDeviceId
 } from "../state";
 import {ConfigParam, ConfigParamGroupId} from "../../models/ConfigParam";
+import {CtrlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
 export const updateGlobalProcessStatus = (processStatus: string): IUpdateGlobalProcessStatus => ({
   payload: {
@@ -438,6 +439,14 @@ export const setDisplay = (display: IDisplayState): ISetDisplay => ({
 export const setControlValue = (virtualDeviceId: VirtualDeviceId, value: any): ISetControlValue => ({
   type: ActionType.SET_CONTROL_VALUE,
   payload: {virtualDeviceId, value},
+});
+
+export const setControlRangeValue = (virtualDeviceId: VirtualDeviceId,
+                                     mode: CtrlType,
+                                     field: "min" | "max",
+                                     value: any): ISetControlRangeValue => ({
+  type: ActionType.SET_CONTROL_RANGE_VALUE,
+  payload: {virtualDeviceId, mode, field, value},
 });
 
 export const setDeviceRunning = (virtualDeviceId: VirtualDeviceId) => setDeviceRunningStatus(virtualDeviceId, true);

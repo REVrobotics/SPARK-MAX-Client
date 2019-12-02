@@ -906,6 +906,19 @@ button.link {
     width: calc(100% - 30px);
 }
 
+.control-area__range {
+    padding: 5px 10px 0;
+}
+
+.control-area__range-input .bp3-input {
+    height: 20px;
+    width: 90px;
+}
+
+.control-area__range-input--right .bp3-input {
+    text-align: right;
+}
+
 .main-control-btn {
     width: 80px;
 }
