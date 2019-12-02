@@ -745,7 +745,7 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
   const diffNon0 = diffArrays(previousNotZero, nextNotZero, getDeviceSourceId);
 
   // Analyze devices having CAN ID = 0
-  const diff0 = diffArrays(previousZero, nextZero, (device) => device.uniqueId);
+  const diff0 = diffArrays(previousZero, nextZero, (device) => `${device.descriptor}>>>${device.uniqueId}`);
 
   return {
     added: diffNon0.added.concat(diff0.added),
