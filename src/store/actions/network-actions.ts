@@ -32,7 +32,7 @@ import {
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
-  queryNetworkDevices
+  queryNetworkDevices, querySelectableNetworkDevices
 } from "../selectors";
 import {compareVersions} from "../../utils/string-utils";
 import {FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
@@ -315,6 +315,13 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
 
 export const selectNetworkDevice = (id: DeviceId, selected: boolean): SparkAction<void> => {
   return (dispatch) => dispatch(updateNetworkDevice(id, {selected}));
+};
+
+export const selectAllNetworkDevices = (selected: boolean): SparkAction<void> => {
+  return (dispatch, getState) => {
+    const devices = querySelectableNetworkDevices(getState());
+    devices.forEach((device) => dispatch(updateNetworkDevice(getNetworkDeviceId(device), {selected})));
+  };
 };
 
 /**

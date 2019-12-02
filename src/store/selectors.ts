@@ -27,7 +27,7 @@ import {
   isDeviceNotConfigured,
   ISignalInstanceState,
   ISignalState,
-  ISignalStyle,
+  ISignalStyle, isNetworkDeviceSelectable, isNetworkDeviceSelected,
   PathDescriptor,
   ProcessType,
   SignalId,
@@ -362,6 +362,32 @@ export const queryNetworkDevice = (state: IApplicationState, id: DeviceId) =>
  */
 export const queryHasSelectedDfuDevice = (state: IApplicationState) =>
   state.network.dfuDevices.some((device) => device.selected);
+
+/**
+ * Returns all selectable network devices
+ */
+export const querySelectableNetworkDevices = (state: IApplicationState) =>
+  queryNetworkDevices(state).filter(isNetworkDeviceSelectable);
+
+/**
+ * Returns true if some device is selected
+ */
+export const queryHasSelectedNetworkDevices = (state: IApplicationState) =>
+  querySelectableNetworkDevices(state).some(isNetworkDeviceSelected);
+
+/**
+ * Returns true if there is at least one selectable device
+ */
+export const queryHasSelectableDevices = (state: IApplicationState) => querySelectableNetworkDevices(state).length > 0;
+
+/**
+ * Returns true if all devices are selected
+ */
+export const queryIsAllNetworkDevicesSelected = (state: IApplicationState) => {
+  const selectableDevices = querySelectableNetworkDevices(state);
+  return selectableDevices.length > 0 && selectableDevices.every(isNetworkDeviceSelected);
+};
+
 /**
  * Returns ALL console output. Displayed on network tab
  */
