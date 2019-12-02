@@ -32,7 +32,7 @@ import {
   ISetDisplayQuickParam,
   ISetDisplaySelectedPanel,
   ISetDisplaySelectedParamGroup,
-  ISetDisplaySelectedPidProfile,
+  ISetDisplaySelectedPidSlot,
   ISetDisplaySelectedQuickPanel,
   ISetDisplaySetting,
   ISetFirmwareDownloaded,
@@ -384,10 +384,10 @@ export const setDisplaySelectedQuickPanel = (panel: QuickPanelName): ISetDisplay
   type: ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL,
 });
 
-export const setDisplaySelectedPidProfile = (virtualDeviceId: VirtualDeviceId,
-                                             profile: number): ISetDisplaySelectedPidProfile => ({
-  payload: {virtualDeviceId, profile},
-  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+export const setDisplaySelectedPidSlot = (virtualDeviceId: VirtualDeviceId,
+                                          pidSlot: number): ISetDisplaySelectedPidSlot => ({
+  payload: {virtualDeviceId, pidSlot},
+  type: ActionType.SET_DISPLAY_SELECTED_PID_SLOT,
 });
 
 export const setDisplaySetting = (key: keyof DisplaySettings, value: any): ISetDisplaySetting => ({
@@ -479,5 +479,5 @@ export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
 export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
-export const setSelectedDeviceDisplayPidProfile = forSelectedDevice(setDisplaySelectedPidProfile);
+export const setSelectedDeviceDisplayPidSlot = forSelectedDevice(setDisplaySelectedPidSlot);
 export const setSelectedDeviceAdvancedSearchString = forSelectedDevice(setAdvancedSearchString);

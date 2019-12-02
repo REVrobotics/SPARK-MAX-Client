@@ -1,7 +1,8 @@
 import {
   ConfirmationAnswer,
   createSignalInstance,
-  DisplaySettings, fromDtoDeviceId,
+  DisplaySettings,
+  fromDtoDeviceId,
   getDestinationId,
   ISignalInstanceState,
   SignalId,
@@ -11,14 +12,17 @@ import {
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
 import {
-  queryConnectedDescriptor, queryControlValue,
-  queryControlValueByDeviceId,
+  queryConnectedDescriptor,
+  queryControlValue,
+  queryRunStateByDeviceId,
   queryDestinations,
+  queryDeviceDisplay,
   queryDeviceId,
   queryDisplay,
   queryDisplaySettings,
   queryIsDeviceRunning,
-  queryIsHasConnectedDevice, queryLastRunningDeviceIds,
+  queryIsHasConnectedDevice,
+  queryLastRunningDeviceIds,
   queryLastSyncedConsumers,
   queryRunningVirtualDeviceIds,
   querySelectedDeviceSignal,
@@ -27,13 +31,17 @@ import {
 } from "../selectors";
 import {
   addSignalInstance,
-  removeSignalInstance, setControlRangeValue,
+  removeSignalInstance,
+  setControlRangeValue,
   setControlValue,
   setDeviceRunning,
   setDeviceStopped,
   setDisplay,
   setDisplayQuickParam,
-  setDisplaySetting, setLastRunningDeviceIds, setLastSyncedConsumers,
+  setDisplaySelectedPidSlot,
+  setDisplaySetting,
+  setLastRunningDeviceIds,
+  setLastSyncedConsumers,
   setSelectedSignal,
   setSignalInstanceField
 } from "./atom-actions";
@@ -173,8 +181,25 @@ export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
  */
 export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): SparkAction<void> =>
   (dispatch, getState) => {
-    SparkManager.setSetpoint(toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!), value);
+    const deviceDisplay = queryDeviceDisplay(getState(), virtualDeviceId);
     dispatch(setControlValue(virtualDeviceId, value));
+    SparkManager.setSetpoint(
+      toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!),
+      deviceDisplay.run.pidSlot,
+      value);
+  };
+
+/**
+ * Sets control value
+ */
+export const sendPidSlot = (virtualDeviceId: VirtualDeviceId, pidSlot: number): SparkAction<void> =>
+  (dispatch, getState) => {
+    const deviceDisplay = queryDeviceDisplay(getState(), virtualDeviceId);
+    dispatch(setDisplaySelectedPidSlot(virtualDeviceId, pidSlot));
+    SparkManager.setSetpoint(
+      toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!),
+      pidSlot,
+      deviceDisplay.run.value);
   };
 
 /**
@@ -278,10 +303,13 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       const deviceIdDiff = diffArrays(previousRunningDeviceIds, runningDeviceIds);
 
       deviceIdDiff.added.forEach((deviceId) => {
-        SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(
+        const run = queryRunStateByDeviceId(
           getState(),
           connectedDescriptor!,
-          fromDtoDeviceId(deviceId)), 40);
+          fromDtoDeviceId(deviceId));
+        if (run) {
+          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.value, 40);
+        }
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
 
@@ -332,6 +360,7 @@ export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
 export const setSelectedDeviceSignalField = forSelectedDevice(setSignalField);
 export const setAndPersistSelectedDeviceDisplayQuickParam = forSelectedDevice(setAndPersistDisplayQuickParam);
 export const sendSelectedDeviceControlValue = forSelectedDevice(sendControlValue);
+export const sendSelectedDevicePidSlot = forSelectedDevice(sendPidSlot);
 export const sendSelectedDeviceControlRangeValue = forSelectedDevice(sendControlRangeValue);
 export const startSelectedDevice = forSelectedDevice(startDevice);
 export const stopSelectedDevice = forSelectedDevice(stopDevice);

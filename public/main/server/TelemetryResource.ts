@@ -20,6 +20,15 @@ export class TelemetryResource extends AbstractResource {
     console.log("[TELEMETRY] created new stream");
   }
 
+  public emitData(device: string) {
+    this._write({
+      command: TelemetryStreamCommand.StreamNone,
+      config: {
+        root: {device},
+      },
+    });
+  }
+
   public addSignal(device: string, signalId: number) {
     this._write({
       command: TelemetryStreamCommand.StreamAddSignal,

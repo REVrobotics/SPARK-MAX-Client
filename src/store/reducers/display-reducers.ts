@@ -55,7 +55,7 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.SET_CONTROL_VALUE:
     case ActionType.SET_CONTROL_RANGE_VALUE:
     case ActionType.SET_RUNNING_STATUS:
-    case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
+    case ActionType.SET_DISPLAY_SELECTED_PID_SLOT:
       return setNestedField(
         state,
         ["devices", action.payload.virtualDeviceId],
@@ -67,8 +67,8 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
 
 const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationActions) => {
   switch (action.type) {
-    case ActionType.SET_DISPLAY_SELECTED_PID_PROFILE:
-      return setField(state, "pidProfile", action.payload.profile);
+    case ActionType.SET_DISPLAY_SELECTED_PID_SLOT:
+      return setField(state, "run", setField(state.run, "pidSlot", action.payload.pidSlot));
     case ActionType.SET_RUNNING_STATUS:
       return setField(state, "run", setField(state.run, "running", action.payload.running));
     case ActionType.SET_CONTROL_VALUE: {
