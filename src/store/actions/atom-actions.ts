@@ -249,10 +249,10 @@ export const setNetworkDevices = (devices: INetworkDevice[], dfuDevices: IDfuDev
   type: ActionType.SET_NETWORK_DEVICES,
 });
 
-export const updateNetworkDevice = (deviceId: DeviceId,
+export const updateNetworkDevice = (id: string,
                                     update: Partial<INetworkDevice>): IUpdateNetworkDevice => ({
   payload: {
-    deviceId,
+    id,
     update,
   },
   type: ActionType.UPDATE_NETWORK_DEVICE,

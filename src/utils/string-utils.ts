@@ -33,3 +33,8 @@ export const compareVersions = (v1: string, v2: string): number => {
 
   return 0;
 };
+
+export const basename = (str: string) => {
+  const index = (str.lastIndexOf("/") + 1) || (str.lastIndexOf("\\") + 1);
+  return str.substring(index);
+};

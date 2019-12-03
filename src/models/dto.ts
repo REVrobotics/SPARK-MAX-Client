@@ -65,3 +65,5 @@ export interface TelemetryErrorEvent {
 }
 
 export type TelemetryEvent = TelemetryStartEvent | TelemetryStopEvent | TelemetryDataEvent | TelemetryErrorEvent;
+
+export const DFU_DEVICE_ALL = "all";

@@ -1,5 +1,5 @@
 import {omit} from "lodash";
-import {getDfuDeviceId, getNetworkDeviceId, INetworkState} from "../state";
+import {getDfuDeviceId, getNetworkDeviceVirtualId, INetworkState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {setArrayElementBy, setField, setFields} from "../../utils/object-utils";
 
@@ -45,8 +45,8 @@ const networkReducer = (state: INetworkState = initialNetworkState, action: Appl
         "devices",
         setArrayElementBy(
           state.devices,
-          getNetworkDeviceId,
-          action.payload.deviceId,
+          getNetworkDeviceVirtualId,
+          action.payload.id,
           (device) => setFields(device, action.payload.update)));
     case ActionType.SET_FIRMWARE_LOADING:
       return setField(state, "firmwareLoading", action.payload.loading);
