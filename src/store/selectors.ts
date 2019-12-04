@@ -14,7 +14,7 @@ import {
   getDeviceId,
   getDeviceParam,
   getDeviceParamValue, getDfuDeviceId,
-  getNetworkDeviceId,
+  getNetworkDeviceVirtualId,
   getSignalId,
   getVirtualDeviceId,
   hasDeviceParamError,
@@ -37,7 +37,7 @@ import {
 import {maybeMap} from "../utils/object-utils";
 import {ConfigParam, getConfigParamsInGroup} from "../models/ConfigParam";
 import {colors, colorToIndex} from "./colors";
-import {ConfigParamGroupName, ISignalDestinationDto} from "../models/dto";
+import {ConfigParamGroupName, DFU_DEVICE_ALL, ISignalDestinationDto} from "../models/dto";
 import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
@@ -345,17 +345,23 @@ export const queryNetwork = (state: IApplicationState) => state.network;
  */
 export const queryNetworkDevices = (state: IApplicationState) => state.network.devices;
 /**
+ * Returns all devices in DFU mode
+ */
+export const queryNetworkDfuDevices = (state: IApplicationState) => state.network.dfuDevices;
+/**
  * Returns DFU devices to update: either all or only one device can be selected.
  */
 export const queryDfuDevicesToUpdate = (state: IApplicationState) => {
   const {dfuDevices, isSelectAllDfuDevices} = state.network;
-  return isSelectAllDfuDevices ? ["all"] : dfuDevices.filter((dfuDevice) => dfuDevice.selected).map(getDfuDeviceId);
+  return isSelectAllDfuDevices ?
+    [DFU_DEVICE_ALL]
+    : dfuDevices.filter((dfuDevice) => dfuDevice.selected).map(getDfuDeviceId);
 };
 /**
  * Returns specific device on CAN bus
  */
-export const queryNetworkDevice = (state: IApplicationState, id: DeviceId) =>
-  find(state.network.devices, (device) => getNetworkDeviceId(device) === id);
+export const queryNetworkDevice = (state: IApplicationState, id: string) =>
+  find(state.network.devices, (device) => getNetworkDeviceVirtualId(device) === id);
 
 /**
  * Returns if some DFU device is selected

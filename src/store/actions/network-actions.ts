@@ -1,10 +1,11 @@
-import {initial} from "lodash";
+import {initial, partition, uniq} from "lodash";
 import {
+  ConfirmationAnswer,
   createDfuDevice,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag,
-  getNetworkDeviceId,
+  FirmwareTag, getNetworkDeviceId,
+  getNetworkDeviceVirtualId,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
   NetworkDeviceStatus,
@@ -32,11 +33,13 @@ import {
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
-  queryNetworkDevices, querySelectableNetworkDevices
+  queryNetworkDevices,
+  queryNetworkDfuDevices,
+  querySelectableNetworkDevices
 } from "../selectors";
-import {compareVersions} from "../../utils/string-utils";
-import {FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
-import {showAlert, showToastError, showToastSuccess} from "./ui-actions";
+import {basename, compareVersions} from "../../utils/string-utils";
+import {DFU_DEVICE_ALL, FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
+import {showAlert, showConfirmation, showToastError, showToastSuccess} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {
   isNetworkDeviceNeedsHelpText,
@@ -48,9 +51,9 @@ import {ApplicationError} from "../../models/errors";
 import {connectDevice} from "./connection-actions";
 
 /**
- * Selects firmware and starts loading process
+ * Validates that firmware loading can be started and starts loading after user selects firmware and approves loading.
  */
-export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
+export const requestFirmwareLoad = (): SparkAction<Promise<void>> => {
   return (dispatch, getState) => {
     const deviceIds = queryNetworkDevices(getState())
       .filter(isNetworkDeviceSelected)
@@ -63,33 +66,31 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
       return Promise.resolve();
     }
 
-    const connectedDescriptor = queryConnectedDescriptor(getState());
-
     // Select firmware file to load
     return SparkManager.requestFirmware()
-      // Start firmware loading
       .then((paths) => {
-        dispatch(setFirmwareLoading(true));
         const path = paths[0];
+
         // Start loading only if user selected firmware
-        if (path) {
-          return dispatch(loadFirmware(path, deviceIds, dfuDeviceIds))
-            .then(() => {
-              if (connectedDescriptor) {
-                dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
-                return dispatch(connectDevice(connectedDescriptor));
-              } else {
-                return Promise.resolve();
-              }
-            });
-        } else {
+        if (path == null) {
           return Promise.resolve();
         }
-      })
-      .finally(() => {
-        dispatch(setFirmwareLoading(false));
-        dispatch(consoleOutput(tt("msg_console_output:rescan")));
-        dispatch(scanCanBus());
+
+        const numDevicesToUpdate = deviceIds.length
+          + (dfuDeviceIds[0] === DFU_DEVICE_ALL ? queryNetworkDfuDevices(getState()).length : dfuDeviceIds.length);
+
+        return dispatch(showConfirmation({
+          intent: Intent.SUCCESS,
+          text: tt("msg_update_proceed", {n: numDevicesToUpdate, firmware: basename(path)}),
+          yesLabel: tt("lbl_yes"),
+          cancelLabel: tt("lbl_cancel"),
+        })).then((answer) => {
+          if (answer === ConfirmationAnswer.Yes) {
+            return dispatch(loadFirmware(path, deviceIds, dfuDeviceIds));
+          } else {
+            return Promise.resolve();
+          }
+        });
       });
   };
 };
@@ -98,16 +99,31 @@ export const requestFirmwareLoad = (): SparkAction<Promise<any>> => {
  * Starts loading process
  */
 const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[]): SparkAction<Promise<any>> => {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    const connectedDescriptor = queryConnectedDescriptor(getState());
+
+    dispatch(setFirmwareLoading(true));
     dispatch(consoleOutput(tt("msg_console_output:loading_firmware", {path})));
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
     return dispatch(updateOrRecoverFirmware(false, path, deviceIds.map(toDtoDeviceId)))
       .then(() => dispatch(updateOrRecoverFirmware(true, path, dfuDeviceIds)))
+      .then(() => {
+        if (connectedDescriptor) {
+          dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
+          return dispatch(connectDevice(connectedDescriptor));
+        } else {
+          return Promise.resolve();
+        }
+      })
       .finally(() => {
+        dispatch(setFirmwareLoading(false));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(""));
+
+        dispatch(consoleOutput(tt("msg_console_output:rescan")));
+        dispatch(scanCanBus());
       });
   };
 };
@@ -121,7 +137,7 @@ const updateOrRecoverFirmware = (recover: boolean, path: string, ids: string[]):
       return Promise.resolve();
     }
 
-    return SparkManager.loadFirmware(recover, path, ids)
+    return SparkManager.loadFirmware(recover, path, uniq(ids))
       .then((res) => {
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
           showToastError(tt(recover ? "msg_firmware_cannot_be_recovered" : "msg_firmware_cannot_be_updated"));
@@ -164,6 +180,10 @@ export const updateLoadFirmwareProgress = (error: any,
                                            recover: boolean,
                                            response: FirmwareResponseDto): SparkAction<void> => {
   return (dispatch, getState) => {
+    if (error) {
+      return;
+    }
+
     if (response.updateStarted) {
       dispatch(consoleOutput(tt(recover ?
         "msg_console_output:started_firmware_recover"
@@ -215,6 +235,7 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
 
     return SparkManager.listAllDevices()
       .then(({extendedList, dfuDevice}) => {
+        const connectedDescriptor = queryConnectedDescriptor(getState());
         // Get the version that require recovery update
         const recoveryVersion = queryFirmwareByTag(getState(), FirmwareTag.RecoveryUpdateRequired);
 
@@ -223,12 +244,24 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
         dispatch(setNetworkDevices(devices, dfuDevice.map(createDfuDevice)));
 
         // All updateable devices connected via CAN bus
-        const updateableDevices = devices.filter(isNetworkDeviceNeedFirmwareVersion);
+        const devicesThatNeedVersion = devices.filter(isNetworkDeviceNeedFirmwareVersion);
+        const [devicesThatCanRequestForVersion, devicesNeedsToBeConnected] = partition(
+          devicesThatNeedVersion,
+          ({descriptor}) => descriptor === connectedDescriptor);
+
+        devicesNeedsToBeConnected.forEach((device) => {
+          dispatch(updateNetworkDevice(getNetworkDeviceVirtualId(device), {
+            loading: false,
+            status: NetworkDeviceStatus.Error,
+            error: tt("msg_device_must_be_connected"),
+          }));
+        });
 
         // Load firmware for each updateable device one by one
         return concatMapPromises(
-          updateableDevices,
+          devicesThatCanRequestForVersion,
           (device) => {
+            const virtualDeviceId = getNetworkDeviceVirtualId(device);
             const deviceId = getNetworkDeviceId(device);
 
             return SparkManager.getFirmware(toDtoDeviceId(deviceId))
@@ -237,13 +270,13 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
                 const firmwareVersion = response.version!.substring(1);
 
                 if (recoveryVersion && compareVersions(firmwareVersion, recoveryVersion.version) < 0) {
-                  dispatch(updateNetworkDevice(deviceId, {
+                  dispatch(updateNetworkDevice(virtualDeviceId, {
                     loading: false,
                     firmwareVersion,
                     status: NetworkDeviceStatus.RequiresRecoveryMode,
                   }));
                 } else {
-                  dispatch(updateNetworkDevice(deviceId, {
+                  dispatch(updateNetworkDevice(virtualDeviceId, {
                     loading: false,
                     firmwareVersion,
                     status: NetworkDeviceStatus.Updateable,
@@ -251,18 +284,12 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
                 }
               })
               // If we cannot load firmware for some device we mark it with "error" status
-              .catch((error) => dispatch(updateNetworkDevice(deviceId, {
+              .catch((error) => dispatch(updateNetworkDevice(virtualDeviceId, {
                 loading: false,
                 status: NetworkDeviceStatus.Error,
                 error: ApplicationError.from(error).message,
               })));
           });
-      })
-      .then(() => {
-        // Completes scanning process
-        dispatch(setNetworkScanInProgress(false));
-        dispatch(updateGlobalIsProcessing(false));
-        dispatch(updateGlobalProcessStatus(""));
       })
       .then(() => {
         // Displays help dialog, if necessary
@@ -278,7 +305,13 @@ export const scanCanBus = (): SparkAction<Promise<any>> => {
           okLabel: tt("lbl_close"),
         }));
       })
-      .catch(useErrorHandler(dispatch));
+      .catch(useErrorHandler(dispatch))
+      .finally(() => {
+        // Completes scanning process
+        dispatch(setNetworkScanInProgress(false));
+        dispatch(updateGlobalIsProcessing(false));
+        dispatch(updateGlobalProcessStatus(""));
+      });
   };
 };
 
@@ -291,9 +324,12 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
       .then(({extendedList}) => {
         // Get the latest firmware version
         const latestVersion = queryFirmwareByTag(getState(), FirmwareTag.Latest);
+        const connectedDescriptor = queryConnectedDescriptor(getState());
 
         // Find all updateable devices
-        const updateableDevices = extendedList.map(createNetworkDevice).filter(isNetworkDeviceNeedFirmwareVersion);
+        const updateableDevices = extendedList.map(createNetworkDevice)
+          .filter(({descriptor}) => descriptor === connectedDescriptor)
+          .filter(isNetworkDeviceNeedFirmwareVersion);
 
         // Load firmware for each updateable device one by one
         return concatMapPromises(
@@ -313,21 +349,21 @@ export const findObsoletedDevice = (): SparkAction<Promise<boolean>> =>
       .catch(useErrorHandler(dispatch));
   };
 
-export const selectNetworkDevice = (id: DeviceId, selected: boolean): SparkAction<void> => {
+export const selectNetworkDevice = (id: string, selected: boolean): SparkAction<void> => {
   return (dispatch) => dispatch(updateNetworkDevice(id, {selected}));
 };
 
 export const selectAllNetworkDevices = (selected: boolean): SparkAction<void> => {
   return (dispatch, getState) => {
     const devices = querySelectableNetworkDevices(getState());
-    devices.forEach((device) => dispatch(updateNetworkDevice(getNetworkDeviceId(device), {selected})));
+    devices.forEach((device) => dispatch(updateNetworkDevice(getNetworkDeviceVirtualId(device), {selected})));
   };
 };
 
 /**
  * Shows help dialog for specific device.
  */
-export const showNetworkDeviceHelp = (id: DeviceId): SparkAction<Promise<void>> =>
+export const showNetworkDeviceHelp = (id: string): SparkAction<Promise<void>> =>
   (dispatch, getState) => {
     const device = queryNetworkDevice(getState(), id);
 
