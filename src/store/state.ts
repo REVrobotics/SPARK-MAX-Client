@@ -336,7 +336,9 @@ export enum NetworkDeviceStatus {
  * Represents device on CAN bus
  */
 export interface INetworkDevice {
+  id: string;
   selected: boolean;
+  descriptor: PathDescriptor;
   deviceId: DeviceId;
   uniqueId: number;
   interfaceName: string;
@@ -755,7 +757,12 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
 };
 
 /**
- * Returns deviceId of device on CAN bus.
+ * Returns virtual id of device.
+ * Returned ID may be not-unique.
+ */
+export const getNetworkDeviceVirtualId = (device: INetworkDevice) => device.id;
+/**
+ * Returns device id of device on CAN bus.
  * Returned ID may be not-unique.
  */
 export const getNetworkDeviceId = (device: INetworkDevice) => device.deviceId;
@@ -780,6 +787,8 @@ export const createNetworkDevice = (extended: ExtendedListResponseDto): INetwork
   }
 
   return {
+    id: `${extended.driverDesc}:${extended.deviceId}`,
+    descriptor: extended.driverDesc!,
     deviceId: extended.deviceId!,
     uniqueId: extended.uniqueId!,
     deviceName: extended.deviceName!,

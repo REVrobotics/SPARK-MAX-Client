@@ -67,6 +67,7 @@ const labels = {
   "lbl_how_to": "How to",
   "lbl_loading_dots": "Loading...",
   "lbl_load_firmware": "Load Firmware",
+  "lbl_latest_firmware": "Latest Firmware",
   "lbl_not_configured": "Not Configured",
   "lbl_pid_profile": "PID Profile",
   "lbl_p_uc": "P",

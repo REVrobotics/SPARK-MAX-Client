@@ -4,9 +4,11 @@ import * as React from "react";
 import {ReactElement, ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
 import {
-  DeviceId, getCanIdFromDeviceId, getDfuDeviceId,
-  getNetworkDeviceId,
-  IApplicationState, IDfuDevice,
+  getCanIdFromDeviceId,
+  getDfuDeviceId,
+  getNetworkDeviceVirtualId,
+  IApplicationState,
+  IDfuDevice,
   INetworkDevice,
   isNetworkDeviceError,
   isNetworkDeviceLoading,
@@ -15,21 +17,24 @@ import {
 } from "../store/state";
 import {
   requestFirmwareLoad,
-  scanCanBus, selectAllDfuDevices, selectAllNetworkDevices, selectDfuDevice,
+  scanCanBus,
+  selectAllDfuDevices,
+  selectAllNetworkDevices,
+  selectDfuDevice,
   selectNetworkDevice,
   showNetworkDeviceHelp,
   SparkDispatch
 } from "../store/actions";
 import {
   queryFirmwareDownloadError,
-  queryHasSelectedNetworkDevices,
+  queryHasSelectableDevices,
   queryHasSelectedDfuDevice,
+  queryHasSelectedNetworkDevices,
   queryIsAllNetworkDevicesSelected,
   queryIsFirmwareDownloading,
   queryIsHasConnectedDevice,
   queryLatestFirmwareVersion,
-  queryNetwork,
-  queryHasSelectableDevices
+  queryNetwork
 } from "../store/selectors";
 import Console from "../components/Console";
 
@@ -56,7 +61,7 @@ interface IProps {
 
   scanCanBus(): void;
 
-  selectDevice(id: DeviceId, selected: boolean): void;
+  selectDevice(id: string, selected: boolean): void;
 
   selectAllDevices(selected: boolean): void;
 
@@ -64,7 +69,7 @@ interface IProps {
 
   selectDfuDevice(id: string, selected: boolean): void;
 
-  showDeviceHelp(id: DeviceId): void;
+  showDeviceHelp(id: string): void;
 }
 
 interface INetworkSelectorProps {
@@ -111,9 +116,9 @@ const NetworkDeviceSelector = (props: INetworkDeviceSelectorProps) => {
 };
 
 interface INetworkDeviceHowToProps {
-  deviceId: DeviceId;
+  virtualDeviceId: string;
 
-  onOpen(id: DeviceId): void;
+  onOpen(id: string): void;
 }
 
 interface INetworkCellRendererSet {
@@ -135,9 +140,9 @@ enum NetworkRowType {
  * Displays button used to get instructions on how to update firmware.
  */
 const NetworkDeviceHowTo = (props: INetworkDeviceHowToProps) => {
-  const {deviceId, onOpen} = props;
+  const {virtualDeviceId, onOpen} = props;
 
-  const open = useCallback(() => onOpen(deviceId), []);
+  const open = useCallback(() => onOpen(virtualDeviceId), []);
 
   return <button className="link" onClick={open}>{tt("lbl_how_to")}</button>;
 };
@@ -180,7 +185,7 @@ class NetworkTab extends React.Component<IProps> {
         </div>
         <br/>
         <div id="firmware-bar">
-          <span>Latest Firmware: {firmwareDownloading ? tt("lbl_loading_dots") : latestFirmwareVersion}</span>
+          <span>{tt("lbl_latest_firmware")}: {firmwareDownloading ? tt("lbl_loading_dots") : latestFirmwareVersion}</span>
           <span><Button className="rev-btn"
                         loading={firmwareLoading || firmwareDownloading}
                         onClick={this.props.requestFirmwareLoad}>{tt("lbl_load_firmware")}</Button></span>
@@ -217,10 +222,10 @@ class NetworkTab extends React.Component<IProps> {
       // otherwise display checkbox
       const content = device.status === NetworkDeviceStatus.RequiresRecoveryMode ?
         (
-          <NetworkDeviceHowTo deviceId={getNetworkDeviceId(device)} onOpen={this.props.showDeviceHelp}/>
+          <NetworkDeviceHowTo virtualDeviceId={getNetworkDeviceVirtualId(device)} onOpen={this.props.showDeviceHelp}/>
         )
         : (
-          <NetworkDeviceSelector value={getNetworkDeviceId(device)}
+          <NetworkDeviceSelector value={getNetworkDeviceVirtualId(device)}
                                  selected={device.selected}
                                  disabled={firmwareLoading || !isNetworkDeviceSelectable(device)}
                                  onSelected={this.props.selectDevice}/>
@@ -377,11 +382,11 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     scanCanBus: () => dispatch(scanCanBus()),
     requestFirmwareLoad: () => dispatch(requestFirmwareLoad()),
-    selectDevice: (id: DeviceId, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
+    selectDevice: (id: string, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
     selectAllDevices: (selected: boolean) => dispatch(selectAllNetworkDevices(selected)),
     selectDfuDevice: (id: string, selected: boolean) => dispatch(selectDfuDevice(id, selected)),
     selectAllDfuDevices: (selected: boolean) => dispatch(selectAllDfuDevices(selected)),
-    showDeviceHelp: (id: DeviceId) => dispatch(showNetworkDeviceHelp(id)),
+    showDeviceHelp: (id: string) => dispatch(showNetworkDeviceHelp(id)),
   };
 }
 

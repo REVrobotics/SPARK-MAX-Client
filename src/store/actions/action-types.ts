@@ -326,7 +326,7 @@ export interface ISetNetworkDevices extends Action {
 export interface IUpdateNetworkDevice extends Action {
   type: ActionType.UPDATE_NETWORK_DEVICE,
   payload: {
-    deviceId: DeviceId,
+    id: string,
     update: Partial<INetworkDevice>
   }
 }
