@@ -262,6 +262,7 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
 
 export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
   value: 0,
+  pidSlot: 0,
   running: false,
   ranges: {},
 };
@@ -301,13 +302,13 @@ export interface IDeviceDisplayState {
   signals: ISignalState[];
   quickBar: ConfigParam[];
   run: IDeviceRunState;
-  pidProfile: number;
 }
 
 export type IDeviceValueRange = IDisplayDeviceValueRangeDto & { stepSize: number; minorStepSize: number };
 
 export interface IDeviceRunState {
   value: number;
+  pidSlot: number;
   running: boolean;
   ranges: {[type: number]: IDeviceValueRange};
 }
@@ -598,7 +599,6 @@ export const createDeviceDisplayState = (): IDeviceDisplayState => ({
   quickBar: [],
   selectedParamGroupId: ConfigParamGroupName.GROUPNAME_Basic,
   run: DEFAULT_DEVICE_RUN,
-  pidProfile: 0,
 });
 
 export const createSignalInstance = (virtualDeviceId: VirtualDeviceId,

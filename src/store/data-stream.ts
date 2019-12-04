@@ -96,12 +96,14 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
 
   const byDevice = buffers[virtualDeviceId];
   if (byDevice == null) {
-    throw new Error(`No buffer registered for "${virtualDeviceId}"`);
+    console.info(`No buffer registered for "${virtualDeviceId}"`);
+    return;
   }
 
   const buffer = byDevice[signalId];
   if (buffer == null) {
-    throw new Error(`No buffer registered for "${virtualDeviceId}:${signalId}"`);
+    console.info(`No buffer registered for "${virtualDeviceId}:${signalId}"`);
+    return;
   }
 
   const points = items.map((item) => ({ x: new Date(item.timestampMs || 0), y: item.value || 0}));
@@ -117,7 +119,7 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
 const getVirtualDeviceId = (deviceId: DeviceId): VirtualDeviceId => {
   const virtualId = deviceIdToVirtualDeviceId[deviceId];
   if (virtualId == null) {
-    throw new Error(`No any mapping registered for deviceId = "${deviceId}"`);
+    console.info(`No any mapping registered for deviceId = "${deviceId}"`);
   }
   return virtualId;
 };

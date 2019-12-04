@@ -3,13 +3,16 @@ import * as React from "react";
 import {useCallback} from "react";
 import {IApplicationState, QuickPanelName} from "../store/state";
 import {connect} from "react-redux";
-import {setDisplaySelectedQuickPanel, setSelectedDeviceDisplayPidProfile, SparkDispatch} from "../store/actions";
+import {setDisplaySelectedQuickPanel, SparkDispatch} from "../store/actions";
 import {ConfigParam} from "../models/ConfigParam";
 import {Button, FormGroup, Tab, Tabs} from "@blueprintjs/core";
 import DisplayConfigParamFieldGroup from "./DisplayConfigParamFieldGroup";
 import {queryDisplay, querySelectedDeviceDisplay} from "../store/selectors";
 import {EMPTY_ARRAY} from "../utils/object-utils";
-import {setAndPersistSelectedDeviceDisplayQuickParam} from "../store/actions/display-actions";
+import {
+  sendSelectedDevicePidSlot,
+  setAndPersistSelectedDeviceDisplayQuickParam
+} from "../store/actions/display-actions";
 import DictionarySelect from "../components/DictionarySelect";
 import {PID_PROFILES} from "../store/dictionaries";
 
@@ -17,15 +20,18 @@ interface IProps {
   className?: string;
   quickBar: ConfigParam[];
   panel: QuickPanelName;
-  pidProfile: number;
+  pidSlot: number;
 
-  onSelectPidProfile(profile: number): void;
+  onSelectPidSlot(pidSlot: number): void;
+
   onSelectQuickPanel(panel: QuickPanelName): void;
+
   onQuickUnset(parameter: ConfigParam): void;
 }
 
 interface IQuickParameterProps {
   parameter: ConfigParam;
+
   onQuickUnset(parameter: ConfigParam): void;
 }
 
@@ -41,7 +47,7 @@ const QuickParameter = (props: IQuickParameterProps) => {
               small={true}
               icon="cross"
               onClick={quickUnset}/>
-      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}  disabled={true}/>
+      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}/>
     </div>
   );
 };
@@ -50,27 +56,22 @@ const QuickParameter = (props: IQuickParameterProps) => {
  * Component displaying panel for *PIDF" parameters
  */
 const PIDFPanel = (props: IProps) => {
-  const pParam = ConfigParam.kP_0 + props.pidProfile * 8;
+  const pParam = ConfigParam.kP_0 + props.pidSlot * 8;
 
   return (
     <div className="flex-column">
       <FormGroup inline={true} label={tt("lbl_pid_profile")}>
         <DictionarySelect dictionary={PID_PROFILES}
-                          value={props.pidProfile}
-                          disabled={true}
-                          onValueChange={props.onSelectPidProfile}/>
+                          value={props.pidSlot}
+                          onValueChange={props.onSelectPidSlot}/>
       </FormGroup>
       <div className="run-quick-bar__pid-row flex-row">
-        <DisplayConfigParamFieldGroup parameter={pParam} groupClassName="display-param-group--minimal"
-                                      disabled={true}/>
-        <DisplayConfigParamFieldGroup parameter={pParam + 1} groupClassName="display-param-group--minimal"
-                                      disabled={true}/>
-        <DisplayConfigParamFieldGroup parameter={pParam + 2} groupClassName="display-param-group--minimal"
-                                      disabled={true}/>
+        <DisplayConfigParamFieldGroup parameter={pParam} groupClassName="display-param-group--minimal"/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 1} groupClassName="display-param-group--minimal"/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 2} groupClassName="display-param-group--minimal"/>
       </div>
       <div className="run-quick-bar__pid-row flex-row">
-        <DisplayConfigParamFieldGroup parameter={pParam + 3} groupClassName="display-param-group--minimal"
-                                      disabled={true}/>
+        <DisplayConfigParamFieldGroup parameter={pParam + 3} groupClassName="display-param-group--minimal"/>
       </div>
     </div>
   );
@@ -117,14 +118,14 @@ const mapStateToProps = (state: IApplicationState) => {
   const deviceDisplay = querySelectedDeviceDisplay(state);
   return {
     panel: display.selectedQuickPanel,
-    pidProfile: deviceDisplay ? deviceDisplay.pidProfile : 0,
+    pidSlot: deviceDisplay ? deviceDisplay.run.pidSlot : 0,
     quickBar: deviceDisplay ? deviceDisplay.quickBar : EMPTY_ARRAY,
   };
 };
 const mapDispatchToProps = (dispatch: SparkDispatch) => {
   return {
     onSelectQuickPanel: (panel: QuickPanelName) => dispatch(setDisplaySelectedQuickPanel(panel)),
-    onSelectPidProfile: (profile: number) => dispatch(setSelectedDeviceDisplayPidProfile(profile)),
+    onSelectPidSlot: (pidSlot: number) => dispatch(sendSelectedDevicePidSlot(pidSlot)),
     onQuickUnset: (param: ConfigParam) => dispatch(setAndPersistSelectedDeviceDisplayQuickParam(param, false)),
   };
 };

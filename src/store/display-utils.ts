@@ -179,7 +179,7 @@ export const createDisplayState = (state: IApplicationState,
             {...omit(constraint, "mode"), ...(configDevice.ranges ? configDevice.ranges[constraint.mode] : {})},
           ])),
         },
-        pidProfile: 0,
+        pidSlot: 0,
       }];
     })),
     lastSyncedConsumers: [],

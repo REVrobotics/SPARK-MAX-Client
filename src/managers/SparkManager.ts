@@ -181,13 +181,12 @@ class SparkManager {
     return await this.getParameterList(device);
   }
 
-  // IMPORTANT - The setpoint MUST come in a [-1023, 1024] range!
-  public setSetpoint(device: string, setpoint: number) {
-    return sendOneWay("set-setpoint", device, setpoint);
+  public setSetpoint(device: string, pidSlot: number, setpoint: number) {
+    return sendOneWay("set-setpoint", device, pidSlot, setpoint);
   }
 
-  public enableHeartbeat(device: string, controlValue: number, interval: number) {
-    sendOneWay("enable-heartbeat", device, controlValue, interval);
+  public enableHeartbeat(device: string, pidSlot: number, controlValue: number, interval: number) {
+    sendOneWay("enable-heartbeat", device, pidSlot, controlValue, interval);
   }
 
   public disableHeartbeat(device: string) {

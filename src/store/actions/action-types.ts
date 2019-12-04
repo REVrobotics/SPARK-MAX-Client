@@ -85,7 +85,7 @@ export enum ActionType {
   SET_DISPLAY_SELECTED_PANEL = "SET_DISPLAY_SELECTED_PANEL",
   SET_DISPLAY_SETTING = "SET_DISPLAY_SETTING",
   SET_SELECTED_SIGNAL = "SET_SELECTED_SIGNAL",
-  SET_DISPLAY_SELECTED_PID_PROFILE = "SET_DISPLAY_SELECTED_PID_PROFILE",
+  SET_DISPLAY_SELECTED_PID_SLOT = "SET_DISPLAY_SELECTED_PID_SLOT",
 
   ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
   REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
@@ -458,11 +458,11 @@ export interface ISetDisplaySelectedQuickPanel {
   },
 }
 
-export interface ISetDisplaySelectedPidProfile extends IDeviceAwareAction {
-  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+export interface ISetDisplaySelectedPidSlot extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PID_SLOT,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    profile: number;
+    pidSlot: number;
   },
 }
 
@@ -606,7 +606,7 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
-  | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
+  | ISetDisplaySelectedPidSlot | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
   | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetControlRangeValue
   | ISetLastSyncedConsumers | ISetLastRunningDeviceIds
