@@ -1,3 +1,4 @@
+import {remove} from "lodash";
 import {AbstractResource} from "./AbstractResource";
 import {
   TelemetryStreamCommand,
@@ -48,7 +49,7 @@ export class TelemetryResource extends AbstractResource {
         id: signalId,
       },
     });
-    this.signals.push({deviceId: device, signalId});
+    remove(this.signals, (signal) => signal.deviceId === device && signal.signalId === signalId);
   }
 
   public getSignals() {

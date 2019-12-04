@@ -317,9 +317,6 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
 
       if (previousRunningDeviceIds.length === 0 && runningDeviceIds.length > 0) {
         SparkManager.telemetryStart();
-      } else if (previousRunningDeviceIds.length > 0 && runningDeviceIds.length === 0) {
-        SparkManager.telemetryStop();
-        return;
       }
 
       const destinationDiff = diffArrays(
@@ -333,6 +330,10 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       destinationDiff.removed.forEach((destination) => {
         SparkManager.telemetryRemoveSignal(destination.deviceId, destination.signalId);
       });
+
+      if (previousRunningDeviceIds.length > 0 && runningDeviceIds.length === 0) {
+        SparkManager.telemetryStop();
+      }
     });
   };
 
