@@ -131,7 +131,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\x64\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_amd64.exe"
+      ExecWait "$INSTDIR\dpinst_amd64.exe /q /se"
     ${Else}
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\sttube.cat"
@@ -139,7 +139,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\x86\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_x86.exe"
+      ExecWait "$INSTDIR\dpinst_x86.exe /q /se"
     ${EndIf}
   ${ElseIf} $R0 == "8.1"
     ${If} ${RunningX64}
@@ -149,7 +149,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\x64\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_amd64.exe"
+      ExecWait "$INSTDIR\dpinst_amd64.exe /q /se"
     ${Else}
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\sttube.cat"
@@ -157,7 +157,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\x86\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_x86.exe"
+      ExecWait "$INSTDIR\dpinst_x86.exe /q /se"
     ${EndIf}
   ${ElseIf} $R0 == "8"
     ${If} ${RunningX64}
@@ -167,7 +167,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\x64\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_amd64.exe"
+      ExecWait "$INSTDIR\dpinst_amd64.exe /q /se"
     ${Else}
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\sttube.cat"
@@ -175,7 +175,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\x86\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_x86.exe"
+      ExecWait "$INSTDIR\dpinst_x86.exe /q /se"
     ${EndIf}
   ${ElseIf} $R0 == "7"
     ${If} ${RunningX64}
@@ -185,7 +185,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\x64\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_amd64.exe"
+      ExecWait "$INSTDIR\dpinst_amd64.exe /q /se"
     ${Else}
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\sttube.cat"
@@ -193,7 +193,7 @@
       File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\x86\STTub30.sys"
       File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.cat"
       File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.inf"
-      ExecWait "$INSTDIR\dpinst_x86.exe"
+      ExecWait "$INSTDIR\dpinst_x86.exe /q /se"
     ${EndIf}
   ${EndIf}
 
