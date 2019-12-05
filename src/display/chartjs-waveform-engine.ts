@@ -6,7 +6,10 @@ import {
   DataPoint,
   DataSetId,
   DataSetOptions,
-  DataSource, DataStream,
+  DataSource,
+  DataStream,
+  DataStreamEvent,
+  DataStreamEventType,
   LegendPosition,
   ScaleId,
   Unsubscribe,
@@ -38,6 +41,17 @@ const createEmptyConfiguration = (): ChartConfiguration => ({
     tooltips: {
       mode: "index",
       intersect: false,
+      callbacks: {
+        label: (tooltipItem, data) => {
+          let label = data.datasets![tooltipItem.datasetIndex!].label || '';
+
+          if (label) {
+            label += ': ';
+          }
+          label += Number(tooltipItem.yLabel).toFixed(4);
+          return label;
+        },
+      },
     },
     legend: {
       position: "right",
@@ -279,8 +293,17 @@ class ChartjsEngineChart implements WaveformEngineChart {
 
   private listenDataSource(dataSetId: DataSetId, dataSource: DataSource<DataPoint>): void {
     const subscription = dataSource(this.buildDataQuery());
-    this.dataSubscriptions[dataSetId] = subscription((data: DataPoint[]) => {
-      this.updateDatasetData(dataSetId, data);
+    this.dataSubscriptions[dataSetId] = subscription((event) => {
+      switch (event.type) {
+        case DataStreamEventType.Fill:
+          this.updateDatasetData(dataSetId, event.data);
+          break;
+        case DataStreamEventType.Clear:
+          this.updateDatasetData(dataSetId, []);
+          break;
+        default:
+          break;
+      }
       this.flush();
     });
   }
@@ -335,17 +358,31 @@ class ChartjsWaveformEngine extends AbstractWaveformEngine {
     return React.createElement("canvas", {ref});
   }
 
-  public createDataSource(dataStream: DataStream<DataPoint[]>): DataSource<DataPoint> {
+  public createDataSource(dataStream: DataStream<DataPoint>): DataSource<DataPoint> {
     return ({timeSpan}: { timeSpan: number }) => {
-      return (cb: (data: any[]) => void) => {
+      return (cb: (event: DataStreamEvent<DataPoint>) => void) => {
         const data: DataPoint[] = [];
 
-        return dataStream((next) => {
-          data.push(...next);
-
-          truncateByTime(data, timeSpan, (point) => point.x.getTime());
-
-          cb(data);
+        return dataStream((event) => {
+          switch (event.type) {
+            case DataStreamEventType.Append:
+              data.push(...event.data);
+              truncateByTime(data, timeSpan, (point) => point.x.getTime());
+              cb({type: DataStreamEventType.Fill, data});
+              break;
+            case DataStreamEventType.Fill:
+              data.length = 0;
+              data.push(...event.data);
+              truncateByTime(data, timeSpan, (point) => point.x.getTime());
+              cb({type: DataStreamEventType.Fill, data});
+              break;
+            case DataStreamEventType.Clear:
+              data.length = 0;
+              cb({type: DataStreamEventType.Clear});
+              break;
+            default:
+              break;
+          }
         });
       };
     };

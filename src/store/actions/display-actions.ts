@@ -54,7 +54,7 @@ import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
 import {
   addDataBuffer,
-  changeDataBuffer,
+  changeDataBuffer, markDataBufferAsIgnoring,
   markDataBufferAsStale,
   removeDataBuffer,
   setDataBufferOptions,
@@ -254,14 +254,14 @@ const syncDataParticipants = (): SparkAction<Promise<void>> =>
  */
 const syncDataConsumers = (): SparkAction<void> =>
   (dispatch, getState) => {
-    const oldDestinations = queryLastSyncedConsumers(getState());
+    const lastDestinations = queryLastSyncedConsumers(getState());
     const displaySettings = queryDisplaySettings(getState());
     setDataBufferOptions({
       timeSpan: displaySettings.timeSpan * 1000,
     });
-    const newDestinations = queryDestinations(getState());
+    const currentDestinations = queryDestinations(getState());
     // Compare list of old/new destinations
-    const result = diffArrays(oldDestinations, newDestinations, getDestinationId);
+    const result = diffArrays(lastDestinations, currentDestinations, getDestinationId);
 
     // Sync destinations
     result.added.forEach(addDataBuffer);
@@ -273,10 +273,13 @@ const syncDataConsumers = (): SparkAction<void> =>
       }
     });
 
-    dispatch(setLastSyncedConsumers(newDestinations));
+    dispatch(setLastSyncedConsumers(currentDestinations));
 
-    newDestinations.forEach((destination) => {
-      if (!queryIsDeviceRunning(getState(), destination.virtualDeviceId)) {
+    currentDestinations.forEach((destination) => {
+      if (queryIsDeviceRunning(getState(), destination.virtualDeviceId)) {
+        markDataBufferAsIgnoring(destination, false);
+      } else {
+        markDataBufferAsIgnoring(destination, true);
         markDataBufferAsStale(destination);
       }
     })
@@ -308,7 +311,7 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
           connectedDescriptor!,
           fromDtoDeviceId(deviceId));
         if (run) {
-          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.value, 40);
+          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.value, 100);
         }
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
