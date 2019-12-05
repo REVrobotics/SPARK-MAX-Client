@@ -1,7 +1,7 @@
 import {forEach, groupBy, isEmpty, once, pull} from "lodash";
 import {DeviceId, fromDtoDeviceId, IDestination, ITelemetryDataItem, SignalId, VirtualDeviceId} from "./state";
 import {waveformEngine} from "../display";
-import {DataPoint, DataStream} from "../display/display-interfaces";
+import {DataPoint, DataStream, DataStreamEvent, DataStreamEventType} from "../display/display-interfaces";
 import {truncateByTime} from "../utils/object-utils";
 
 /**
@@ -21,8 +21,9 @@ interface IBufferRegistry {
 interface IBuffer {
   deviceId: DeviceId;
   data: DataPoint[];
-  nextCallbacks: Array<(data: DataPoint[]) => void>;
+  nextCallbacks: Array<(event: DataStreamEvent<DataPoint>) => void>;
   completeCallbacks: Array<() => void>;
+  ignore: boolean;
   stale: boolean;
 }
 
@@ -31,7 +32,7 @@ const bufferOptions: IBufferOptions = {
 };
 
 const buffers: IBufferRegistry = {};
-const deviceIdToVirtualDeviceId: {[deviceId: number]: VirtualDeviceId} = {};
+const deviceIdToVirtualDeviceId: { [deviceId: number]: VirtualDeviceId } = {};
 
 export const getDataSource = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) =>
   waveformEngine.createDataSource(getDataStream(virtualDeviceId, signalId));
@@ -72,6 +73,11 @@ export const removeDataBuffer = ({virtualDeviceId, deviceId, signalId}: IDestina
   }
 };
 
+export const markDataBufferAsIgnoring = ({virtualDeviceId, signalId}: IDestination, ignore: boolean) => {
+  const buffer = getDataBuffer(virtualDeviceId, signalId);
+  buffer.ignore = ignore;
+};
+
 export const markDataBufferAsStale = ({virtualDeviceId, signalId}: IDestination) => {
   const buffer = getDataBuffer(virtualDeviceId, signalId);
   buffer.stale = true;
@@ -106,14 +112,20 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
     return;
   }
 
-  const points = items.map((item) => ({ x: new Date(item.timestampMs || 0), y: item.value || 0}));
+  if (buffer.ignore) {
+    console.info(`Ignore data for destination "${virtualDeviceId}:${signalId}"`);
+    return;
+  }
+
+  const points = items.map((item) => ({x: new Date(item.timestampMs || 0), y: item.value || 0}));
   if (buffer.stale) {
     buffer.stale = false;
     buffer.data = [];
+    buffer.nextCallbacks.forEach((cb) => cb({type: DataStreamEventType.Clear}));
   }
   buffer.data.push(...points);
   truncateByTime(buffer.data, bufferOptions.timeSpan, (point) => point.x.getTime());
-  buffer.nextCallbacks.forEach((cb) => cb(points));
+  buffer.nextCallbacks.forEach((cb) => cb({type: DataStreamEventType.Append, data: points}));
 };
 
 const getVirtualDeviceId = (deviceId: DeviceId): VirtualDeviceId => {
@@ -138,6 +150,7 @@ const newDataBuffer = (deviceId: DeviceId = -1): IBuffer => ({
   data: [],
   nextCallbacks: [],
   completeCallbacks: [],
+  ignore: false,
   stale: false,
 });
 
@@ -163,7 +176,7 @@ const getDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IB
   return buffer;
 };
 
-const getDataStream = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): DataStream<DataPoint[]> => (cb) => {
+const getDataStream = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): DataStream<DataPoint> => (cb) => {
   ensureDataBuffer(virtualDeviceId, signalId);
   const buffer = getDataBuffer(virtualDeviceId, signalId);
   const unsubscribe = once(() => {
@@ -172,6 +185,6 @@ const getDataStream = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): Da
   });
   buffer.nextCallbacks.push(cb);
   buffer.completeCallbacks.push(unsubscribe);
-  cb(buffer.data);
+  cb({type: DataStreamEventType.Fill, data: buffer.data});
   return unsubscribe;
 };

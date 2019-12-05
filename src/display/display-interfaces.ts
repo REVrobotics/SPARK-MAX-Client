@@ -94,15 +94,28 @@ export interface WaveformEngine {
 
 export type Unsubscribe = () => void;
 
+export enum DataStreamEventType {Append, Fill, Clear}
+
+export interface DataStreamFillEvent<T> {
+  type: DataStreamEventType.Fill | DataStreamEventType.Append;
+  data: T[];
+}
+
+export interface DataStreamClearEvent {
+  type: DataStreamEventType.Clear;
+}
+
+export type DataStreamEvent<T> = DataStreamFillEvent<T> | DataStreamClearEvent;
+
 /**
  * DataStream allows to subscribe to data updates
  */
-export type DataStream<T> = (cb: (data: T) => void) => Unsubscribe;
+export type DataStream<T> = (cb: (event: DataStreamEvent<T>) => void) => Unsubscribe;
 
 /**
  * DataSource returns stream that emits sets of points to be displayed in the chart
  */
-export type DataSource<T> = (options: any) => DataStream<T[]>;
+export type DataSource<T> = (options: any) => DataStream<T>;
 
 export interface DataPoint {
   y: number;

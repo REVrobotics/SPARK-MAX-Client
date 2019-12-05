@@ -1,5 +1,5 @@
 import * as React from "react";
-import {ReactNode, RefObject, useContext} from "react";
+import {PureComponent, ReactNode, RefObject, useContext} from "react";
 import {ChartId, WaveformChartOptions} from "../display-interfaces";
 import {WaveformChartContext, WaveformEngineContext, WithEngine} from "./waveform-engine-context";
 
@@ -7,7 +7,7 @@ interface Props extends WaveformChartOptions {
   children: ReactNode;
 }
 
-class WaveformChartInContext extends React.Component<WithEngine<Props>> {
+class WaveformChartInContext extends PureComponent<WithEngine<Props>> {
   private ref: RefObject<HTMLElement>;
   private chartId: ChartId;
 
