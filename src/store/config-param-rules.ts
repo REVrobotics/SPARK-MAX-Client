@@ -119,16 +119,10 @@ const OVERRIDDEN_RULES = [
   }),
   createNumericRule(ConfigParam.kSoftLimitFwd, {
     default: 0,
-    constraints: {
-      min: 0,
-    },
     isDisabled: (ctx) => !ctx.getParameter(ConfigParam.kSoftLimitFwdEn),
   }),
   createNumericRule(ConfigParam.kSoftLimitRev, {
     default: 0,
-    constraints: {
-      min: 0,
-    },
     isDisabled: (ctx) => !ctx.getParameter(ConfigParam.kSoftLimitRevEn),
   }),
   createNumericRule(ConfigParam.kP_0, {
