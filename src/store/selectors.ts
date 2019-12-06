@@ -358,6 +358,12 @@ export const queryDfuDevicesToUpdate = (state: IApplicationState) => {
     : dfuDevices.filter((dfuDevice) => dfuDevice.selected).map(getDfuDeviceId);
 };
 /**
+ * Returns count of DFU devices to update: either all or only one device can be selected.
+ */
+export const queryDfuDevicesToUpdateCount = (state: IApplicationState) => {
+  const dfuDeviceIds = queryDfuDevicesToUpdate(state);
+  return dfuDeviceIds[0] === DFU_DEVICE_ALL ? queryNetworkDfuDevices(state).length : dfuDeviceIds.length};
+/**
  * Returns specific device on CAN bus
  */
 export const queryNetworkDevice = (state: IApplicationState, id: string) =>

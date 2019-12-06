@@ -1,13 +1,16 @@
-import {initial, partition, uniq} from "lodash";
+import {initial, keyBy, noop, partition, uniq} from "lodash";
 import {
   ConfirmationAnswer,
   createDfuDevice,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag, getNetworkDeviceId,
+  FirmwareTag,
+  getNetworkDeviceId,
   getNetworkDeviceVirtualId,
+  ILoadReport,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
+  mergeLoadReports,
   NetworkDeviceStatus,
   toDtoDeviceId
 } from "../state";
@@ -30,16 +33,16 @@ import {
   queryConnectedDescriptor,
   queryConsoleOutput,
   queryDfuDevicesToUpdate,
+  queryDfuDevicesToUpdateCount,
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
   queryNetworkDevices,
-  queryNetworkDfuDevices,
   querySelectableNetworkDevices
 } from "../selectors";
 import {basename, compareVersions} from "../../utils/string-utils";
-import {DFU_DEVICE_ALL, FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
-import {showAlert, showConfirmation, showToastError, showToastSuccess} from "./ui-actions";
+import {FirmwareResponseDto, getErrorText, hasError} from "../../models/dto";
+import {showAlert, showConfirmation, showToastError} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {
   isNetworkDeviceNeedsHelpText,
@@ -49,6 +52,7 @@ import {
 import {onError, useErrorHandler} from "./error-actions";
 import {ApplicationError} from "../../models/errors";
 import {connectDevice} from "./connection-actions";
+import {networkLoadError, networkLoadSuccess} from "../../mls/content";
 
 /**
  * Validates that firmware loading can be started and starts loading after user selects firmware and approves loading.
@@ -76,8 +80,7 @@ export const requestFirmwareLoad = (): SparkAction<Promise<void>> => {
           return Promise.resolve();
         }
 
-        const numDevicesToUpdate = deviceIds.length
-          + (dfuDeviceIds[0] === DFU_DEVICE_ALL ? queryNetworkDfuDevices(getState()).length : dfuDeviceIds.length);
+        const numDevicesToUpdate = deviceIds.length + queryDfuDevicesToUpdateCount(getState());
 
         return dispatch(showConfirmation({
           intent: Intent.SUCCESS,
@@ -107,8 +110,20 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
-    return dispatch(updateOrRecoverFirmware(false, path, deviceIds.map(toDtoDeviceId)))
-      .then(() => dispatch(updateOrRecoverFirmware(true, path, dfuDeviceIds)))
+    return dispatch(updateOrRecoverFirmwareWithReport(false, path, deviceIds.map(toDtoDeviceId)))
+      .then((report) => dispatch(updateOrRecoverFirmwareWithReport(true, path, dfuDeviceIds))
+        .then((dfuReport) => mergeLoadReports(report, dfuReport)))
+      .then((report) => report.failed ?
+        dispatch(showAlert({
+          intent: Intent.DANGER,
+          content: networkLoadError(report),
+          okLabel: tt("lbl_close"),
+        }))
+        : dispatch(showAlert({
+          intent: Intent.SUCCESS,
+          content: networkLoadSuccess(report),
+          okLabel: tt("lbl_close"),
+        })))
       .then(() => {
         if (connectedDescriptor) {
           dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
@@ -123,7 +138,57 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
         dispatch(updateGlobalProcessStatus(""));
 
         dispatch(consoleOutput(tt("msg_console_output:rescan")));
+        // Rescan CAN bus to actualize data on Network tab
         dispatch(scanCanBus());
+      });
+  };
+};
+
+const updateOrRecoverFirmwareWithReport = (recover: boolean,
+                                           path: string,
+                                           ids: string[]): SparkAction<Promise<ILoadReport>> => {
+  return (dispatch) => {
+    return recover ? dispatch(recoverFirmwareWithReport(path, ids)) : dispatch(updateFirmwareWithReport(path, ids));
+  };
+};
+
+const recoverFirmwareWithReport = (path: string,
+                                   ids: string[]): SparkAction<Promise<ILoadReport>> => {
+  return (dispatch, getState) => {
+    const count = queryDfuDevicesToUpdateCount(getState());
+    return dispatch(updateOrRecoverFirmware(true, path, ids))
+      .then(() => ({success: count, failed: 0}))
+      .catch(() => ({success: 0, failed: count}));
+  };
+};
+
+const updateFirmwareWithReport = (path: string,
+                                  ids: string[]): SparkAction<Promise<ILoadReport>> => {
+  return (dispatch, getState) => {
+    const descriptor = queryConnectedDescriptor(getState());
+    if (descriptor == null) {
+      return Promise.resolve({success: 0, failed: 0});
+    }
+
+    const idIndex = keyBy(ids);
+
+    const countBeforeLoad = queryNetworkDevices(getState())
+      .filter((device) => device.descriptor === descriptor)
+      .filter((device) => idIndex[getNetworkDeviceId(device)])
+      .length;
+
+    return dispatch(updateOrRecoverFirmware(false, path, ids))
+      .catch(noop)
+      .then(() =>
+        SparkManager.listDevices({all: true, pathDescriptor: descriptor})
+          .then((response) => response.extendedList.filter((device) => idIndex[device.deviceId!]).length)
+          .catch(() => 0))
+      .then((countAfterLoad) => {
+        const failed = countBeforeLoad - countAfterLoad;
+        return {
+          success: countBeforeLoad - failed,
+          failed,
+        };
       });
   };
 };
@@ -140,18 +205,15 @@ const updateOrRecoverFirmware = (recover: boolean, path: string, ids: string[]):
     return SparkManager.loadFirmware(recover, path, uniq(ids))
       .then((res) => {
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
-          showToastError(tt(recover ? "msg_firmware_cannot_be_recovered" : "msg_firmware_cannot_be_updated"));
           dispatch(firmwareLoadingError(getErrorText(res)));
           dispatch(firmwareLoadingError());
         } else {
-          showToastSuccess(tt(recover ? "msg_firmware_recovered" : "msg_firmware_updated"));
           dispatch(consoleOutput(tt(recover ?
             "msg_console_output:successfully_recovered_firmware"
             : "msg_console_output:successfully_updated_firmware")));
           dispatch(updateFirmwareLoadingProgress(0, ""));
         }
       })
-      // Rescan CAN bus to actualize data on Network tab
       .catch(onError((error: any) => {
         dispatch(firmwareLoadingError(error));
         dispatch(firmwareLoadingError());
