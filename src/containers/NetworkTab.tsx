@@ -166,7 +166,7 @@ class NetworkTab extends React.Component<IProps> {
                  enableColumnResizing={false}
                  enableRowResizing={false}
                  numRows={Math.max(length, 10)}
-                 columnWidths={[75, 80, 70, 150, 75]}>
+                 columnWidths={[90, 120, 70, 220, 40]}>
 
             <Column name={tt("lbl_interface")} cellRenderer={this.interfaceColumnRenderer}/>
             <Column name={tt("lbl_device")} cellRenderer={this.deviceColumnRenderer}/>
@@ -176,19 +176,18 @@ class NetworkTab extends React.Component<IProps> {
                     columnHeaderCellRenderer={this.updateColumnHeaderRenderer}
                     cellRenderer={this.updateColumnRenderer}/>
           </Table>
-          <div>
-            <Button className="rev-btn"
-                    onClick={this.props.scanCanBus}
-                    disabled={firmwareLoading}
-                    loading={scanInProgress}>{tt("lbl_scan_bus")}</Button>
-          </div>
         </div>
-        <br/>
+        <div className="flex-row flex-space-between">
+          <Button className="rev-btn"
+                  onClick={this.props.scanCanBus}
+                  disabled={firmwareLoading}
+                  loading={scanInProgress}>{tt("lbl_scan_bus")}</Button>
+          <Button className="rev-btn"
+                  loading={firmwareLoading || firmwareDownloading}
+                  onClick={this.props.requestFirmwareLoad}>{tt("lbl_load_firmware")}</Button>
+        </div>
         <div id="firmware-bar">
-          <span>{tt("lbl_latest_firmware")}: {firmwareDownloading ? tt("lbl_loading_dots") : latestFirmwareVersion}</span>
-          <span><Button className="rev-btn"
-                        loading={firmwareLoading || firmwareDownloading}
-                        onClick={this.props.requestFirmwareLoad}>{tt("lbl_load_firmware")}</Button></span>
+          {tt("lbl_latest_firmware")}: {firmwareDownloading ? tt("lbl_loading_dots") : latestFirmwareVersion}
         </div>
         <br/>
         <div>
@@ -206,7 +205,7 @@ class NetworkTab extends React.Component<IProps> {
 
     return (
       <ColumnHeaderCell>
-        <NetworkSelector className="network--selector--header"
+        <NetworkSelector className="network-table__selector-header"
                          selected={isSelectAllDevices}
                          disabled={!hasSelectableDevices}
                          indeterminate={hasSelectedDevices && !isSelectAllDevices}

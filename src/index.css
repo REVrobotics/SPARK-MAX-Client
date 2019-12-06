@@ -526,6 +526,14 @@ label.modified::after {
     justify-content: center;
 }
 
+.flex-start {
+    justify-content: flex-start;
+}
+
+.flex-end {
+    justify-content: flex-end;
+}
+
 .flex-cross-center {
     align-items: center;
 }
@@ -618,12 +626,13 @@ label.modified::after {
 }
 
 .network-table {
-    width: 480px;
+    width: 100%;
     height: 250px;
+    margin-bottom: 10px;
 }
 
-.network--selector--header {
-    margin: 0 auto;
+.network-table__selector-header {
+    margin: 0 0 0 10px;
     width: 0;
 }
 
@@ -1059,7 +1068,7 @@ button.link {
 }
 
 .cell--dfu-title {
-    min-width: calc(100% - 75px);
+    min-width: calc(100% - 40px);
     z-index: 1;
     text-align: center;
     background: white;
