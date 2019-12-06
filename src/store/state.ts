@@ -309,7 +309,7 @@ export type IDeviceValueRange = IDisplayDeviceValueRangeDto & { stepSize: number
 export interface IDeviceRunState {
   value: number;
   running: boolean;
-  ranges: {[type: number]: IDeviceValueRange};
+  ranges: { [type: number]: IDeviceValueRange };
 }
 
 export type DisplaySettings = DisplaySettingsDto;
@@ -354,6 +354,11 @@ export interface INetworkDevice {
 export type IDfuDevice = ExtendedDfuResponseDto & {
   selected: boolean;
 };
+
+export interface ILoadReport {
+  success: number;
+  failed: number;
+}
 
 /**
  * Short information about device
@@ -958,3 +963,9 @@ export const getDisplaySettingConstraints = <S extends keyof DisplaySettings>(na
   DISPLAY_SETTING_CONSTRAINTS[name];
 
 export const getSignalId = (signal: ISignalState) => signal.id!;
+
+export const mergeLoadReports = (...reports: ILoadReport[]) =>
+  reports.reduce((acc, report) => ({
+    success: acc.success + report.success,
+    failed: acc.failed + report.failed
+  }), {success: 0, failed: 0});
