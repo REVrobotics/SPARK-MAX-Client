@@ -87,35 +87,37 @@ export interface WaveformEngine {
 
   destroyDataSet(chart: ChartId, dataSetId: DataSetId): void;
 
-  createDataSource(stream: DataStream<any>): DataSource<any>;
+  createDataSource(stream: DataStream): DataSource<any>;
 
   createRoot(ref: Ref<HTMLElement>): ReactNode;
 }
 
 export type Unsubscribe = () => void;
 
-export enum DataStreamEventType {Append, Fill, Clear}
+export enum DataStreamEventType {Settings, Append, Fill}
 
-export interface DataStreamFillEvent<T> {
+export interface DataStreamDataEvent {
   type: DataStreamEventType.Fill | DataStreamEventType.Append;
-  data: T[];
+  data: DataPoint[];
 }
 
-export interface DataStreamClearEvent {
-  type: DataStreamEventType.Clear;
+export interface DataStreamSettingsEvent {
+  type: DataStreamEventType.Settings;
+  startTime: Date;
+  stale: boolean;
 }
 
-export type DataStreamEvent<T> = DataStreamFillEvent<T> | DataStreamClearEvent;
+export type DataStreamEvent = DataStreamDataEvent | DataStreamSettingsEvent;
 
 /**
  * DataStream allows to subscribe to data updates
  */
-export type DataStream<T> = (cb: (event: DataStreamEvent<T>) => void) => Unsubscribe;
+export type DataStream = (cb: (event: DataStreamEvent) => void) => Unsubscribe;
 
 /**
  * DataSource returns stream that emits sets of points to be displayed in the chart
  */
-export type DataSource<T> = (options: any) => DataStream<T>;
+export type DataSource<T> = (options: any) => DataStream;
 
 export interface DataPoint {
   y: number;

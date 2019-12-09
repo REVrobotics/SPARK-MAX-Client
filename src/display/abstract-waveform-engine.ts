@@ -92,7 +92,7 @@ export abstract class AbstractWaveformEngine implements WaveformEngine {
     chart.updateScale(scaleId, scale);
   }
 
-  public abstract createDataSource(stream: DataStream<any>): DataSource<any>;
+  public abstract createDataSource(stream: DataStream): DataSource<any>;
 
   public abstract createRoot(ref: Ref<HTMLElement>): ReactNode;
 

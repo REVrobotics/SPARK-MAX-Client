@@ -119,7 +119,7 @@ const mapStateToProps = (state: IApplicationState) => {
   return {
     panel: display.selectedQuickPanel,
     pidSlot: deviceDisplay ? deviceDisplay.run.pidSlot : 0,
-    quickBar: deviceDisplay ? deviceDisplay.quickBar : EMPTY_ARRAY,
+    quickBar: deviceDisplay && deviceDisplay.quickBar ? deviceDisplay.quickBar : EMPTY_ARRAY,
   };
 };
 const mapDispatchToProps = (dispatch: SparkDispatch) => {
