@@ -155,7 +155,16 @@ export const queryDescriptorsInOrder = (state: IApplicationState) => state.devic
 /**
  * Returns whether any device is connected
  */
-export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedDescriptor(state) != null;
+export const queryIsHasConnectedDevice = (state: IApplicationState) => {
+  const descriptor = queryConnectedDescriptor(state);
+  return descriptor != null ? queryHasDescriptor(state, descriptor) : false;
+};
+
+/**
+ * Returns true if descriptor is known, otherwise false.
+ */
+export const queryHasDescriptor = (state: IApplicationState, descriptor: PathDescriptor) =>
+  state.deviceSet.orderedDescriptors.indexOf(descriptor) >= 0;
 
 /**
  * Returns id of connected device
