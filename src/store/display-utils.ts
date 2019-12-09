@@ -58,7 +58,7 @@ export const mergeDisplays = (currentDisplay: IDisplayState, nextDisplay: IDispl
     // Update set of existing signals
     const withExistingSignals = setFields(device, {
       signals: nextDeviceSignals,
-      quickBar: nextDevice ? nextDevice.quickBar : [],
+      quickBar: nextDevice && nextDevice.quickBar ? nextDevice.quickBar : [],
       run: setField(device.run, "ranges", nextDevice.run.ranges),
     });
 
@@ -106,7 +106,7 @@ export const displayToDto = (state: IApplicationState): DisplayConfigDto => {
 
   const deviceByVirtualId = mapValues(display.devices, (device) => ({
     ranges: mapValues(device.run.ranges, (range) => pick(range, "min", "max")),
-    quickBar: device.quickBar,
+    quickBar: device.quickBar || [],
     signals: mapValues(device.assignedSignals, (signal) => pick(signal, ["autoScaled", "min", "max"]))
   }));
 

@@ -94,7 +94,7 @@ const mapStateToProps = (state: IApplicationState) => {
 
   return {
     selectedParamGroupId: display ? display.selectedParamGroupId : undefined,
-    quickBar: display ? display.quickBar : EMPTY_ARRAY,
+    quickBar: display && display.quickBar ? display.quickBar : EMPTY_ARRAY,
   };
 };
 
