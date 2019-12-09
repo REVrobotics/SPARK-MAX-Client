@@ -47,6 +47,7 @@ const createEmptyConfiguration = ({toTimeLabel}: {toTimeLabel(n: number): string
       },
     },
     tooltips: {
+      enabled: false,
       mode: "index",
       intersect: false,
       callbacks: {
@@ -187,6 +188,9 @@ class ChartjsEngineChart implements WaveformEngineChart {
   private ticks = N_TICKS;
 
   constructor() {
+    this.onMouseEnter = this.onMouseEnter.bind(this);
+    this.onMouseLeave = this.onMouseLeave.bind(this);
+
     this.configuration = createEmptyConfiguration({
       toTimeLabel: (time) => {
         const relativeTime = time - this.startTime.getTime();
@@ -203,6 +207,9 @@ class ChartjsEngineChart implements WaveformEngineChart {
     const ctx = canvas.getContext("2d")!;
     this.chart = new Chart(ctx, this.configuration);
     this.initialized = true;
+
+    element.addEventListener("mouseenter", this.onMouseEnter);
+    element.addEventListener("mouseleave", this.onMouseLeave);
   }
 
   public update(options: WaveformChartOptions): void {
@@ -235,6 +242,11 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   public destroy(): void {
+    if (this.initialized) {
+      this.chart.canvas!.removeEventListener("mouseenter", this.onMouseEnter);
+      this.chart.canvas!.removeEventListener("mouseleave", this.onMouseLeave);
+    }
+
     this.dataSetIds.forEach((id: DataSetId) => this.unlistenDataSource(id));
 
     this.chart.destroy();
@@ -306,6 +318,14 @@ class ChartjsEngineChart implements WaveformEngineChart {
     } else {
       this.configuration.options!.scales!.yAxes! = updatedYAxes;
     }
+  }
+
+  private onMouseEnter(): void {
+    this.configuration.options!.tooltips!.enabled = true;
+  }
+
+  private onMouseLeave(): void {
+    this.configuration.options!.tooltips!.enabled = false;
   }
 
   private addDataSource(dataSetId: DataSetId, dataSource: DataSource<DataPoint>): void {
