@@ -96,3 +96,21 @@
 // mockCallbackCall("resync", CB_ONLY_MOCK_CALL);
 //
 // setTimeout(() => mockNotify("resync"), 10000);
+
+import {decorateCallbackCall, mockCallbackCall} from "./mock-renderer-calls";
+
+mockCallbackCall("telemetry-event", decorateCallbackCall(([event], next) => {
+  if (event.type !== "data") {
+    return next([event]);
+  }
+
+  const now = new Date();
+
+  next([{
+    ...event,
+    data: event.data.map((item: any) => ({
+      ...item,
+      timestampMs: now.getTime(),
+    })),
+  }]);
+}));
