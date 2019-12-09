@@ -178,8 +178,8 @@ class ChartjsEngineChart implements WaveformEngineChart {
   private configuration: ChartConfiguration;
   private chart: Chart;
   private dataSetIds: DataSetId[] = [];
-  private maxTime: Date = new Date();
-  private startTime: Date = new Date();
+  private maxTime: Date = new Date(0);
+  private startTime: Date = new Date(0);
   private dataStreamSettings: { [dataSetId: string]: DataStreamSettings } = {};
   private dataSources: { [dataSetId: string]: DataSource<DataPoint> } = {};
   private dataSubscriptions: { [dataSetId: string]: Unsubscribe } = {};
