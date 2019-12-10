@@ -22,7 +22,7 @@ export const recoveryModeInstructions = (
 
 export const networkDeviceNotConfigured = (
   <p>
-    Some devices are <b>Not Configured</b>. All Not Configured devices will be forcibly updated on Load.
+    Some devices are <b>Not Configured</b> and are automatically selected.
   </p>
 );
 
@@ -47,13 +47,16 @@ export const networkDeviceRecoveryModeHowTo = (
 
 export const networkLoadSuccess = ({success, failed}: { success: number, failed: number }) =>
   <>
-    Successfully updated {success} devices
+    Successfully updated {success} device(s).
   </>;
 
 export const networkLoadError = ({success, failed}: { success: number, failed: number }) =>
   <>
     <p>
-      Successfully updated {success} devices.
+      Successfully updated {success} device(s).
     </p>
-    Failed to updated devices, may require a recovery update following these steps: ...
+    <p>
+    Failed to updated devices, may require a recovery update following these steps: 
+    </p>
+    {recoveryModeInstructions}
   </>;

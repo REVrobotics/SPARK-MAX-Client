@@ -9,7 +9,7 @@ const labels = {
   "lbl_not_connected": "Not Connected",
   "lbl_rescan": "Rescan",
   "lbl_status": "Status",
-  "lbl_global_config_error": "Some devices have configuration issues",
+  "lbl_global_config_error": "A device is not configured",
   "lbl_disconnect": "Disconnect",
   "lbl_connect": "Connect",
   "lbl_console": "Console",

@@ -73,3 +73,8 @@ export const PID_PROFILES = Dictionary.from(
   DictionaryName.PidProfiles,
   [0, 1, 2, 3],
 )
+
+export const DATA_PORT_CONFIGS = Dictionary.from(
+  DictionaryName.DataPortConfigs,
+  [0, 1],
+)

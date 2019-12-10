@@ -11,6 +11,7 @@ export enum DictionaryName {
   IdleModes = "IdleModes",
   ControlModes = "ControlModes",
   PidProfiles = "PidProfiles",
+  DataPortConfigs = "DataPortConfigs",
 }
 
 const dictionarySet = {
@@ -59,6 +60,10 @@ const dictionarySet = {
     1: "1",
     2: "2",
     3: "3",
+  },
+  [DictionaryName.DataPortConfigs]: {
+    0: "Default",
+    1: "Alternate Encoder",
   },
 };
 
