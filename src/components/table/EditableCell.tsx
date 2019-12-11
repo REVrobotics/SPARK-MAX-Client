@@ -7,6 +7,9 @@ import FocusableCell from "./FocusableCell";
 import TableContext from "./TableContext";
 import {Pipe, usePipe} from "../../utils/react-utils";
 
+export const NUMERIC_START_KEY = (key: string) => /^[0-9]|Backspace|Enter$/.test(key);
+export const ENTER_START_KEY = (key: string) => key === "Enter";
+
 export interface ICellEditorRef {
   select?(): void;
   focus(): void;
@@ -40,12 +43,17 @@ interface IProps extends ICellProps {
    */
   editableBySingleClick?: boolean;
   disabled?: boolean;
+  children: ReactNode;
+
+  /**
+   * Allows to configure key which will start editing in the cell
+   */
+  isStartKey?(key: string): boolean;
 
   /**
    * When edit mode is started, this function is called to build an editor
    */
   editor(props: ICellEditorOptions): ReactNode;
-  children: ReactNode;
 }
 
 const GRID_KEYS = keyBy(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
@@ -56,7 +64,7 @@ const isGridKey = (key: string) => GRID_KEYS[key] != null;
  * This component represents editable cell.
  */
 const EditableCell = (props: IProps) => {
-  const {editor, disabled, children, editableBySingleClick, ...otherProps} = props;
+  const {editor, disabled, children, editableBySingleClick, isStartKey, ...otherProps} = props;
 
   const context = useContext(TableContext);
   const cellRef = useRef<FocusableCell>(null as any);
@@ -110,9 +118,9 @@ const EditableCell = (props: IProps) => {
       if (editing) {
         stopEditing(false);
       } else {
-        startEditing(false);
+        startEditing(true);
       }
-    } else if (!editing) {
+    } else if (!editing && (!isStartKey || isStartKey(event.key))) {
       // Start editing when user press any key
       startEditing(true);
     }

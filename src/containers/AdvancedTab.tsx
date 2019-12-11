@@ -23,7 +23,8 @@ import {
 import {Column, ICellProps, IRowHeaderCellProps, RowHeaderCell} from "@blueprintjs/table";
 import {ISearchResultRecord, ISearchResultRecordItem, searchParams, WordType} from "../store/config-param-search";
 import {
-  ConfigParam, configParamVisibleGroups,
+  ConfigParam,
+  configParamVisibleGroups,
   getConfigParamGroupReadableName,
   getConfigParamName,
   getConfigParamReadableName,
@@ -42,7 +43,7 @@ import {getConfigParamRule} from "../store/config-param-rules";
 import {ConfigParamRuleType} from "../store/param-rules/ConfigParamRule";
 import SwitchParamField from "../components/fields/SwitchParamField";
 import NumericParamField from "../components/fields/NumericParamField";
-import EditableCell, {ICellEditorOptions} from "../components/table/EditableCell";
+import EditableCell, {ENTER_START_KEY, ICellEditorOptions, NUMERIC_START_KEY} from "../components/table/EditableCell";
 import {HTMLInputProps} from "@blueprintjs/core/src/common/props";
 import {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {IRowHeaderProps} from "@blueprintjs/table/lib/cjs/headers/rowHeader";
@@ -349,27 +350,24 @@ const TableSelectParamEditor = (props: IConfigParamProps & { editorOptions: ICel
 
   const selectProps = useMemo<Partial<ISelectProps<IDictionaryWord>>>(() => ({
     popoverProps: {
+      autoFocus: true,
+      // Always display backdrop to insure user from wrong action
+      hasBackdrop: true,
       // Open Select by default
       isOpen: true,
       // Stop editing as soon as Select menu is closed
       onClose: () => editorOptions.stopEditing(false),
-      popoverRef: editorOptions.setRef,
+      openOnTargetFocus: true,
       canEscapeKeyClose: true,
     },
   }), [editorOptions]);
 
   return (
-    <>
-      <div ref={editorOptions.setRef}
-           tabIndex={0}
-           onBlur={editorOptions.onBlur}/>
-      <SelectParamField {...otherProps}
-                        className="select-cell-editor"
-                        value={value}
-                        onValueChange={onValueChange}
-                        selectProps={selectProps}/>
-
-    </>
+    <SelectParamField {...otherProps}
+                      className="select-cell-editor"
+                      value={value}
+                      onValueChange={onValueChange}
+                      selectProps={selectProps}/>
   );
 };
 
@@ -408,7 +406,7 @@ const NumericEditableCell = (props: IParameterCellProps) => {
     [otherProps.value]);
 
   return (
-    <EditableCell {...otherProps} editor={editorFn}>
+    <EditableCell {...otherProps} isStartKey={NUMERIC_START_KEY} editor={editorFn}>
       <NumericParameterValue {...props}/>
     </EditableCell>
   );
@@ -427,7 +425,7 @@ const SelectEditableCell = (props: IParameterCellProps) => {
     [otherProps.value, otherProps.disabled]);
 
   return (
-    <EditableCell {...otherProps} editor={editorFn} editableBySingleClick={true}>
+    <EditableCell {...otherProps} editor={editorFn} isStartKey={ENTER_START_KEY} editableBySingleClick={true}>
       <SelectParameterValue {...props}/>
     </EditableCell>
   );
