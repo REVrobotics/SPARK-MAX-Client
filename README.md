@@ -17,6 +17,8 @@ Parts of the project structure were created by [create-react-app](https://github
 3. Open up a command prompt or terminal window, and type `npm install` from the project root directory.
 4. Once the project has installed it's dependencies, run `npm start` to start both the react development server and the desktop electron environment.
 
+**Note.** Look at comments in [scripts/proto-gen/proto-gen.config.js](proto-gen.config.js) file to understand how to tune generation process.  
+
 ## Project Scripts
 ### `npm run react`
 This starts the react TypeScript development server only. When this window loads, an error will display saying 'window.require is not a function'.
@@ -38,15 +40,39 @@ This script is responsible for packaging all of the SPARK MAX Client's project f
 Most of this is done by the [electron-builder](https://github.com/electron-userland/electron-builder) module. Out of all the scripts,
 this one takes the most time to complete (approx. 5 minutes). It should also be noted that this runs `npm run build` and `npm run build-desktop` before the actual script itself.
 
+**Note:** In order to package SPARK MAX server with the client application, put all binaries along with `spakrmax.exe` into the `bin/` directory.
+
 ### `npm install`
 This is the typical, default installation command that the node package manager has. The SPARK MAX Client has a `npm run postinstall` script that is automatically
 run after `npm install` is finished, which builds the proper binaries for the electron environment. This provides native access to operating system calls such as
 the file system.
 
-## Using gulp.js
-The SPARK MAX Client repository comes with some pre-built gulpfile commands that may help during development.
+### `npm run proto-gen`
+This script runs generation of code based on .proto files. Look here below below for more details.
 
-### 
+## Generation of gRPC client from .proto files
+Project includes helper script which simplifies gRPC client generation based on .proto files.
+This script downloads file from GitHub repository and generates gRPC client using protoc tool.
+ 
+1. To download .proto files from repository provide all settings into `scripts/proto-gen/proto-gen.config.js`.
+2. It is recommended to provide all sensitive settings into `proto-gen.secret.js` or `proto-gen.secret.json` file. Secret file will be not committed into Git.
+    1. Copy `scripts/proto-gen/proto-gen.secret-sample.js` file and rename it either to `proto-gen.secret.json` or `proto-gen.secret.js`.
+3. Run
+    ```
+    npm run gen:proto
+    ```
+
+## Application Arguments
+
+Application supports the following parameters
+* `--host` specifies IP address if the SPARK-MAX server
+* `--port` specifies port of the SPARK-MAX server
+* `--remote`. When `--remote` flag is set, application does not try to start bundled SPARK-MAX server and connects to the specified one (through `--host` and `--port` parameters).
+
+## Troubleshooting
+
+* All application errors are written into log files and can be found in the home application directory. For example for Windows operating system, you can look into `C:\Users\<user name>\AppData\Roaming\REV SPARK MAX Client\logs` directory.
+* If `electron` application is crashed, corresponding crash report can be found in the temporary directory. For example for Windows operating system, you can look into `C:\Users\<user name>\AppData\Local\Temp\SPARK MAX Client Crashes` directory.     
 
 ## SPARK MAX Client Changelog
 For detailed descriptions on what's changed between versions, head over to the repository's [CHANGELOG.md](https://github.com/REVrobotics/SPARK-MAX-Client/blob/master/CHANGELOG.md).

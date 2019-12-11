@@ -1,10 +1,12 @@
 import * as React from "react";
 import {Icon, Popover} from "@blueprintjs/core";
+import {MessageSeverity} from "../models/Message";
 
 interface IProps {
   content: string | JSX.Element,
-  title: string,
+  title?: string,
   enabled?: boolean
+  severity?: MessageSeverity;
 }
 
 class PopoverHelp extends React.Component<IProps> {
@@ -13,17 +15,19 @@ class PopoverHelp extends React.Component<IProps> {
   }
 
   public render() {
-    const {content, enabled, title} = this.props;
+    const {content, severity, enabled, title} = this.props;
     const disabled = typeof enabled !== "undefined" ? enabled : false;
+    const icon = severity === MessageSeverity.Error ? "error" : "help";
+
     return (
       <div className="popover-container">
-        <span className="popover-title">{title}</span>
+        {title ? <span className="popover-title">{title}</span> : null}
         {
           !disabled &&
           <Popover
             disabled={typeof enabled !== "undefined" ? enabled : false}
             content={content}
-            target={<Icon icon={"help"}/>}
+            target={<Icon icon={icon}/>}
             interactionKind={"hover"}
             className={"popover-icon"}
             popoverClassName={"popover-popover"}

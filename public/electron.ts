@@ -1,28 +1,55 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, crashReporter, ipcMain } from "electron";
 import * as path from "path";
-
-// const isProd = process.env.NODE_ENV === "production";
-const isProd = true;
+import { HEADLESS } from './program-args';
+import {setTargetWindow} from "./main/services/ipc-main-calls";
 
 let mainWindow: Electron.BrowserWindow;
+
+const crashReporterOptions = {
+  productName: "SPARK MAX Client",
+  companyName: "REV Robotics",
+  uploadToServer: false,
+  submitURL: "",
+};
+crashReporter.start(crashReporterOptions);
+
+if (process.env.NODE_ENV !== "production") {
+  require("electron-debug")({showDevTools: true});
+}
+
+// the following values are read in the renderer process
+(global as any).headless = HEADLESS;
+(global as any).crashReporterOptions = crashReporterOptions;
 
 /**
  * Simply put, creates the main window that our application resides in. Technically, this function can be called
  * multiple times to create multiple windows.
  */
 function createWindow() {
+  if (process.env.NODE_ENV !== "production") {
+    // install React and Redux dev tools for dev mode
+    const {default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} = require("electron-devtools-installer");
+    Promise.all([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS].map((extension) =>
+      installExtension(extension)
+        .then((name: string) => console.log(`Added Extension: ${name}`))
+        .catch((err: any) => console.log('An error occurred: ', err))));
+    // install electron dev tools
+    require("devtron").install();
+  }
 
   /*
    * Main window dimensions, properties, and launch icon. All properties can be found at
    * https://electronjs.org/docs/api/browser-window
    */
   mainWindow = new BrowserWindow({
-    height: 550,
+    height: 650,
     icon: "./favicon.ico",
     resizable: false,
     show: false,
     width: 600
   });
+
+  setTargetWindow(mainWindow.webContents);
 
   // Node module that handles all of our native firmware file download requests. It is initialized here.
   require('electron-dl')();
@@ -31,7 +58,7 @@ function createWindow() {
    * In production, we want to load a different index.html file as well as initialize the update-electron-app module.
    * During development, we want the spare electron-debug window as well as to load the react development server.
    */
-  if (isProd) {
+  if (process.env.NODE_ENV === "production") {
     mainWindow.loadFile(path.join(__dirname, "./index.html"));
 
     const {autoUpdater} = require("electron-updater");
@@ -79,14 +106,15 @@ function createWindow() {
 
   } else {
     mainWindow.loadURL("http://localhost:3000/");
-    require("electron-debug")({showDevTools: true, enabled: true});
   }
 
   /* These are the two main process files associated with our program. They deal with everything with the SPARK MAX
    * Controller as well as the main application configuration.
    */
-  require("./main/sparkmax");
-  require("./main/config");
+  require("./main/services/sparkmax-service");
+  require("./main/services/config-service");
+  require("./main/services/device-config-service");
+  require("./main/services/log-service");
 
   /* There are plenty of events to listen for in the window's webContents property. This specific event fires when
    * the window itself is not only initialized, but it's rendered web page has finished loading. This provides a smooth
@@ -94,9 +122,6 @@ function createWindow() {
    */
   mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.show();
-    if (!isProd) {
-      mainWindow.webContents.openDevTools({mode: "detach"});
-    }
   });
 
   // If we wanted a standard menubar with our application, we would remove this line of code.

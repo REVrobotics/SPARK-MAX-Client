@@ -125,56 +125,79 @@
   ; Windows 10 only needs the MAX firmware driver, while other versions (8.1, 8, and 7) need the STM driver.
   ${If} $R0 == "10.0"
     ${If} ${RunningX64}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\dpinst_amd64.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\dpinst_amd64.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_amd64.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\x64\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_amd64.exe"
     ${Else}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\dpinst_x86.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\dpinst_x86.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win10\x86\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_x86.exe"
     ${EndIf}
   ${ElseIf} $R0 == "8.1"
     ${If} ${RunningX64}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\dpinst_amd64.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\dpinst_amd64.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x64_64bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x64_64bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_amd64.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x64\x64\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_amd64.exe"
     ${Else}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\dpinst_x86.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\dpinst_x86.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x86_32bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x86_32bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8.1\x86\x86\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_x86.exe"
     ${EndIf}
   ${ElseIf} $R0 == "8"
     ${If} ${RunningX64}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\dpinst_amd64.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\dpinst_amd64.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x64_64bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x64_64bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_amd64.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x64\x64\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_amd64.exe"
     ${Else}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\dpinst_x86.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\dpinst_x86.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x86_32bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W8_x86_32bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win8\x86\x86\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win8\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_x86.exe"
     ${EndIf}
   ${ElseIf} $R0 == "7"
     ${If} ${RunningX64}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\dpinst_amd64.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\dpinst_amd64.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W7_x64_64bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W7_x64_64bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_amd64.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x64\x64\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_amd64.exe"
     ${Else}
-      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\dpinst_x86.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\dpinst_x86.exe"
-      File "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W7_x86_32bits.exe"
-      ExecWait "${BUILD_RESOURCES_DIR}\STM32\VCP_V1.5.0_Setup_W7_x86_32bits.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\dpinst_x86.exe"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\sttube.cat"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\STtube.inf"
+      File "${BUILD_RESOURCES_DIR}\SPARK MAX\Win7\x86\x86\STTub30.sys"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.cat"
+      File "${BUILD_RESOURCES_DIR}\STM32\Win7\stmcdc.inf"
+      ExecWait "$INSTDIR\dpinst_x86.exe"
     ${EndIf}
   ${EndIf}
 
-  ${If} ${RunningX64}
-    File "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x64.exe"
-    ExecWait "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x64.exe"
-  ${Else}
-    File "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x86.exe"
-    ExecWait "${BUILD_RESOURCES_DIR}\VC++ 2013\vcredist_x86.exe"
-  ${EndIf}
+  ; installed:
+  ; we are done
 
 !macroend

@@ -1,509 +1,652 @@
-import {Alert, Button, FormGroup, NumericInput, Slider, Switch} from "@blueprintjs/core";
+import classNames from "classnames";
+import {constant, find, flatMap} from "lodash";
 import * as React from "react";
+import {ChangeEvent, ComponentType, KeyboardEvent, useCallback, useMemo, useRef, useState} from "react";
 import {connect} from "react-redux";
-import {MotorTypeSelect} from "../components/MotorTypeSelect";
-import SparkManager, {IServerResponse} from "../managers/SparkManager";
-import MotorConfiguration, {getFromID as getMotorFromID} from "../models/MotorConfiguration";
+import {IApplicationState, ProcessType} from "../store/state";
 import {
-  ApplicationActions, IApplicationState, ISetBurnedMotorConfig, ISetIsConnecting,
-  ISetMotorConfig, IUpdateConnectionStatus
-} from "../store/types";
-import Sensor, {getFromID as getSensorFromID} from "../models/Sensor";
-import {SensorTypeSelect} from "../components/SensorTypeSelect";
-import {ConfigParameter} from "../models/ConfigParameter";
+  burnSelectedDeviceConfiguration,
+  resetSelectedDeviceConfiguration,
+  setSelectedDeviceAdvancedSearchString,
+  SparkDispatch
+} from "../store/actions";
+import {Button, FormGroup, Icon, InputGroup, INumericInputProps, NonIdealState} from "@blueprintjs/core";
+import {
+  queryHasDeviceDirtyParameterInGroup,
+  queryHasDeviceParameterErrorInGroup,
+  queryIsSelectedDeviceBlocked,
+  queryIsSelectedDeviceEnabled,
+  querySelectedDeviceProcessType,
+  querySelectedDeviceSearchString,
+  querySelectedVirtualDeviceId
+} from "../store/selectors";
+import {Column, ICellProps, IRowHeaderCellProps, RowHeaderCell} from "@blueprintjs/table";
+import {ISearchResultRecord, ISearchResultRecordItem, searchParams, WordType} from "../store/config-param-search";
+import {
+  ConfigParam, configParamVisibleGroups,
+  getConfigParamGroupReadableName,
+  getConfigParamName,
+  getConfigParamReadableName,
+  getConfigParamsInGroup
+} from "../models/ConfigParam";
+import {ConfigParamGroupName} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {setField} from "../utils/object-utils";
+import bindRamConfigRule from "../hocs/bind-ram-config-rule";
+import {IConfigParamProps} from "../components/config-param-props";
+import FocusableCell from "../components/table/FocusableCell";
+import Highlight from "../components/Highlight";
+import TableContainer, {TableExt} from "../components/table/TableContainer";
+import {useCallbackRef, useOnNext, useReplayPipe} from "../utils/react-utils";
+import Focus from "../components/Focus";
+import {getConfigParamRule} from "../store/config-param-rules";
+import {ConfigParamRuleType} from "../store/param-rules/ConfigParamRule";
+import SwitchParamField from "../components/fields/SwitchParamField";
+import NumericParamField from "../components/fields/NumericParamField";
+import EditableCell, {ICellEditorOptions} from "../components/table/EditableCell";
+import {HTMLInputProps} from "@blueprintjs/core/src/common/props";
+import {SafeNumericBehavior} from "../components/SafeNumericInput";
+import {IRowHeaderProps} from "@blueprintjs/table/lib/cjs/headers/rowHeader";
 import PopoverHelp from "../components/PopoverHelp";
-import {Dispatch} from "redux";
-import {setBurnedMotorConfig, setIsConnecting, setMotorConfig, updateConnectionStatus} from "../store/actions";
+import {MessageSeverity} from "../models/Message";
+import {ISelectProps} from "@blueprintjs/select";
+import {getWordText, IDictionaryWord} from "../store/dictionaries";
+import SelectParamField from "../components/fields/SelectParamField";
 
 interface IProps {
-  connected: boolean,
-  motorConfig: MotorConfiguration,
-  burnedConfig: MotorConfiguration,
-  paramResponses: IServerResponse[],
-  setCurrentConfig: (config: MotorConfiguration) => ISetMotorConfig,
-  setBurnedConfig: (config: MotorConfiguration) => ISetBurnedMotorConfig,
-  updateConnectionStatus: (connected: boolean, status: string) => IUpdateConnectionStatus,
-  setIsConnecting: (connecting: boolean) => ISetIsConnecting,
+  enabled: boolean;
+  blocked: boolean;
+  processType: ProcessType;
+  search: string;
+
+  onBurn(): void;
+
+  onReset(): void;
+
+  onSearch(input: string): void;
 }
 
-interface IState {
-  rampRateEnabled: boolean,
-  savingConfig: boolean,
-  updateRequested: boolean,
-  restoringDefaults: boolean,
-  restoreRequested: boolean,
+interface IParameterTableProps {
+  enabled: boolean;
+  blocked: boolean;
+  search: string;
+
+  tableRef(ref: TableExt): void;
+
+  onKeyOut(key: string): void;
 }
 
-class AdvancedTab extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+interface IParameterGroupRowHeaderProps extends IRowHeaderCellProps {
+  group: ConfigParamGroupName;
+  opened: boolean;
 
-    this.state = {
-      rampRateEnabled: this.props.motorConfig.rampRate > 0,
-      savingConfig: false,
-      updateRequested: false,
-      restoringDefaults: false,
-      restoreRequested: false
-    };
-    this.openConfirmModal = this.openConfirmModal.bind(this);
-    this.openRestoreWarnModal = this.openRestoreWarnModal.bind(this);
-    this.closeConfirmModal = this.closeConfirmModal.bind(this);
-    this.closeRestoreWarnModal = this.closeRestoreWarnModal.bind(this);
-    this.updateConfiguration = this.updateConfiguration.bind(this);
-    this.restoreDefaults = this.restoreDefaults.bind(this);
+  onChange(group: ConfigParamGroupName, opened: boolean): void;
+}
 
-    this.changeMotorType = this.changeMotorType.bind(this);
-    this.changeSensorType = this.changeSensorType.bind(this);
-    this.changeCanID = this.changeCanID.bind(this);
-    this.changeCurrentLimit = this.changeCurrentLimit.bind(this);
-    this.changeIdleMode = this.changeIdleMode.bind(this);
-    this.changeDeadband = this.changeDeadband.bind(this);
-    this.changeForwardLimitHardEnabled = this.changeForwardLimitHardEnabled.bind(this);
-    this.changeReverseLimitHardEnabled = this.changeReverseLimitHardEnabled.bind(this);
-    this.changeForwardLimitSoftEnabled = this.changeForwardLimitSoftEnabled.bind(this);
-    this.changeReverseLimitSoftEnabled = this.changeReverseLimitSoftEnabled.bind(this);
-    this.changeForwardPolarity = this.changeForwardPolarity.bind(this);
-    this.changeReversePolarity = this.changeReversePolarity.bind(this);
-    this.changeRampRateEnabled = this.changeRampRateEnabled.bind(this);
-    this.changeRampRate = this.changeRampRate.bind(this);
+interface IParameterCellProps extends ICellProps, IConfigParamProps {
+  results?: { [type: string]: ISearchResultRecordItem };
+}
 
-    this.sanitizeValue = this.sanitizeValue.bind(this);
-    this.provideDefault = this.provideDefault.bind(this);
-  }
+interface IParameterGroupCellProps extends ICellProps {
+  group: ConfigParamGroupName;
+  groupOpened: boolean;
+  hasDirty?: boolean;
+  hasError?: boolean;
 
-  public componentDidUpdate(prevProps: IProps) {
-    if (this.props.motorConfig !== prevProps.motorConfig) {
-      console.log(this.props.motorConfig.rampRate);
-      this.setState({rampRateEnabled: this.props.motorConfig.rampRate > 0});
+  onGroupOpened(group: ConfigParamGroupName, opened: boolean): void;
+}
+
+/**
+ * Group row model
+ */
+interface IDisplayedGroupRow {
+  grouped: true;
+  group: ConfigParamGroupName;
+}
+
+/**
+ * Parameter row model
+ */
+interface IDisplayedParamRow {
+  grouped: false;
+  param: ConfigParam;
+  results?: { [type: string]: ISearchResultRecordItem };
+}
+
+type DisplayedRow = IDisplayedGroupRow | IDisplayedParamRow;
+
+/**
+ * Creates new component having group properties.
+ */
+const bindRamConfigGroup = (Component: ComponentType<IParameterGroupCellProps>): ComponentType<IParameterGroupCellProps> => {
+  const mapStateToGroupProps = (state: IApplicationState, props: IParameterGroupCellProps) => {
+    const selectedVirtualId = querySelectedVirtualDeviceId(state);
+
+    return {
+      hasDirty: selectedVirtualId ? queryHasDeviceDirtyParameterInGroup(state, selectedVirtualId, props.group) : false,
+      hasError: selectedVirtualId ? queryHasDeviceParameterErrorInGroup(state, selectedVirtualId, props.group) : false,
     }
-  }
+  };
 
-  public render() {
-    const {connected, burnedConfig, motorConfig} = this.props;
-    const {rampRateEnabled, savingConfig, updateRequested, restoreRequested, restoringDefaults} = this.state;
-    const activeMotorType = getMotorFromID(motorConfig.type);
-    const canID = motorConfig.canID;
-    const currentLimit = motorConfig.smartCurrentStallLimit;
-    const isCoastMode = motorConfig.idleMode === 0;
-    const sensorType = motorConfig.sensorType;
-    const deadband = motorConfig.inputDeadband;
-    const rampRate = motorConfig.rampRate;
-    const forwardLimitHardEnabled = motorConfig.hardLimitSwitchForwardEnabled;
-    const reverseLimitHardEnabled = motorConfig.hardLimitSwitchReverseEnabled;
-    const forwardLimitSoftEnabled = motorConfig.softLimitSwitchForwardEnabled;
-    const reverseLimitSoftEnabled = motorConfig.softLimitSwitchReverseEnabled;
-    const forwardPolarity = motorConfig.limitSwitchForwardPolarity;
-    const reversePolarity = motorConfig.limitSwitchReversePolarity;
+  return connect(mapStateToGroupProps, constant({}))(Component);
+};
 
-    // Motor Type
-    const typeModified: boolean = motorConfig.type !== burnedConfig.type;
+const isDisplayedGroupRow = (row: DisplayedRow): row is IDisplayedGroupRow => row.grouped;
 
-    // Can ID
-    const canModified: boolean = motorConfig.canID !== burnedConfig.canID;
-    const canResponse: IServerResponse = this.getParamResponse(ConfigParameter.kCanID);
-    const canError: boolean = canResponse.status === 4;
+/**
+ * If given key is *searchable*.
+ * When table is focused and any *searchable* key is pressed, focus will move to the Search input
+ * @param key
+ */
+const isSearchableKey = (key: string) => /^([a-zA-Z_]|Backspace|Escape)$/.test(key);
 
-    // Smart Current Limit
-    const currentModified: boolean = motorConfig.smartCurrentStallLimit !== burnedConfig.smartCurrentStallLimit;
-    const currentResponse: IServerResponse = this.getParamResponse(ConfigParameter.kSmartCurrentStallLimit);
-    const currentError: boolean = currentResponse.status === 4;
+/**
+ * Builds row models from the provided result.
+ * Search result does not have groups.
+ */
+const buildDisplayedRowsFromSearchResult = (records: ISearchResultRecord[]): DisplayedRow[] =>
+  records.map((record) => ({grouped: false, param: record.id, results: record.results}));
 
-    // Idle Mode
-    const idleModified: boolean = motorConfig.idleMode !== burnedConfig.idleMode;
-
-    // Motor Deadband
-    const deadbandModified: boolean = motorConfig.inputDeadband.toFixed(4) !== burnedConfig.inputDeadband.toFixed(4);
-    const deadbandResponse: IServerResponse = this.getParamResponse(ConfigParameter.kInputDeadband);
-    const deadbandError: boolean = deadbandResponse.status === 4;
-
-    // Sensor Type
-    const sensorModified: boolean = motorConfig.sensorType !== burnedConfig.sensorType;
-
-    // Forward Limit Switch
-    const forwardEnabledHardModified: boolean = motorConfig.hardLimitSwitchForwardEnabled !== burnedConfig.hardLimitSwitchForwardEnabled;
-    const forwardEnabledSoftModified: boolean = motorConfig.softLimitSwitchForwardEnabled !== burnedConfig.softLimitSwitchForwardEnabled;
-
-    // Reverse Limit Switch
-    const reverseEnabledHardModified: boolean = motorConfig.hardLimitSwitchReverseEnabled !== burnedConfig.hardLimitSwitchReverseEnabled;
-    const reverseEnabledSoftModified: boolean = motorConfig.softLimitSwitchReverseEnabled !== burnedConfig.softLimitSwitchReverseEnabled;
-
-    // Forward Polarity
-    const forwardPolarityModified: boolean = motorConfig.limitSwitchForwardPolarity !== burnedConfig.limitSwitchForwardPolarity;
-
-    // Reverse Polarity
-    const reversePolarityModified: boolean = motorConfig.limitSwitchReversePolarity !== burnedConfig.limitSwitchReversePolarity;
-
-    // Ramp Rate
-    const rampModified: boolean = motorConfig.rampRate !== burnedConfig.rampRate;
-    const rampResponse: IServerResponse = this.getParamResponse(ConfigParameter.kRampRate);
-    const rampError: boolean = rampResponse.status === 4;
-
-    return (
-      <div className="advanced">
-        <Alert isOpen={updateRequested} cancelButtonText="Cancel" confirmButtonText="Yes, Update" intent="success" onCancel={this.closeConfirmModal} onClose={this.closeConfirmModal} onConfirm={this.updateConfiguration}>
-          Are you sure you want to update the configuration of your SPARK controller to a {activeMotorType.name} motor?
-        </Alert>
-        <Alert isOpen={restoreRequested} cancelButtonText="Cancel" confirmButtonText="Yes" intent="warning" onCancel={this.closeRestoreWarnModal} onClose={this.closeRestoreWarnModal} onConfirm={this.restoreDefaults}>
-          WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?
-        </Alert>
-        <div className="form">
-          <FormGroup
-            label="Select Motor Type"
-            labelFor="advanced-motor-type"
-            className={(typeModified ? "modified" : "") + " form-group-half"}
-          >
-            <MotorTypeSelect
-              activeConfig={activeMotorType}
-              connected={connected}
-              onMotorSelect={this.changeMotorType}
-            />
-          </FormGroup>
-          <FormGroup
-            label={<PopoverHelp enabled={!canError} title={"CAN ID"} content={`Your requested value of ${canResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${canResponse.responseValue}.`}/>}
-            labelFor="advanced-can-id"
-            className={(canModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <NumericInput id="advanced-can-id" disabled={!connected} value={canID} onValueChange={this.changeCanID} min={1} max={24} className={canError ? "field-error" : ""}/>
-          </FormGroup>
-          <FormGroup
-            label={<PopoverHelp enabled={!currentError} title={"Smart Current Limit"} content={`Your requested value of ${currentResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${currentResponse.responseValue}.`}/>}
-            labelFor="advanced-current-limit"
-            className={(currentModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <NumericInput id="advanced-current-limit" disabled={!connected} value={currentLimit} onValueChange={this.changeCurrentLimit} min={0} className={currentError ? "field-error" : ""}/>
-          </FormGroup>
-        </div>
-        <div className="form">
-          <FormGroup
-            label="Sensor Type"
-            labelFor="advanced-motor-type"
-            className={(sensorModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <SensorTypeSelect
-              activeSensor={getSensorFromID(sensorType)}
-              connected={connected}
-              onSensorSelect={this.changeSensorType}
-              disabled={motorConfig.type === 1}
-            />
-          </FormGroup>
-          <FormGroup
-            label="Idle Mode"
-            labelFor="advanced-idle-mode"
-            className={(idleModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={isCoastMode} disabled={!connected} label={isCoastMode ? "Coast" : "Brake"} onChange={this.changeIdleMode} />
-          </FormGroup>
-          <FormGroup
-            label={<PopoverHelp enabled={!deadbandError} title={"Motor Deadband"} content={`Your requested value of ${deadbandResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${deadbandResponse.responseValue}.`}/>}
-            labelFor="advanced-deadband"
-            className={(deadbandModified ? "modified" : "") + " form-group-half"}
-          >
-            <Slider initialValue={deadband} disabled={!connected} value={deadband} min={0} max={0.3} stepSize={0.01} onChange={this.changeDeadband} className={deadbandError ? "field-error" : ""}/>
-          </FormGroup>
-        </div>
-        <div className="form">
-          <FormGroup
-            label="Forward Limit Switch (Hard)"
-            labelFor="advanced-is-slave"
-            className={(forwardEnabledHardModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={forwardLimitHardEnabled} disabled={!connected} label={forwardLimitHardEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitHardEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Reverse Limit Switch (Hard)"
-            labelFor="advanced-is-slave"
-            className={(reverseEnabledHardModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={reverseLimitHardEnabled} disabled={!connected} label={reverseLimitHardEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitHardEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Forward Limit Switch (Soft)"
-            labelFor="advanced-is-slave"
-            className={(forwardEnabledSoftModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={forwardLimitSoftEnabled} disabled={!connected} label={forwardLimitSoftEnabled ? "Enabled" : "Disabled"} onChange={this.changeForwardLimitSoftEnabled} />
-          </FormGroup>
-          <FormGroup
-            label="Reverse Limit Switch (Soft)"
-            labelFor="advanced-is-slave"
-            className={(reverseEnabledSoftModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={reverseLimitSoftEnabled} disabled={!connected} label={reverseLimitSoftEnabled ? "Enabled" : "Disabled"} onChange={this.changeReverseLimitSoftEnabled} />
-          </FormGroup>
-        </div>
-        <div className="form">
-          <FormGroup
-            label="Forward Limit Switch Polarity"
-            labelFor="advanced-is-slave"
-            className={(forwardPolarityModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={forwardPolarity} disabled={!connected} label={forwardPolarity ? "Normally Closed" : "Normally Open"} onChange={this.changeForwardPolarity} />
-          </FormGroup>
-          <FormGroup
-            label="Reverse Limit Switch Polarity"
-            labelFor="advanced-is-slave"
-            className={(reversePolarityModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <Switch checked={reversePolarity} disabled={!connected} label={reversePolarity ? "Normally Closed" : "Normally Open"} onChange={this.changeReversePolarity} />
-          </FormGroup>
-          <FormGroup
-            label="Ramp Rate"
-            labelFor="advanced-output-limit"
-            className="form-group-quarter"
-          >
-            <Switch checked={rampRateEnabled} disabled={!connected} label={rampRateEnabled ? "Enabled" : "Disabled"} onChange={this.changeRampRateEnabled} />
-          </FormGroup>
-          <FormGroup
-            label={<PopoverHelp enabled={!rampError} title={"Rate (seconds to full speed)"} content={`Your requested value of ${rampResponse.requestValue} was invalid, so the SPARK MAX controller sent back a value of ${rampResponse.responseValue}.`}/>}
-            labelFor="advanced-output-rate"
-            className={(rampModified ? "modified" : "") + " form-group-quarter"}
-          >
-            <NumericInput id="advanced-output-rate" value={rampRate} disabled={!rampRateEnabled} onFocus={this.provideDefault} onBlur={this.sanitizeValue} onValueChange={this.changeRampRate} min={0} max={1024} className={rampError ? "field-error" : ""}/>
-          </FormGroup>
-        </div>
-        <div className="form">
-          {/* 1/2 left */}
-        </div>
-        <div className="form update-container">
-          <Button className="rev-btn" disabled={!connected || restoringDefaults} loading={savingConfig} onClick={this.openConfirmModal}>Save Configuration</Button>
-          <Button className="bad-btn" disabled={!connected || savingConfig} loading={restoringDefaults} onClick={this.openRestoreWarnModal}>Restore Factory Defaults</Button>
-        </div>
-      </div>
-    );
-  }
-
-  public changeCanID(id: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kCanID, id).then((res: IServerResponse) => {
-      this.props.motorConfig.canID = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kCanID] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeCurrentLimit(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSmartCurrentStallLimit, value).then((res: IServerResponse) => {
-      this.props.motorConfig.smartCurrentStallLimit = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSmartCurrentStallLimit] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeMotorType(motorType: MotorConfiguration) {
-    SparkManager.setAndGetParameter(ConfigParameter.kMotorType, motorType.type).then((res: IServerResponse) => {
-      this.props.motorConfig.type = res.responseValue as number;
-      if (this.props.motorConfig.type === 1) {
-        SparkManager.setAndGetParameter(ConfigParameter.kSensorType, 1).then((sensorRes: IServerResponse) => {
-          this.props.motorConfig.sensorType = sensorRes.responseValue as number;
-          this.props.paramResponses[ConfigParameter.kSensorType] = sensorRes;
-          this.forceUpdate();
-        });
-      }
-      this.props.paramResponses[ConfigParameter.kMotorType] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeSensorType(sensorType: Sensor) {
-    SparkManager.setAndGetParameter(ConfigParameter.kSensorType, sensorType.id).then((res: IServerResponse) => {
-      this.props.motorConfig.sensorType = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kSensorType] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeIdleMode() {
-    const prevMode: number = this.props.motorConfig.idleMode;
-    const newMode: number = prevMode === 0 ? 1 : 0;
-    SparkManager.setAndGetParameter(ConfigParameter.kIdleMode, newMode).then((res: IServerResponse) => {
-      this.props.motorConfig.idleMode = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kIdleMode] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeDeadband(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kInputDeadband, value).then((res: IServerResponse) => {
-      this.props.motorConfig.inputDeadband = res.responseValue as number;
-      this.props.paramResponses[ConfigParameter.kInputDeadband] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeForwardLimitHardEnabled() {
-    const newValue: boolean = !this.props.motorConfig.hardLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.hardLimitSwitchForwardEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kHardLimitFwdEn] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeReverseLimitHardEnabled() {
-    const newValue: boolean = !this.props.motorConfig.hardLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kHardLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.hardLimitSwitchReverseEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kHardLimitRevEn] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeForwardLimitSoftEnabled() {
-    const newValue: boolean = !this.props.motorConfig.softLimitSwitchForwardEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitFwdEn, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.softLimitSwitchForwardEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kSoftLimitFwdEn] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeReverseLimitSoftEnabled() {
-    const newValue: boolean = !this.props.motorConfig.softLimitSwitchReverseEnabled;
-    SparkManager.setAndGetParameter(ConfigParameter.kSoftLimitRevEn, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.softLimitSwitchReverseEnabled = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kSoftLimitRevEn] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeForwardPolarity() {
-    const newValue: boolean = !this.props.motorConfig.limitSwitchForwardPolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchFwdPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.limitSwitchForwardPolarity = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kLimitSwitchFwdPolarity] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public changeReversePolarity() {
-    const newValue: boolean = !this.props.motorConfig.limitSwitchReversePolarity;
-    SparkManager.setAndGetParameter(ConfigParameter.kLimitSwitchRevPolarity, newValue ? 1 : 0).then((res: IServerResponse) => {
-      this.props.motorConfig.limitSwitchReversePolarity = res.responseValue === 1;
-      this.props.paramResponses[ConfigParameter.kLimitSwitchRevPolarity] = res;
-      this.forceUpdate();
-    });
-  }
-
-  public openConfirmModal() {
-    this.setState({updateRequested: true});
-  }
-
-  public closeConfirmModal() {
-    this.setState({updateRequested: false});
-  }
-
-  public openRestoreWarnModal() {
-    this.setState({restoreRequested: true});
-  }
-
-  public closeRestoreWarnModal() {
-    this.setState({restoreRequested: false});
-  }
-
-  public changeRampRateEnabled() {
-    const newEnabled: boolean = !this.state.rampRateEnabled;
-    if (!newEnabled) {
-      SparkManager.setAndGetParameter(ConfigParameter.kRampRate, 0).then((res: IServerResponse) => {
-        this.props.motorConfig.rampRate = res.responseValue as number;
-        this.props.paramResponses[ConfigParameter.kRampRate] = res;
-        this.forceUpdate();
-      });
-    }
-    this.setState({rampRateEnabled: newEnabled});
-  }
-
-  public changeRampRate(value: number) {
-    SparkManager.setAndGetParameter(ConfigParameter.kRampRate, value).then((res: IServerResponse) => {
-      this.props.motorConfig.rampRate = (res.responseValue as number);
-      this.props.paramResponses[ConfigParameter.kRampRate] = res;
-      this.forceUpdate();
-    });
-  }
-
-  private updateConfiguration() {
-    this.setState({savingConfig: true});
-    SparkManager.burnFlash().then(() => {
-      setTimeout(() => {
-        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-          this.props.setCurrentConfig(config);
-          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-          this.setState({savingConfig: false});
-        }).catch((error: any) => {
-          console.log(error);
-          this.setState({savingConfig: false});
-        });
-      }, 1000);
-    }).catch((error: any) => {
-      this.setState({savingConfig: false});
-      console.log(error);
-    });
-  }
-
-  private restoreDefaults() {
-    this.setState({restoringDefaults: true});
-    this.props.setIsConnecting(true);
-    this.props.updateConnectionStatus(false, "RESETTING...");
-    SparkManager.restoreDefaults().then(() => {
-      this.props.updateConnectionStatus(true, "GETTING PARAMETERS...");
-      setTimeout(() => {
-        SparkManager.getConfigFromParams().then((config: MotorConfiguration) => {
-          this.props.setCurrentConfig(config);
-          this.props.setBurnedConfig(new MotorConfiguration(config.name, config.type).fromJSON(config.toJSON()));
-          this.setState({restoringDefaults: false});
-          this.props.setIsConnecting(false);
-          this.props.updateConnectionStatus(true, "CONNECTED");
-        }).catch((error: any) => {
-          console.log(error);
-          this.props.setIsConnecting(false);
-          this.props.updateConnectionStatus(true, "CONNECTED");
-          this.setState({restoringDefaults: false});
-        });
-      }, 1000);
-    }).catch((error: any) => {
-      this.setState({restoringDefaults: false});
-      this.props.setIsConnecting(false);
-      this.props.updateConnectionStatus(true, "CONNECTED");
-      console.log(error);
-    })
-  }
-
-  private sanitizeValue(event: any) {
-    const decimalValue: number = parseFloat(event.target.value);
-    if (decimalValue !== 0) {
-      event.target.value = decimalValue;
-    }
-  }
-
-  private provideDefault(event: any) {
-    const decimalValue: number = parseFloat(event.target.value);
-    if (decimalValue === 0) {
-      event.target.value = "0.0";
-    }
-  }
-
-  private getParamResponse(id: number): IServerResponse {
-    if (typeof this.props.paramResponses[id] !== "undefined") {
-      return this.props.paramResponses[id];
+/**
+ * Builds row models from the provided result.
+ * Search result does not have groups.
+ */
+const buildDisplayedRowsWithGroups = (openedGroups: { [group: number]: boolean }): DisplayedRow[] =>
+  flatMap(configParamVisibleGroups, (group) => {
+    if (openedGroups[group]) {
+      return [
+        {grouped: true, group},
+        ...getConfigParamsInGroup(group).map((param) => ({grouped: false, param}) as IDisplayedParamRow),
+      ];
     } else {
-      return {requestValue: "", responseValue: "", status: 0, type: 0};
+      return [{grouped: true, group}];
     }
+  });
+
+/**
+ * Builds row models for the provided input
+ */
+const buildDisplayedRows = (text: string, openedGroups: { [group: number]: boolean }) => {
+  if (text) {
+    return buildDisplayedRowsFromSearchResult(searchParams(text));
+  } else {
+    return buildDisplayedRowsWithGroups(openedGroups);
   }
-}
+};
+
+/**
+ * Component for header of group row
+ */
+const ParameterGroupRowHeaderCell = (props: IParameterGroupRowHeaderProps) => {
+  // Toggle opened/closed state of group by click
+  const doToggle = useCallback(
+    () => props.onChange(props.group, !props.opened),
+    [props.group, props.opened, props.onChange]);
+
+  const nameRenderer = useCallback(
+    () => <Icon icon={props.opened ? "chevron-down" : "chevron-right"} onClick={doToggle}/>,
+    [props.opened, doToggle]);
+
+  return (
+    <RowHeaderCell {...props}
+                   nameRenderer={nameRenderer}/>
+  );
+};
+
+/**
+ * Component for header of parameter row
+ */
+const ParameterRowHeaderCell = bindRamConfigRule((props: IRowHeaderProps & IConfigParamProps) => {
+  const {isDirty, ...otherProps} = props;
+  const nameRenderer = useCallback(
+    () => isDirty ? <Icon className="cell__dirty-icon" icon="asterisk" iconSize={8}/> : <span/>,
+    [isDirty]);
+  return (
+    <RowHeaderCell {...otherProps}
+                   className={isDirty ? "cell--dirty" : undefined}
+                   nameRenderer={nameRenderer}/>
+  );
+});
+
+/**
+ * Component for name cell of group row
+ */
+const ParameterGroupNameCell = bindRamConfigGroup((props: IParameterGroupCellProps) => {
+  const {group, hasDirty, hasError, ...otherProps} = props;
+
+  const onKeyDown = useCallback((event: KeyboardEvent<HTMLElement>) => {
+    if (props.onKeyDown) {
+      props.onKeyDown(event);
+    }
+
+    // Open/close group by Right/Left keys
+    // Toggle opened/closed state of group by Enter key
+    if (!props.groupOpened && event.key === "ArrowRight") {
+      event.stopPropagation();
+      props.onGroupOpened(group, true);
+    } else if (props.groupOpened && event.key === "ArrowLeft") {
+      event.stopPropagation();
+      props.onGroupOpened(group, false);
+    } else if (event.key === "Enter") {
+      event.stopPropagation();
+      props.onGroupOpened(group, !props.groupOpened);
+    }
+  }, [group, props.groupOpened, props.onGroupOpened, props.onKeyDown]);
+
+  // Toggle opened/closed state of group by click
+  const doToggle = useCallback(() => {
+    props.onGroupOpened(group, !props.groupOpened);
+  }, [group, props.group, props.onGroupOpened]);
+
+  return (
+    <FocusableCell {...otherProps}
+                   onKeyDown={onKeyDown}
+                   className="text-bold cell--clickable">
+      <>
+        <div className="flex-row text-underline-on-hover" onClick={doToggle}>
+          {getConfigParamGroupReadableName(group)}
+          {hasDirty ? " *" : null}
+          {hasError ?
+            <PopoverHelp enabled={false} content={tt("msg_group_has_error")} severity={MessageSeverity.Error}/>
+            : null}
+        </div>
+      </>
+    </FocusableCell>
+  );
+});
+
+/**
+ * Component for name cell of parameter row
+ */
+const ParameterNameCell = bindRamConfigRule((props: IParameterCellProps) => {
+  const {parameter, results, isDirty, message, ...otherProps} = props;
+
+  const readableName = getConfigParamReadableName(parameter);
+  const code = getConfigParamName(parameter);
+
+  // Display error/warning message for this parameter
+  const noMessage = !message;
+  const messageText = message && message.text || "";
+  const severity = message ? message.severity : MessageSeverity.Warning;
+
+  return (
+    <FocusableCell {...otherProps} className={isDirty ? "cell--dirty" : undefined}>
+      <>
+        <div className="flex-row">
+          {results && results[WordType.Text] ?
+            <Highlight text={readableName} indices={results[WordType.Text].indices}/> : readableName}
+          &nbsp;
+          <i>
+            ({results && results[WordType.Code] ?
+            <Highlight text={code} indices={results[WordType.Code].indices}/> : code})
+          </i>
+          {noMessage ? null : <PopoverHelp enabled={noMessage} content={messageText} severity={severity}/>}
+        </div>
+      </>
+    </FocusableCell>
+  );
+});
+
+/**
+ * Different viewers for different types of parameters
+ */
+const ParameterValue = (props: { value: number }) => <div>{props.value}</div>;
+const NumericParameterValue = (props: IConfigParamProps) => <div className="text-right">{props.value}</div>;
+const SelectParameterValue = (props: IConfigParamProps) => {
+  const word = find(props.options, (option) => option.id === props.value);
+  return (
+    <div className="flex-row flex-space-between">
+      {word ? getWordText(word) : <span/>}
+      <Icon icon="double-caret-vertical"
+            className={classNames("cell__open-btn", {"cell__open-btn--disabled": props.disabled})}/>
+    </div>
+  );
+};
+
+/**
+ * Editor for numeric parameter
+ */
+const TableNumericParamEditor = (props: IConfigParamProps & { editorOptions: ICellEditorOptions }) => {
+  const {editorOptions, value: originalValue, onValueChange, ...otherProps} = props;
+
+  const [value, setValue] = useState(originalValue);
+  const doValueChange = useCallback((param: ConfigParam, newValue: number) => setValue(newValue), []);
+
+  const inputProps = useMemo<HTMLInputProps & INumericInputProps & { safeBehavior?: SafeNumericBehavior }>(() => ({
+    safeBehavior: SafeNumericBehavior.NoClampAndNan,
+    inputRef: editorOptions.setRef,
+    onBlur: editorOptions.onBlur,
+    onKeyDown: (event) => {
+      // Cancel editing when user presses Escape
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        editorOptions.stopEditing(true);
+      }
+    },
+  }), [editorOptions]);
+
+  // Apply value when editing is finished, but not cancelled
+  useOnNext(editorOptions.onStop, (cancelled) => {
+    if (!cancelled) {
+      onValueChange(otherProps.parameter, value);
+    }
+  }, [otherProps.parameter, value]);
+
+  return (
+    <NumericParamField {...otherProps}
+                       value={value}
+                       onValueChange={doValueChange}
+                       inputProps={inputProps}/>
+  );
+};
+
+/**
+ * Editor for enum-based parameters
+ * @param props
+ * @constructor
+ */
+const TableSelectParamEditor = (props: IConfigParamProps & { editorOptions: ICellEditorOptions }) => {
+  const {editorOptions, value, onValueChange, ...otherProps} = props;
+
+  const selectProps = useMemo<Partial<ISelectProps<IDictionaryWord>>>(() => ({
+    popoverProps: {
+      // Open Select by default
+      isOpen: true,
+      // Stop editing as soon as Select menu is closed
+      onClose: () => editorOptions.stopEditing(false),
+      popoverRef: editorOptions.setRef,
+      canEscapeKeyClose: true,
+    },
+  }), [editorOptions]);
+
+  return (
+    <>
+      <div ref={editorOptions.setRef}
+           tabIndex={0}
+           onBlur={editorOptions.onBlur}/>
+      <SelectParamField {...otherProps}
+                        className="select-cell-editor"
+                        value={value}
+                        onValueChange={onValueChange}
+                        selectProps={selectProps}/>
+
+    </>
+  );
+};
+
+/**
+ * Editor for boolean parameter
+ */
+const BooleanEditableCell = (props: IParameterCellProps) => {
+  const inputRef = useCallbackRef<HTMLInputElement>();
+  const inputProps = useMemo(() => ({inputRef}), []);
+  const onFocus = useCallback(() => inputRef.current.focus(), []);
+  // Toggle parameter value on Enter
+  const doKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!props.disabled && event.key === "Enter") {
+      event.stopPropagation();
+      props.onValueChange(props.parameter, props.value ? 0 : 1);
+    }
+  }, [props.disabled, props.parameter, props.value, props.onValueChange]);
+
+  return (
+    <FocusableCell {...props} autoFocus={false} onFocus={onFocus} onKeyDown={doKeyDown}>
+      <SwitchParamField {...props} inputProps={inputProps}/>
+    </FocusableCell>
+  );
+};
+
+/**
+ * Component for value cell of numeric parameter
+ */
+const NumericEditableCell = (props: IParameterCellProps) => {
+  const {parameter, ...otherProps} = props;
+
+  const editorFn = useCallback((options: ICellEditorOptions) =>
+      <TableNumericParamEditor parameter={parameter}
+                               {...otherProps}
+                               editorOptions={options}/>,
+    [otherProps.value]);
+
+  return (
+    <EditableCell {...otherProps} editor={editorFn}>
+      <NumericParameterValue {...props}/>
+    </EditableCell>
+  );
+};
+
+/**
+ * Component for value cell of enum-based parameter
+ */
+const SelectEditableCell = (props: IParameterCellProps) => {
+  const {parameter, ...otherProps} = props;
+
+  const editorFn = useCallback((options: ICellEditorOptions) =>
+      <TableSelectParamEditor parameter={parameter}
+                               {...otherProps}
+                               editorOptions={options}/>,
+    [otherProps.value, otherProps.disabled]);
+
+  return (
+    <EditableCell {...otherProps} editor={editorFn} editableBySingleClick={true}>
+      <SelectParameterValue {...props}/>
+    </EditableCell>
+  );
+};
+
+/**
+ * Component for value cell
+ */
+const ParameterEditableCell = bindRamConfigRule((props: IParameterCellProps) => {
+  const {parameter, isDirty, ...otherProps} = props;
+
+  const type = getConfigParamRule(parameter).type;
+
+  const className = isDirty ? "cell--dirty" : undefined;
+
+  switch (type) {
+    case ConfigParamRuleType.Boolean:
+      return <BooleanEditableCell {...props} className={classNames(className, "text-center")}/>;
+    case ConfigParamRuleType.Numeric:
+      return <NumericEditableCell {...props} className={className}/>;
+    case ConfigParamRuleType.Enum:
+      return <SelectEditableCell {...props} className={className}/>;
+    default:
+      return (
+        <FocusableCell {...otherProps} className={className}>
+          <ParameterValue value={otherProps.value}/>
+        </FocusableCell>
+      );
+  }
+});
+
+const PARAMETER_TABLE_COLUMN_WIDTHS = [420, 100];
+
+/**
+ * Root component for table
+ */
+const ParameterTable = (props: IParameterTableProps) => {
+  const {enabled, blocked, search, onKeyOut} = props;
+
+  const [openedGroups, setOpenedGroups] = useState<{ [group: number]: boolean }>({});
+
+  const tableRef = useRef<TableExt>(null as any);
+  const setTableRef = useCallback((ref) => {
+    tableRef.current = ref;
+    props.tableRef(ref);
+  }, []);
+
+  // Build set of rows for given search string
+  const displayedRows = useMemo(() => buildDisplayedRows(search, openedGroups), [search, openedGroups]);
+  const setGroupOpened = useCallback(
+    (group: ConfigParamGroupName, opened: boolean) => setOpenedGroups(setField(openedGroups, group, opened)),
+    [openedGroups]);
+
+  const rowHeaderRenderer = useCallback(
+    (rowIndex: number) => {
+      const row = displayedRows[rowIndex];
+      if (isDisplayedGroupRow(row)) {
+        return <ParameterGroupRowHeaderCell index={rowIndex}
+                                            group={row.group}
+                                            opened={openedGroups[row.group]}
+                                            onChange={setGroupOpened}/>;
+      } else {
+        return <ParameterRowHeaderCell index={rowIndex}
+                                       parameter={row.param}/>;
+      }
+    },
+    [displayedRows, openedGroups]);
+
+  const nameCellRenderer = useCallback(
+    (rowIndex: number, columnIndex: number) => {
+      const row = displayedRows[rowIndex];
+      if (isDisplayedGroupRow(row)) {
+        return <ParameterGroupNameCell rowIndex={rowIndex}
+                                       columnIndex={columnIndex}
+                                       group={row.group}
+                                       groupOpened={openedGroups[row.group]}
+                                       onGroupOpened={setGroupOpened}/>
+      } else {
+        return <ParameterNameCell rowIndex={rowIndex}
+                                  columnIndex={columnIndex}
+                                  parameter={row.param}
+                                  results={row.results}/>
+      }
+    },
+    [displayedRows, openedGroups, enabled, blocked]);
+
+  const valueCellRenderer = useCallback(
+    (rowIndex: number, columnIndex: number) => {
+      const row = displayedRows[rowIndex];
+
+      if (isDisplayedGroupRow(row)) {
+        return <FocusableCell rowIndex={rowIndex}
+                              columnIndex={columnIndex}
+        />;
+      } else {
+        return <ParameterEditableCell rowIndex={rowIndex}
+                                      columnIndex={columnIndex}
+                                      row={row}
+                                      parameter={row.param}
+                                      disabled={!(row.param === ConfigParam.kCanID ? enabled : enabled && !blocked)}/>
+      }
+    },
+    [displayedRows, enabled, blocked]);
+
+  const doKeyDown = useCallback((event: KeyboardEvent) => {
+    const cell = tableRef.current.getFocusedCell();
+    if (cell == null || tableRef.current.isEditing() || !isSearchableKey(event.key)) {
+      return;
+    }
+
+    onKeyOut(event.key);
+  }, [displayedRows]);
+
+  if (displayedRows.length === 0) {
+    return <NonIdealState icon="search" title={tt("lbl_search_no_results_title")}/>;
+  }
+
+  return (
+    <TableContainer ref={setTableRef}
+                    numRows={displayedRows.length}
+                    columnWidths={PARAMETER_TABLE_COLUMN_WIDTHS}
+                    className="parameter-table"
+                    minRowHeight={25}
+                    maxRowHeight={25}
+                    defaultRowHeight={25}
+                    enableMultipleSelection={false}
+                    enableFocusedCell={true}
+                    rowHeaderCellRenderer={rowHeaderRenderer}
+                    onKeyDown={doKeyDown}>
+      <Column id="name" name={tt("lbl_parameter_name")} cellRenderer={nameCellRenderer}/>
+      <Column id="value" name={tt("lbl_value")} cellRenderer={valueCellRenderer}/>
+    </TableContainer>
+  );
+};
+
+const AdvancedTab = (props: IProps) => {
+  const {processType, enabled, blocked, search, onBurn, onReset, onSearch} = props;
+
+  const canSave = enabled && !blocked;
+
+  const inputRef = useRef<HTMLInputElement>(null as any);
+  const tableRef = useCallbackRef<TableExt>();
+  const setInputRef = useCallback((inputEl) => {
+    inputRef.current = inputEl;
+    next(inputEl);
+  }, []);
+  const [pipe, next] = useReplayPipe<HTMLInputElement>();
+
+  const doSearch = useCallback((event: ChangeEvent<HTMLInputElement>) => onSearch(event.target.value), []);
+  const doClear = useCallback(() => {
+    onSearch("");
+    inputRef.current.focus();
+  }, []);
+
+  // When escape is pressed in the table => focus Search input
+  const doFocusSearch = useCallback((key: string) => {
+    inputRef.current.focus();
+    if (key === "Escape") {
+      inputRef.current.select();
+    }
+  }, []);
+
+  // When Up/Down keys pressed in the search input => focus table
+  const doSearchKeyDown = useCallback((event: KeyboardEvent) => {
+    if (tableRef.current && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      tableRef.current.focus();
+    }
+  }, []);
+
+  return (
+    <div className="page flex-column">
+      <FormGroup inline={true} className="form-group-full" label={tt("lbl_search")} labelFor="input">
+        <Focus pipe={pipe}>
+          <InputGroup id="input"
+                      type="text"
+                      inputRef={setInputRef}
+                      value={search}
+                      onChange={doSearch}
+                      onKeyDown={doSearchKeyDown}
+                      rightElement={
+                        search ?
+                          <Button icon="cross" minimal={true} title={tt("lbl_clear")} onClick={doClear}/>
+                          : undefined
+                      }/>
+        </Focus>
+      </FormGroup>
+      <ParameterTable tableRef={tableRef}
+                      enabled={enabled}
+                      blocked={blocked}
+                      search={search}
+                      onKeyOut={doFocusSearch}/>
+      <div className="form update-container">
+        <Button className="rev-btn"
+                disabled={!canSave || processType === ProcessType.Reset}
+                loading={processType === ProcessType.Save}
+                onClick={onBurn}>{tt("lbl_save_configuration")}</Button>
+        <Button className="bad-btn"
+                disabled={!enabled || processType === ProcessType.Save}
+                loading={processType === ProcessType.Reset}
+                onClick={onReset}>{tt("lbl_restore_factory_defaults")}</Button>
+      </div>
+    </div>
+  );
+};
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected,
-    motorConfig: state.currentConfig,
-    burnedConfig: state.burnedConfig,
-    paramResponses: state.paramResponses
+    enabled: queryIsSelectedDeviceEnabled(state),
+    blocked: queryIsSelectedDeviceBlocked(state),
+    processType: querySelectedDeviceProcessType(state),
+    search: querySelectedDeviceSearchString(state),
   };
 }
 
-export function mapDispatchToProps(dispatch: Dispatch<ApplicationActions>) {
+export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    setCurrentConfig: (config: MotorConfiguration) => dispatch(setMotorConfig(config)),
-    setBurnedConfig: (config: MotorConfiguration) => dispatch(setBurnedMotorConfig(config)),
-    setIsConnecting: (connecting: boolean) => dispatch(setIsConnecting(connecting)),
-    updateConnectionStatus: (connected: boolean, status: string) => dispatch(updateConnectionStatus(connected, status)),
+    onBurn: () => dispatch(burnSelectedDeviceConfiguration()),
+    onReset: () => dispatch(resetSelectedDeviceConfiguration()),
+    onSearch: (search: string) => dispatch(setSelectedDeviceAdvancedSearchString(search)),
   };
 }
 

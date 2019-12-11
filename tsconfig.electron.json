@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "module": "commonjs",
+    "target": "es5",
     "noImplicitAny": true,
     "sourceMap": true,
     "outDir": "build",
@@ -11,6 +13,7 @@
   },
   "include": [
     "public/electron.ts",
-    "public/main/**/*/"
+    "public/main/**/*/",
+    "public/proto-gen/**/*/"
   ]
 }

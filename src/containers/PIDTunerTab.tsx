@@ -1,7 +1,8 @@
 import {Button, FormGroup, NumericInput} from "@blueprintjs/core";
 import * as React from "react";
 import {connect} from "react-redux";
-import {IApplicationState} from "../store/types";
+import {IApplicationState} from "../store/state";
+import {queryIsSelectedDeviceConnected} from "../store/selectors";
 
 interface IProps {
   connected: boolean
@@ -39,38 +40,38 @@ class PIDTunerTab extends React.Component<IProps, IState> {
       <div>
         <div className="form">
           <FormGroup
-            label="PID Profile"
+            label={tt("lbl_pid_profile")}
             className="form-group-fifth"
           >
             <NumericInput id="pid-profile" disabled={!this.props.connected} value={profile} onValueChange={this.changeProfile} min={0} max={3}/>
           </FormGroup>
           <FormGroup
-            label="P"
+            label={tt("lbl_p_uc")}
             className="form-group-fifth"
           >
             <NumericInput id="pid-profile" disabled={!this.props.connected} value={p} onValueChange={this.changeP} min={0} max={3}/>
           </FormGroup>
           <FormGroup
-            label="I"
+            label={tt("lbl_i_uc")}
             className="form-group-fifth"
           >
             <NumericInput id="pid-profile" disabled={!this.props.connected} value={i} onValueChange={this.changeI} min={0} max={3}/>
           </FormGroup>
           <FormGroup
-            label="D"
+            label={tt("lbl_d_uc")}
             className="form-group-fifth"
           >
             <NumericInput id="pid-profile" disabled={!this.props.connected} value={d} onValueChange={this.changeD} min={0} max={3}/>
           </FormGroup>
           <FormGroup
-            label="F"
+            label={tt("lbl_f_uc")}
             className="form-group-fifth"
           >
             <NumericInput id="pid-profile" disabled={!this.props.connected} value={f} onValueChange={this.changeF} min={0} max={3}/>
           </FormGroup>
         </div>
         <div className="form">
-          <Button className="rev-btn" disabled={!this.props.connected} onClick={this.updatePID}>Update PIDF Configuration</Button>
+          <Button className="rev-btn" disabled={!this.props.connected} onClick={this.updatePID}>{tt("lbl_update_pidf_configuration")}</Button>
         </div>
       </div>
     );
@@ -103,7 +104,7 @@ class PIDTunerTab extends React.Component<IProps, IState> {
 
 export function mapStateToProps(state: IApplicationState) {
   return {
-    connected: state.isConnected
+    connected: queryIsSelectedDeviceConnected(state),
   };
 }
 

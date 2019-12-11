@@ -6,36 +6,177 @@
 
 #status-bar {
     width: 100%;
+    min-height: 40px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 5px 7px 5px 7px;
     background-color: orange;
     color: #ffffff;
 }
 
-#status-bar-status {
-    height: 100%;
-    width: 75%;
+.status-bar__info {
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
+    color: rgba(0, 0, 0, 0.54);
+    cursor: pointer;
 }
 
-#status-bar-button {
-    height: 100%;
-    width: 25%;
+.status-bar__connection {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
 }
 
-#firmware-console {
+.status-bar__connection--connected {
+    border: 1px solid white;
+    background: green;
+}
+
+.status-bar__connection--disconnected {
+    border: 1px solid white;
+    background: red;
+}
+
+.status-bar__error {
+    position: absolute;
+    right: -4px;
+    top: -4px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid white;
+    border-radius: 7px;
+
+    background: white;
+    fill: #c23030;
+}
+
+.status-bar__device-selector {
+    min-width: 200px;
+    max-width: 200px;
+    margin-right: 5px;
+}
+
+.status-bar__device-selector .bp3-popover-target {
     width: 100%;
-    height: 300px;
+}
+
+.status-bar__device-selector .bp3-button {
+    justify-content: space-between;
+}
+
+.status-bar__device-selector .bp3-button-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.status-bar__status {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    flex: 1;
+}
+
+.status-bar__status > .bp3-icon {
+    height: 18px;
+    margin-right: 5px;
+}
+
+.status-bar__status--global-error {
+    color: #c23030;
+    fill: #c23030;
+    font-weight: 600;
+}
+
+.status-bar__button {
+    height: 100%;
+    min-width: 15%;
+}
+
+.device-info {
+    padding: 15px;
+}
+
+.device-info__line {
+    display: flex;
+    flex-direction: row;
+    line-height: 20px;
+}
+
+.device-info__line-title {
+    font-size: 0.9em;
+    width: 100px;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.device-info__line-title::after {
+    content: ":";
+}
+
+.device-info__blocked-reason {
+    margin-left: 5px;
+    color: red;
+    font-weight: bold;
+}
+
+.main-tabs {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-tabs > .bp3-tab-panel {
+    flex: 1;
+}
+
+.console-portal > .bp3-overlay-container {
+    /*
+      Portal is positioned via position=fixed and z-index=<some value>.
+      This prevents clicks on overlay container.
+      Remove binding to the document top to avoid stretching of overlay on whole document.
+     */
+    top: unset;
+}
+
+.console {
+    border-top: 1px solid orange;
+}
+
+.console__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    min-height: 24px;
+    padding: 0 5px 0 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.54);
+
+    font-size: 0.9em;
+}
+
+.console__title {
+    line-height: 24px;
+}
+
+.console__toggle-btn {
+    font-size: 1em;
+}
+
+.console__output {
+
+    width: 100%;
+    height: 100%;
     background-color: #cfcfcf;
     padding: 10px;
-    border: 1px solid orange;
     font-family: Consolas, sans-serif;
     font-size: 13px;
     overflow: auto;
 }
 
-#firmware-console > p {
+.console__output > p {
     margin: 0;
 }
 
@@ -63,6 +204,13 @@
 
 #help-download-bar {
     margin-top: 10px;
+}
+
+/*
+ * Adds space before labelInfo in FormGroup
+ */
+.bp3-label > .bp3-text-muted {
+    margin-left: 5px;
 }
 
 .bp3-tabs {
@@ -97,23 +245,31 @@ input:checked ~ .bp3-control-indicator {
     background-color: orange !important;
 }
 
-.bp3-numeric-input > .bp3-input-group > input {
+.bp3-control.bp3-switch input:disabled ~ .bp3-control-indicator {
+    background-color: rgba(206, 217, 224, 0.5) !important;
+}
+
+.bp3-control.bp3-checkbox input:indeterminate ~ .bp3-control-indicator {
+    background-color: orange;
+}
+
+.numeric-form-field .bp3-input-group > input {
     max-width: 100%;
 }
 
-.bp3-numeric-input > .bp3-input-group{
+.numeric-form-field .bp3-input-group {
     width: calc(100% - 30px);
 }
 
-.bp3-numeric-input > .bp3-input-group .bp3-fixed {
+.numeric-form-field .bp3-input-group .bp3-fixed {
     width: 30px;
 }
 
-.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target {
+.select-form-field .bp3-popover-target {
     width: 100%;
 }
 
-.bp3-form-content > .bp3-popover-wrapper > .bp3-popover-target > div > button {
+.select-form-field .bp3-popover-target > div > button {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -123,14 +279,14 @@ input:checked ~ .bp3-control-indicator {
     padding: 0 10px 0 10px;
 }
 
-.bp3-dialog-body {
+.log-container {
     background-color: #cfcfcf;
     font-family: Consolas, sans-serif;
     margin: 10px;
     padding: 8px;
 }
 
-.bp3-dialog-body > p {
+.log-container > p {
     margin: 0;
 }
 
@@ -139,6 +295,54 @@ input:checked ~ .bp3-control-indicator {
     justify-content: center;
     align-items: center;
     width: 100%;
+}
+
+.form-top {
+    align-items: flex-start;
+}
+
+.form-left {
+    justify-content: flex-start;
+}
+
+.form-right {
+    justify-content: flex-end;
+}
+
+.form-space-between {
+    justify-content: space-between;
+}
+
+h4.form-title {
+    margin: 10px 0 15px;
+    width: 100%;
+
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: normal;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-column + .form-column {
+    margin-left: 20px;
+}
+
+.form-column-third {
+    width: 33%;
+}
+
+.form-control-group + .form-control-group {
+    margin-top: 15px;
 }
 
 .form-group-three-quarters {
@@ -161,8 +365,28 @@ input:checked ~ .bp3-control-indicator {
     width: 20%;
 }
 
+.form-group--with-errors {
+    height: 76px;
+}
+
+.bp3-form-group.form-group-fit {
+    margin: 0;
+}
+
+.bp3-form-group.form-group-fit .bp3-control {
+    margin-top: 0;
+}
+
+.bp3-form-group.form-group-full .bp3-form-content {
+    width: 100%;
+}
+
 .inline {
     flex-direction: row;
+}
+
+.no-wrap {
+    white-space: nowrap;
 }
 
 .echart-container {
@@ -170,12 +394,12 @@ input:checked ~ .bp3-control-indicator {
     height: 325px !important;
 }
 
-.rev-btn {
+.rev-btn:not(:disabled) {
     color: #ffffff !important;
     background: #e48d00 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
 
-.bad-btn {
+.bad-btn:not(:disabled) {
     color: #ffffff !important;
     background: #e41b11 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.6)), to(rgba(255, 255, 255, 0))) !important;
 }
@@ -211,19 +435,29 @@ input:checked ~ .bp3-control-indicator {
 }
 
 .update-container {
-    margin-top: 30px;
+    margin: 30px 0 10px;
     display: flex;
     justify-content: space-around;
     align-items: center;
 }
 
-.modified > label {
+.modified > label, label.modified {
     font-style: italic;
     font-weight: bold;
 }
 
-.modified > label > div > span:first-child::after, .modified > label > span:first-child::after {
+.modified > label > div > span:first-child::after,
+.modified > label > span:first-child::after,
+label.modified::after {
     content: '*';
+}
+
+.bp3-button.modified {
+    font-weight: bold;
+}
+
+.bp3-button.modified .bp3-button-text::after {
+    content: " *";
 }
 
 .field-error > .bp3-input-group > input {
@@ -268,8 +502,588 @@ input:checked ~ .bp3-control-indicator {
     background-color: #ffffff;
 }
 
+.max-icon > svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-space-between {
+    justify-content: space-between;
+}
+
+.flex-center {
+    justify-content: center;
+}
+
+.flex-start {
+    justify-content: flex-start;
+}
+
+.flex-end {
+    justify-content: flex-end;
+}
+
+.flex-cross-center {
+    align-items: center;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.no-flex {
+    flex: 0 0 auto;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.page {
+    height: 100%;
+}
+
+.page--full {
+    height: calc(100vh - 72px);
+    margin: -20px -10px 0 -10px;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-underline {
+    text-decoration: underline;
+}
+
+.text-underline-on-hover:hover {
+    text-decoration: underline;
+}
+
+.text-pre {
+    white-space: pre;
+}
+
+.ml-5 {
+    margin-left: 5px;
+}
+
+.mr-5 {
+    margin-right: 5px;
+}
+
+.mr-10 {
+    margin-right: 10px;
+}
+
+.p-10 {
+    padding: 10px;
+}
+
+.p-20 {
+    padding: 20px;
+}
+
+.bp3-button.link-button {
+    padding: 0;
+}
+
+.bp3-button.link-button:hover {
+    text-decoration: underline;
+    background: none;
+}
+
+.persistent-select__menu {
+    min-width: 110px;
+}
+
+.persistent-select__main-btn {
+    width: 80px;
+}
+
+.network-table {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 10px;
+}
+
+.network-table__selector-header {
+    margin: 0 0 0 10px;
+    width: 0;
+}
+
+button.link {
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 @keyframes blink {
     0%   { opacity: 1; }
     40%  { opacity: 0; }
     80%  { opacity: 1; }
+}
+
+.message-queue {
+    max-height: 90vh;
+    padding-bottom: 10px;
+}
+
+.message-queue__console {
+    padding: 0 10px;
+    margin-top: 10px;
+    overflow: auto;
+
+    font-family: Consolas, sans-serif;
+    font-size: 13px;
+    color: white;
+    background: rgba(0, 0, 0, 0.87);
+}
+
+.message-queue__console pre {
+    white-space: pre-line;
+}
+
+.device-prefix {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.device-marker {
+    margin-left: 5px;
+}
+
+.device-marker--info {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.device-marker--error {
+    color: #c23030;
+}
+
+.waveform-display {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+}
+
+.waveform-chart {
+    position: relative;
+    flex: 1;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding: 2px;
+}
+
+.list__gap {
+    flex: 1;
+    order: 1;
+}
+
+.tool--start {
+    order: 0;
+}
+
+.tool--end {
+    order: 2;
+}
+
+.tool + .tool {
+    margin-top: 5px;
+}
+
+.list-item {
+    position: relative;
+}
+
+.list-item > .list-item__button {
+    justify-content: flex-start;
+    min-height: 36px;
+    padding: 10px;
+}
+
+.list-item > .list-item__button .bp3-button-text {
+    width: 100%;
+}
+
+.list-item:not(:first-child) {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.list-item__options {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.display__toolbar {
+    margin: 10px 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.display__container {
+    height: 300px;
+}
+
+.panel-container {
+    position: relative;
+    border-top: 1px solid rgba(0, 0, 0, 0.38);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.panel-container__header {
+    padding: 0 5px;
+    border-right: 4px solid rgba(0, 0, 0, 0.38);
+    background: orange;
+}
+
+.panel-container__icon {
+    margin-top: 10px;
+}
+
+.panel-container__title {
+    position: absolute;
+    left: 6px;
+    top: calc(50% + 100px);
+    width: 200px;
+    transform: rotate(-90deg);
+    transform-origin: left top;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.form-group-setting {
+    margin-bottom: 0;
+}
+
+.form-group-setting .bp3-label {
+    width: 150px;
+}
+
+.form-group-setting .bp3-numeric-input .bp3-input-group {
+    width: 70px;
+}
+
+.form-group-setting .bp3-switch {
+    margin-bottom: 5px;
+}
+
+.form-group-setting--right .bp3-label {
+    justify-content: flex-end;
+}
+
+.run-settings-panel {
+   padding: 20px 5px;
+}
+
+.signal-list, .param-group-list {
+    width: 200px;
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.active-list-item-icon {
+    height: 14px;
+    margin-right: 10px;
+}
+
+.unit-group .bp3-input-group {
+    width: 80px;
+}
+
+.unit-group__unit {
+    margin-left: 5px;
+    line-height: 30px;
+}
+
+.display-param-list {
+    overflow: auto;
+    padding: 10px
+}
+
+.display-param {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-bottom: 8px
+}
+
+.display-param__quick {
+    margin: 0;
+}
+
+.display-param-group {
+    padding: 0;
+    margin: 0;
+}
+
+.display-param-group .bp3-label {
+    overflow: hidden;
+    width: 150px;
+
+    text-overflow: ellipsis;
+}
+
+.display-param__field--numeric .bp3-input-group {
+    width: 80px;
+}
+
+.display-param-group.display-param-group--minimal .bp3-label {
+    width: 60px;
+}
+
+.display-param-group--minimal .display-param__field--numeric .bp3-input-group {
+    width: 60px;
+}
+
+.display-param__field--boolean.bp3-switch {
+    margin-bottom: 0;
+}
+
+.run-quick-bar {
+    padding: 0;
+}
+
+.run-quick-bar__pid-row {
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+.run-quick-bar__pid-row .bp3-form-group + .bp3-form-group {
+    margin-left: 10px;
+}
+
+.run-main-panel__quick {
+    width: 320px;
+    border-right: 2px solid rgba(0, 0, 0, 0.38);
+}
+
+.run-main-panel__quick .bp3-tab-list {
+    margin-left: 10px;
+}
+
+.run-main-panel__quick .bp3-tab-panel {
+    margin-top: 5px;
+    padding: 0 10px 0 5px;
+    height: 100%;
+    overflow: auto;
+}
+
+.control-area__field-list {
+    padding: 10px 0;
+}
+
+.control-area__field-group {
+    margin-bottom: 10px;
+}
+
+.control-area__field-group .bp3-label {
+    min-width: 100px;
+}
+
+.control-area__field-group .bp3-numeric-input .bp3-input-group {
+    width: calc(100% - 30px);
+}
+
+.control-area__field-slider {
+    margin-left: 15px;
+    width: calc(100% - 30px);
+}
+
+.control-area__range {
+    padding: 5px 10px 0;
+}
+
+.control-area__range-input .bp3-input {
+    height: 20px;
+    width: 90px;
+}
+
+.control-area__range-input--right .bp3-input {
+    text-align: right;
+}
+
+.main-control-btn {
+    width: 80px;
+}
+
+.parameter-table {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 0;
+}
+
+/**
+ * REVROBO-53: It seems like blueprint.js has a bug in <Table> component implementation:
+ * Table component renders several duplicated headers (at least) in different quadrants.
+ **/
+.parameter-table .bp3-table-quadrant-main {
+    z-index: 4;
+}
+
+.parameter-table .bp3-table-selection-enabled.bp3-table-row-headers .bp3-table-header {
+    cursor: pointer;
+}
+
+.parameter-table .bp3-table-cell,
+.parameter-table .bp3-table-row-headers .bp3-table-header {
+    line-height: 25px;
+}
+
+.parameter-table .bp3-table-row-name {
+    text-align: center;
+}
+
+.highlight {
+    background: yellow;
+}
+
+.table-container {
+    display: flex;
+}
+
+.table-container > .bp3-table-container {
+    width: 100%;
+}
+
+.table-container.table-container--editing .bp3-table-focus-region,
+.table-container.table-container--editing .bp3-table-selection-region {
+    background-color: transparent;
+}
+
+.editable-cell--editing {
+    padding: 0;
+}
+
+.editable-cell--editable::after {
+    content: " ";
+
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 3px;
+    border-bottom: 2px solid orange;
+    pointer-events: none;
+}
+.bp3-table-selection-enabled .bp3-table-cell.cell--clickable {
+    cursor: pointer;
+}
+
+.editable-cell__value {
+    margin: 0 -10px;
+    padding: 0 10px;
+}
+
+.editable-cell .bp3-numeric-input {
+    margin-top: -1px;
+}
+
+.editable-cell .bp3-numeric-input .bp3-input-group {
+    width: calc(100% - 30px);
+}
+
+.editable-cell .bp3-numeric-input input,
+.editable-cell .bp3-numeric-input input:focus {
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.editable-cell .bp3-numeric-input input {
+    height: 25px;
+
+    font-size: 12px;
+    line-height: 25px;
+}
+
+.select-cell-editor.bp3-popover-wrapper {
+    display: block;
+    width: 100%;
+}
+
+.select-cell-editor .bp3-popover-target {
+    width: 100%;
+}
+
+.select-cell-editor .bp3-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 25px;
+    padding: 0 10px;
+
+    box-shadow: none;
+    line-height: 25px;
+    font-size: 12px;
+}
+
+.cell--dirty {
+    background: rgba(255, 165, 0, 0.5);
+}
+
+.cell__dirty-icon {
+    position: relative;
+    top: -3px;
+}
+
+.cell__open-btn {
+    position: relative;
+    top: 4px;
+}
+
+.cell__open-btn--disabled {
+    color: rgb(206, 217, 224);
+}
+
+.app-info {
+    margin: 0 50px 10px;
+    text-align: center;
+}
+
+.cell--dfu-title {
+    min-width: calc(100% - 40px);
+    z-index: 1;
+    text-align: center;
+    background: white;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.configuration-select {
+    padding-right: 35px;
 }
