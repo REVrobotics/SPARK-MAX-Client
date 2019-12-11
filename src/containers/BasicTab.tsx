@@ -195,12 +195,14 @@ class BasicTab extends React.Component<IProps> {
             <h4 className="form-title">{tt("lbl_soft_limits")}</h4>
 
             <BasicSwitchLabelessFieldGroup parameter={ConfigParam.kSoftLimitFwdEn}
+                                           title={tt("lbl_enabled")}
                                            disabled={!canEditOtherFields}
                                            groupClassName="form-group-fit"/>
             <BasicNumericFieldGroup parameter={ConfigParam.kSoftLimitFwd}
                                     disabled={!canEditOtherFields}/>
 
             <BasicSwitchLabelessFieldGroup parameter={ConfigParam.kSoftLimitRevEn}
+                                           title={tt("lbl_enabled")}
                                            disabled={!canEditOtherFields}
                                            groupClassName="form-group-fit"/>
             <BasicNumericFieldGroup parameter={ConfigParam.kSoftLimitRev}

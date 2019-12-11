@@ -18,7 +18,7 @@ const NumericParamField = ({
                            }: IProps) => {
   const typedConstraints = constraints as INumericFieldConstraints;
 
-  const min = typedConstraints ? typedConstraints.min : Number.MIN_VALUE;
+  const min = typedConstraints ? typedConstraints.min : -Number.MAX_VALUE;
   const max = typedConstraints ? typedConstraints.max : Number.MAX_VALUE;
   const stepSize = (typedConstraints ? typedConstraints.stepSize : undefined) || 1;
   const minorStepSize = stepSize < 1 ? stepSize : undefined;
