@@ -2,8 +2,13 @@ import {first} from "lodash";
 import {Reducer} from "redux";
 import {getVirtualDeviceId, IApplicationState, IContextState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
-import {setField, setNestedField} from "../../utils/object-utils";
-import {queryConnectedDescriptor, queryDevicesByDescriptor, queryDevicesInOrder} from "../selectors";
+import {setField, setFields} from "../../utils/object-utils";
+import {
+  queryConnectedDescriptor,
+  queryDevicesByDescriptor,
+  queryDevicesInOrder, queryHasDescriptor,
+  querySelectedVirtualDeviceId
+} from "../selectors";
 
 const initialContextState: IContextState = {
   isProcessing: false,
@@ -27,21 +32,25 @@ const contextReducer: Reducer<IContextState> = (state: IContextState = initialCo
 };
 
 export const rootContextReducer = (state: IApplicationState,
-                            action: ApplicationActions): IApplicationState => {
+                                   action: ApplicationActions): IApplicationState => {
   switch (action.type) {
     case ActionType.REPLACE_DEVICES: {
-      const {selectedVirtualDeviceId} = state.context;
-      if (selectedVirtualDeviceId && state.deviceSet.devices[selectedVirtualDeviceId]) {
+      const selectedVirtualDeviceId = querySelectedVirtualDeviceId(state);
+      const connectedDescriptor = queryConnectedDescriptor(state);
+      if (selectedVirtualDeviceId && state.deviceSet.devices[selectedVirtualDeviceId]
+        && connectedDescriptor && queryHasDescriptor(state, connectedDescriptor)) {
         return state;
       }
-      const connectedDescriptor = queryConnectedDescriptor(state);
-      const firstDevice = first(connectedDescriptor ?
-        queryDevicesByDescriptor(state, connectedDescriptor)
+      const nextDescriptor = connectedDescriptor && queryHasDescriptor(state, connectedDescriptor) ?
+        connectedDescriptor : undefined;
+
+      const firstDevice = first(nextDescriptor ?
+        queryDevicesByDescriptor(state, nextDescriptor)
         : queryDevicesInOrder(state));
-      return setNestedField(
-        state,
-        ["context", "selectedVirtualDeviceId"],
-        firstDevice ? getVirtualDeviceId(firstDevice) : undefined);
+      return setField(state, "context", setFields(state.context, {
+        connectedDescriptor: nextDescriptor,
+        selectedVirtualDeviceId: firstDevice ? getVirtualDeviceId(firstDevice) : undefined,
+      }));
     }
     default:
       return state;

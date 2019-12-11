@@ -45,6 +45,11 @@ export const networkDeviceRecoveryModeHowTo = (
   </>
 );
 
+export const networkLoadWarning = ({success, failed}: { success: number, failed: number }) =>
+  <>
+    Bridge device was updated to the version prior to 1.5.0.
+  </>;
+
 export const networkLoadSuccess = ({success, failed}: { success: number, failed: number }) =>
   <>
     Successfully updated {success} devices
@@ -52,8 +57,6 @@ export const networkLoadSuccess = ({success, failed}: { success: number, failed:
 
 export const networkLoadError = ({success, failed}: { success: number, failed: number }) =>
   <>
-    <p>
-      Successfully updated {success} devices.
-    </p>
+    {success ? <p>Successfully updated {success} devices.</p> : null}
     Failed to updated devices, may require a recovery update following these steps: ...
   </>;

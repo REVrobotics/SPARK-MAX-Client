@@ -11,7 +11,8 @@ import {
   DisplayConfigDto,
   DisplaySettingsDto,
   ExtendedDfuResponseDto,
-  ExtendedListResponseDto, IDisplayDeviceValueRangeDto,
+  ExtendedListResponseDto,
+  IDisplayDeviceValueRangeDto,
   TelemetryResponseDto,
 } from "../models/dto";
 import {diffArrays, setField} from "../utils/object-utils";
@@ -19,6 +20,13 @@ import {ReactNode} from "react";
 import {IRawDeviceConfigDto} from "../models/device-config.dto";
 import {Message, MessageSeverity} from "../models/Message";
 import {LegendPosition} from "../display/display-interfaces";
+import {
+  queryConnectedDescriptor,
+  queryDeviceCount,
+  queryDfuDeviceCount,
+  queryNetworkDevicesByDescriptor
+} from "./selectors";
+import {compareVersions} from "../utils/string-utils";
 
 /**
  * Allows to track type of current processing, like saving or resetting
@@ -358,6 +366,7 @@ export type IDfuDevice = ExtendedDfuResponseDto & {
 export interface ILoadReport {
   success: number;
   failed: number;
+  warning: boolean;
 }
 
 /**
@@ -964,8 +973,56 @@ export const getDisplaySettingConstraints = <S extends keyof DisplaySettings>(na
 
 export const getSignalId = (signal: ISignalState) => signal.id!;
 
-export const mergeLoadReports = (...reports: ILoadReport[]) =>
+export const mergeLoadReports = (...reports: ILoadReport[]): ILoadReport =>
   reports.reduce((acc, report) => ({
     success: acc.success + report.success,
-    failed: acc.failed + report.failed
-  }), {success: 0, failed: 0});
+    failed: acc.failed + report.failed,
+    warning: acc.warning || report.warning,
+  }), {success: 0, failed: 0, warning: false});
+
+interface ILoadReportOptions {
+  beforeUpdate: IApplicationState;
+  afterUpdate: IApplicationState;
+  devicesToBeUpdated: DeviceId[];
+  devicesToBeRecovered: string[];
+  updatedSuccessfully: boolean;
+  recoveredSuccessfully: boolean;
+}
+
+export const createLoadReport = (options: ILoadReportOptions): ILoadReport => {
+  const dfuDeviceCount = queryDfuDeviceCount(options.beforeUpdate, options.devicesToBeRecovered);
+  const updateReport: ILoadReport = {success: 0, failed: 0, warning: false};
+  const beforeDescriptor = queryConnectedDescriptor(options.beforeUpdate);
+
+  if (beforeDescriptor && options.devicesToBeUpdated.length > 0) {
+    const afterDescriptor = queryConnectedDescriptor(options.afterUpdate);
+
+    if (afterDescriptor) {
+      const beforeCount = queryDeviceCount(options.beforeUpdate, beforeDescriptor, options.devicesToBeUpdated);
+      const afterDevices = queryNetworkDevicesByDescriptor(options.afterUpdate, afterDescriptor);
+
+      // If we have a single controller and its firmware version is prior to 1.5.0,
+      // We cannot check if load was successful
+      if (afterDevices.length === 1 && compareVersions(afterDevices[0].firmwareVersion, "1.5.0") < 0) {
+        updateReport.success = beforeCount;
+        updateReport.warning = true;
+      } else {
+        const [success, failed] = partition(
+          options.devicesToBeUpdated,
+          (deviceId) => afterDevices.some((before) => getNetworkDeviceId(before) === deviceId));
+        updateReport.success = success.length;
+        updateReport.failed = failed.length;
+      }
+    } else {
+      updateReport.failed = options.devicesToBeUpdated.length;
+    }
+  }
+
+  return mergeLoadReports(
+    updateReport,
+    {
+      success: options.recoveredSuccessfully ? dfuDeviceCount : 0,
+      failed: options.recoveredSuccessfully ? 0 : dfuDeviceCount,
+      warning: false,
+    });
+};

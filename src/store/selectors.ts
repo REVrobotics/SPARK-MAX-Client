@@ -3,7 +3,7 @@
  * By convention all these functions should be named starting from "query" prefix.
  */
 
-import {countBy, filter, find, first, flatMap, isEmpty, keys, toPairs, values} from "lodash";
+import {countBy, filter, find, first, flatMap, isEmpty, keys, toPairs, uniq, values} from "lodash";
 import {
   DEFAULT_DEVICE_CONFIGURATION_ID,
   DEFAULT_TRANSIENT_STATE,
@@ -155,7 +155,16 @@ export const queryDescriptorsInOrder = (state: IApplicationState) => state.devic
 /**
  * Returns whether any device is connected
  */
-export const queryIsHasConnectedDevice = (state: IApplicationState) => queryConnectedDescriptor(state) != null;
+export const queryIsHasConnectedDevice = (state: IApplicationState) => {
+  const descriptor = queryConnectedDescriptor(state);
+  return descriptor != null ? queryHasDescriptor(state, descriptor) : false;
+};
+
+/**
+ * Returns true if descriptor is known, otherwise false.
+ */
+export const queryHasDescriptor = (state: IApplicationState, descriptor: PathDescriptor) =>
+  state.deviceSet.orderedDescriptors.indexOf(descriptor) >= 0;
 
 /**
  * Returns id of connected device
@@ -358,16 +367,38 @@ export const queryDfuDevicesToUpdate = (state: IApplicationState) => {
     : dfuDevices.filter((dfuDevice) => dfuDevice.selected).map(getDfuDeviceId);
 };
 /**
- * Returns count of DFU devices to update: either all or only one device can be selected.
+ * Returns count of devices.
  */
-export const queryDfuDevicesToUpdateCount = (state: IApplicationState) => {
-  const dfuDeviceIds = queryDfuDevicesToUpdate(state);
-  return dfuDeviceIds[0] === DFU_DEVICE_ALL ? queryNetworkDfuDevices(state).length : dfuDeviceIds.length};
+export const queryDeviceCount = (state: IApplicationState,
+                                 targetDescriptor: PathDescriptor,
+                                 targetDeviceIds: DeviceId[]) => {
+  return queryNetworkDevices(state)
+    .filter(({descriptor, deviceId}) => descriptor === targetDescriptor && targetDeviceIds.includes(deviceId)).length;
+};
+/**
+ * Returns count of DFU devices
+ */
+export const queryDfuDeviceCount = (state: IApplicationState, dfuDeviceIds: string[]) => {
+  return dfuDeviceIds[0] === DFU_DEVICE_ALL ? queryNetworkDfuDevices(state).length : dfuDeviceIds.length;
+};
 /**
  * Returns specific device on CAN bus
  */
 export const queryNetworkDevice = (state: IApplicationState, id: string) =>
   find(state.network.devices, (device) => getNetworkDeviceVirtualId(device) === id);
+/**
+ * Returns devices by descriptor
+ */
+export const queryNetworkDevicesByDescriptor = (state: IApplicationState,
+                                                  descriptor: PathDescriptor) =>
+  state.network.devices.filter((device) => device.descriptor === descriptor);
+/**
+ * Returns devices by descriptor and device ID
+ */
+export const queryNetworkDevicesByDescriptorAndDeviceId = (state: IApplicationState,
+                                                           descriptor: PathDescriptor,
+                                                           id: DeviceId) =>
+  state.network.devices.filter((device) => device.descriptor === descriptor && device.deviceId === id);
 
 /**
  * Returns if some DFU device is selected
@@ -731,4 +762,21 @@ export const queryHasDeviceParameterErrorInGroup = (state: IApplicationState,
                                                     group: ConfigParamGroupName) => {
   const params = getConfigParamsInGroup(group);
   return params.some((param) => queryHasDeviceParameterError(state, virtualDeviceId, param));
+};
+
+/**
+ * Returns descriptor to be connected after load completes.
+ * If descriptor still exists => return it.
+ * If descriptor does not exist => find descriptor for devices having device ID overlapping with previous device IDs.
+ */
+export const queryNextDescriptor = (state: IApplicationState, beforeUpdate: IApplicationState) => {
+  const previouslyConnectedDescriptor = queryConnectedDescriptor(beforeUpdate);
+  if (previouslyConnectedDescriptor == null || queryHasDescriptor(state, previouslyConnectedDescriptor)) {
+    return previouslyConnectedDescriptor;
+  }
+
+  const previousDeviceIds = uniq(queryConnectedDevices(beforeUpdate).map(getDeviceId));
+  const potentialNextDevices = flatMap(previousDeviceIds, (deviceId) => queryDevicesByDeviceId(state, deviceId));
+  const devicesWithNewDescriptor = potentialNextDevices.filter((device) => !queryHasDescriptor(beforeUpdate, device.descriptor));
+  return devicesWithNewDescriptor.length === 1 ? devicesWithNewDescriptor[0].descriptor : undefined;
 };
