@@ -76,6 +76,11 @@ export enum FollowerSignMode {
   FollowerSignMag = 2,
 }
 
+export enum DataPortConfigTypes {
+  DataPortDefault = 0,
+  DataPortAlternateEncoder = 1,
+}
+
 export enum ConfigParam {
   kCanID = 0,
   kInputMode = 1,

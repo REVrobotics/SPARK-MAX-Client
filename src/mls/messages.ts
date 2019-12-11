@@ -64,7 +64,7 @@ const messages = {
   "msg_device_added": "New device was added: $deviceId $deviceName",
   "msg_device_removed": "Some device was removed: $deviceId $deviceName",
   "msg_sparkmax_error": "SPARK MAX server error: $message",
-  "msg_sparkmax_connection_error": "SPARK MAX server network issue: check that the backend server is running",
+  "msg_sparkmax_connection_error": "SPARK MAX server network issue: check that the backend server is running or restart the program",
   "msg_system_error": "Unexpected system error has occurred. Check log for details or contact support team",
   "msg_remove_signal": "Are you sure you want to remove this signal?",
   "msg_streaming_error": "Error has occurred while streaming telemetry data",

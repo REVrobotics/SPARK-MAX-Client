@@ -17,7 +17,7 @@ export enum DictionaryName {
 const dictionarySet = {
   [DictionaryName.MotorTypes]: {
     [MotorType.Brushed]: "Brushed",
-    [MotorType.Brushless]: "Brushless",
+    [MotorType.Brushless]: "REV NEO Brushless",
   },
   [DictionaryName.IdleModes]: {
     [IdleMode.Coast]: "Coast",

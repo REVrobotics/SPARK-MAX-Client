@@ -1,9 +1,9 @@
-import {ConfigParam, enumValues, IdleMode, MotorType, ParamType, SensorType} from "../models/dto";
+import {ConfigParam, enumValues, IdleMode, MotorType, ParamType, SensorType, DataPortConfigTypes} from "../models/dto";
 import {createRuleRegistry, overrideRuleRegistry} from "./param-rules/ConfigParamRule";
 import {createNumericRule} from "./param-rules/NumericParamRule";
 import {createEnumRule} from "./param-rules/EnumParamRule";
 import {createBooleanRule} from "./param-rules/BooleanParamRule";
-import {IDLE_MODES, MOTOR_TYPES, SENSOR_TYPES} from "./dictionaries";
+import {IDLE_MODES, MOTOR_TYPES, SENSOR_TYPES, DATA_PORT_CONFIGS} from "./dictionaries";
 import {configParamNames, getConfigParamType} from "../models/ConfigParam";
 
 /**
@@ -81,6 +81,11 @@ const OVERRIDDEN_RULES = [
       const motorType = ctx.getParameter(ConfigParam.kMotorType);
       return motorType === MotorType.Brushless ? SensorType.HallSensor : sensorType;
     },
+  }),
+  createEnumRule(ConfigParam.kDataPortConfig, {
+    default: 0,
+    options: DATA_PORT_CONFIGS.seq(),
+    values: enumValues(DataPortConfigTypes),
   }),
   createNumericRule(ConfigParam.kInputDeadband, {
     default: 0,
