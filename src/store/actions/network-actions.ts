@@ -1,16 +1,15 @@
-import {initial, keyBy, noop, partition, uniq} from "lodash";
+import {initial, partition, uniq} from "lodash";
 import {
   ConfirmationAnswer,
   createDfuDevice,
+  createLoadReport,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag,
+  FirmwareTag, getDeviceId,
   getNetworkDeviceId,
-  getNetworkDeviceVirtualId,
-  ILoadReport,
+  getNetworkDeviceVirtualId, getVirtualDeviceId, isDeviceBlocked,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
-  mergeLoadReports,
   NetworkDeviceStatus,
   toDtoDeviceId
 } from "../state";
@@ -32,12 +31,13 @@ import {concatMapPromises} from "../../utils/promise-utils";
 import {
   queryConnectedDescriptor,
   queryConsoleOutput,
-  queryDfuDevicesToUpdate,
-  queryDfuDevicesToUpdateCount,
+  queryDfuDeviceCount,
+  queryDfuDevicesToUpdate, queryDirtyDevices,
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
   queryNetworkDevices,
+  queryNextDescriptor,
   querySelectableNetworkDevices
 } from "../selectors";
 import {basename, compareVersions} from "../../utils/string-utils";
@@ -51,8 +51,9 @@ import {
 } from "./actions-rendered-content";
 import {onError, useErrorHandler} from "./error-actions";
 import {ApplicationError} from "../../models/errors";
-import {connectDevice} from "./connection-actions";
-import {networkLoadError, networkLoadSuccess} from "../../mls/content";
+import {connectDevice, syncDevices} from "./connection-actions";
+import {networkLoadError, networkLoadSuccess, networkLoadWarning} from "../../mls/content";
+import {burnConfiguration} from "./parameter-actions";
 
 /**
  * Validates that firmware loading can be started and starts loading after user selects firmware and approves loading.
@@ -70,6 +71,39 @@ export const requestFirmwareLoad = (): SparkAction<Promise<void>> => {
       return Promise.resolve();
     }
 
+    const selectedDirtyDevices = queryDirtyDevices(getState())
+      .filter((device) => deviceIds.includes(getDeviceId(device)));
+
+    if (selectedDirtyDevices.length === 0) {
+      return dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds));
+    }
+
+    return dispatch(showConfirmation({
+      intent: Intent.SUCCESS,
+      text: tt("msg_update_burn"),
+      yesLabel: tt("lbl_yes"),
+      cancelLabel: tt("lbl_no"),
+    })).then((answer) => {
+      if (answer === ConfirmationAnswer.Yes) {
+        const blockedDirtyDevices = selectedDirtyDevices.filter(isDeviceBlocked);
+        if (blockedDirtyDevices.length > 0) {
+          return dispatch(showAlert({
+            intent: Intent.DANGER,
+            text: tt("msg_update_burn_not_possible", {deviceIds: blockedDirtyDevices.map(getDeviceId).join(", ")}),
+            okLabel: tt("lbl_ok"),
+          }));
+        }
+        return concatMapPromises(selectedDirtyDevices, (device) => dispatch(burnConfiguration(getVirtualDeviceId(device))))
+          .then(() => dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds)));
+      } else {
+        return dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds));
+      }
+    });
+  };
+};
+
+const startToLoadFirmware = (deviceIds: DeviceId[], dfuDeviceIds: string[]): SparkAction<Promise<void>> => {
+  return (dispatch, getState) => {
     // Select firmware file to load
     return SparkManager.requestFirmware()
       .then((paths) => {
@@ -80,7 +114,7 @@ export const requestFirmwareLoad = (): SparkAction<Promise<void>> => {
           return Promise.resolve();
         }
 
-        const numDevicesToUpdate = deviceIds.length + queryDfuDevicesToUpdateCount(getState());
+        const numDevicesToUpdate = deviceIds.length + queryDfuDeviceCount(getState(), dfuDeviceIds);
 
         return dispatch(showConfirmation({
           intent: Intent.SUCCESS,
@@ -110,85 +144,60 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateGlobalProcessStatus(tt("lbl_status_loading_firmware")));
 
-    return dispatch(updateOrRecoverFirmwareWithReport(false, path, deviceIds.map(toDtoDeviceId)))
-      .then((report) => dispatch(updateOrRecoverFirmwareWithReport(true, path, dfuDeviceIds))
-        .then((dfuReport) => mergeLoadReports(report, dfuReport)))
-      .then((report) => report.failed ?
-        dispatch(showAlert({
-          intent: Intent.DANGER,
-          content: networkLoadError(report),
-          okLabel: tt("lbl_close"),
-        }))
-        : dispatch(showAlert({
-          intent: Intent.SUCCESS,
-          content: networkLoadSuccess(report),
-          okLabel: tt("lbl_close"),
-        })))
-      .then(() => {
+    const beforeUpdate = getState();
+
+    return dispatch(updateOrRecoverFirmware(false, path, deviceIds.map(toDtoDeviceId)))
+      .then((updated) => dispatch(updateOrRecoverFirmware(true, path, dfuDeviceIds))
+        .then((recovered) => ({updated, recovered})))
+      .then((response) => dispatch(syncDevices()).then(() => response))
+      .then((response) => {
         if (connectedDescriptor) {
-          dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
-          return dispatch(connectDevice(connectedDescriptor));
+          // Sometimes descriptor may be changed
+          const nextDescriptor = queryNextDescriptor(getState(), beforeUpdate);
+          if (nextDescriptor) {
+            dispatch(consoleOutput(tt("msg_console_output:connect_to_controller")));
+            return dispatch(connectDevice(nextDescriptor)).then(() => response);
+          }
+        }
+        return Promise.resolve(response);
+      })
+      .then(({updated, recovered}) => {
+        dispatch(consoleOutput(tt("msg_console_output:rescan")));
+        // Rescan CAN bus to actualize data on Network tab
+        return dispatch(scanCanBus()).then(() => createLoadReport({
+          beforeUpdate,
+          afterUpdate: getState(),
+          devicesToBeUpdated: deviceIds,
+          devicesToBeRecovered: dfuDeviceIds,
+          updatedSuccessfully: updated,
+          recoveredSuccessfully: recovered,
+        }));
+      })
+      .then((report) => {
+        if (report.failed) {
+          return dispatch(showAlert({
+            intent: Intent.DANGER,
+            content: networkLoadError(report),
+            okLabel: tt("lbl_close"),
+          }))
+        } else if (report.warning) {
+          return dispatch(showAlert({
+            intent: Intent.WARNING,
+            content: networkLoadWarning(report),
+            okLabel: tt("lbl_close"),
+          }));
         } else {
-          return Promise.resolve();
+          return dispatch(showAlert({
+            intent: Intent.SUCCESS,
+            content: networkLoadSuccess(report),
+            okLabel: tt("lbl_close"),
+          }));
         }
       })
       .finally(() => {
         dispatch(setFirmwareLoading(false));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateGlobalProcessStatus(""));
-
-        dispatch(consoleOutput(tt("msg_console_output:rescan")));
-        // Rescan CAN bus to actualize data on Network tab
-        dispatch(scanCanBus());
-      });
-  };
-};
-
-const updateOrRecoverFirmwareWithReport = (recover: boolean,
-                                           path: string,
-                                           ids: string[]): SparkAction<Promise<ILoadReport>> => {
-  return (dispatch) => {
-    return recover ? dispatch(recoverFirmwareWithReport(path, ids)) : dispatch(updateFirmwareWithReport(path, ids));
-  };
-};
-
-const recoverFirmwareWithReport = (path: string,
-                                   ids: string[]): SparkAction<Promise<ILoadReport>> => {
-  return (dispatch, getState) => {
-    const count = queryDfuDevicesToUpdateCount(getState());
-    return dispatch(updateOrRecoverFirmware(true, path, ids))
-      .then(() => ({success: count, failed: 0}))
-      .catch(() => ({success: 0, failed: count}));
-  };
-};
-
-const updateFirmwareWithReport = (path: string,
-                                  ids: string[]): SparkAction<Promise<ILoadReport>> => {
-  return (dispatch, getState) => {
-    const descriptor = queryConnectedDescriptor(getState());
-    if (descriptor == null) {
-      return Promise.resolve({success: 0, failed: 0});
-    }
-
-    const idIndex = keyBy(ids);
-
-    const countBeforeLoad = queryNetworkDevices(getState())
-      .filter((device) => device.descriptor === descriptor)
-      .filter((device) => idIndex[getNetworkDeviceId(device)])
-      .length;
-
-    return dispatch(updateOrRecoverFirmware(false, path, ids))
-      .catch(noop)
-      .then(() =>
-        SparkManager.listDevices({all: true, pathDescriptor: descriptor})
-          .then((response) => response.extendedList.filter((device) => idIndex[device.deviceId!]).length)
-          .catch(() => 0))
-      .then((countAfterLoad) => {
-        const failed = countBeforeLoad - countAfterLoad;
-        return {
-          success: countBeforeLoad - failed,
-          failed,
-        };
       });
   };
 };
@@ -196,10 +205,10 @@ const updateFirmwareWithReport = (path: string,
 /**
  * Main firmware loading logic. This action either update or recover target devices.
  */
-const updateOrRecoverFirmware = (recover: boolean, path: string, ids: string[]): SparkAction<Promise<any>> => {
+const updateOrRecoverFirmware = (recover: boolean, path: string, ids: string[]): SparkAction<Promise<boolean>> => {
   return (dispatch) => {
     if (ids.length === 0) {
-      return Promise.resolve();
+      return Promise.resolve(true);
     }
 
     return SparkManager.loadFirmware(recover, path, uniq(ids))
@@ -207,18 +216,21 @@ const updateOrRecoverFirmware = (recover: boolean, path: string, ids: string[]):
         if (res.updateComplete && !res.updateCompletedSuccessfully || hasError(res)) {
           dispatch(firmwareLoadingError(getErrorText(res)));
           dispatch(firmwareLoadingError());
+          return false;
         } else {
           dispatch(consoleOutput(tt(recover ?
             "msg_console_output:successfully_recovered_firmware"
             : "msg_console_output:successfully_updated_firmware")));
           dispatch(updateFirmwareLoadingProgress(0, ""));
+          return true;
         }
       })
       .catch(onError((error: any) => {
         dispatch(firmwareLoadingError(error));
         dispatch(firmwareLoadingError());
       }))
-      .catch(useErrorHandler(dispatch));
+      .catch(useErrorHandler(dispatch))
+      .catch(() => false);
   }
 };
 
