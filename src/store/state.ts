@@ -734,6 +734,17 @@ export const getDeviceBlockedReason = (device: IDeviceState) => {
 export const isDeviceBlocked = (device: IDeviceState) => getDeviceBlockedReason(device) != null;
 
 /**
+ * Returns whether device is dirty
+ */
+export const isDeviceDirty = (device: IDeviceState) => {
+  if (device && device.isLoaded) {
+    return device.currentParameters.some((param, i) => device.burnedParameters[i] !== param.value);
+  } else {
+    return false;
+  }
+};
+
+/**
  * Returns CAN ID encoded in device ID.
  */
 // tslint:disable-next-line:no-bitwise

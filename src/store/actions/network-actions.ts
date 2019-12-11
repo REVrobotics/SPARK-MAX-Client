@@ -1,12 +1,13 @@
 import {initial, partition, uniq} from "lodash";
 import {
   ConfirmationAnswer,
-  createDfuDevice, createLoadReport,
+  createDfuDevice,
+  createLoadReport,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag,
+  FirmwareTag, getDeviceId,
   getNetworkDeviceId,
-  getNetworkDeviceVirtualId,
+  getNetworkDeviceVirtualId, getVirtualDeviceId, isDeviceBlocked,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
   NetworkDeviceStatus,
@@ -30,12 +31,13 @@ import {concatMapPromises} from "../../utils/promise-utils";
 import {
   queryConnectedDescriptor,
   queryConsoleOutput,
-  queryDfuDevicesToUpdate,
   queryDfuDeviceCount,
+  queryDfuDevicesToUpdate, queryDirtyDevices,
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
-  queryNetworkDevices, queryNextDescriptor,
+  queryNetworkDevices,
+  queryNextDescriptor,
   querySelectableNetworkDevices
 } from "../selectors";
 import {basename, compareVersions} from "../../utils/string-utils";
@@ -51,6 +53,7 @@ import {onError, useErrorHandler} from "./error-actions";
 import {ApplicationError} from "../../models/errors";
 import {connectDevice, syncDevices} from "./connection-actions";
 import {networkLoadError, networkLoadSuccess, networkLoadWarning} from "../../mls/content";
+import {burnConfiguration} from "./parameter-actions";
 
 /**
  * Validates that firmware loading can be started and starts loading after user selects firmware and approves loading.
@@ -68,6 +71,39 @@ export const requestFirmwareLoad = (): SparkAction<Promise<void>> => {
       return Promise.resolve();
     }
 
+    const selectedDirtyDevices = queryDirtyDevices(getState())
+      .filter((device) => deviceIds.includes(getDeviceId(device)));
+
+    if (selectedDirtyDevices.length === 0) {
+      return dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds));
+    }
+
+    return dispatch(showConfirmation({
+      intent: Intent.SUCCESS,
+      text: tt("msg_update_burn"),
+      yesLabel: tt("lbl_yes"),
+      cancelLabel: tt("lbl_no"),
+    })).then((answer) => {
+      if (answer === ConfirmationAnswer.Yes) {
+        const blockedDirtyDevices = selectedDirtyDevices.filter(isDeviceBlocked);
+        if (blockedDirtyDevices.length > 0) {
+          return dispatch(showAlert({
+            intent: Intent.DANGER,
+            text: tt("msg_update_burn_not_possible", {deviceIds: blockedDirtyDevices.map(getDeviceId).join(", ")}),
+            okLabel: tt("lbl_ok"),
+          }));
+        }
+        return concatMapPromises(selectedDirtyDevices, (device) => dispatch(burnConfiguration(getVirtualDeviceId(device))))
+          .then(() => dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds)));
+      } else {
+        return dispatch(startToLoadFirmware(deviceIds, dfuDeviceIds));
+      }
+    });
+  };
+};
+
+const startToLoadFirmware = (deviceIds: DeviceId[], dfuDeviceIds: string[]): SparkAction<Promise<void>> => {
+  return (dispatch, getState) => {
     // Select firmware file to load
     return SparkManager.requestFirmware()
       .then((paths) => {

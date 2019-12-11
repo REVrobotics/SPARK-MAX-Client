@@ -22,7 +22,7 @@ import {
   IDestination,
   IDeviceDisplayState,
   IFirmwareEntry,
-  isDeviceBlocked,
+  isDeviceBlocked, isDeviceDirty,
   isDeviceInvalid,
   isDeviceNotConfigured,
   ISignalInstanceState,
@@ -216,6 +216,12 @@ export const queryIsDeviceParameterDirty = (state: IApplicationState,
   const burnedParameters = querySelectedDeviceBurnedConfig(state);
   return burnedParameters && burnedParameters[parameter] != null ? burnedParameters[parameter] !== value : false;
 };
+
+/**
+ * Returns all dirty devices
+ * @param state
+ */
+export const queryDirtyDevices = (state: IApplicationState) => queryDevicesInOrder(state).filter(isDeviceDirty);
 
 /**
  * Returns whether parameter has invalid value or does not
