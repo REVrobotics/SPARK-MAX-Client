@@ -69,6 +69,8 @@ const messages = {
   "msg_remove_signal": "Are you sure you want to remove this signal?",
   "msg_streaming_error": "Error has occurred while streaming telemetry data",
   "msg_group_has_error": "Some parameter in this group has an error",
+  "msg_update_burn": "Some devices have not burned changes. Do you want to burn them before update process is started?",
+  "msg_update_burn_not_possible": "Some devices cannot be burned, because they have configuration issues: $deviceIds.",
 };
 
 export default messages;
