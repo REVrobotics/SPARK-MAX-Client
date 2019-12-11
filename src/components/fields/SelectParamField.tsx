@@ -1,7 +1,7 @@
 import {find} from "lodash";
 import {Button, IButtonProps, MenuItem} from "@blueprintjs/core";
 import * as React from "react";
-import {useCallback} from "react";
+import {ButtonHTMLAttributes, useCallback} from "react";
 import {IConfigParamProps} from "../config-param-props";
 import {IItemRendererProps, ISelectProps, Select} from "@blueprintjs/select";
 import {maybeMap} from "../../utils/object-utils";
@@ -15,7 +15,7 @@ interface IProps extends IConfigParamProps {
   className?: string;
   placeholder?: string;
   selectProps?: Partial<ISelectProps<IDictionaryWord>>;
-  buttonProps?: IButtonProps;
+  buttonProps?: IButtonProps & Partial<ButtonHTMLAttributes<HTMLButtonElement>>;
 }
 
 const optionRenderer = (option: IDictionaryWord, itemProps: IItemRendererProps) => {
@@ -42,6 +42,7 @@ const SelectParamField = ({
                       {...selectProps}
                       items={options || NO_OPTIONS}
                       disabled={disabled}
+                      activeItem={selectedOption}
                       filterable={false}
                       itemRenderer={optionRenderer}
                       onItemSelect={onChange}>
