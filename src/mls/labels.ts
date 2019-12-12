@@ -44,6 +44,7 @@ const labels = {
   "lbl_disabled": "Disabled",
   "lbl_save_configuration": "Save Configuration",
   "lbl_restore_factory_defaults": "Restore Factory Defaults",
+  "lbl_reset_all": "Reset All",
   "lbl_create_new_configuration": "Create New Configuration",
   "lbl_rename_configuration": "Rename Configuration",
   "lbl_enter_name": "Enter Name",
