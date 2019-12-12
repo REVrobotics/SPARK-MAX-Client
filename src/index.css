@@ -947,14 +947,6 @@ button.link {
     flex-basis: 0;
 }
 
-/**
- * REVROBO-53: It seems like blueprint.js has a bug in <Table> component implementation:
- * Table component renders several duplicated headers (at least) in different quadrants.
- **/
-.parameter-table .bp3-table-quadrant-main {
-    z-index: 4;
-}
-
 .parameter-table .bp3-table-selection-enabled.bp3-table-row-headers .bp3-table-header {
     cursor: pointer;
 }
@@ -1052,6 +1044,12 @@ button.link {
     font-size: 12px;
 }
 
+.header-cell {
+    padding: 0;
+    text-align: center;
+    background: #f5f8fa;
+}
+
 .cell--dirty {
     background: rgba(255, 165, 0, 0.5);
 }
@@ -1064,6 +1062,10 @@ button.link {
 .cell__open-btn {
     position: relative;
     top: 4px;
+}
+
+.bp3-table-selection-enabled .bp3-table-cell.header-cell {
+    cursor: pointer;
 }
 
 .cell__open-btn--disabled {
