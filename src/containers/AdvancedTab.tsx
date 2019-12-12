@@ -20,7 +20,7 @@ import {
   querySelectedDeviceSearchString,
   querySelectedVirtualDeviceId
 } from "../store/selectors";
-import {Column, ICellProps, IRowHeaderCellProps, RowHeaderCell} from "@blueprintjs/table";
+import {Column, ICellProps, Cell} from "@blueprintjs/table";
 import {ISearchResultRecord, ISearchResultRecordItem, searchParams, WordType} from "../store/config-param-search";
 import {
   ConfigParam,
@@ -46,7 +46,6 @@ import NumericParamField from "../components/fields/NumericParamField";
 import EditableCell, {ENTER_START_KEY, ICellEditorOptions, NUMERIC_START_KEY} from "../components/table/EditableCell";
 import {HTMLInputProps} from "@blueprintjs/core/src/common/props";
 import {SafeNumericBehavior} from "../components/SafeNumericInput";
-import {IRowHeaderProps} from "@blueprintjs/table/lib/cjs/headers/rowHeader";
 import PopoverHelp from "../components/PopoverHelp";
 import {MessageSeverity} from "../models/Message";
 import {ISelectProps} from "@blueprintjs/select";
@@ -76,7 +75,7 @@ interface IParameterTableProps {
   onKeyOut(key: string): void;
 }
 
-interface IParameterGroupRowHeaderProps extends IRowHeaderCellProps {
+interface IParameterGroupRowHeaderProps extends ICellProps {
   group: ConfigParamGroupName;
   opened: boolean;
 
@@ -183,28 +182,23 @@ const ParameterGroupRowHeaderCell = (props: IParameterGroupRowHeaderProps) => {
     () => props.onChange(props.group, !props.opened),
     [props.group, props.opened, props.onChange]);
 
-  const nameRenderer = useCallback(
-    () => <Icon icon={props.opened ? "chevron-down" : "chevron-right"} onClick={doToggle}/>,
-    [props.opened, doToggle]);
-
   return (
-    <RowHeaderCell {...props}
-                   nameRenderer={nameRenderer}/>
+    <Cell {...props} className="header-cell">
+      <><Icon icon={props.opened ? "chevron-down" : "chevron-right"} onClick={doToggle}/></>
+    </Cell>
   );
 };
 
 /**
  * Component for header of parameter row
  */
-const ParameterRowHeaderCell = bindRamConfigRule((props: IRowHeaderProps & IConfigParamProps) => {
+const ParameterRowHeaderCell = bindRamConfigRule((props: ICellProps & IConfigParamProps) => {
   const {isDirty, ...otherProps} = props;
-  const nameRenderer = useCallback(
-    () => isDirty ? <Icon className="cell__dirty-icon" icon="asterisk" iconSize={8}/> : <span/>,
-    [isDirty]);
   return (
-    <RowHeaderCell {...otherProps}
-                   className={isDirty ? "cell--dirty" : undefined}
-                   nameRenderer={nameRenderer}/>
+    <Cell {...otherProps}
+          className={classNames("header-cell", isDirty ? "cell--dirty" : undefined)}>
+      <>{isDirty ? <Icon className="cell__dirty-icon" icon="asterisk" iconSize={8}/> : <span/>}</>
+    </Cell>
   );
 });
 
@@ -457,7 +451,7 @@ const ParameterEditableCell = bindRamConfigRule((props: IParameterCellProps) => 
   }
 });
 
-const PARAMETER_TABLE_COLUMN_WIDTHS = [420, 100];
+const PARAMETER_TABLE_COLUMN_WIDTHS = [30, 420, 100];
 
 /**
  * Root component for table
@@ -483,13 +477,11 @@ const ParameterTable = (props: IParameterTableProps) => {
     (rowIndex: number) => {
       const row = displayedRows[rowIndex];
       if (isDisplayedGroupRow(row)) {
-        return <ParameterGroupRowHeaderCell index={rowIndex}
-                                            group={row.group}
+        return <ParameterGroupRowHeaderCell group={row.group}
                                             opened={openedGroups[row.group]}
                                             onChange={setGroupOpened}/>;
       } else {
-        return <ParameterRowHeaderCell index={rowIndex}
-                                       parameter={row.param}/>;
+        return <ParameterRowHeaderCell parameter={row.param}/>;
       }
     },
     [displayedRows, openedGroups]);
@@ -553,8 +545,9 @@ const ParameterTable = (props: IParameterTableProps) => {
                     defaultRowHeight={25}
                     enableMultipleSelection={false}
                     enableFocusedCell={true}
-                    rowHeaderCellRenderer={rowHeaderRenderer}
+                    enableRowHeader={false}
                     onKeyDown={doKeyDown}>
+      <Column id="header" name="" cellRenderer={rowHeaderRenderer}/>
       <Column id="name" name={tt("lbl_parameter_name")} cellRenderer={nameCellRenderer}/>
       <Column id="value" name={tt("lbl_value")} cellRenderer={valueCellRenderer}/>
     </TableContainer>
