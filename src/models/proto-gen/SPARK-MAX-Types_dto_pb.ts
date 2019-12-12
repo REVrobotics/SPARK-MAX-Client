@@ -12,11 +12,14 @@ export enum SensorType {
   Sensorless = 3,
 }
 
-export enum CtrlType {
+export enum ControlType {
   DutyCycle = 0,
   Velocity = 1,
   Voltage = 2,
   Position = 3,
+  SmartMotion = 4,
+  Current = 5,
+  SmartVelocity = 6,
 }
 
 export enum IdleMode {
@@ -27,6 +30,7 @@ export enum IdleMode {
 export enum InputMode {
   PWM = 0,
   CAN = 1,
+  USB = 2,
 }
 
 export enum FaultBits {
@@ -74,11 +78,6 @@ export enum FollowerSignMode {
   FollowerNoSign = 0,
   FollowerTwosComp = 1,
   FollowerSignMag = 2,
-}
-
-export enum DataPortConfigTypes {
-  DataPortDefault = 0,
-  DataPortAlternateEncoder = 1,
 }
 
 export enum ConfigParam {

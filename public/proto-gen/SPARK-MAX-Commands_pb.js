@@ -1997,7 +1997,8 @@ proto.sparkmax.extendedListResponse.toObject = function(includeInstance, msg) {
     deviceid: jspb.Message.getFieldWithDefault(msg, 4, 0),
     updateable: jspb.Message.getFieldWithDefault(msg, 5, false),
     uniqueid: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    driverdesc: jspb.Message.getFieldWithDefault(msg, 7, "")
+    driverdesc: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    listable: jspb.Message.getFieldWithDefault(msg, 8, false)
   };
 
   if (includeInstance) {
@@ -2061,6 +2062,10 @@ proto.sparkmax.extendedListResponse.deserializeBinaryFromReader = function(msg, 
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setDriverdesc(value);
+      break;
+    case 8:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setListable(value);
       break;
     default:
       reader.skipField();
@@ -2137,6 +2142,13 @@ proto.sparkmax.extendedListResponse.serializeBinaryToWriter = function(message, 
   if (f.length > 0) {
     writer.writeString(
       7,
+      f
+    );
+  }
+  f = message.getListable();
+  if (f) {
+    writer.writeBool(
+      8,
       f
     );
   }
@@ -2247,6 +2259,23 @@ proto.sparkmax.extendedListResponse.prototype.getDriverdesc = function() {
 /** @param {string} value */
 proto.sparkmax.extendedListResponse.prototype.setDriverdesc = function(value) {
   jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional bool listable = 8;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.sparkmax.extendedListResponse.prototype.getListable = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 8, false));
+};
+
+
+/** @param {boolean} value */
+proto.sparkmax.extendedListResponse.prototype.setListable = function(value) {
+  jspb.Message.setProto3BooleanField(this, 8, value);
 };
 
 
@@ -4602,6 +4631,7 @@ proto.sparkmax.setpointRequest.toObject = function(includeInstance, msg) {
     root: (f = msg.getRoot()) && proto.sparkmax.rootCommand.toObject(includeInstance, f),
     setpoint: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
     enable: jspb.Message.getFieldWithDefault(msg, 3, false),
+    control: jspb.Message.getFieldWithDefault(msg, 4, 0),
     auxsetpoint: +jspb.Message.getFieldWithDefault(msg, 5, 0.0),
     pidslot: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
@@ -4652,6 +4682,10 @@ proto.sparkmax.setpointRequest.deserializeBinaryFromReader = function(msg, reade
     case 3:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setEnable(value);
+      break;
+    case 4:
+      var value = /** @type {!proto.sparkmax.controlType} */ (reader.readEnum());
+      msg.setControl(value);
       break;
     case 5:
       var value = /** @type {number} */ (reader.readFloat());
@@ -4709,6 +4743,13 @@ proto.sparkmax.setpointRequest.serializeBinaryToWriter = function(message, write
   if (f) {
     writer.writeBool(
       3,
+      f
+    );
+  }
+  f = message.getControl();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
       f
     );
   }
@@ -4788,6 +4829,21 @@ proto.sparkmax.setpointRequest.prototype.getEnable = function() {
 /** @param {boolean} value */
 proto.sparkmax.setpointRequest.prototype.setEnable = function(value) {
   jspb.Message.setProto3BooleanField(this, 3, value);
+};
+
+
+/**
+ * optional controlType control = 4;
+ * @return {!proto.sparkmax.controlType}
+ */
+proto.sparkmax.setpointRequest.prototype.getControl = function() {
+  return /** @type {!proto.sparkmax.controlType} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/** @param {!proto.sparkmax.controlType} value */
+proto.sparkmax.setpointRequest.prototype.setControl = function(value) {
+  jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 

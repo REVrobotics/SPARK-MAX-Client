@@ -81,7 +81,7 @@ import {
   VirtualDeviceId
 } from "../state";
 import {ConfigParam, ConfigParamGroupId} from "../../models/ConfigParam";
-import {CtrlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ControlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
 export const updateGlobalProcessStatus = (processStatus: string): IUpdateGlobalProcessStatus => ({
   payload: {
@@ -442,7 +442,7 @@ export const setControlValue = (virtualDeviceId: VirtualDeviceId, value: any): I
 });
 
 export const setControlRangeValue = (virtualDeviceId: VirtualDeviceId,
-                                     mode: CtrlType,
+                                     mode: ControlType,
                                      field: "min" | "max",
                                      value: any): ISetControlRangeValue => ({
   type: ActionType.SET_CONTROL_RANGE_VALUE,

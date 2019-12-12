@@ -41,7 +41,7 @@ import {showConfirmation, showToastError} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import SparkManager from "../../managers/SparkManager";
 import ConfigManager, {CONFIG_DISPLAY} from "../../managers/ConfigManager";
-import {ConfigParam, CtrlType, DisplayConfigDto, TelemetryEvent, TelemetryEventType} from "../../models/dto";
+import {ConfigParam, ControlType, DisplayConfigDto, TelemetryEvent, TelemetryEventType} from "../../models/dto";
 import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
 import {
@@ -181,7 +181,7 @@ export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): 
  * Sets control range value
  */
 export const sendControlRangeValue = (virtualDeviceId: VirtualDeviceId,
-                                      mode: CtrlType,
+                                      mode: ControlType,
                                       field: "min" | "max",
                                       value: any): SparkAction<Promise<void>> =>
   (dispatch, getState) => {

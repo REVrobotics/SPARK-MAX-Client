@@ -26,7 +26,7 @@ import {
   TabId,
   VirtualDeviceId, IDisplayState, QuickPanelName, IDestination, IDfuDevice
 } from "../state";
-import {CtrlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ControlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
 /**
  * Each action (atom action) should have its own unique ActionType
@@ -551,7 +551,7 @@ export interface ISetControlRangeValue extends IDeviceAwareAction {
   type: ActionType.SET_CONTROL_RANGE_VALUE,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    mode: CtrlType,
+    mode: ControlType,
     field: "min" | "max",
     value: any,
   },

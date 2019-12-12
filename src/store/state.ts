@@ -353,6 +353,7 @@ export interface INetworkDevice {
   driverName: string;
   deviceName: string;
   updateable: boolean;
+  listable: boolean;
   firmwareVersion: string;
   loading: boolean;
   status: NetworkDeviceStatus;
@@ -822,6 +823,7 @@ export const createNetworkDevice = (extended: ExtendedListResponseDto): INetwork
     firmwareVersion: "",
     status,
     updateable: !!extended.updateable,
+    listable: !!extended.listable,
     loading: !!extended.updateable && status !== NetworkDeviceStatus.NotConfigured,
     selected: status === NetworkDeviceStatus.NotConfigured,
   };

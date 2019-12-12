@@ -7,7 +7,7 @@ import {Button, FormGroup, Intent, Slider} from "@blueprintjs/core";
 import DictionarySelect from "../components/DictionarySelect";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {CONTROL_MODES} from "../store/dictionaries";
-import {ConfigParam, CtrlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ConfigParam, ControlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {queryHasRunningDevices, querySelectedDeviceCurrentConfig, querySelectedDeviceRun} from "../store/selectors";
 import {
   sendSelectedDeviceControlRangeValue,
@@ -22,15 +22,15 @@ import {useCallback} from "react";
 
 interface IProps {
   className?: string;
-  mode: CtrlType;
+  mode: ControlType;
   run: IDeviceRunState;
   hasRunningDevices: boolean;
   start(): void;
   stop(): void;
   stopAll(): void;
-  onControlModeChange(type: CtrlType): void;
+  onControlModeChange(type: ControlType): void;
   onControlValueChange(value: any): void;
-  onControlRangeValueChange(mode: CtrlType, field: "min" | "max", value: number): void;
+  onControlRangeValueChange(mode: ControlType, field: "min" | "max", value: number): void;
   burnConfiguration(): void;
 }
 
@@ -54,7 +54,7 @@ const RunControlArea = (props: IProps) => {
   const controlRangeMinChange = useCallback((value) => onControlRangeValueChange(mode, "min", value), [mode]);
   const controlRangeMaxChange = useCallback((value) => onControlRangeValueChange(mode, "max", value), [mode]);
 
-  const modeRangePanel = mode === CtrlType.DutyCycle ? null : (
+  const modeRangePanel = mode === ControlType.DutyCycle ? null : (
     <div className="flex-row flex-space-between control-area__range">
       <SafeNumericInput
         className="control-area__range-input control-area__range-input--left"
@@ -116,7 +116,7 @@ const RunControlArea = (props: IProps) => {
                   min={currentRange.min}
                   max={currentRange.max}
                   stepSize={currentRange.stepSize || 1}
-                  labelRenderer={mode === CtrlType.DutyCycle}
+                  labelRenderer={mode === ControlType.DutyCycle}
                   onChange={onControlValueChange}/>
           {modeRangePanel}
         </div>
@@ -139,9 +139,9 @@ const mapDispatchToProps = (dispatch: SparkDispatch) => {
     start: () => dispatch(startSelectedDevice()),
     stop: () => dispatch(stopSelectedDevice()),
     stopAll: () => dispatch(stopAllDevices()),
-    onControlModeChange: (mode: CtrlType) => dispatch(setSelectedDeviceParameterValue(ConfigParam.kCtrlType, mode)),
+    onControlModeChange: (mode: ControlType) => dispatch(setSelectedDeviceParameterValue(ConfigParam.kCtrlType, mode)),
     onControlValueChange: (value: number) => dispatch(sendSelectedDeviceControlValue(value)),
-    onControlRangeValueChange: (mode: CtrlType, field: "min" | "max", value: number) =>
+    onControlRangeValueChange: (mode: ControlType, field: "min" | "max", value: number) =>
       dispatch(sendSelectedDeviceControlRangeValue(mode, field, value)),
     burnConfiguration: () => dispatch(burnSelectedDeviceConfiguration()),
   };

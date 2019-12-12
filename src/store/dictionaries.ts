@@ -1,5 +1,5 @@
 import {isString, keyBy} from "lodash";
-import {CtrlType, IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {ControlType, IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {DictionaryName, translateWord} from "../mls/dictionaries";
 import {LegendPosition} from "../display/display-interfaces";
 
@@ -66,7 +66,7 @@ export const LEGEND_POSITIONS = Dictionary.from(
 
 export const CONTROL_MODES = Dictionary.from(
   DictionaryName.ControlModes,
-  [CtrlType.DutyCycle, CtrlType.Velocity, CtrlType.Position],
+  [ControlType.DutyCycle, ControlType.Velocity, ControlType.Position],
 );
 
 export const PID_PROFILES = Dictionary.from(

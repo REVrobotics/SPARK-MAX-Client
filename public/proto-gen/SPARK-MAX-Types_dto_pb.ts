@@ -14,11 +14,14 @@ export enum SensorType {
   Sensorless = 3,
 }
 
-export enum CtrlType {
+export enum ControlType {
   DutyCycle = 0,
   Velocity = 1,
   Voltage = 2,
   Position = 3,
+  SmartMotion = 4,
+  Current = 5,
+  SmartVelocity = 6,
 }
 
 export enum IdleMode {
@@ -29,6 +32,7 @@ export enum IdleMode {
 export enum InputMode {
   PWM = 0,
   CAN = 1,
+  USB = 2,
 }
 
 export enum FaultBits {
@@ -560,12 +564,12 @@ export function sensorTypeToDto(value: SPARK_MAX_Types.sensorType): SensorType {
   return value as unknown as SensorType;
 }
 
-export function ctrlTypeFromDto(value: CtrlType): SPARK_MAX_Types.ctrlType {
-  return value as unknown as SPARK_MAX_Types.ctrlType;
+export function controlTypeFromDto(value: ControlType): SPARK_MAX_Types.controlType {
+  return value as unknown as SPARK_MAX_Types.controlType;
 }
 
-export function ctrlTypeToDto(value: SPARK_MAX_Types.ctrlType): CtrlType {
-  return value as unknown as CtrlType;
+export function controlTypeToDto(value: SPARK_MAX_Types.controlType): ControlType {
+  return value as unknown as ControlType;
 }
 
 export function idleModeFromDto(value: IdleMode): SPARK_MAX_Types.idleMode {

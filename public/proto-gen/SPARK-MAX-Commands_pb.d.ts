@@ -309,6 +309,9 @@ export class extendedListResponse extends jspb.Message {
     getDriverdesc(): string;
     setDriverdesc(value: string): void;
 
+    getListable(): boolean;
+    setListable(value: boolean): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): extendedListResponse.AsObject;
@@ -329,6 +332,7 @@ export namespace extendedListResponse {
         updateable: boolean,
         uniqueid: number,
         driverdesc: string,
+        listable: boolean,
     }
 }
 
@@ -682,6 +686,9 @@ export class setpointRequest extends jspb.Message {
     getEnable(): boolean;
     setEnable(value: boolean): void;
 
+    getControl(): SPARK_MAX_Types_pb.controlType;
+    setControl(value: SPARK_MAX_Types_pb.controlType): void;
+
     getAuxsetpoint(): number;
     setAuxsetpoint(value: number): void;
 
@@ -704,6 +711,7 @@ export namespace setpointRequest {
         root?: rootCommand.AsObject,
         setpoint: number,
         enable: boolean,
+        control: SPARK_MAX_Types_pb.controlType,
         auxsetpoint: number,
         pidslot: number,
     }

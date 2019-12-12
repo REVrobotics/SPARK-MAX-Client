@@ -70,6 +70,7 @@ export interface ExtendedListResponseDto {
   updateable?: boolean;
   uniqueId?: number;
   driverDesc?: string;
+  listable?: boolean;
 }
 
 export interface ExtendedDfuResponseDto {
@@ -140,6 +141,7 @@ export interface SetpointRequestDto {
   root?: RootCommandDto;
   setpoint?: number;
   enable?: boolean;
+  control?: SPARK_MAX_TypesDto.ControlType;
   auxSetpoint?: number;
   pidSlot?: number;
 }

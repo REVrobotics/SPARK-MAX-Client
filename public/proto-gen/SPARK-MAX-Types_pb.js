@@ -17,7 +17,7 @@ goog.exportSymbol('proto.sparkmax.configParam', null, global);
 goog.exportSymbol('proto.sparkmax.configParamGroup', null, global);
 goog.exportSymbol('proto.sparkmax.configParamGroupName', null, global);
 goog.exportSymbol('proto.sparkmax.configParamTypes', null, global);
-goog.exportSymbol('proto.sparkmax.ctrlType', null, global);
+goog.exportSymbol('proto.sparkmax.controlType', null, global);
 goog.exportSymbol('proto.sparkmax.definedFollowerID', null, global);
 goog.exportSymbol('proto.sparkmax.faultBits', null, global);
 goog.exportSymbol('proto.sparkmax.followerSignMode', null, global);
@@ -48,11 +48,14 @@ proto.sparkmax.sensorType = {
 /**
  * @enum {number}
  */
-proto.sparkmax.ctrlType = {
+proto.sparkmax.controlType = {
   DUTYCYCLE: 0,
   VELOCITY: 1,
   VOLTAGE: 2,
-  POSITION: 3
+  POSITION: 3,
+  SMARTMOTION: 4,
+  CURRENT: 5,
+  SMARTVELOCITY: 6
 };
 
 /**
@@ -68,7 +71,8 @@ proto.sparkmax.idleMode = {
  */
 proto.sparkmax.inputMode = {
   PWM: 0,
-  CAN: 1
+  CAN: 1,
+  USB: 2
 };
 
 /**
