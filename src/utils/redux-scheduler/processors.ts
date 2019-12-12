@@ -24,8 +24,8 @@ export const asDebounce = (toKey: (task: IScheduledTask) => string,
     }
     keyToTimeout[key] = {
       timeout: setTimeout(() => {
+        delete keyToTimeout[key];
         schedule.waitOnLock(task).then(() => {
-          delete keyToTimeout[key];
           next();
         });
       }, ms),
