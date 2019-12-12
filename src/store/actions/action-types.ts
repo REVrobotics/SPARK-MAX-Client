@@ -40,6 +40,7 @@ export enum ActionType {
   SET_PROCESSING_BY_DESCRIPTOR = "SET_PROCESSING_BY_DESCRIPTOR",
   SET_CONNECTED_DESCRIPTOR = "SET_CONNECTED_DESCRIPTOR",
   SET_DEVICE_LOADED = "SET_DEVICE_LOADED",
+  SET_DEVICE_FIRMWARE_VERSION = "SET_DEVICE_FIRMWARE_VERSION",
   ADD_DEVICES = "ADD_DEVICES",
   REPLACE_DEVICES = "REPLACE_DEVICES",
   SET_PARAMETERS = "SET_PARAMETERS",
@@ -160,6 +161,14 @@ export interface ISetDeviceLoaded extends IDeviceAwareAction {
   payload: {
     virtualDeviceId: VirtualDeviceId,
     loaded: boolean
+  }
+}
+
+export interface ISetDeviceFirmwareVersion extends IDeviceAwareAction {
+  type: ActionType.SET_DEVICE_FIRMWARE_VERSION,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    firmwareVersion?: string,
   }
 }
 
@@ -592,7 +601,7 @@ export type SparkDispatch = ThunkDispatch<IApplicationState, void, ApplicationAc
 
 export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessing | ISelectDevice
   | IUpdateProcessStatusByDescriptor | ISetProcessingByDescriptor
-  | ISetParameters | ISetConnectedDescriptor | ISetDeviceLoaded | ISetSelectedDevice
+  | ISetParameters | ISetConnectedDescriptor | ISetDeviceLoaded | ISetDeviceFirmwareVersion | ISetSelectedDevice
   | ISetDeviceParameter | ISetDeviceParameterResponse | IRecalculateDeviceId
   | ISetTransientParameter | IResetTransientState
   | IUpdateGlobalProcessStatus | ISetGlobalProcessing

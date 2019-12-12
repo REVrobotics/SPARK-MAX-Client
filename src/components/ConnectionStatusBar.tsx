@@ -4,6 +4,7 @@ import * as React from "react";
 import {useCallback, useState} from "react";
 import {connect} from "react-redux";
 import {
+  canBeIdentified,
   DeviceBlockedReason,
   getVirtualDeviceId,
   IApplicationState,
@@ -14,14 +15,17 @@ import {
 import {
   connectToSelectedDevice,
   disconnectCurrentDevice,
+  identifySelectedDevice,
   selectDevice,
   SparkDispatch,
   syncDevices
 } from "../store/actions";
 import {
-  queryConnectedDescriptor, queryDescriptorsInOrder,
+  queryConnectedDescriptor,
+  queryDescriptorsInOrder,
   queryDevicesInOrder,
-  queryHasGlobalError, queryHasRunningDevices,
+  queryHasGlobalError,
+  queryHasRunningDevices,
   queryIsConnectableToAnyDevice,
   queryIsInProcessing,
   queryIsSelectedDeviceConnected,
@@ -52,6 +56,8 @@ interface IProps {
   onDisconnect(): void;
 
   onRescan(): void;
+
+  onIdentify(): void;
 
   onSelectDevice(device: IDeviceState): void;
 
@@ -107,10 +113,12 @@ const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processStatus, connected, hasGlobalError,
     descriptors, connectedDescriptor,
-    onSelectDevice, onRescan,
+    onSelectDevice, onRescan, onIdentify,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
+  const canIdentify = selectedDevice ? canBeIdentified(selectedDevice) : false;
+  const isOldVersion = selectedDevice && selectedDevice.isLoaded ? !canIdentify : false;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
@@ -193,6 +201,12 @@ const ConnectionStatusBar = (props: IProps) => {
         </div>
         {deviceInfo}
       </Popover>
+      <Button minimal={true}
+              small={true}
+              disabled={!canIdentify}
+              title={isOldVersion ? tt("lbl_identify_disabled") : tt("lbl_identify")}
+              icon="flash"
+              onClick={onIdentify}/>
       <DeviceSelect className="status-bar__device-selector"
                     devices={devices}
                     getPrefix={getDevicePrefix}
@@ -247,6 +261,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     onConnect: () => dispatch(connectToSelectedDevice()),
     onDisconnect: () => dispatch(disconnectCurrentDevice()),
     onRescan: () => dispatch(syncDevices()),
+    onIdentify: () => dispatch(identifySelectedDevice()),
     onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
     onStopAll: () => dispatch(stopAllDevices()),
   };

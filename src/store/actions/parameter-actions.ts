@@ -5,7 +5,6 @@ import SparkManager, {IServerResponse} from "../../managers/SparkManager";
 import {delayPromise} from "../../utils/promise-utils";
 import {
   recalculateDeviceId,
-  setDeviceLoaded,
   setDeviceParameter,
   setDeviceParameterResponse,
   setOnlyTransientParameter,
@@ -136,7 +135,6 @@ export const loadParameters = (virtualDeviceId: VirtualDeviceId): SparkAction<Pr
       .then((values) => {
         dispatch(updateDeviceProcessStatus(virtualDeviceId, ""));
         dispatch(updateDeviceIsProcessing(virtualDeviceId, false));
-        dispatch(setDeviceLoaded(virtualDeviceId, true));
         dispatch(setParameters(virtualDeviceId, values))
       })
       .catch(onError(() => {

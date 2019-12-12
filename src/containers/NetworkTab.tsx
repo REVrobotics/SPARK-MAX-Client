@@ -4,6 +4,7 @@ import * as React from "react";
 import {ReactElement, ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
 import {
+  canBeIdentified,
   getCanIdFromDeviceId,
   getDfuDeviceId,
   getNetworkDeviceVirtualId,
@@ -16,6 +17,7 @@ import {
   NetworkDeviceStatus,
 } from "../store/state";
 import {
+  identifyNetworkDevice,
   requestFirmwareLoad,
   scanCanBus,
   selectAllDfuDevices,
@@ -69,6 +71,8 @@ interface IProps {
 
   selectDfuDevice(id: string, selected: boolean): void;
 
+  identifyDevice(id: string): void;
+
   showDeviceHelp(id: string): void;
 }
 
@@ -87,6 +91,12 @@ interface INetworkDeviceSelectorProps {
   disabled?: boolean;
 
   onSelected(value: any, selected: boolean): void;
+}
+
+interface IIdentifyButtonProps {
+  id: string
+
+  onClick(id: string): void;
 }
 
 /**
@@ -136,6 +146,8 @@ enum NetworkRowType {
   Empty,
 }
 
+const NETWORK_TABLE_COLUMN_WIDTHS = [30, 90, 120, 70, 30, 210];
+
 /**
  * Displays button used to get instructions on how to update firmware.
  */
@@ -145,6 +157,18 @@ const NetworkDeviceHowTo = (props: INetworkDeviceHowToProps) => {
   const open = useCallback(() => onOpen(virtualDeviceId), []);
 
   return <button className="link" onClick={open}>{tt("lbl_how_to")}</button>;
+};
+
+const IdentifyButton = (props: IIdentifyButtonProps) => {
+  const click = useCallback(() => props.onClick(props.id), [props.id]);
+
+  return (
+    <Button minimal={true}
+            small={true}
+            title={tt("lbl_identify")}
+            icon="flash"
+            onClick={click}/>
+  );
 };
 
 class NetworkTab extends React.Component<IProps> {
@@ -165,16 +189,22 @@ class NetworkTab extends React.Component<IProps> {
                  enableMultipleSelection={false}
                  enableColumnResizing={false}
                  enableRowResizing={false}
+                 enableRowHeader={false}
+                 minRowHeight={25}
+                 maxRowHeight={25}
+                 defaultRowHeight={25}
                  numRows={Math.max(length, 10)}
-                 columnWidths={[90, 120, 70, 220, 40]}>
+                 columnWidths={NETWORK_TABLE_COLUMN_WIDTHS}>
 
+            <Column name={tt("lbl_update")}
+                    className="network-table__update-cell"
+                    columnHeaderCellRenderer={this.updateColumnHeaderRenderer}
+                    cellRenderer={this.updateColumnRenderer}/>
             <Column name={tt("lbl_interface")} cellRenderer={this.interfaceColumnRenderer}/>
             <Column name={tt("lbl_device")} cellRenderer={this.deviceColumnRenderer}/>
             <Column name={tt("lbl_can_id")} cellRenderer={this.canIdColumnRenderer}/>
+            <Column name="" className="network-table__identify-cell" cellRenderer={this.identifyColumnRenderer}/>
             <Column name={tt("lbl_firmware")} cellRenderer={this.firmwareColumnRenderer}/>
-            <Column name={tt("lbl_update")}
-                    columnHeaderCellRenderer={this.updateColumnHeaderRenderer}
-                    cellRenderer={this.updateColumnRenderer}/>
           </Table>
         </div>
         <div className="flex-row flex-space-between">
@@ -265,6 +295,19 @@ class NetworkTab extends React.Component<IProps> {
 
   private canIdColumnRenderer = this.wrapCellRenderer({
     device: (device) => <Cell className="text-right">{getCanIdFromDeviceId(device.deviceId)}</Cell>,
+  });
+
+  private identifyColumnRenderer = this.wrapCellRenderer({
+    device: (device) => (
+      <Cell>
+        <>
+          {
+            canBeIdentified(device)
+            && <IdentifyButton id={getNetworkDeviceVirtualId(device)} onClick={this.props.identifyDevice}/>
+          }
+        </>
+      </Cell>
+    ),
   });
 
   private firmwareColumnRenderer = this.wrapCellRenderer({
@@ -385,6 +428,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     selectAllDevices: (selected: boolean) => dispatch(selectAllNetworkDevices(selected)),
     selectDfuDevice: (id: string, selected: boolean) => dispatch(selectDfuDevice(id, selected)),
     selectAllDfuDevices: (selected: boolean) => dispatch(selectAllDfuDevices(selected)),
+    identifyDevice: (id: string) => dispatch(identifyNetworkDevice(id)),
     showDeviceHelp: (id: string) => dispatch(showNetworkDeviceHelp(id)),
   };
 }

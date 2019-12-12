@@ -5,9 +5,12 @@ import {
   createLoadReport,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag, getDeviceId,
+  FirmwareTag,
+  getDeviceId,
   getNetworkDeviceId,
-  getNetworkDeviceVirtualId, getVirtualDeviceId, isDeviceBlocked,
+  getNetworkDeviceVirtualId,
+  getVirtualDeviceId,
+  isDeviceBlocked,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
   NetworkDeviceStatus,
@@ -18,6 +21,7 @@ import SparkManager from "../../managers/SparkManager";
 import {
   consoleOutput,
   setConsoleOutput,
+  setDeviceLoaded,
   setFirmwareLoading,
   setLastFirmwareLoadingMessage,
   setNetworkDevices,
@@ -30,9 +34,11 @@ import {
 import {concatMapPromises} from "../../utils/promise-utils";
 import {
   queryConnectedDescriptor,
+  queryConnectedDevices,
   queryConsoleOutput,
   queryDfuDeviceCount,
-  queryDfuDevicesToUpdate, queryDirtyDevices,
+  queryDfuDevicesToUpdate,
+  queryDirtyDevices,
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
@@ -149,6 +155,16 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
     return dispatch(updateOrRecoverFirmware(false, path, deviceIds.map(toDtoDeviceId)))
       .then((updated) => dispatch(updateOrRecoverFirmware(true, path, dfuDeviceIds))
         .then((recovered) => ({updated, recovered})))
+      // After update it is better to reload all devices again
+      .then((response) => {
+        queryConnectedDevices(getState())
+          .forEach((device) => dispatch(setDeviceLoaded(getVirtualDeviceId(device), false)));
+        return response;
+      })
+      // Synchronize list of devices:
+      // - some of them may be not visible (due to error)
+      // - other can be added
+      // - descriptor of device may be changed
       .then((response) => dispatch(syncDevices()).then(() => response))
       .then((response) => {
         if (connectedDescriptor) {
@@ -451,3 +467,13 @@ export const showNetworkDeviceHelp = (id: string): SparkAction<Promise<void>> =>
       okLabel: tt("lbl_close"),
     }));
   };
+
+export const identifyNetworkDevice = (id: string): SparkAction<void> => {
+  return (dispatch, getState) => {
+    const device = queryNetworkDevice(getState(), id);
+    if (device) {
+      SparkManager.identify(getNetworkDeviceId(device), device.uniqueId)
+        .catch(useErrorHandler(dispatch));
+    }
+  };
+};

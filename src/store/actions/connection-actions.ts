@@ -12,7 +12,7 @@ import {
 import {
   addDevices,
   replaceDevices,
-  setConnectedDescriptor,
+  setConnectedDescriptor, setDeviceFirmwareVersion, setDeviceLoaded,
   setSelectedDevice,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus,
@@ -22,7 +22,8 @@ import SparkManager from "../../managers/SparkManager";
 import {
   queryConnectedDescriptor,
   queryDevice,
-  queryDevicesByDescriptor, queryDevicesInOrder,
+  queryDevicesByDescriptor,
+  queryDevicesInOrder,
   queryIsDeviceConnected,
   queryPathDescriptor,
   querySelectedVirtualDeviceId
@@ -33,6 +34,7 @@ import {showToastWarning} from "./ui-actions";
 import {onError, useErrorHandler} from "./error-actions";
 import {syncSignals} from "./display-actions";
 import {onSchedule} from "../../utils/redux-scheduler/action";
+import {forSelectedDevice} from "./action-creators";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -195,7 +197,10 @@ export const ensureDeviceLoaded = (virtualDeviceId: VirtualDeviceId): SparkActio
 
     // load parameters if device is connected and parameters was not loaded
     return isConnected && !device.isLoaded ?
-      dispatch(loadParameters(virtualDeviceId))
+      Promise.all([
+        dispatch(loadParameters(virtualDeviceId)),
+        dispatch(loadFirmwareVersion(virtualDeviceId)),
+      ]).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
       : Promise.resolve();
   };
 
@@ -217,3 +222,31 @@ export function findAllDevices(): SparkAction<Promise<void>> {
       .catch(useErrorHandler(dispatch));
   };
 }
+
+export function loadFirmwareVersion(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
+  return (dispatch, getState) => {
+    const device = queryDevice(getState(), virtualDeviceId);
+    if (device && device.uniqueId === 0) {
+      return SparkManager.getFirmware(toDtoDeviceId(getDeviceId(device)))
+        .then((response) => {
+          const firmwareVersion = response.version!.substring(1);
+          dispatch(setDeviceFirmwareVersion(virtualDeviceId, firmwareVersion));
+        })
+        .catch(useErrorHandler(dispatch));
+    } else {
+      return Promise.resolve();
+    }
+  };
+}
+
+export function identifyDevice(virtualDeviceId: VirtualDeviceId): SparkAction<void> {
+  return (dispatch, getState) => {
+    const device = queryDevice(getState(), virtualDeviceId);
+    if (device) {
+      SparkManager.identify(getDeviceId(device), device.uniqueId)
+        .catch(useErrorHandler(dispatch));
+    }
+  };
+}
+
+export const identifySelectedDevice = forSelectedDevice(identifyDevice);
