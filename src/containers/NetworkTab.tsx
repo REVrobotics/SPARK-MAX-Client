@@ -4,6 +4,7 @@ import * as React from "react";
 import {ReactElement, ReactNode, useCallback} from "react";
 import {connect} from "react-redux";
 import {
+  canBeIdentified,
   getCanIdFromDeviceId,
   getDfuDeviceId,
   getNetworkDeviceVirtualId,
@@ -38,7 +39,6 @@ import {
   queryNetwork
 } from "../store/selectors";
 import Console from "../components/Console";
-import {compareVersions} from "../utils/string-utils";
 
 interface IProps {
   connected: boolean;
@@ -95,6 +95,7 @@ interface INetworkDeviceSelectorProps {
 
 interface IIdentifyButtonProps {
   id: string
+
   onClick(id: string): void;
 }
 
@@ -301,8 +302,8 @@ class NetworkTab extends React.Component<IProps> {
       <Cell>
         <>
           {
-            compareVersions(device.firmwareVersion, "1.5.0") >= 0 &&
-              <IdentifyButton id={getNetworkDeviceVirtualId(device)} onClick={this.props.identifyDevice}/>
+            canBeIdentified(device)
+            && <IdentifyButton id={getNetworkDeviceVirtualId(device)} onClick={this.props.identifyDevice}/>
           }
         </>
       </Cell>

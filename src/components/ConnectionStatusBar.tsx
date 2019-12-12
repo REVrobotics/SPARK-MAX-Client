@@ -4,6 +4,7 @@ import * as React from "react";
 import {useCallback, useState} from "react";
 import {connect} from "react-redux";
 import {
+  canBeIdentified,
   DeviceBlockedReason,
   getVirtualDeviceId,
   IApplicationState,
@@ -13,15 +14,18 @@ import {
 } from "../store/state";
 import {
   connectToSelectedDevice,
-  disconnectCurrentDevice, identifySelectedDevice,
+  disconnectCurrentDevice,
+  identifySelectedDevice,
   selectDevice,
   SparkDispatch,
   syncDevices
 } from "../store/actions";
 import {
-  queryConnectedDescriptor, queryDescriptorsInOrder,
+  queryConnectedDescriptor,
+  queryDescriptorsInOrder,
   queryDevicesInOrder,
-  queryHasGlobalError, queryHasRunningDevices,
+  queryHasGlobalError,
+  queryHasRunningDevices,
   queryIsConnectableToAnyDevice,
   queryIsInProcessing,
   queryIsSelectedDeviceConnected,
@@ -33,7 +37,6 @@ import {DeviceSelect} from "./DeviceSelect";
 import {InfoIcon} from "../icons";
 import {Message} from "../models/Message";
 import {stopAllDevices} from "../store/actions/display-actions";
-import {compareVersions} from "../utils/string-utils";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -114,10 +117,8 @@ const ConnectionStatusBar = (props: IProps) => {
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
-  const isNewVersion = selectedDevice && selectedDevice.firmwareVersion ?
-    compareVersions(selectedDevice.firmwareVersion, "1.5.0") >= 0
-    : false;
-  const isOldVersion = selectedDevice && selectedDevice.isLoaded ? !isNewVersion : false;
+  const canIdentify = selectedDevice ? canBeIdentified(selectedDevice) : false;
+  const isOldVersion = selectedDevice && selectedDevice.isLoaded ? !canIdentify : false;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
@@ -202,7 +203,7 @@ const ConnectionStatusBar = (props: IProps) => {
       </Popover>
       <Button minimal={true}
               small={true}
-              disabled={!isNewVersion}
+              disabled={!canIdentify}
               title={isOldVersion ? tt("lbl_identify_disabled") : tt("lbl_identify")}
               icon="flash"
               onClick={onIdentify}/>
