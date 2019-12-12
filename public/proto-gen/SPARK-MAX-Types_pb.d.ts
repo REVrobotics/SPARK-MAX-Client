@@ -17,11 +17,14 @@ export enum sensorType {
     SENSORLESS = 3,
 }
 
-export enum ctrlType {
+export enum controlType {
     DUTYCYCLE = 0,
     VELOCITY = 1,
     VOLTAGE = 2,
     POSITION = 3,
+    SMARTMOTION = 4,
+    CURRENT = 5,
+    SMARTVELOCITY = 6,
 }
 
 export enum idleMode {
@@ -32,6 +35,7 @@ export enum idleMode {
 export enum inputMode {
     PWM = 0,
     CAN = 1,
+    USB = 2,
 }
 
 export enum faultBits {

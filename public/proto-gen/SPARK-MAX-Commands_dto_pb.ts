@@ -74,6 +74,7 @@ export interface ExtendedListResponseDto {
   updateable?: boolean;
   uniqueId?: number;
   driverDesc?: string;
+  listable?: boolean;
 }
 
 export interface ExtendedDfuResponseDto {
@@ -144,6 +145,7 @@ export interface SetpointRequestDto {
   root?: RootCommandDto;
   setpoint?: number;
   enable?: boolean;
+  control?: SPARK_MAX_TypesDto.ControlType;
   auxSetpoint?: number;
   pidSlot?: number;
 }
@@ -560,6 +562,9 @@ export function extendedListResponseFromDto(dto: ExtendedListResponseDto): SPARK
   if (dto.driverDesc != null) {
     message.setDriverdesc(dto.driverDesc);
   }
+  if (dto.listable != null) {
+    message.setListable(dto.listable);
+  }
   return message;
 }
 
@@ -592,6 +597,10 @@ export function extendedListResponseToDto(message: SPARK_MAX_Commands.extendedLi
   const field6 = message.getDriverdesc();
   if (field6 != null) {
     dto.driverDesc = message.getDriverdesc();
+  }
+  const field7 = message.getListable();
+  if (field7 != null) {
+    dto.listable = message.getListable();
   }
   return dto;
 }
@@ -956,6 +965,9 @@ export function setpointRequestFromDto(dto: SetpointRequestDto): SPARK_MAX_Comma
   if (dto.enable != null) {
     message.setEnable(dto.enable);
   }
+  if (dto.control != null) {
+    message.setControl(SPARK_MAX_TypesDto.controlTypeFromDto(dto.control));
+  }
   if (dto.auxSetpoint != null) {
     message.setAuxsetpoint(dto.auxSetpoint);
   }
@@ -979,12 +991,16 @@ export function setpointRequestToDto(message: SPARK_MAX_Commands.setpointRequest
   if (field2 != null) {
     dto.enable = message.getEnable();
   }
-  const field3 = message.getAuxsetpoint();
+  const field3 = message.getControl();
   if (field3 != null) {
+    dto.control = SPARK_MAX_TypesDto.controlTypeToDto(field3);
+  }
+  const field4 = message.getAuxsetpoint();
+  if (field4 != null) {
     dto.auxSetpoint = message.getAuxsetpoint();
   }
-  const field4 = message.getPidslot();
-  if (field4 != null) {
+  const field5 = message.getPidslot();
+  if (field5 != null) {
     dto.pidSlot = message.getPidslot();
   }
   return dto;

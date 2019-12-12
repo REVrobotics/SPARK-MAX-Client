@@ -17,7 +17,7 @@ module.exports = {
     // Name of the target repository
     repository: "SPARK-MAX-Server-Cpp",
     // Name of the target branch
-    ref: "fwUpdates",
+    ref: "cleanup",
     // List of files to be download
     path: ["src/main/protobuf/SPARK-MAX-Types.proto", "src/main/protobuf/SPARK-MAX-Commands.proto"],
     // Name of the destination directory where .proto files will be downloaded to.

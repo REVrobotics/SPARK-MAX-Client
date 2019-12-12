@@ -130,7 +130,7 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
     return SparkManager.listAllDevices()
       .then(({driverList, extendedList}) => {
         // Here we need only SPARK MAX controllers
-        const nextDevices = extendedList.filter((extended) => extended.updateable);
+        const nextDevices = extendedList.filter((extended) => extended.listable);
         // Generate device state for each connected device
         const nextDeviceStates = nextDevices.map(createDeviceState);
         const currentDeviceStates = queryDevicesInOrder(getState());
@@ -213,7 +213,7 @@ export function findAllDevices(): SparkAction<Promise<void>> {
       .then(({driverList, extendedList}) => {
         dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
-        dispatch(addDevices(extendedList.filter(({updateable}) => updateable).map(createDeviceState), driverList));
+        dispatch(addDevices(extendedList.filter(({listable}) => listable).map(createDeviceState), driverList));
       })
       .catch(onError(() => {
         dispatch(updateGlobalProcessStatus(tt("lbl_status_search_failed")));

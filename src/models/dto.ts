@@ -67,3 +67,8 @@ export interface TelemetryErrorEvent {
 export type TelemetryEvent = TelemetryStartEvent | TelemetryStopEvent | TelemetryDataEvent | TelemetryErrorEvent;
 
 export const DFU_DEVICE_ALL = "all";
+
+export enum DataPortConfigTypes {
+  DataPortDefault = 0,
+  DataPortAlternateEncoder = 1,
+}

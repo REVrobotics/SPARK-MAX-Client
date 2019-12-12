@@ -209,7 +209,7 @@ function findSecretConfigFile() {
   if (secretConfigPath == null) {
     return {};
   } else {
-    console.log(`Secret configuration file was not found: ${secretConfigPath}`);
+    console.log(`Secret configuration file was found: ${secretConfigPath}`);
     return require(secretConfigPath);
   }
 }

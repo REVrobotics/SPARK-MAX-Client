@@ -25,7 +25,7 @@ import {
 } from "./state";
 import {
   ConfigParamGroupName,
-  CtrlType,
+  ControlType,
   DisplayConfigDto,
   DisplayDeviceDto,
   DisplayDeviceSignalDto
@@ -34,9 +34,9 @@ import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils
 import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalStylePalette} from "./selectors";
 
 const CONTROL_MODE_CONSTRAINTS = [
-  {mode: CtrlType.DutyCycle, min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
-  {mode: CtrlType.Velocity, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
-  {mode: CtrlType.Position, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.DutyCycle, min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
+  {mode: ControlType.Velocity, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.Position, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
 ];
 
 /**
