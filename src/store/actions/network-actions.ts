@@ -17,7 +17,7 @@ import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
 import {
   consoleOutput,
-  setConsoleOutput,
+  setConsoleOutput, setDeviceLoaded,
   setFirmwareLoading,
   setLastFirmwareLoadingMessage,
   setNetworkDevices,
@@ -29,7 +29,7 @@ import {
 } from "./atom-actions";
 import {concatMapPromises} from "../../utils/promise-utils";
 import {
-  queryConnectedDescriptor,
+  queryConnectedDescriptor, queryConnectedDevices,
   queryConsoleOutput,
   queryDfuDeviceCount,
   queryDfuDevicesToUpdate, queryDirtyDevices,
@@ -149,6 +149,16 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
     return dispatch(updateOrRecoverFirmware(false, path, deviceIds.map(toDtoDeviceId)))
       .then((updated) => dispatch(updateOrRecoverFirmware(true, path, dfuDeviceIds))
         .then((recovered) => ({updated, recovered})))
+      // After update it is better to reload all devices again
+      .then((response) => {
+        queryConnectedDevices(getState())
+          .forEach((device) => dispatch(setDeviceLoaded(getVirtualDeviceId(device), false)));
+        return response;
+      })
+      // Synchronize list of devices:
+      // - some of them may be not visible (due to error)
+      // - other can be added
+      // - descriptor of device may be changed
       .then((response) => dispatch(syncDevices()).then(() => response))
       .then((response) => {
         if (connectedDescriptor) {

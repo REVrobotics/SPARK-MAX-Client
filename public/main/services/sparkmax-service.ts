@@ -371,7 +371,7 @@ onTwoWayCallPromise("load-firmware", (recover: boolean, filename: string, device
       });
 
       const scheduleFirmwareProgress = () => {
-        firmwareID = global.setTimeout(askForProgress, 50);
+        firmwareID = global.setTimeout(askForProgress, 500);
       };
 
       return context.pause()

@@ -457,6 +457,10 @@ export interface IDeviceState {
    * State of the advanced tab for the device
    */
   advanced: IDeviceAdvancedState;
+  /**
+   * Represents firmware version
+   */
+  firmwareVersion?: string;
 }
 
 /**
@@ -604,6 +608,7 @@ export const resetDeviceState = (state: IDeviceState) => ({
   ...state,
   uniqueId: 0,
   isLoaded: false,
+  firmwareVersion: undefined,
 });
 
 export const createDeviceDisplayState = (): IDeviceDisplayState => ({

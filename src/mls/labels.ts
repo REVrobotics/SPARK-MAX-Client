@@ -8,6 +8,7 @@ const labels = {
   "lbl_connected": "Connected",
   "lbl_not_connected": "Not Connected",
   "lbl_identify": "Identify",
+  "lbl_identify_disabled": "Identify (cannot be used for firmware version prior to 1.5.0)",
   "lbl_rescan": "Rescan",
   "lbl_status": "Status",
   "lbl_global_config_error": "A device is not configured",

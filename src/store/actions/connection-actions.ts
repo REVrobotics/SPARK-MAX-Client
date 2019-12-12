@@ -12,7 +12,7 @@ import {
 import {
   addDevices,
   replaceDevices,
-  setConnectedDescriptor,
+  setConnectedDescriptor, setDeviceFirmwareVersion, setDeviceLoaded,
   setSelectedDevice,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus,
@@ -197,7 +197,10 @@ export const ensureDeviceLoaded = (virtualDeviceId: VirtualDeviceId): SparkActio
 
     // load parameters if device is connected and parameters was not loaded
     return isConnected && !device.isLoaded ?
-      dispatch(loadParameters(virtualDeviceId))
+      Promise.all([
+        dispatch(loadParameters(virtualDeviceId)),
+        dispatch(loadFirmwareVersion(virtualDeviceId)),
+      ]).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
       : Promise.resolve();
   };
 
@@ -217,6 +220,22 @@ export function findAllDevices(): SparkAction<Promise<void>> {
         dispatch(updateGlobalIsProcessing(false));
       }))
       .catch(useErrorHandler(dispatch));
+  };
+}
+
+export function loadFirmwareVersion(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
+  return (dispatch, getState) => {
+    const device = queryDevice(getState(), virtualDeviceId);
+    if (device && device.uniqueId === 0) {
+      return SparkManager.getFirmware(toDtoDeviceId(getDeviceId(device)))
+        .then((response) => {
+          const firmwareVersion = response.version!.substring(1);
+          dispatch(setDeviceFirmwareVersion(virtualDeviceId, firmwareVersion));
+        })
+        .catch(useErrorHandler(dispatch));
+    } else {
+      return Promise.resolve();
+    }
   };
 }
 

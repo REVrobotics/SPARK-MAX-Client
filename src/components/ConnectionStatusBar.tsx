@@ -33,6 +33,7 @@ import {DeviceSelect} from "./DeviceSelect";
 import {InfoIcon} from "../icons";
 import {Message} from "../models/Message";
 import {stopAllDevices} from "../store/actions/display-actions";
+import {compareVersions} from "../utils/string-utils";
 
 interface IProps {
   selectedDevice?: IDeviceState,
@@ -113,6 +114,10 @@ const ConnectionStatusBar = (props: IProps) => {
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
+  const isNewVersion = selectedDevice && selectedDevice.firmwareVersion ?
+    compareVersions(selectedDevice.firmwareVersion, "1.5.0") >= 0
+    : false;
+  const isOldVersion = selectedDevice && selectedDevice.isLoaded ? !isNewVersion : false;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
   const onDeviceSelectOpened = useCallback(() => setSelectOpened(true), []);
@@ -197,8 +202,8 @@ const ConnectionStatusBar = (props: IProps) => {
       </Popover>
       <Button minimal={true}
               small={true}
-              disabled={devices.length === 0}
-              title={tt("lbl_identify")}
+              disabled={!isNewVersion}
+              title={isOldVersion ? tt("lbl_identify_disabled") : tt("lbl_identify")}
               icon="flash"
               onClick={onIdentify}/>
       <DeviceSelect className="status-bar__device-selector"

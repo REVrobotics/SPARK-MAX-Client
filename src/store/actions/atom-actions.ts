@@ -57,7 +57,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor, ISetControlRangeValue,
+  IUpdateProcessStatusByDescriptor, ISetControlRangeValue, ISetDeviceFirmwareVersion,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -129,6 +129,15 @@ export const setDeviceLoaded = (virtualDeviceId: VirtualDeviceId,
     loaded
   },
   type: ActionType.SET_DEVICE_LOADED
+});
+
+export const setDeviceFirmwareVersion = (virtualDeviceId: VirtualDeviceId,
+                                         firmwareVersion?: string): ISetDeviceFirmwareVersion => ({
+  payload: {
+    virtualDeviceId,
+    firmwareVersion
+  },
+  type: ActionType.SET_DEVICE_FIRMWARE_VERSION
 });
 
 export const updateDeviceIsProcessing = (virtualDeviceId: VirtualDeviceId,
