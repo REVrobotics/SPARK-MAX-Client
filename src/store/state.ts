@@ -1047,7 +1047,7 @@ export const canBeIdentified = (device: INetworkDevice | IDeviceState) => {
   if (device.uniqueId) {
     return true;
   } else if (device && device.firmwareVersion) {
-    return compareVersions(device.firmwareVersion, "1.5.0");
+    return compareVersions(device.firmwareVersion, "1.5.0") >= 0;
   } else {
     return false;
   }
