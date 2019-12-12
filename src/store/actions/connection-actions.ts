@@ -22,7 +22,8 @@ import SparkManager from "../../managers/SparkManager";
 import {
   queryConnectedDescriptor,
   queryDevice,
-  queryDevicesByDescriptor, queryDevicesInOrder,
+  queryDevicesByDescriptor,
+  queryDevicesInOrder,
   queryIsDeviceConnected,
   queryPathDescriptor,
   querySelectedVirtualDeviceId
@@ -33,6 +34,7 @@ import {showToastWarning} from "./ui-actions";
 import {onError, useErrorHandler} from "./error-actions";
 import {syncSignals} from "./display-actions";
 import {onSchedule} from "../../utils/redux-scheduler/action";
+import {forSelectedDevice} from "./action-creators";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -217,3 +219,15 @@ export function findAllDevices(): SparkAction<Promise<void>> {
       .catch(useErrorHandler(dispatch));
   };
 }
+
+export function identifyDevice(virtualDeviceId: VirtualDeviceId): SparkAction<void> {
+  return (dispatch, getState) => {
+    const device = queryDevice(getState(), virtualDeviceId);
+    if (device) {
+      SparkManager.identify(getDeviceId(device), device.uniqueId)
+        .catch(useErrorHandler(dispatch));
+    }
+  };
+}
+
+export const identifySelectedDevice = forSelectedDevice(identifyDevice);

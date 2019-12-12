@@ -12,7 +12,7 @@ import {
   firmwareResponseToDto,
   getParameterRequestFromDto,
   IdAssignmentRequestDto,
-  idAssignmentRequestFromDto,
+  idAssignmentRequestFromDto, identifyRequestFromDto,
   ListRequestDto,
   listRequestFromDto,
   listResponseToDto,
@@ -66,6 +66,10 @@ class SparkServer {
 
   public disconnect(controlCommand: any, cb?: Function) {
     this.grpcClient.disconnect(disconnectRequestFromDto(controlCommand), wrapIntoGrpcCallback(cb, disconnectResponseToDto));
+  }
+
+  public identify(identifyCommand: any, cb?: Function) {
+    this.grpcClient.identify(identifyRequestFromDto(identifyCommand), wrapIntoGrpcCallback(cb, rootResponseToDto));
   }
 
   public list(listCommand: ListRequestDto, cb?: Function) {

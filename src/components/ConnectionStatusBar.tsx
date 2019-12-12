@@ -13,7 +13,7 @@ import {
 } from "../store/state";
 import {
   connectToSelectedDevice,
-  disconnectCurrentDevice,
+  disconnectCurrentDevice, identifySelectedDevice,
   selectDevice,
   SparkDispatch,
   syncDevices
@@ -52,6 +52,8 @@ interface IProps {
   onDisconnect(): void;
 
   onRescan(): void;
+
+  onIdentify(): void;
 
   onSelectDevice(device: IDeviceState): void;
 
@@ -107,7 +109,7 @@ const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processStatus, connected, hasGlobalError,
     descriptors, connectedDescriptor,
-    onSelectDevice, onRescan,
+    onSelectDevice, onRescan, onIdentify,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
@@ -193,6 +195,12 @@ const ConnectionStatusBar = (props: IProps) => {
         </div>
         {deviceInfo}
       </Popover>
+      <Button minimal={true}
+              small={true}
+              disabled={devices.length === 0}
+              title={tt("lbl_identify")}
+              icon="flash"
+              onClick={onIdentify}/>
       <DeviceSelect className="status-bar__device-selector"
                     devices={devices}
                     getPrefix={getDevicePrefix}
@@ -247,6 +255,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
     onConnect: () => dispatch(connectToSelectedDevice()),
     onDisconnect: () => dispatch(disconnectCurrentDevice()),
     onRescan: () => dispatch(syncDevices()),
+    onIdentify: () => dispatch(identifySelectedDevice()),
     onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
     onStopAll: () => dispatch(stopAllDevices()),
   };

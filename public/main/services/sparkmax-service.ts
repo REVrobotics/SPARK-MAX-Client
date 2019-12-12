@@ -173,6 +173,17 @@ onTwoWayCall("disconnect", (cb, device?: string) => {
     });
 });
 
+onTwoWayCall("identify", (cb, canId: number, uniqueId: number) => {
+  server.identify({canId, uniqueId}, (err: any, response: string) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+
+    cb(null, response);
+  });
+});
+
 onTwoWayCall("set-param", (cb, device: string, parameter: number, value: any) => {
   let afterSetParam: Promise<any>;
 

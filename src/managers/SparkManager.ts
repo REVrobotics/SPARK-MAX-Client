@@ -105,6 +105,10 @@ class SparkManager {
     return wrapSparkError(sendTwoWay("disconnect"));
   }
 
+  public identify(canId: number, uniqueId: number): Promise<any> {
+    return wrapSparkError(sendTwoWay("identify", canId, uniqueId));
+  }
+
   public downloadFile(url: string): Promise<string> {
     return sendTwoWay("download", url);
   }

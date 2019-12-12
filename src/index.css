@@ -56,8 +56,8 @@
 }
 
 .status-bar__device-selector {
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 175px;
+    max-width: 175px;
     margin-right: 5px;
 }
 
