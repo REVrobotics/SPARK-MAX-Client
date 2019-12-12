@@ -5,9 +5,12 @@ import {
   createLoadReport,
   createNetworkDevice,
   DeviceId,
-  FirmwareTag, getDeviceId,
+  FirmwareTag,
+  getDeviceId,
   getNetworkDeviceId,
-  getNetworkDeviceVirtualId, getVirtualDeviceId, isDeviceBlocked,
+  getNetworkDeviceVirtualId,
+  getVirtualDeviceId,
+  isDeviceBlocked,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
   NetworkDeviceStatus,
@@ -17,7 +20,8 @@ import {SparkAction} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
 import {
   consoleOutput,
-  setConsoleOutput, setDeviceLoaded,
+  setConsoleOutput,
+  setDeviceLoaded,
   setFirmwareLoading,
   setLastFirmwareLoadingMessage,
   setNetworkDevices,
@@ -29,10 +33,12 @@ import {
 } from "./atom-actions";
 import {concatMapPromises} from "../../utils/promise-utils";
 import {
-  queryConnectedDescriptor, queryConnectedDevices,
+  queryConnectedDescriptor,
+  queryConnectedDevices,
   queryConsoleOutput,
   queryDfuDeviceCount,
-  queryDfuDevicesToUpdate, queryDirtyDevices,
+  queryDfuDevicesToUpdate,
+  queryDirtyDevices,
   queryFirmwareByTag,
   queryLastFirmwareLoadingMessage,
   queryNetworkDevice,
@@ -461,3 +467,13 @@ export const showNetworkDeviceHelp = (id: string): SparkAction<Promise<void>> =>
       okLabel: tt("lbl_close"),
     }));
   };
+
+export const identifyNetworkDevice = (id: string): SparkAction<void> => {
+  return (dispatch, getState) => {
+    const device = queryNetworkDevice(getState(), id);
+    if (device) {
+      SparkManager.identify(getNetworkDeviceId(device), device.uniqueId)
+        .catch(useErrorHandler(dispatch));
+    }
+  };
+};

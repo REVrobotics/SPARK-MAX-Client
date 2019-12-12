@@ -56,8 +56,8 @@
 }
 
 .status-bar__device-selector {
-    min-width: 175px;
-    max-width: 175px;
+    min-width: 200px;
+    max-width: 200px;
     margin-right: 5px;
 }
 
@@ -631,9 +631,28 @@ label.modified::after {
     margin-bottom: 10px;
 }
 
+.network-table .bp3-table-cell {
+    line-height: 25px;
+}
+
 .network-table__selector-header {
-    margin: 0 0 0 10px;
+    margin: 0 0 0 7px;
     width: 0;
+}
+
+.network-table__update-cell {
+    padding: 0;
+    background: #f5f8fa;
+}
+
+.network-table__update-cell .bp3-control {
+    position: relative;
+    left: 7px;
+}
+
+.network-table__identify-cell {
+    padding: 0;
+    text-align: center;
 }
 
 button.link {
@@ -1076,7 +1095,7 @@ button.link {
 }
 
 .cell--dfu-title {
-    min-width: calc(100% - 40px);
+    min-width: calc(100% - 30px);
     z-index: 1;
     text-align: center;
     background: white;
