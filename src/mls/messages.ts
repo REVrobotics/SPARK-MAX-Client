@@ -28,7 +28,7 @@ const messages = {
   "msg_console_output:started_firmware_recover": "[INFO] Started firmware recover process...",
   "msg_console_output:firmware_loading_progress": "[INFO] (${progress}%) $message",
   "msg_startup_problems": "During application startup some application settings were invalid.",
-  "msg_controller_has_old_firmware": "One of your motor controllers is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Firmware' tab.",
+  "msg_controller_has_old_firmware": "One of your motor controllers is using an older version of firmware. The client will download the latest version, and can be loaded in the 'Network' tab.",
   "msg_no_device_selected": "No devices selected",
   "msg_firmware_cannot_be_updated": "Firmware could not be updated. Look at console log for details",
   "msg_firmware_cannot_be_recovered": "Firmware could not be recovered. Look at console log for details",

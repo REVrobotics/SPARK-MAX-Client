@@ -110,7 +110,7 @@ const labels = {
   "lbl_no": "No",
   "lbl_ok": "OK",
   "lbl_problems_during_startup": "Problems During Startup",
-  "lbl_update_old_firmware": "Open Network Tab & Scan Bus",
+  "lbl_update_old_firmware": "Open Network Tab",
   "lbl_firmware_loading_progress": "$message - (${progress}%)",
   "lbl_unnamed": "Unnamed",
   "lbl_basic_tab": "Basic",

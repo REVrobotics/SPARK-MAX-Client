@@ -18,6 +18,7 @@ import {
   identifySelectedDevice,
   selectDevice,
   SparkDispatch,
+  SYNC_ALL_AND_SHOW_NOTIFICATIONS,
   syncDevices
 } from "../store/actions";
 import {
@@ -260,7 +261,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     onConnect: () => dispatch(connectToSelectedDevice()),
     onDisconnect: () => dispatch(disconnectCurrentDevice()),
-    onRescan: () => dispatch(syncDevices()),
+    onRescan: () => dispatch(syncDevices(SYNC_ALL_AND_SHOW_NOTIFICATIONS)),
     onIdentify: () => dispatch(identifySelectedDevice()),
     onSelectDevice: (device: IDeviceState) => dispatch(selectDevice(getVirtualDeviceId(device))),
     onStopAll: () => dispatch(stopAllDevices()),

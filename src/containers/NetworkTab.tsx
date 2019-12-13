@@ -19,7 +19,6 @@ import {
 import {
   identifyNetworkDevice,
   requestFirmwareLoad,
-  scanCanBus,
   selectAllDfuDevices,
   selectAllNetworkDevices,
   selectDfuDevice,
@@ -60,8 +59,6 @@ interface IProps {
   firmwareDownloadError: boolean;
 
   requestFirmwareLoad(): void;
-
-  scanCanBus(): void;
 
   selectDevice(id: string, selected: boolean): void;
 
@@ -178,7 +175,7 @@ class NetworkTab extends React.Component<IProps> {
 
   public render() {
     const {
-      firmwareLoadingProgress, firmwareLoadingText, outputText, scanInProgress, firmwareLoading,
+      firmwareLoadingProgress, firmwareLoadingText, outputText, firmwareLoading,
       latestFirmwareVersion, firmwareDownloading, devices, dfuDevices,
     } = this.props;
     const length = devices.length + (dfuDevices.length ? dfuDevices.length + 2 : 0);
@@ -207,11 +204,7 @@ class NetworkTab extends React.Component<IProps> {
             <Column name={tt("lbl_firmware")} cellRenderer={this.firmwareColumnRenderer}/>
           </Table>
         </div>
-        <div className="flex-row flex-space-between">
-          <Button className="rev-btn"
-                  onClick={this.props.scanCanBus}
-                  disabled={firmwareLoading}
-                  loading={scanInProgress}>{tt("lbl_scan_bus")}</Button>
+        <div className="flex-row flex-end">
           <Button className="rev-btn"
                   loading={firmwareLoading || firmwareDownloading}
                   onClick={this.props.requestFirmwareLoad}>{tt("lbl_load_firmware")}</Button>
@@ -422,7 +415,6 @@ export function mapStateToProps(state: IApplicationState) {
 
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
-    scanCanBus: () => dispatch(scanCanBus()),
     requestFirmwareLoad: () => dispatch(requestFirmwareLoad()),
     selectDevice: (id: string, selected: boolean) => dispatch(selectNetworkDevice(id, selected)),
     selectAllDevices: (selected: boolean) => dispatch(selectAllNetworkDevices(selected)),

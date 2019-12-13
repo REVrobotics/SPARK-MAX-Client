@@ -39,6 +39,7 @@ import {ConfigParam, getConfigParamsInGroup} from "../models/ConfigParam";
 import {colors, colorToIndex} from "./colors";
 import {ConfigParamGroupName, DFU_DEVICE_ALL, ISignalDestinationDto} from "../models/dto";
 import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
+import {compareVersions} from "../utils/string-utils";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
 
@@ -785,4 +786,19 @@ export const queryNextDescriptor = (state: IApplicationState, beforeUpdate: IApp
   const potentialNextDevices = flatMap(previousDeviceIds, (deviceId) => queryDevicesByDeviceId(state, deviceId));
   const devicesWithNewDescriptor = potentialNextDevices.filter((device) => !queryHasDescriptor(beforeUpdate, device.descriptor));
   return devicesWithNewDescriptor.length === 1 ? devicesWithNewDescriptor[0].descriptor : undefined;
+};
+
+/**
+ * Returns true if any device has obsoleted firmware version, otherwise false
+ */
+export const queryHasObsoletedFirmwareVersion = (state: IApplicationState) => {
+  // Get the latest firmware version
+  const latestVersion = queryFirmwareByTag(state, FirmwareTag.Latest);
+  if (latestVersion == null) {
+    return false;
+  }
+
+  const networkDevices = queryNetworkDevices(state);
+  return networkDevices
+    .some((device) => device.firmwareVersion && compareVersions(device.firmwareVersion, latestVersion.version) < 0);
 };
