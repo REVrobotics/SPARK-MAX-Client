@@ -190,7 +190,7 @@ class NetworkTab extends React.Component<IProps> {
                  minRowHeight={25}
                  maxRowHeight={25}
                  defaultRowHeight={25}
-                 numRows={Math.max(length, 10)}
+                 numRows={Math.max(length, 8)}
                  columnWidths={NETWORK_TABLE_COLUMN_WIDTHS}>
 
             <Column name={tt("lbl_update")}
