@@ -117,6 +117,8 @@ interface IProps {
 
   onReset(): void;
 
+  onResetAll(): void;
+
   onSetTransientParameter(field: keyof IDeviceTransientState, value: any): void;
 }
 
@@ -231,12 +233,14 @@ class BasicTab extends React.Component<IProps> {
                     disabled={!enabled || processType === ProcessType.Save}
                     loading={processType === ProcessType.Reset}
                     onClick={this.props.onReset}>{tt("lbl_restore_factory_defaults")}</Button>
-            <Popover position={PopoverPosition.TOP_RIGHT} popoverClassName="attention-popover">
+            <Popover position={PopoverPosition.TOP_RIGHT}
+                     popoverClassName="attention-popover"
+                     disabled={!enabled || !!processType}>
               <Button className="bad-btn"
                       icon="chevron-down"
-                      disabled={!enabled || processType === ProcessType.Save}/>
+                      disabled={!enabled || !!processType}/>
               <Menu>
-                <MenuItem text={tt("lbl_reset_all")}/>
+                <MenuItem text={tt("lbl_reset_all")} onClick={this.props.onResetAll}/>
               </Menu>
             </Popover>
           </ButtonGroup>
@@ -259,6 +263,7 @@ export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     onBurn: () => dispatch(burnSelectedDeviceConfiguration()),
     onReset: () => dispatch(resetSelectedDeviceConfiguration()),
+    onResetAll: () => dispatch(resetSelectedDeviceConfiguration(true)),
     onSetTransientParameter: (field: keyof IDeviceTransientState, value: any) =>
       dispatch(setSelectedDeviceTransientParameter(field, value)),
   }
