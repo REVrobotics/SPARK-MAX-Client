@@ -1,18 +1,18 @@
-import {first} from "lodash";
+import {compact, first} from "lodash";
 import {
   createDeviceState,
   diffDevices,
   getDeviceId,
   PathDescriptor,
-  resetDeviceState,
   toDtoDescriptor,
   toDtoDeviceId,
   VirtualDeviceId
 } from "../state";
 import {
-  addDevices,
   replaceDevices,
-  setConnectedDescriptor, setDeviceFirmwareVersion, setDeviceLoaded,
+  setConnectedDescriptor,
+  setDeviceLoaded,
+  setNetworkDevices,
   setSelectedDevice,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus,
@@ -35,6 +35,8 @@ import {onError, useErrorHandler} from "./error-actions";
 import {syncSignals} from "./display-actions";
 import {onSchedule} from "../../utils/redux-scheduler/action";
 import {forSelectedDevice} from "./action-creators";
+import {ListResponseDto} from "../../models/proto-gen/SPARK-MAX-Commands_dto_pb";
+import {scanCanBus} from "./network-actions";
 
 export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<void>> {
   return (dispatch, getState) => {
@@ -61,7 +63,7 @@ export function connectDevice(descriptor: PathDescriptor): SparkAction<Promise<v
         dispatch(updateIsProcessingByDescriptor(descriptor, false));
 
         // Resync list of devices after connection
-        return dispatch(syncDevices());
+        return dispatch(syncDevices(SYNC_ALL));
       })
       .catch(useErrorHandler(dispatch));
   };
@@ -99,15 +101,7 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateIsProcessingByDescriptor(descriptor, true));
     return SparkManager.disconnect()
-      .then(() => {
-        const devices = queryDevicesInOrder(getState());
-        dispatch(replaceDevices(devices.map(resetDeviceState)));
-
-        dispatch(setConnectedDescriptor());
-
-        // When there is no connected device, syncSignals just cleans display and removes all destinations
-        return dispatch(syncSignals());
-      })
+      .then(() => dispatch(markAsDisconnected()))
       .catch(useErrorHandler(dispatch))
       .finally(() => {
         dispatch(updateGlobalProcessStatus(""));
@@ -117,46 +111,107 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
   };
 }
 
-export function syncDevices(showNotifications: boolean = false): SparkAction<Promise<void>> {
+export function markAsDisconnected(): SparkAction<Promise<void>> {
+  return (dispatch) => {
+    dispatch(setConnectedDescriptor());
+    dispatch(setNetworkDevices([], []));
+
+    // When there is no connected device, syncSignals just cleans display and removes all destinations
+    return dispatch(syncSignals())
+      .then(() => dispatch(syncDevices(SYNC_ALL)))
+      .catch(useErrorHandler(dispatch));
+  };
+}
+
+interface SyncDeviceOptions {
+  syncConnectable: boolean;
+  showNotifications: boolean;
+  syncBus: boolean;
+}
+
+export const SYNC_ALL: SyncDeviceOptions = {
+  syncConnectable: true,
+  showNotifications: false,
+  syncBus: true,
+};
+
+export const SYNC_ALL_AND_SHOW_NOTIFICATIONS: SyncDeviceOptions = {
+  syncConnectable: true,
+  showNotifications: true,
+  syncBus: true,
+};
+
+export const SYNC_CONNECTABLE: SyncDeviceOptions = {
+  syncConnectable: true,
+  showNotifications: false,
+  syncBus: false,
+};
+
+export const SYNC_BUS: SyncDeviceOptions = {
+  syncConnectable: false,
+  showNotifications: false,
+  syncBus: true,
+};
+
+export function syncDevices(options: SyncDeviceOptions): SparkAction<Promise<void>> {
+  return (dispatch, getState) => {
+    dispatch(updateGlobalIsProcessing(true));
+    dispatch(updateGlobalProcessStatus(tt("lbl_status_syncing")));
+
+    return SparkManager.listAllDevices()
+      .then((dto) => Promise.all(compact([
+        options.syncConnectable ? dispatch(syncConnectableDevices(dto, options.showNotifications)) : undefined,
+        options.syncBus ? dispatch(scanCanBus(dto)) : undefined,
+      ])))
+      .catch(onError(() => {
+        dispatch(updateGlobalProcessStatus(tt("lbl_status_failed_to_sync")));
+        dispatch(updateGlobalIsProcessing(false));
+      }))
+      .catch(useErrorHandler(dispatch))
+      .finally(() => {
+        dispatch(updateGlobalIsProcessing(false));
+        dispatch(updateGlobalProcessStatus(""));
+      });
+  };
+}
+
+export function syncConnectableDevices(dto: ListResponseDto,
+                                       showNotifications: boolean = false): SparkAction<Promise<void>> {
   return onSchedule("sync", (dispatch, getState) => {
     const descriptor = queryConnectedDescriptor(getState());
     // Update status of all devices for the given descriptor
-    dispatch(updateGlobalProcessStatus(tt("lbl_status_syncing")));
-    dispatch(updateGlobalIsProcessing(true));
     if (descriptor) {
       dispatch(updateIsProcessingByDescriptor(descriptor, true));
     }
 
-    return SparkManager.listAllDevices()
-      .then(({driverList, extendedList}) => {
-        // Here we need only SPARK MAX controllers
-        const nextDevices = extendedList.filter((extended) => extended.listable);
-        // Generate device state for each connected device
-        const nextDeviceStates = nextDevices.map(createDeviceState);
-        const currentDeviceStates = queryDevicesInOrder(getState());
-        const connectedDescriptor = queryConnectedDescriptor(getState());
-        const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
-        // Merge list of devices for the given descriptor
-        dispatch(replaceDevices(added.concat(merged), driverList));
+    const {driverList, extendedList} = dto;
+    // Here we need only SPARK MAX controllers
+    const nextDevices = extendedList.filter((extended) => extended.listable);
+    // Generate device state for each connected device
+    const nextDeviceStates = nextDevices.map(createDeviceState);
+    const currentDeviceStates = queryDevicesInOrder(getState());
+    const connectedDescriptor = queryConnectedDescriptor(getState());
+    const {added, merged, removed} = diffDevices(currentDeviceStates, nextDeviceStates);
+    // Merge list of devices for the given descriptor
+    dispatch(replaceDevices(added.concat(merged), driverList));
 
-        if (showNotifications) {
-          added
-            .filter((device) => device.descriptor === connectedDescriptor)
-            .forEach((device) => showToastWarning(tt("msg_device_added", {
-              deviceId: device.info.deviceId,
-              deviceName: device.info.deviceName
-            })));
+    if (showNotifications) {
+      added
+        .filter((device) => device.descriptor === connectedDescriptor)
+        .forEach((device) => showToastWarning(tt("msg_device_added", {
+          deviceId: device.info.deviceId,
+          deviceName: device.info.deviceName
+        })));
 
-          removed
-            .filter((device) => device.descriptor === connectedDescriptor)
-            .forEach((device) => showToastWarning(tt("msg_device_removed", {
-              deviceId: device.info.deviceId,
-              deviceName: device.info.deviceName
-            })));
-        }
-      })
+      removed
+        .filter((device) => device.descriptor === connectedDescriptor)
+        .forEach((device) => showToastWarning(tt("msg_device_removed", {
+          deviceId: device.info.deviceId,
+          deviceName: device.info.deviceName
+        })));
+    }
       // Syncing of signals is a part of device syncing
-      .then((response) => dispatch(syncSignals()).then(() => response))
+    return dispatch(syncSignals())
       .then(() => {
         dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
@@ -165,8 +220,6 @@ export function syncDevices(showNotifications: boolean = false): SparkAction<Pro
         }
       })
       .catch(onError(() => {
-        dispatch(updateGlobalProcessStatus(tt("lbl_status_failed_to_sync")));
-        dispatch(updateGlobalIsProcessing(false));
         if (descriptor) {
           dispatch(updateIsProcessingByDescriptor(descriptor, false));
         }
@@ -197,47 +250,9 @@ export const ensureDeviceLoaded = (virtualDeviceId: VirtualDeviceId): SparkActio
 
     // load parameters if device is connected and parameters was not loaded
     return isConnected && !device.isLoaded ?
-      Promise.all([
-        dispatch(loadParameters(virtualDeviceId)),
-        dispatch(loadFirmwareVersion(virtualDeviceId)),
-      ]).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
+      dispatch(loadParameters(virtualDeviceId)).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
       : Promise.resolve();
   };
-
-export function findAllDevices(): SparkAction<Promise<void>> {
-  return (dispatch) => {
-    dispatch(updateGlobalProcessStatus(tt("lbl_status_searching")));
-    dispatch(updateGlobalIsProcessing(true));
-
-    return SparkManager.listAllDevices()
-      .then(({driverList, extendedList}) => {
-        dispatch(updateGlobalProcessStatus(""));
-        dispatch(updateGlobalIsProcessing(false));
-        dispatch(addDevices(extendedList.filter(({listable}) => listable).map(createDeviceState), driverList));
-      })
-      .catch(onError(() => {
-        dispatch(updateGlobalProcessStatus(tt("lbl_status_search_failed")));
-        dispatch(updateGlobalIsProcessing(false));
-      }))
-      .catch(useErrorHandler(dispatch));
-  };
-}
-
-export function loadFirmwareVersion(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
-  return (dispatch, getState) => {
-    const device = queryDevice(getState(), virtualDeviceId);
-    if (device && device.uniqueId === 0) {
-      return SparkManager.getFirmware(toDtoDeviceId(getDeviceId(device)))
-        .then((response) => {
-          const firmwareVersion = response.version!.substring(1);
-          dispatch(setDeviceFirmwareVersion(virtualDeviceId, firmwareVersion));
-        })
-        .catch(useErrorHandler(dispatch));
-    } else {
-      return Promise.resolve();
-    }
-  };
-}
 
 export function identifyDevice(virtualDeviceId: VirtualDeviceId): SparkAction<void> {
   return (dispatch, getState) => {

@@ -1,11 +1,23 @@
 import {SparkAction, SparkDispatch} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import {initMessageQueue, setConnectedDescriptor, setSelectedTab} from "./atom-actions";
-import {connectDevice, findAllDevices, selectDevice, syncDevices} from "./connection-actions";
-import {queryConnectedDescriptor, queryFirstVirtualDeviceId, querySelectedDevice} from "../selectors";
+import {initMessageQueue, setSelectedTab} from "./atom-actions";
+import {
+  connectDevice,
+  markAsDisconnected,
+  selectDevice,
+  SYNC_ALL,
+  SYNC_ALL_AND_SHOW_NOTIFICATIONS,
+  syncDevices
+} from "./connection-actions";
+import {
+  queryConnectedDescriptor,
+  queryFirstVirtualDeviceId,
+  queryHasObsoletedFirmwareVersion,
+  querySelectedDevice
+} from "../selectors";
 import {ConfirmationAnswer, TabId} from "../state";
 import {downloadLatestFirmware} from "./firmware-actions";
-import {findObsoletedDevice, scanCanBus, updateLoadFirmwareProgress} from "./network-actions";
+import {updateLoadFirmwareProgress} from "./network-actions";
 import {showConfirmation, whenMessageQueueClosed} from "./ui-actions";
 import {Intent} from "@blueprintjs/core";
 import {loadConfigurations} from "./configuration-actions";
@@ -26,7 +38,7 @@ function loadApplicationData(): SparkAction<Promise<any>> {
 
     return dispatch(loadConfigurations())
       .then(() => dispatch(whenMessageQueueClosed()))
-      .then(() => dispatch(findAllDevices()));
+      .then(() => dispatch(syncDevices(SYNC_ALL)));
   }
 }
 
@@ -48,13 +60,13 @@ export function initApplication(): SparkAction<void> {
       });
 
     SparkManager.onDisconnect(() => {
-      dispatch(setConnectedDescriptor());
+      dispatch(markAsDisconnected());
     });
 
     SparkManager.onResync(() => {
       const descriptor = queryConnectedDescriptor(getState());
       if (descriptor) {
-        dispatch(syncDevices(true));
+        dispatch(syncDevices(SYNC_ALL_AND_SHOW_NOTIFICATIONS));
       }
     });
 
@@ -71,11 +83,10 @@ export function initApplication(): SparkAction<void> {
  * Checks if any of devices uses obsoleted version
  */
 function checkForFirmwareUpdate(): SparkAction<void> {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(downloadLatestFirmware())
-      .then(() => dispatch(findObsoletedDevice()))
-      .then((hasObsoletedDevice) => {
-        if (!hasObsoletedDevice) {
+      .then(() => {
+        if (!queryHasObsoletedFirmwareVersion(getState())) {
           return ConfirmationAnswer.Cancel;
         }
         return dispatch(showConfirmation({
@@ -88,7 +99,6 @@ function checkForFirmwareUpdate(): SparkAction<void> {
       .then((answer) => {
         if (answer === ConfirmationAnswer.Yes) {
           dispatch(setSelectedTab(TabId.Network));
-          dispatch(scanCanBus());
         }
       });
   };

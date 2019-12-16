@@ -58,7 +58,6 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
           fromPairs(devices.map((device) => [getVirtualDeviceId(device), deviceReducer(device, action)]))));
     }
     case ActionType.SET_DEVICE_LOADED:
-    case ActionType.SET_DEVICE_FIRMWARE_VERSION:
     case ActionType.SET_DEVICE_PROCESS_STATUS:
     case ActionType.SET_DEVICE_PROCESSING:
     case ActionType.SET_PARAMETERS:
@@ -83,8 +82,6 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
   switch (action.type) {
     case ActionType.SET_DEVICE_LOADED:
       return {...state, isLoaded: action.payload.loaded};
-    case ActionType.SET_DEVICE_FIRMWARE_VERSION:
-      return {...state, firmwareVersion: action.payload.firmwareVersion};
     case ActionType.SET_DEVICE_PROCESS_STATUS:
     case ActionType.SET_PROCESS_STATUS_BY_DESCRIPTOR:
       return {...state, processStatus: action.payload.processStatus};

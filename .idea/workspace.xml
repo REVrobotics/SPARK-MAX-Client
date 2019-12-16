@@ -3,10 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-10]">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/reducers/display-reducers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/reducers/display-reducers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/NetworkTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/NetworkTab.tsx" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +28,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="bugfix/REVROBO-36-descriptor-not-updated" />
+        <entry key="$PROJECT_DIR$" value="incoming" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -69,22 +68,22 @@
       <recent name="D:\workspaces\SPARK-MAX-Client\src\components\params" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
   <component name="RunManager">
     <configuration name="electron (main)" type="ChromiumRemoteDebugType" factoryName="Chromium Remote" port="5858">
       <method v="2" />
     </configuration>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -104,13 +103,6 @@
       <workItem from="1571295320588" duration="27324000" />
       <workItem from="1571405376779" duration="7058000" />
       <workItem from="1571637055045" duration="59023000" />
-    </task>
-    <task id="LOCAL-00012" summary="Implement protoc DTO generation plugin">
-      <created>1568795335259</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1568795335259</updated>
     </task>
     <task id="LOCAL-00013" summary="Implement protoc DTO generation plugin">
       <created>1568807771134</created>
@@ -448,7 +440,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574786595146</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="[REVROBO-63] Merge syncing of connectable devices and scanning of can bus">
+      <created>1576248880378</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1576248880378</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -536,7 +535,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="[REVROBO-7] Implement actions for settings of parameters" />
     <MESSAGE value="Implement validation for CAN ID field" />
     <MESSAGE value="[REVROBO-7] Refactor file names and locations" />
     <MESSAGE value="[REVROBO-7] Introduce virtual device id" />
@@ -561,6 +559,29 @@
     <MESSAGE value="[REVROBO-10]" />
     <MESSAGE value="[REVROBO-13] Implement saving and loading of display configuration" />
     <MESSAGE value="[REVROBO-39] Implement safe reading of config.json" />
-    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-39] Implement safe reading of config.json" />
+    <MESSAGE value="[REVROBO-63] Merge syncing of connectable devices and scanning of can bus" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-63] Merge syncing of connectable devices and scanning of can bus" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1576249506697">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576249506697" />
+    <state x="129" y="54" key="DiffContextDialog" timestamp="1576248840134">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="129" y="54" key="DiffContextDialog/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576248840134" />
+    <state x="404" y="105" width="570" height="524" key="StructurePopup" timestamp="1576248569694">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="404" y="105" width="570" height="524" key="StructurePopup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576248569694" />
+    <state x="379" y="101" width="607" height="526" key="find.popup" timestamp="1576248330105">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="379" y="101" width="607" height="526" key="find.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576248330105" />
+    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1576249538172">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="346" y="49" width="672" height="678" key="search.everywhere.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576249538172" />
   </component>
 </project>
