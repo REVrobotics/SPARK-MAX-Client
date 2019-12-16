@@ -458,10 +458,6 @@ export interface IDeviceState {
    * State of the advanced tab for the device
    */
   advanced: IDeviceAdvancedState;
-  /**
-   * Represents firmware version
-   */
-  firmwareVersion?: string;
 }
 
 /**
@@ -1045,7 +1041,7 @@ export const createLoadReport = (options: ILoadReportOptions): ILoadReport => {
     });
 };
 
-export const canBeIdentified = (device: INetworkDevice | IDeviceState) => {
+export const canBeIdentified = (device: INetworkDevice) => {
   if (device.uniqueId) {
     return true;
   } else if (device && device.firmwareVersion) {

@@ -13,7 +13,8 @@ import {
   getDeviceCommittedCanId,
   getDeviceId,
   getDeviceParam,
-  getDeviceParamValue, getDfuDeviceId,
+  getDeviceParamValue,
+  getDfuDeviceId,
   getNetworkDeviceVirtualId,
   getSignalId,
   getVirtualDeviceId,
@@ -22,12 +23,15 @@ import {
   IDestination,
   IDeviceDisplayState,
   IFirmwareEntry,
-  isDeviceBlocked, isDeviceDirty,
+  isDeviceBlocked,
+  isDeviceDirty,
   isDeviceInvalid,
   isDeviceNotConfigured,
   ISignalInstanceState,
   ISignalState,
-  ISignalStyle, isNetworkDeviceSelectable, isNetworkDeviceSelected,
+  ISignalStyle,
+  isNetworkDeviceSelectable,
+  isNetworkDeviceSelected,
   PathDescriptor,
   ProcessType,
   SignalId,
@@ -152,6 +156,21 @@ export const queryDescriptorIndex = (state: IApplicationState, descriptor: PathD
  * Returns order of descriptors
  */
 export const queryDescriptorsInOrder = (state: IApplicationState) => state.deviceSet.orderedDescriptors;
+
+/**
+ * Returns whether selected device can be identified
+ */
+export const querySelectedNetworkDevice = (state: IApplicationState) => {
+  const device = querySelectedDevice(state);
+  if (device == null) {
+    return false;
+  }
+  return queryNetworkDeviceByDescriptorAndDeviceIdAndUniqueId(
+    state,
+    device.descriptor,
+    device.fullDeviceId,
+    device.uniqueId);
+};
 
 /**
  * Returns whether any device is connected
@@ -397,15 +416,17 @@ export const queryNetworkDevice = (state: IApplicationState, id: string) =>
  * Returns devices by descriptor
  */
 export const queryNetworkDevicesByDescriptor = (state: IApplicationState,
-                                                  descriptor: PathDescriptor) =>
+                                                descriptor: PathDescriptor) =>
   state.network.devices.filter((device) => device.descriptor === descriptor);
 /**
  * Returns devices by descriptor and device ID
  */
-export const queryNetworkDevicesByDescriptorAndDeviceId = (state: IApplicationState,
-                                                           descriptor: PathDescriptor,
-                                                           id: DeviceId) =>
-  state.network.devices.filter((device) => device.descriptor === descriptor && device.deviceId === id);
+export const queryNetworkDeviceByDescriptorAndDeviceIdAndUniqueId = (state: IApplicationState,
+                                                                     descriptor: PathDescriptor,
+                                                                     id: DeviceId,
+                                                                     uniqueId: number) =>
+  state.network.devices.find((device) =>
+    device.descriptor === descriptor && device.deviceId === id && device.uniqueId === uniqueId);
 
 /**
  * Returns if some DFU device is selected

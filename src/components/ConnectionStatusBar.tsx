@@ -8,7 +8,7 @@ import {
   DeviceBlockedReason,
   getVirtualDeviceId,
   IApplicationState,
-  IDeviceState,
+  IDeviceState, INetworkDevice,
   isDeviceBlocked,
   PathDescriptor
 } from "../store/state";
@@ -22,6 +22,7 @@ import {
   syncDevices
 } from "../store/actions";
 import {
+  querySelectedNetworkDevice,
   queryConnectedDescriptor,
   queryDescriptorsInOrder,
   queryDevicesInOrder,
@@ -43,6 +44,7 @@ interface IProps {
   selectedDevice?: IDeviceState,
   descriptors: PathDescriptor[],
   devices: IDeviceState[],
+  selectedNetworkDevice?: INetworkDevice,
   processStatus: string,
   processing: boolean,
   connected: boolean,
@@ -113,12 +115,12 @@ const MainAction = (props: IProps) => {
 const ConnectionStatusBar = (props: IProps) => {
   const {
     devices, selectedDevice, blockedReason, processStatus, connected, hasGlobalError,
-    descriptors, connectedDescriptor,
+    descriptors, connectedDescriptor, selectedNetworkDevice,
     onSelectDevice, onRescan, onIdentify,
   } = props;
 
   const displayGlobalError = processStatus ? false : hasGlobalError;
-  const canIdentify = selectedDevice ? canBeIdentified(selectedDevice) : false;
+  const canIdentify = selectedNetworkDevice ? canBeIdentified(selectedNetworkDevice) : false;
   const isOldVersion = selectedDevice && selectedDevice.isLoaded ? !canIdentify : false;
 
   const [isSelectOpened, setSelectOpened] = useState(false);
@@ -245,6 +247,7 @@ export function mapStateToProps(state: IApplicationState) {
   return {
     selectedDevice: querySelectedDevice(state),
     devices: queryDevicesInOrder(state),
+    selectedNetworkDevice: querySelectedNetworkDevice(state),
     descriptors: queryDescriptorsInOrder(state),
     connected: queryIsSelectedDeviceConnected(state),
     connectedDescriptor: queryConnectedDescriptor(state),

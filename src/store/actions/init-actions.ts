@@ -1,8 +1,9 @@
 import {SparkAction, SparkDispatch} from "./action-types";
 import SparkManager from "../../managers/SparkManager";
-import {initMessageQueue, setConnectedDescriptor, setSelectedTab} from "./atom-actions";
+import {initMessageQueue, setSelectedTab} from "./atom-actions";
 import {
   connectDevice,
+  markAsDisconnected,
   selectDevice,
   SYNC_ALL,
   SYNC_ALL_AND_SHOW_NOTIFICATIONS,
@@ -59,7 +60,7 @@ export function initApplication(): SparkAction<void> {
       });
 
     SparkManager.onDisconnect(() => {
-      dispatch(setConnectedDescriptor());
+      dispatch(markAsDisconnected());
     });
 
     SparkManager.onResync(() => {

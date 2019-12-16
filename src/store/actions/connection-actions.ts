@@ -4,7 +4,6 @@ import {
   diffDevices,
   getDeviceId,
   PathDescriptor,
-  resetDeviceState,
   toDtoDescriptor,
   toDtoDeviceId,
   VirtualDeviceId
@@ -12,8 +11,8 @@ import {
 import {
   replaceDevices,
   setConnectedDescriptor,
-  setDeviceFirmwareVersion,
   setDeviceLoaded,
+  setNetworkDevices,
   setSelectedDevice,
   updateGlobalIsProcessing,
   updateGlobalProcessStatus,
@@ -102,21 +101,25 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
     dispatch(updateGlobalIsProcessing(true));
     dispatch(updateIsProcessingByDescriptor(descriptor, true));
     return SparkManager.disconnect()
-      .then(() => {
-        const devices = queryDevicesInOrder(getState());
-        dispatch(replaceDevices(devices.map(resetDeviceState)));
-
-        dispatch(setConnectedDescriptor());
-
-        // When there is no connected device, syncSignals just cleans display and removes all destinations
-        return dispatch(syncSignals());
-      })
+      .then(() => dispatch(markAsDisconnected()))
       .catch(useErrorHandler(dispatch))
       .finally(() => {
         dispatch(updateGlobalProcessStatus(""));
         dispatch(updateGlobalIsProcessing(false));
         dispatch(updateIsProcessingByDescriptor(descriptor, false));
       });
+  };
+}
+
+export function markAsDisconnected(): SparkAction<Promise<void>> {
+  return (dispatch) => {
+    dispatch(setConnectedDescriptor());
+    dispatch(setNetworkDevices([], []));
+
+    // When there is no connected device, syncSignals just cleans display and removes all destinations
+    return dispatch(syncSignals())
+      .then(() => dispatch(syncDevices(SYNC_ALL)))
+      .catch(useErrorHandler(dispatch));
   };
 }
 
@@ -247,28 +250,9 @@ export const ensureDeviceLoaded = (virtualDeviceId: VirtualDeviceId): SparkActio
 
     // load parameters if device is connected and parameters was not loaded
     return isConnected && !device.isLoaded ?
-      Promise.all([
-        dispatch(loadParameters(virtualDeviceId)),
-        dispatch(loadFirmwareVersion(virtualDeviceId)),
-      ]).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
+      dispatch(loadParameters(virtualDeviceId)).then(() => dispatch(setDeviceLoaded(virtualDeviceId, true)))
       : Promise.resolve();
   };
-
-export function loadFirmwareVersion(virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> {
-  return (dispatch, getState) => {
-    const device = queryDevice(getState(), virtualDeviceId);
-    if (device && device.uniqueId === 0) {
-      return SparkManager.getFirmware(toDtoDeviceId(getDeviceId(device)))
-        .then((response) => {
-          const firmwareVersion = response.version!.substring(1);
-          dispatch(setDeviceFirmwareVersion(virtualDeviceId, firmwareVersion));
-        })
-        .catch(useErrorHandler(dispatch));
-    } else {
-      return Promise.resolve();
-    }
-  };
-}
 
 export function identifyDevice(virtualDeviceId: VirtualDeviceId): SparkAction<void> {
   return (dispatch, getState) => {

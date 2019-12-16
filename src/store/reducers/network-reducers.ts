@@ -1,4 +1,3 @@
-import {omit} from "lodash";
 import {getDfuDeviceId, getNetworkDeviceVirtualId, INetworkState} from "../state";
 import {ActionType, ApplicationActions} from "../actions";
 import {setArrayElementBy, setField, setFields} from "../../utils/object-utils";
@@ -17,12 +16,6 @@ const initialNetworkState: INetworkState = {
 
 const networkReducer = (state: INetworkState = initialNetworkState, action: ApplicationActions): INetworkState => {
   switch (action.type) {
-    case ActionType.SET_CONNECTED_DESCRIPTOR:
-      if (action.payload.descriptor == null) {
-        return setFields(state, omit(initialNetworkState, "outputText"));
-      } else {
-        return state;
-      }
     case ActionType.SET_NETWORK_DEVICES:
       return setFields(state, {
         devices: action.payload.devices,
