@@ -10,7 +10,16 @@ import {
   setSelectedDeviceAdvancedSearchString,
   SparkDispatch
 } from "../store/actions";
-import {Button, FormGroup, Icon, InputGroup, INumericInputProps, NonIdealState} from "@blueprintjs/core";
+import {
+  Button, ButtonGroup,
+  FormGroup,
+  Icon,
+  InputGroup,
+  INumericInputProps, Menu, MenuItem,
+  NonIdealState,
+  Popover,
+  PopoverPosition
+} from "@blueprintjs/core";
 import {
   queryHasDeviceDirtyParameterInGroup,
   queryHasDeviceParameterErrorInGroup,
@@ -61,6 +70,8 @@ interface IProps {
   onBurn(): void;
 
   onReset(): void;
+
+  onResetAll(): void;
 
   onSearch(input: string): void;
 }
@@ -555,7 +566,7 @@ const ParameterTable = (props: IParameterTableProps) => {
 };
 
 const AdvancedTab = (props: IProps) => {
-  const {processType, enabled, blocked, search, onBurn, onReset, onSearch} = props;
+  const {processType, enabled, blocked, search, onBurn, onReset, onResetAll, onSearch} = props;
 
   const canSave = enabled && !blocked;
 
@@ -615,10 +626,22 @@ const AdvancedTab = (props: IProps) => {
                 disabled={!canSave || processType === ProcessType.Reset}
                 loading={processType === ProcessType.Save}
                 onClick={onBurn}>{tt("lbl_save_configuration")}</Button>
-        <Button className="bad-btn"
-                disabled={!enabled || processType === ProcessType.Save}
-                loading={processType === ProcessType.Reset}
-                onClick={onReset}>{tt("lbl_restore_factory_defaults")}</Button>
+        <ButtonGroup>
+          <Button className="bad-btn"
+                  disabled={!enabled || processType === ProcessType.Save}
+                  loading={processType === ProcessType.Reset}
+                  onClick={onReset}>{tt("lbl_restore_factory_defaults")}</Button>
+          <Popover position={PopoverPosition.TOP_RIGHT}
+                   popoverClassName="attention-popover"
+                   disabled={!enabled || !!processType}>
+            <Button className="bad-btn"
+                    icon="chevron-down"
+                    disabled={!enabled || !!processType}/>
+            <Menu>
+              <MenuItem text={tt("lbl_reset_all")} onClick={onResetAll}/>
+            </Menu>
+          </Popover>
+        </ButtonGroup>
       </div>
     </div>
   );
@@ -636,7 +659,8 @@ export function mapStateToProps(state: IApplicationState) {
 export function mapDispatchToProps(dispatch: SparkDispatch) {
   return {
     onBurn: () => dispatch(burnSelectedDeviceConfiguration()),
-    onReset: () => dispatch(resetSelectedDeviceConfiguration()),
+    onReset: () => dispatch(resetSelectedDeviceConfiguration(false)),
+    onResetAll: () => dispatch(resetSelectedDeviceConfiguration(true)),
     onSearch: (search: string) => dispatch(setSelectedDeviceAdvancedSearchString(search)),
   };
 }

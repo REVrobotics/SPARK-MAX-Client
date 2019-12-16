@@ -265,8 +265,8 @@ onTwoWayCall("burn-flash", (cb, device: string) => {
   });
 });
 
-onTwoWayCall("restore-defaults", (cb, device: string) => {
-  server.factoryReset({root: {device}, fullWipe: true, burnAfterWrite: true}, (err: any, response: any) => {
+onTwoWayCall("restore-defaults", (cb, device: string, fullWipe: boolean) => {
+  server.factoryReset({root: {device}, fullWipe, burnAfterWrite: true}, (err: any, response: any) => {
     if (err) {
       cb(err);
       return;

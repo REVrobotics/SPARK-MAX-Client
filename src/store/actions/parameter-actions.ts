@@ -177,7 +177,8 @@ export const burnConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction
     });
   });
 
-export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkAction<Promise<void>> =>
+export const resetConfiguration = (virtualDeviceId: VirtualDeviceId,
+                                   fullWipe: boolean = false): SparkAction<Promise<void>> =>
   onSchedule("device-action", virtualDeviceId, (dispatch, getState) => {
     return dispatch(showConfirmation({
       intent: "warning",
@@ -194,7 +195,7 @@ export const resetConfiguration = (virtualDeviceId: VirtualDeviceId): SparkActio
 
       const deviceId = queryDeviceId(getState(), virtualDeviceId)!;
 
-      return SparkManager.restoreDefaults(toDtoDeviceId(deviceId))
+      return SparkManager.restoreDefaults(toDtoDeviceId(deviceId), fullWipe)
         .then(() => {
           dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_getting_parameters")));
           return delayPromise(1000);

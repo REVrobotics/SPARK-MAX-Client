@@ -113,8 +113,8 @@ class SparkManager {
     return sendTwoWay("download", url);
   }
 
-  public restoreDefaults(device: string): Promise<any> {
-    return wrapSparkError(sendTwoWay("restore-defaults", device));
+  public restoreDefaults(device: string, fullWipe: boolean): Promise<any> {
+    return wrapSparkError(sendTwoWay("restore-defaults", device, fullWipe));
   }
 
   public requestFirmware(): Promise<any[]> {

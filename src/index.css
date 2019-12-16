@@ -1108,3 +1108,7 @@ button.link {
 .configuration-select {
     padding-right: 35px;
 }
+
+.bp3-popover.attention-popover {
+    box-shadow: 0 0 0 1px rgba(255, 22, 26, 0.1), 0 2px 4px rgba(255, 22, 26, 0.2), 0 8px 24px rgba(255, 22, 26, 0.2);
+}
