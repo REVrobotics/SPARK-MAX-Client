@@ -127,7 +127,7 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
   if (buffer.stale) {
     buffer.stale = false;
     buffer.data = [];
-    buffer.startTime = get(min(points), "x", new Date());
+    buffer.startTime = get(min(points), "x", new Date(0));
     buffer.nextCallbacks.forEach((cb) => cb({
       type: DataStreamEventType.Fill,
       data: [],
@@ -163,7 +163,7 @@ const ensureDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) 
 const newDataBuffer = (deviceId: DeviceId = -1): IBuffer => ({
   deviceId,
   data: [],
-  startTime: new Date(),
+  startTime: new Date(0),
   nextCallbacks: [],
   completeCallbacks: [],
   ignore: false,

@@ -1,6 +1,6 @@
 // tslint:disable:max-classes-per-file
 
-import {findIndex, maxBy, noop, padStart, pullAt, uniqueId} from "lodash";
+import {findIndex, max, maxBy, noop, padStart, pullAt, uniqueId} from "lodash";
 import {AbstractWaveformEngine, WaveformEngineChart} from "./abstract-waveform-engine";
 import {
   DataPoint,
@@ -370,17 +370,11 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   private setDataStreamSettings(dataSetId: DataSetId, settings: DataStreamSettings): void {
-    if (!settings.stale) {
-      const running = this.dataSetIds
-        .map((id) => this.dataStreamSettings[id])
-        .filter(Boolean)
-        .filter(({stale}) => !stale);
-
-      if (running.length === 0) {
-        this.startTime = settings.startTime;
-      }
-    }
     this.dataStreamSettings[dataSetId] = settings;
+    this.startTime = max(this.dataSetIds
+      .map((id) => this.dataStreamSettings[id])
+      .filter(Boolean)
+      .map(({startTime}) => startTime)) || new Date(0);
   }
 
   private updateDatasetData(dataSetId: DataSetId, data: DataPoint[]): void {
