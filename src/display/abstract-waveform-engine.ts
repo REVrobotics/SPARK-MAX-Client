@@ -23,6 +23,8 @@ export interface WaveformEngineChart {
   createScale(scaleId?: ScaleId): ScaleId;
   destroyScale(scaleId: ScaleId): void;
   updateScale(scaleId: ScaleId, scale: WaveformScaleOptions): void;
+
+  rasterize(): Promise<Blob>;
 }
 
 export abstract class AbstractWaveformEngine implements WaveformEngine {
@@ -38,9 +40,10 @@ export abstract class AbstractWaveformEngine implements WaveformEngine {
     delete this.charts[chartId];
   }
 
-  public createChart(chartId: ChartId, element: HTMLElement): void {
+  public createChart(chartId: ChartId, element: HTMLElement): WaveformEngineChart {
     const chart = this.getChart(chartId);
     chart.create(element);
+    return chart;
   }
 
   public destroyChart(chartId: ChartId): void {

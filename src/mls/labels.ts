@@ -165,6 +165,8 @@ const labels = {
   "lbl_in_ram": "In RAM",
   "lbl_configuration_group:template": "Templates",
   "lbl_configuration_group:user-defined": "User Defined",
+  "lbl_export_as_png": "Export as PNG",
+  "lbl_export_as_csv": "Export as CSV...",
 };
 
 export default labels;

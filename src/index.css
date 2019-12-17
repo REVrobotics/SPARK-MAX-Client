@@ -691,6 +691,12 @@ button.link {
     flex: 1;
 }
 
+.waveform-chart__options {
+    position: absolute;
+    top: 0;
+    right: 5px;
+}
+
 .list {
     display: flex;
     flex-direction: column;

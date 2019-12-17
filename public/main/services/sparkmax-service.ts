@@ -269,6 +269,22 @@ onTwoWayCall("restore-defaults", (cb, device: string) => {
   });
 });
 
+onTwoWayCall("save-as-file", (cb, fileName, data) => {
+  dialog.showSaveDialog(BrowserWindow.getFocusedWindow()!, {
+    title: "Save File As...",
+    defaultPath: fileName,
+    filters: [{name: "Images (PNG)", extensions: ["png"]}],
+  }, (savedFileName) => {
+    if (savedFileName) {
+      console.log(typeof data, data.length);
+      fs.writeFileSync(savedFileName, data);
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  })
+});
+
 onOneWayCall("enable-heartbeat", (device, pidSlot, setpoint, interval) => {
   if (!context.isResourceExist(getHeartbeatResourceName(device))) {
     console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);

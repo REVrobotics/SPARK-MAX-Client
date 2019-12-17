@@ -1,3 +1,4 @@
+import {isString} from "lodash";
 import {ConfigParam} from "../models/ConfigParam";
 import {
   FirmwareResponseDto,
@@ -21,6 +22,23 @@ export interface IServerResponse {
   type: number,
   status: number,
 }
+
+const serializeData = (data: Blob | string): Promise<ArrayBuffer | string> => {
+  if (isString(data)) {
+    return Promise.resolve(data);
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.readyState === 2) {
+        resolve(new Buffer(reader.result as ArrayBuffer));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(data);
+  });
+};
 
 function wrapSparkError<T>(promise: Promise<T>): Promise<T> {
   return promise
@@ -127,6 +145,10 @@ class SparkManager {
 
   public telemetryList(): Promise<TelemetryListResponseDto> {
     return wrapSparkError(sendTwoWay("telemetry-list"));
+  }
+
+  public saveAsFile(fileName: string, blob: Blob | string): Promise<boolean> {
+    return serializeData(blob).then((data) => sendTwoWay("save-as-file", fileName, data));
   }
 
   public telemetryStart(): void {
