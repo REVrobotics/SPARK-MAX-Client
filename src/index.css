@@ -1076,3 +1076,7 @@ button.link {
 .configuration-select {
     padding-right: 35px;
 }
+
+.csv-export-dialog {
+    width: 400px;
+}

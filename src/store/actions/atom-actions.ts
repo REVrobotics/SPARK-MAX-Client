@@ -17,12 +17,16 @@ import {
   IRemoveSignalInstance,
   IReplaceDevices,
   IResetMessageQueue,
-  IResetTransientState, ISelectAllDfuDevices, ISelectDfuDevice,
+  IResetTransientState,
+  ISelectAllDfuDevices,
+  ISelectDfuDevice,
   ISetAdvancedSearchString,
   ISetConfigurations,
   ISetConnectedDescriptor,
   ISetConsoleOutput,
+  ISetControlRangeValue,
   ISetControlValue,
+  ISetCsvExportDialogOpened, ISetCsvExportSetting,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
@@ -41,7 +45,8 @@ import {
   ISetFirmwareLoading,
   ISetGlobalProcessing,
   ISetLastFirmwareLoadingMessage,
-  ISetLastSyncedConsumers, ISetLastRunningDeviceIds,
+  ISetLastRunningDeviceIds,
+  ISetLastSyncedConsumers,
   ISetNetworkDevices,
   ISetNetworkScanInProgress,
   ISetParameters,
@@ -57,7 +62,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor, ISetControlRangeValue,
+  IUpdateProcessStatusByDescriptor,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -67,7 +72,8 @@ import {
   IDestination,
   IDeviceConfiguration,
   IDeviceState,
-  IDeviceTransientState, IDfuDevice,
+  IDeviceTransientState,
+  IDfuDevice, IDisplayCsvExportSettings,
   IDisplayState,
   IMessageQueueConfig,
   INetworkDevice,
@@ -465,6 +471,16 @@ export const setLastSyncedConsumers = (destinations: IDestination[]): ISetLastSy
 export const setLastRunningDeviceIds = (deviceIds: DeviceId[]): ISetLastRunningDeviceIds => ({
   type: ActionType.SET_LAST_RUNNING_DEVICE_IDS,
   payload: {deviceIds},
+});
+
+export const setCsvExportDialogOpened = (isOpened: boolean): ISetCsvExportDialogOpened => ({
+  type: ActionType.SET_CSV_EXPORT_DIALOG_OPENED,
+  payload: {isOpened},
+});
+
+export const setCsvExportSetting = (key: keyof IDisplayCsvExportSettings, value: any): ISetCsvExportSetting => ({
+  type: ActionType.SET_CSV_EXPORT_SETTING,
+  payload: {key, value},
 });
 
 export const setAdvancedSearchString = (virtualDeviceId: VirtualDeviceId,

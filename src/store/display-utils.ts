@@ -184,6 +184,14 @@ export const createDisplayState = (state: IApplicationState,
     })),
     lastSyncedConsumers: [],
     lastRunningDeviceIds: [],
+    exportSettings: {
+      isCsvExportInProcess: false,
+      csv: {
+        excludeGaps: false,
+        includeTimeColumn: false,
+        timeInterval: 1000,
+      },
+    },
   };
 };
 

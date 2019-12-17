@@ -167,6 +167,11 @@ const labels = {
   "lbl_configuration_group:user-defined": "User Defined",
   "lbl_export_as_png": "Export as PNG",
   "lbl_export_as_csv": "Export as CSV...",
+  "lbl_csv_export": "CSV Export",
+  "lbl_time_interval": "Time Interval (ms)",
+  "lbl_include_time_column": "Include Time Column",
+  "lbl_exclude_gaps": "Exclude Gaps",
+  "lbl_export": "Export",
 };
 
 export default labels;

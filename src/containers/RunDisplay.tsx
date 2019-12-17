@@ -8,7 +8,7 @@ import {querySignalsWithInstances} from "../store/selectors";
 import {NonIdealState} from "@blueprintjs/core";
 import {getDataSource} from "../store/data-stream";
 import {WaveformEngineChart} from "../display/abstract-waveform-engine";
-import RunDisplayExportMenu from "./RunDisplayExportMenu";
+import DisplayExportMenu from "./DisplayExportMenu";
 
 interface IProps {
   className?: string;
@@ -20,8 +20,8 @@ const RunDisplaySingleChart = (props: IProps) => {
   const {settings, signalsWithInstances} = props;
 
   const renderOptions = useCallback(
-    (chart: WaveformEngineChart) => <RunDisplayExportMenu chart={chart}
-                                                          signalsWithInstances={props.signalsWithInstances}/>,
+    (chart: WaveformEngineChart) => <DisplayExportMenu chart={chart}
+                                                       signalsWithInstances={props.signalsWithInstances}/>,
     [props.signalsWithInstances]);
 
   return (

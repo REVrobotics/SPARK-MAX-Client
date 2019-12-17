@@ -735,3 +735,5 @@ export const queryHasDeviceParameterErrorInGroup = (state: IApplicationState,
   const params = getConfigParamsInGroup(group);
   return params.some((param) => queryHasDeviceParameterError(state, virtualDeviceId, param));
 };
+
+export const queryDisplayExportSettings = (state: IApplicationState) => state.display.exportSettings;

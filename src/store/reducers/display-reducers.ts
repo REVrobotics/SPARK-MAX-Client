@@ -6,6 +6,7 @@ import {
   getVirtualDeviceId,
   IApplicationState,
   IDeviceDisplayState,
+  IDisplayExportSettings,
   IDisplayState,
   ISignalInstanceState,
   PanelName,
@@ -32,6 +33,14 @@ const displayInitialState: IDisplayState = {
   devices: {},
   lastSyncedConsumers: [],
   lastRunningDeviceIds: [],
+  exportSettings: {
+    isCsvExportInProcess: false,
+    csv: {
+      excludeGaps: false,
+      includeTimeColumn: false,
+      timeInterval: 1000,
+    },
+  },
 };
 
 const displayReducer = (state: IDisplayState = displayInitialState, action: ApplicationActions) => {
@@ -62,10 +71,24 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
         state,
         ["devices", action.payload.virtualDeviceId],
         deviceDisplayReducer(state.devices[action.payload.virtualDeviceId], action));
+    case ActionType.SET_CSV_EXPORT_SETTING:
+    case ActionType.SET_CSV_EXPORT_DIALOG_OPENED:
+      return setField(state, "exportSettings", exportSettingsReducer(state.exportSettings, action));
     default:
       return state;
   }
 };
+
+function exportSettingsReducer(exportSettings: IDisplayExportSettings, action: ApplicationActions) {
+  switch (action.type) {
+    case ActionType.SET_CSV_EXPORT_DIALOG_OPENED:
+      return setField(exportSettings, "isCsvExportInProcess", action.payload.isOpened);
+    case ActionType.SET_CSV_EXPORT_SETTING:
+      return setField(exportSettings, "csv", setField(exportSettings.csv, action.payload.key, action.payload.value));
+    default:
+      return exportSettings;
+  }
+}
 
 const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationActions) => {
   switch (action.type) {
