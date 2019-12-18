@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="">
+    <list default="true" id="da57b9fc-0ed1-4d33-829e-6c14709c4161" name="Default Changelist" comment="[REVROBO-13] Implement support of CSV export">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/mls/labels.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/mls/labels.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/store/actions/display-export-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/actions/display-export-actions.ts" afterDir="false" />
     </list>
     <list id="03af2858-2be9-49cf-825f-994109b45799" name=".idea" comment=".idea" />
@@ -112,21 +111,7 @@
       <workItem from="1571295320588" duration="27324000" />
       <workItem from="1571405376779" duration="7058000" />
       <workItem from="1571637055045" duration="59023000" />
-      <workItem from="1576598513090" duration="21407000" />
-    </task>
-    <task id="LOCAL-00017" summary="Refactoring to support connection to several devices">
-      <created>1568888945808</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1568888945808</updated>
-    </task>
-    <task id="LOCAL-00018" summary="[REVROBO-7] Implement selection of devices">
-      <created>1568898604646</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1568898604646</updated>
+      <workItem from="1576598513090" duration="23051000" />
     </task>
     <task id="LOCAL-00019" summary="[REVROBO-5] Fix documentation">
       <created>1568899586037</created>
@@ -457,7 +442,21 @@
       <option name="project" value="LOCAL" />
       <updated>1576669505991</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="[REVROBO-13] Implement support of CSV export">
+      <created>1576669725278</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1576669725278</updated>
+    </task>
+    <task id="LOCAL-00067" summary="[REVROBO-13] Remove unnecessary content from Export CSV dialog">
+      <created>1576670294922</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1576670294922</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -545,7 +544,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Implement support of prod/dev builds" />
     <MESSAGE value="Move to react-scripts" />
     <MESSAGE value="[REVROBO-7] Block UI on processing activities" />
     <MESSAGE value="[REVROBO-7] Implement support of isLoaded flag" />
@@ -570,18 +568,19 @@
     <MESSAGE value="[REVROBO-13] Basic implementation of CSV Export" />
     <MESSAGE value="[REVROBO-13] Export to csv with interpolation" />
     <MESSAGE value="[REVROBO-13] Implement support of CSV export" />
-    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-13] Implement support of CSV export" />
+    <MESSAGE value="[REVROBO-13] Remove unnecessary content from Export CSV dialog" />
+    <option name="LAST_COMMIT_MESSAGE" value="[REVROBO-13] Remove unnecessary content from Export CSV dialog" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1576669505207">
+    <state x="308" y="0" key="CommitChangelistDialog2" timestamp="1576671352943">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576669505207" />
+    <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576671352943" />
     <state x="308" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1576615192406" />
-    <state x="129" y="54" key="DiffContextDialog" timestamp="1576579335096">
+    <state x="129" y="54" key="DiffContextDialog" timestamp="1576670275445">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="129" y="54" key="DiffContextDialog/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576579335096" />
+    <state x="129" y="54" key="DiffContextDialog/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576670275445" />
     <state x="404" y="105" width="570" height="524" key="StructurePopup" timestamp="1576662989131">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -590,25 +589,29 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state width="498" height="446" key="SwitcherDM/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576667156588" />
-    <state x="275" y="96" key="Vcs.Push.Dialog.v2" timestamp="1576496724309">
+    <state x="275" y="96" key="Vcs.Push.Dialog.v2" timestamp="1576671305300">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="275" y="96" key="Vcs.Push.Dialog.v2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576496724309" />
+    <state x="275" y="96" key="Vcs.Push.Dialog.v2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576671305300" />
     <state x="322" y="0" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1576655892722">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="322" y="0" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576655892722" />
-    <state x="379" y="101" width="607" height="526" key="find.popup" timestamp="1576669643633">
+    <state x="492" y="280" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1576671016825">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="379" y="101" width="607" height="526" key="find.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576669643633" />
+    <state x="492" y="280" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576671016825" />
+    <state x="379" y="101" width="607" height="526" key="find.popup" timestamp="1576671330090">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="379" y="101" width="607" height="526" key="find.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576671330090" />
     <state x="339" y="162" width="672" height="677" key="run.anything.popup" timestamp="1576568663290">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="339" y="162" width="672" height="677" key="run.anything.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576568663290" />
-    <state x="339" y="17" width="672" height="676" key="search.everywhere.popup" timestamp="1576667579992">
+    <state x="339" y="17" width="672" height="676" key="search.everywhere.popup" timestamp="1576670825579">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="339" y="17" width="672" height="676" key="search.everywhere.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576667579992" />
+    <state x="339" y="17" width="672" height="676" key="search.everywhere.popup/0.0.1366.728/1366.-105.1920.1040@0.0.1366.728" timestamp="1576670825579" />
   </component>
 </project>

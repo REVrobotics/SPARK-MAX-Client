@@ -73,6 +73,9 @@ export const exportAsCsv = (signalWithInstances: Array<[ISignalState, ISignalIns
   };
 };
 
+/**
+ * Take events having common type and time from the top of a stack.
+ */
 const takeNextDataEvents = (events: DataEvent[]) => {
   const firstEvent = events.pop()!;
   const nextEvents = [firstEvent];
@@ -95,13 +98,16 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
   const dataPoints = signalWithInstances.map(([_, instance]) =>
     getDataPoints(instance.virtualDeviceId, instance.signalId));
 
+  // Reading state for each exported data buffer
   const readingState: ReadingState[] = [];
   let lastEvent: DataEvent | undefined;
   // let lastTime: Date;
 
+  // Write head
   await writeHead();
 
   while (events.length) {
+    // Take events having the same type and time
     const nextEvents = takeNextDataEvents(events);
     const firstEvent = first(nextEvents)!;
 
@@ -113,7 +119,9 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
           setStartTime(firstEvent.time);
         }
       }
+      // Write all data before this event
       await writeTo(firstEvent.time);
+      // Add reading state for new data buffers
       nextEvents.forEach((nextEvent) => {
         readingState.push({
           itemIndex: 0,
@@ -121,7 +129,9 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
         });
       });
     } else {
+      // Write all data before this event
       await writeTo(firstEvent.time);
+      // Remove reading state for removed data buffers
       remove(readingState, (state) => nextEvents.some((event) => event.index === state.streamIndex));
     }
 
@@ -179,6 +189,7 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
         readingStateForNextTime.forEach((state) => state.itemIndex++);
 
         if (rows.length === maxRowCount) {
+          // Flush buffer of rows
           await FileManager.writeChunk(id, {type: "data", data: rows});
           rows.length = 0;
         }
@@ -188,6 +199,7 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
     } while(true);
 
     if (rows.length) {
+        // Flush buffer of rows
       await FileManager.writeChunk(id, {type: "data", data: rows});
     }
   }
@@ -197,10 +209,16 @@ const exportCsvData = async (settings: IDisplayCsvExportSettings,
   }
 };
 
+/**
+ * Returns all signals we have data for
+ */
 const getNonEmptySignals = (signalWithInstances: Array<[ISignalState, ISignalInstanceState]>) =>
   signalWithInstances.filter(([_, instance]) =>
     getDataPoints(instance.virtualDeviceId, instance.signalId).length > 0);
 
+/**
+ * Returns sorted events for start/end of signal data buffers
+ */
 const createDataEvents = (signalWithInstances: Array<[ISignalState, ISignalInstanceState]>): DataEvent[] => {
   const events = flatMap(
     signalWithInstances,

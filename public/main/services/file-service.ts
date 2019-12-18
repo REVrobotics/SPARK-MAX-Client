@@ -47,7 +47,6 @@ onTwoWayCall("file:stream-open", (cb, {fileName, type, filters}) => {
 });
 
 onTwoWayCall("file:stream-close", (cb, id) => {
-  console.log("destroy file stream", id);
   delete streams[id];
   cb();
 });
@@ -62,7 +61,6 @@ onTwoWayCall("file:stream-write-chunk", (cb, id, chunk) => {
     if (stream.writer) {
       throw new Error(`Meta has been already written into this stream`);
     }
-    console.log("write meta", chunk.meta);
     stream.writer = createObjectCsvWriter({
       path: stream.path,
       header: chunk.meta,
@@ -72,7 +70,6 @@ onTwoWayCall("file:stream-write-chunk", (cb, id, chunk) => {
     if (stream.writer == null) {
       throw new Error(`Meta was not written into this stream yet`);
     }
-    console.log("write data", chunk.data);
     stream.writer.writeRecords(chunk.data)
       .then(() => cb())
       .catch(cb);
