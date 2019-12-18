@@ -139,7 +139,7 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
     }));
   }
   buffer.data.push(...points);
-  truncateByTime(buffer.data, bufferOptions.timeSpan + 1, (point) => point.x.getTime());
+  truncateByTime(buffer.data, bufferOptions.timeSpan * 10, (point) => point.x.getTime());
   buffer.nextCallbacks.forEach((cb) => cb({type: DataStreamEventType.Append, data: points}));
 };
 
@@ -177,6 +177,9 @@ const disposeDataBuffer = (buffer: IBuffer) => {
   buffer.data = [];
   buffer.deviceId = -1;
 };
+
+export const getDataPoints = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) =>
+  getDataBuffer(virtualDeviceId, signalId).data;
 
 const getDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IBuffer => {
   const deviceBuffers = buffers[virtualDeviceId];

@@ -530,6 +530,10 @@ label.modified::after {
     align-items: center;
 }
 
+.flex-cross-end {
+    align-items: flex-end;
+}
+
 .flex-1 {
     flex: 1;
 }
@@ -689,6 +693,12 @@ button.link {
 .waveform-chart {
     position: relative;
     flex: 1;
+}
+
+.waveform-chart__options {
+    position: absolute;
+    top: 0;
+    right: 5px;
 }
 
 .list {
@@ -1069,4 +1079,21 @@ button.link {
 
 .configuration-select {
     padding-right: 35px;
+}
+
+.csv__time-interval {
+    width: 50%;
+}
+
+.csv__time-interval .bp3-input-group {
+    width: 100px
+}
+
+.csv__signal-sample {
+    position: relative;
+    display: inline-block;
+    top: -3px;
+    width: 20px;
+    height: 3px;
+    margin-right: 5px;
 }

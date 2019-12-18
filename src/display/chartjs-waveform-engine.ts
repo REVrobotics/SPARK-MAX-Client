@@ -32,7 +32,7 @@ export interface DataStreamSettings {
   stale: boolean;
 }
 
-const createEmptyConfiguration = ({toTimeLabel}: {toTimeLabel(n: number): string}): ChartConfiguration => ({
+const createEmptyConfiguration = ({toTimeLabel}: { toTimeLabel(n: number): string }): ChartConfiguration => ({
   type: "line",
   options: {
     // responsive: true,
@@ -169,7 +169,20 @@ const toChartjsPosition = (position: LegendPosition): PositionType => {
     default:
       return "top";
   }
-}
+};
+
+// Plugin for chart.js to make white background
+// This code is based on this comment https://stackoverflow.com/a/38493678
+Chart.pluginService.register({
+  beforeDraw(chart) {
+    const ctx = chart.ctx!;
+
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, chart.width!, chart.height!);
+    ctx.restore();
+  },
+});
 
 /**
  * Integration of chart.js library
@@ -318,6 +331,15 @@ class ChartjsEngineChart implements WaveformEngineChart {
     } else {
       this.configuration.options!.scales!.yAxes! = updatedYAxes;
     }
+  }
+
+  public rasterize(): Promise<Blob> {
+    if (!this.initialized) {
+      throw new Error("Chart cannot be rendered until it is initialized");
+    }
+
+    return new Promise((resolve, reject) =>
+      this.chart.canvas!.toBlob((blob) => blob ? resolve(blob) : reject(), "image/png"));
   }
 
   private onMouseEnter(): void {

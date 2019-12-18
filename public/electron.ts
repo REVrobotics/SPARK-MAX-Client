@@ -112,6 +112,7 @@ function createWindow() {
    * Controller as well as the main application configuration.
    */
   require("./main/services/sparkmax-service");
+  require("./main/services/file-service");
   require("./main/services/config-service");
   require("./main/services/device-config-service");
   require("./main/services/log-service");

@@ -1,4 +1,5 @@
 import {ReactNode, Ref} from "react";
+import {WaveformEngineChart} from "./abstract-waveform-engine";
 
 /**
  * This module declares interface that should be implemented by underlying chart implementation.
@@ -11,6 +12,7 @@ export interface WaveformChartOptions {
   showLegend: boolean;
   legendPosition: LegendPosition;
   timeSpan: number;
+  options?(chart: WaveformEngineChart): ReactNode;
 }
 
 /**
@@ -67,7 +69,7 @@ export interface WaveformEngine {
 
   removeChart(chart: ChartId): void;
 
-  createChart(chart: ChartId, element: HTMLElement): void;
+  createChart(chart: ChartId, element: HTMLElement): WaveformEngineChart;
 
   updateChart(chart: ChartId, options: WaveformChartOptions): void;
 

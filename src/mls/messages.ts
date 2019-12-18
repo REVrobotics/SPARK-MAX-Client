@@ -71,6 +71,8 @@ const messages = {
   "msg_remove_signal": "Are you sure you want to remove this signal?",
   "msg_streaming_error": "Error has occurred while streaming telemetry data",
   "msg_group_has_error": "Some parameter in this group has an error",
+  "msg_rasterize_error": "Chart cannot be rasterized",
+  "msg_no_data_to_export": "No data to export",
 };
 
 export default messages;

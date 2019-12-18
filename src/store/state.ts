@@ -251,6 +251,18 @@ export interface IDisplayState {
   raw?: DisplayConfigDto;
   lastSyncedConsumers: IDestination[];
   lastRunningDeviceIds: DeviceId[];
+  exportSettings: IDisplayExportSettings;
+}
+
+export interface IDisplayCsvExportSettings {
+  excludeGaps: boolean;
+  includeTimeColumn: boolean;
+  timeInterval: number;
+}
+
+export interface IDisplayExportSettings {
+  isCsvExportInProcess: boolean;
+  csv: IDisplayCsvExportSettings;
 }
 
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {

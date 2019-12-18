@@ -1,18 +1,75 @@
 import {constant} from "lodash";
 import * as React from "react";
-import {IApplicationState, DisplaySettings, ISignalInstanceState, ISignalState} from "../store/state";
+import {ReactNode, useCallback, useMemo} from "react";
+import {DisplaySettings, IApplicationState, ISignalInstanceState, ISignalState} from "../store/state";
 import {connect} from "react-redux";
 import {DataSet, WaveformChart, WaveformEngineDisplay, WaveformScale} from "../display";
 import {querySignalsWithInstances} from "../store/selectors";
 import {NonIdealState} from "@blueprintjs/core";
 import {getDataSource} from "../store/data-stream";
-import {ReactNode} from "react";
+import {WaveformEngineChart} from "../display/abstract-waveform-engine";
+import DisplayExportMenu from "./DisplayExportMenu";
 
 interface IProps {
   className?: string;
   settings: DisplaySettings;
   signalsWithInstances: Array<[ISignalState, ISignalInstanceState]>;
 }
+
+const RunDisplaySingleChart = (props: IProps) => {
+  const {settings, signalsWithInstances} = props;
+
+  const renderOptions = useCallback(
+    (chart: WaveformEngineChart) => <DisplayExportMenu chart={chart}
+                                                       signalsWithInstances={props.signalsWithInstances}/>,
+    [props.signalsWithInstances]);
+
+  return (
+    <WaveformChart timeSpan={settings.timeSpan}
+                   legendPosition={settings.legendPosition}
+                   showLegend={settings.showLegend}
+                   options={renderOptions}>
+      {
+        signalsWithInstances.map(([signal, instance]) => (
+          <React.Fragment key={instance.scaleId}>
+            <WaveformScale id={instance.scaleId}
+                           autoScale={instance.autoScaled}
+                           suggestedMin={signal.expectedMin}
+                           suggestedMax={signal.expectedMax}
+                           min={instance.min}
+                           max={instance.max}
+                           color={instance.style.color}/>
+            <DataSet scaleId={instance.scaleId}
+                     dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
+                     label={`ID ${signal.deviceId}, ${signal.name}, ${signal.units}`}
+                     color={instance.style.color}/>
+          </React.Fragment>
+        ))
+      }
+    </WaveformChart>
+  );
+};
+
+const RunDisplayMultipleChartInstance = ({instance, signal, ...otherProps}: Exclude<IProps, "signalsWithInstances"> &
+  { signal: ISignalState, instance: ISignalInstanceState }) => {
+
+  const signalsWithInstances = useMemo<Array<[ISignalState, ISignalInstanceState]>>(
+    () => [[signal, instance]],
+    [signal, instance]);
+
+  return <RunDisplaySingleChart {...otherProps} signalsWithInstances={signalsWithInstances}/>;
+};
+
+const RunDisplayMultipleChart = (props: IProps) => {
+  const {signalsWithInstances} = props;
+
+  return (
+    <>
+      {signalsWithInstances.map(([signal, instance]) =>
+        <RunDisplayMultipleChartInstance key={instance.scaleId} {...props} signal={signal} instance={instance}/>)}
+    </>
+  );
+};
 
 /**
  * This component displays chart(s) with all requested signals
@@ -31,51 +88,9 @@ const RunDisplay = (props: IProps) => {
   // Display single chart if user wants to show only single chart
   // or if number of signals > 2 (anyway, in this case displaying of such number of charts will be inconvenient).
   if (settings.singleChart || signalsWithInstances.length > 2) {
-    children = (
-      <WaveformChart timeSpan={settings.timeSpan}
-                     legendPosition={settings.legendPosition}
-                     showLegend={settings.showLegend}>
-
-        {
-          signalsWithInstances.map(([signal, instance]) => (
-            <React.Fragment key={instance.scaleId}>
-              <WaveformScale id={instance.scaleId}
-                             autoScale={instance.autoScaled}
-                             suggestedMin={signal.expectedMin}
-                             suggestedMax={signal.expectedMax}
-                             min={instance.min}
-                             max={instance.max}
-                             color={instance.style.color}/>
-              <DataSet scaleId={instance.scaleId}
-                       dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
-                       label={`ID ${signal.deviceId}, ${signal.name}, ${signal.units}`}
-                       color={instance.style.color}/>
-            </React.Fragment>
-          ))
-        }
-      </WaveformChart>
-    );
+    children = <RunDisplaySingleChart {...props}/>;
   } else {
-    children = (
-      signalsWithInstances.map(([signal, instance]) =>
-        <WaveformChart key={instance.scaleId}
-                       timeSpan={settings.timeSpan}
-                       legendPosition={settings.legendPosition}
-                       showLegend={settings.showLegend}>
-          <WaveformScale id={instance.scaleId}
-                         autoScale={instance.autoScaled}
-                         suggestedMin={signal.expectedMin}
-                         suggestedMax={signal.expectedMax}
-                         min={instance.min}
-                         max={instance.max}
-                         color={instance.style.color}/>
-          <DataSet scaleId={instance.scaleId}
-                   dataSource={getDataSource(instance.virtualDeviceId, instance.signalId)}
-                   label={`ID ${signal.deviceId}, ${signal.name}, ${signal.units}`}
-                   color={instance.style.color}/>
-        </WaveformChart>
-      )
-    );
+    children = <RunDisplayMultipleChart {...props}/>;
   }
 
   return (
