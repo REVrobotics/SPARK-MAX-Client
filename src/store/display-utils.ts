@@ -188,7 +188,7 @@ export const createDisplayState = (state: IApplicationState,
       isCsvExportInProcess: false,
       csv: {
         excludeGaps: false,
-        includeTimeColumn: false,
+        includeTimeColumn: true,
         timeInterval: 1000,
       },
     },

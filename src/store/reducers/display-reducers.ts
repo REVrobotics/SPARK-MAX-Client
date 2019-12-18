@@ -37,7 +37,7 @@ const displayInitialState: IDisplayState = {
     isCsvExportInProcess: false,
     csv: {
       excludeGaps: false,
-      includeTimeColumn: false,
+      includeTimeColumn: true,
       timeInterval: 1000,
     },
   },

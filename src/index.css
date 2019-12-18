@@ -1089,12 +1089,6 @@ button.link {
     width: 100px
 }
 
-.csv__signal {
-    display: inline-block;
-    width: 50%;
-    white-space: nowrap;
-}
-
 .csv__signal-sample {
     position: relative;
     display: inline-block;

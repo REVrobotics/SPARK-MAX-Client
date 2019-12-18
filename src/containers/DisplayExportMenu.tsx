@@ -5,7 +5,6 @@ import {
   Classes,
   Dialog,
   Divider,
-  FormGroup,
   Menu,
   MenuItem,
   Popover,
@@ -26,7 +25,6 @@ import {connect} from "react-redux";
 import {setCsvExportDialogOpened, setCsvExportSetting, SparkDispatch} from "../store/actions";
 import {exportAsCsv, exportAsPng} from "../store/actions/display-export-actions";
 import {queryDisplayExportSettings, queryHasRunningDevices} from "../store/selectors";
-import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 
 interface IOwnProps {
   chart: WaveformEngineChart;
@@ -58,7 +56,6 @@ const ExportedSignal = (props: IExportedSignalProps) => {
 
   return (
     <Checkbox key={id}
-              className="csv__signal"
               checked={checked}
               onChange={doChange}>
       <span><div className="csv__signal-sample" style={{background: color}}/>{label}</span>
@@ -69,7 +66,7 @@ const ExportedSignal = (props: IExportedSignalProps) => {
 const DisplayExportMenu = (props: IProps) => {
   const {
     signalsWithInstances,
-    running, settings: {isCsvExportInProcess, csv: {timeInterval, includeTimeColumn, excludeGaps}},
+    running, settings: {isCsvExportInProcess, csv: {includeTimeColumn}},
     setCsvExportDialogOpened: setCsvDialogOpened, setCsvExportSetting : setCsvSetting,
     exportAsPng: doExportAsPng,
   } = props;
@@ -84,13 +81,9 @@ const DisplayExportMenu = (props: IProps) => {
 
   const doOpenCsvExportDialog = useCallback(() => setCsvDialogOpened(true), []);
   const doCloseCsvExportDialog = useCallback(() => setCsvDialogOpened(false), []);
-  const doSetTimeInterval = useCallback((value) => setCsvSetting("timeInterval", value), []);
   const doChangeIncludeTimeColumn = useCallback(
     () => setCsvSetting("includeTimeColumn", !includeTimeColumn),
     [includeTimeColumn]);
-  const doChangeExcludeGaps = useCallback(
-    () => setCsvSetting("excludeGaps", !excludeGaps),
-    [excludeGaps]);
 
   const doExportAsCsv = useCallback(
     () => props.exportAsCsv(signalsWithInstances.filter(([_, instance]) => exportedSignal[instance.scaleId])),
@@ -107,31 +100,14 @@ const DisplayExportMenu = (props: IProps) => {
   if (isCsvExportInProcess) {
     csvExportDialog = (
       <Dialog title={tt("lbl_csv_export")}
-              style={{width: "520px"}}
+              style={{width: "300px"}}
               isOpen={isCsvExportInProcess}
               onClose={doCloseCsvExportDialog}>
         <div className={Classes.DIALOG_BODY}>
-          <div className="flex-row flex-cross-end">
-            <FormGroup label={tt("lbl_time_interval")}
-                       className="csv__time-interval">
-              <SafeNumericInput
-                min={1}
-                max={100000}
-                stepSize={100}
-                majorStepSize={100}
-                value={timeInterval}
-                safeInvalidValue={1000}
-                safeBehavior={SafeNumericBehavior.ClampAndNoNan}
-                onValueChange={doSetTimeInterval}/>
-            </FormGroup>
-            <div className="form-column">
-              <Checkbox label={tt("lbl_include_time_column")}
-                        checked={includeTimeColumn}
-                        onChange={doChangeIncludeTimeColumn}/>
-              <Checkbox label={tt("lbl_exclude_gaps")}
-                        checked={excludeGaps}
-                        onChange={doChangeExcludeGaps}/>
-            </div>
+          <div className="form-column">
+            <Checkbox label={tt("lbl_include_time_column")}
+                      checked={includeTimeColumn}
+                      onChange={doChangeIncludeTimeColumn}/>
           </div>
           <Divider/>
           {
