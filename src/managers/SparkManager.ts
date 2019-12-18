@@ -12,6 +12,7 @@ import {
 } from "../models/dto";
 import {onCallback, sendOneWay, sendTwoWay} from "./ipc-renderer-calls";
 import {LogicError, SYSTEM_ERROR_SPARKMAX_CATEGORY, SystemError} from "../models/errors";
+import FileFilter = Electron.FileFilter;
 
 const ipcRenderer = (window as any).require("electron").ipcRenderer;
 const remote = (window as any).require("electron").remote;
@@ -43,7 +44,7 @@ const serializeData = (data: Blob | string): Promise<ArrayBuffer | string> => {
 function wrapSparkError<T>(promise: Promise<T>): Promise<T> {
   return promise
     // Specialize SystemError to make it obvious what is the source of error
-    .catch((error: SystemError) => Promise.reject(error.specialize(() => ({ category: SYSTEM_ERROR_SPARKMAX_CATEGORY }))))
+    .catch((error: SystemError) => Promise.reject(error.specialize(() => ({category: SYSTEM_ERROR_SPARKMAX_CATEGORY}))))
     .then((response) => {
       // If sparkmax returns error => promise should be rejected with error
       if (hasError(response)) {
@@ -147,8 +148,8 @@ class SparkManager {
     return wrapSparkError(sendTwoWay("telemetry-list"));
   }
 
-  public saveAsFile(fileName: string, blob: Blob | string): Promise<boolean> {
-    return serializeData(blob).then((data) => sendTwoWay("save-as-file", fileName, data));
+  public saveAsFile(request: { fileName: string, data: Blob | string, filters: FileFilter[] }): Promise<boolean> {
+    return serializeData(request.data).then((data) => sendTwoWay("save-as-file", {...request, data}));
   }
 
   public telemetryStart(): void {

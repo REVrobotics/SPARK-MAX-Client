@@ -53,6 +53,7 @@ const labels = {
   "lbl_rename": "Rename",
   "lbl_yes_update": "Yes, Update",
   "lbl_yes_quit_install": "Yes, Quit And Install",
+  "lbl_ok": "OK",
   "lbl_okay": "Okay",
   "lbl_application_logs": "Application Logs",
   "lbl_view_application_logs": "View Application Logs",

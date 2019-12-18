@@ -178,6 +178,9 @@ const disposeDataBuffer = (buffer: IBuffer) => {
   buffer.deviceId = -1;
 };
 
+export const getDataPoints = (virtualDeviceId: VirtualDeviceId, signalId: SignalId) =>
+  getDataBuffer(virtualDeviceId, signalId).data;
+
 const getDataBuffer = (virtualDeviceId: VirtualDeviceId, signalId: SignalId): IBuffer => {
   const deviceBuffers = buffers[virtualDeviceId];
   if (deviceBuffers == null) {
