@@ -51,6 +51,16 @@ export function decorateCallback(original: CallbackCall): CallbackCall {
   return decorateCall("callback", original);
 }
 
+export type DecoratedCallbackCall = (args: any[], next: (...args: any[]) => void) => void;
+
+export function decorateCallbackCall(decorator: DecoratedCallbackCall): (ctx: IMockContext, cb: (...args: any[]) => void) => () => void {
+  return ({name, original}, cb) => {
+    return original(((...args: any[]) => {
+      decorator(args, (modifiedArgs) => cb(...modifiedArgs))
+    }) as any);
+  };
+}
+
 /**
  * Creates mock decorator for any kind of call
  */

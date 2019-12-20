@@ -70,9 +70,13 @@ const pingResourceFactory = timerResourceFactory((device) =>
  */
 const heartbeatProcessor = (_: string, attributes: { [name: string]: any }) =>
   new Promise<void>((resolve, reject) => {
-    console.log(`[TELEMETRY] SP = ${attributes.setpoint}`);
+    console.log(`[TELEMETRY] PID_SLOT = ${attributes.pidSlot}, SP = ${attributes.setpoint}`);
+    const telemetryResource = tryTelemetryResource();
+    if (telemetryResource) {
+      telemetryResource.emitData(attributes.device);
+    }
     server.setpoint(
-      {root: {device: attributes.device}, enable: true, setpoint: attributes.setpoint},
+      {root: {device: attributes.device}, enable: true, setpoint: attributes.setpoint, pidSlot: attributes.pidSlot},
       (err: any, response: any) => {
         if (err) {
           reject(err);
@@ -276,13 +280,13 @@ onTwoWayCall("restore-defaults", (cb, device: string, fullWipe: boolean) => {
   });
 });
 
-onOneWayCall("enable-heartbeat", (device, setpoint, interval) => {
+onOneWayCall("enable-heartbeat", (device, pidSlot, setpoint, interval) => {
   if (!context.isResourceExist(getHeartbeatResourceName(device))) {
     console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);
     // Create and start heartbeat resource
     context.newDeviceResource(
       getHeartbeatResourceName(device),
-      timerResourceFactory(heartbeatProcessor, interval, {device, setpoint}));
+      timerResourceFactory(heartbeatProcessor, interval, {device, pidSlot, setpoint}));
   }
 });
 
@@ -299,10 +303,11 @@ onOneWayCall("disable-heartbeat", (device: string) => {
   }
 });
 
-onOneWayCall("set-setpoint", (device: string, newSetpoint: number) => {
+onOneWayCall("set-setpoint", (device: string, pidSlot: number, newSetpoint: number) => {
   if (context.isResourceExist(getHeartbeatResourceName(device))) {
     // Use given setpoint for the specified device
     const resource = context.getResource(getHeartbeatResourceName(device));
+    resource.setAttribute("pidSlot", pidSlot);
     resource.setAttribute("setpoint", newSetpoint);
   }
 });

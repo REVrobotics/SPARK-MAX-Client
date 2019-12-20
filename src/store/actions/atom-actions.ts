@@ -17,12 +17,16 @@ import {
   IRemoveSignalInstance,
   IReplaceDevices,
   IResetMessageQueue,
-  IResetTransientState, ISelectAllDfuDevices, ISelectDfuDevice,
+  IResetTransientState,
+  ISelectAllDfuDevices,
+  ISelectDfuDevice,
   ISetAdvancedSearchString,
   ISetConfigurations,
   ISetConnectedDescriptor,
   ISetConsoleOutput,
+  ISetControlRangeValue,
   ISetControlValue,
+  ISetCsvExportDialogOpened, ISetCsvExportSetting,
   ISetDeviceLoaded,
   ISetDeviceParameter,
   ISetDeviceParameterResponse,
@@ -32,7 +36,7 @@ import {
   ISetDisplayQuickParam,
   ISetDisplaySelectedPanel,
   ISetDisplaySelectedParamGroup,
-  ISetDisplaySelectedPidProfile,
+  ISetDisplaySelectedPidSlot,
   ISetDisplaySelectedQuickPanel,
   ISetDisplaySetting,
   ISetFirmwareDownloaded,
@@ -41,7 +45,8 @@ import {
   ISetFirmwareLoading,
   ISetGlobalProcessing,
   ISetLastFirmwareLoadingMessage,
-  ISetLastSyncedConsumers, ISetLastRunningDeviceIds,
+  ISetLastRunningDeviceIds,
+  ISetLastSyncedConsumers,
   ISetNetworkDevices,
   ISetNetworkScanInProgress,
   ISetParameters,
@@ -57,7 +62,7 @@ import {
   IUpdateFirmwareLoadingProgress,
   IUpdateGlobalProcessStatus,
   IUpdateNetworkDevice,
-  IUpdateProcessStatusByDescriptor, ISetControlRangeValue,
+  IUpdateProcessStatusByDescriptor,
 } from "./action-types";
 import {IServerResponse} from "../../managers/SparkManager";
 import {forSelectedDevice} from "./action-creators";
@@ -67,7 +72,8 @@ import {
   IDestination,
   IDeviceConfiguration,
   IDeviceState,
-  IDeviceTransientState, IDfuDevice,
+  IDeviceTransientState,
+  IDfuDevice, IDisplayCsvExportSettings,
   IDisplayState,
   IMessageQueueConfig,
   INetworkDevice,
@@ -384,10 +390,10 @@ export const setDisplaySelectedQuickPanel = (panel: QuickPanelName): ISetDisplay
   type: ActionType.SET_DISPLAY_SELECTED_QUICK_PANEL,
 });
 
-export const setDisplaySelectedPidProfile = (virtualDeviceId: VirtualDeviceId,
-                                             profile: number): ISetDisplaySelectedPidProfile => ({
-  payload: {virtualDeviceId, profile},
-  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+export const setDisplaySelectedPidSlot = (virtualDeviceId: VirtualDeviceId,
+                                          pidSlot: number): ISetDisplaySelectedPidSlot => ({
+  payload: {virtualDeviceId, pidSlot},
+  type: ActionType.SET_DISPLAY_SELECTED_PID_SLOT,
 });
 
 export const setDisplaySetting = (key: keyof DisplaySettings, value: any): ISetDisplaySetting => ({
@@ -467,6 +473,16 @@ export const setLastRunningDeviceIds = (deviceIds: DeviceId[]): ISetLastRunningD
   payload: {deviceIds},
 });
 
+export const setCsvExportDialogOpened = (isOpened: boolean): ISetCsvExportDialogOpened => ({
+  type: ActionType.SET_CSV_EXPORT_DIALOG_OPENED,
+  payload: {isOpened},
+});
+
+export const setCsvExportSetting = (key: keyof IDisplayCsvExportSettings, value: any): ISetCsvExportSetting => ({
+  type: ActionType.SET_CSV_EXPORT_SETTING,
+  payload: {key, value},
+});
+
 export const setAdvancedSearchString = (virtualDeviceId: VirtualDeviceId,
                                         search: string): ISetAdvancedSearchString => ({
   type: ActionType.SET_ADVANCED_SEARCH_STRING,
@@ -479,5 +495,5 @@ export const setSelectedDeviceParameters = forSelectedDevice(setParameters);
 export const setSelectedDeviceParameterResponse = forSelectedDevice(setDeviceParameterResponse);
 export const setSelectedDeviceSignal = forSelectedDevice(setSelectedSignal);
 export const setSelectedDeviceDisplayParamGroup = forSelectedDevice(setDisplaySelectedParamGroupId);
-export const setSelectedDeviceDisplayPidProfile = forSelectedDevice(setDisplaySelectedPidProfile);
+export const setSelectedDeviceDisplayPidSlot = forSelectedDevice(setDisplaySelectedPidSlot);
 export const setSelectedDeviceAdvancedSearchString = forSelectedDevice(setAdvancedSearchString);

@@ -22,6 +22,7 @@
     "better-queue": "^3.8.10",
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
+    "csv-writer": "^1.5.0",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.15-beta.0",
     "electron-dl": "^1.14.0",

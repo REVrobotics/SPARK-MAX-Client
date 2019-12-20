@@ -538,6 +538,10 @@ label.modified::after {
     align-items: center;
 }
 
+.flex-cross-end {
+    align-items: flex-end;
+}
+
 .flex-1 {
     flex: 1;
 }
@@ -717,6 +721,12 @@ button.link {
 .waveform-chart {
     position: relative;
     flex: 1;
+}
+
+.waveform-chart__options {
+    position: absolute;
+    top: 0;
+    right: 5px;
 }
 
 .list {
@@ -1111,4 +1121,21 @@ button.link {
 
 .bp3-popover.attention-popover {
     box-shadow: 0 0 0 1px rgba(255, 22, 26, 0.1), 0 2px 4px rgba(255, 22, 26, 0.2), 0 8px 24px rgba(255, 22, 26, 0.2);
+}
+
+.csv__time-interval {
+    width: 50%;
+}
+
+.csv__time-interval .bp3-input-group {
+    width: 100px
+}
+
+.csv__signal-sample {
+    position: relative;
+    display: inline-block;
+    top: -3px;
+    width: 20px;
+    height: 3px;
+    margin-right: 5px;
 }

@@ -50,7 +50,7 @@ const GroupParameter = (props: GroupParameterProps) => {
                   checked={quick}
                   onChange={quickChange}/>
       </Tooltip>
-      <DisplayConfigParamFieldGroup parameter={parameter} disabled={true} inline={true}/>
+      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}/>
     </div>
   );
 };
@@ -94,7 +94,7 @@ const mapStateToProps = (state: IApplicationState) => {
 
   return {
     selectedParamGroupId: display ? display.selectedParamGroupId : undefined,
-    quickBar: display ? display.quickBar : EMPTY_ARRAY,
+    quickBar: display && display.quickBar ? display.quickBar : EMPTY_ARRAY,
   };
 };
 

@@ -56,6 +56,7 @@ class ApplicationError extends Error {
 
 export const SYSTEM_ERROR_UNKNOWN_CATEGORY = "unknown";
 export const SYSTEM_ERROR_SPARKMAX_CATEGORY = "sparkmax";
+export const SYSTEM_ERROR_FILE_CATEGORY = "file";
 
 /**
  * {@link SystemError} is an unexpected error like lost of connection, error reading from file system, etc.

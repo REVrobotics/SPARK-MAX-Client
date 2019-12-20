@@ -56,6 +56,7 @@ const labels = {
   "lbl_rename": "Rename",
   "lbl_yes_update": "Yes, Update",
   "lbl_yes_quit_install": "Yes, Quit And Install",
+  "lbl_ok": "OK",
   "lbl_okay": "Okay",
   "lbl_application_logs": "Application Logs",
   "lbl_view_application_logs": "View Application Logs",
@@ -169,6 +170,13 @@ const labels = {
   "lbl_in_ram": "In RAM",
   "lbl_configuration_group:template": "Templates",
   "lbl_configuration_group:user-defined": "User Defined",
+  "lbl_export_as_png": "Export as PNG",
+  "lbl_export_as_csv": "Export as CSV...",
+  "lbl_csv_export": "CSV Export",
+  "lbl_time_interval": "Time Interval (ms)",
+  "lbl_include_time_column": "Include Time Column",
+  "lbl_exclude_gaps": "Exclude Gaps",
+  "lbl_export": "Export",
 };
 
 export default labels;

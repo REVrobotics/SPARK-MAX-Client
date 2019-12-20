@@ -98,7 +98,10 @@ const RunControlArea = (props: IProps) => {
       <div className="control-area__field-list flex-1 flex-column flex-cross-center flex-space-between">
         <div className="flex-column">
           <FormGroup className="control-area__field-group" inline={true} label={tt("lbl_control_mode")}>
-            <DictionarySelect value={mode} dictionary={CONTROL_MODES} onValueChange={onControlModeChange}/>
+            <DictionarySelect value={mode}
+                              disabled={run.running}
+                              dictionary={CONTROL_MODES}
+                              onValueChange={onControlModeChange}/>
           </FormGroup>
           <FormGroup className="control-area__field-group" inline={true} label={tt("lbl_set_point")}>
             <SafeNumericInput
