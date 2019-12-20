@@ -1,3 +1,4 @@
+import {remove} from "lodash";
 import {AbstractResource} from "./AbstractResource";
 import {
   TelemetryStreamCommand,
@@ -20,6 +21,15 @@ export class TelemetryResource extends AbstractResource {
     console.log("[TELEMETRY] created new stream");
   }
 
+  public emitData(device: string) {
+    this._write({
+      command: TelemetryStreamCommand.StreamNone,
+      config: {
+        root: {device},
+      },
+    });
+  }
+
   public addSignal(device: string, signalId: number) {
     this._write({
       command: TelemetryStreamCommand.StreamAddSignal,
@@ -39,7 +49,7 @@ export class TelemetryResource extends AbstractResource {
         id: signalId,
       },
     });
-    this.signals.push({deviceId: device, signalId});
+    remove(this.signals, (signal) => signal.deviceId === device && signal.signalId === signalId);
   }
 
   public getSignals() {

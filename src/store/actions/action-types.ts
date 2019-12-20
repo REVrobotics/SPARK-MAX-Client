@@ -24,7 +24,7 @@ import {
   ProcessType,
   SignalId,
   TabId,
-  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination, IDfuDevice
+  VirtualDeviceId, IDisplayState, QuickPanelName, IDestination, IDfuDevice, IDisplayCsvExportSettings
 } from "../state";
 import {ControlType} from "../../models/proto-gen/SPARK-MAX-Types_dto_pb";
 
@@ -85,7 +85,7 @@ export enum ActionType {
   SET_DISPLAY_SELECTED_PANEL = "SET_DISPLAY_SELECTED_PANEL",
   SET_DISPLAY_SETTING = "SET_DISPLAY_SETTING",
   SET_SELECTED_SIGNAL = "SET_SELECTED_SIGNAL",
-  SET_DISPLAY_SELECTED_PID_PROFILE = "SET_DISPLAY_SELECTED_PID_PROFILE",
+  SET_DISPLAY_SELECTED_PID_SLOT = "SET_DISPLAY_SELECTED_PID_SLOT",
 
   ADD_SIGNAL_INSTANCE = "ADD_SIGNAL_INSTANCE",
   REMOVE_SIGNAL_INSTANCE = "REMOVE_SIGNAL_INSTANCE",
@@ -99,6 +99,8 @@ export enum ActionType {
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
   SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
   SET_LAST_RUNNING_DEVICE_IDS = "SET_LAST_RUNNING_DEVICE_IDS",
+  SET_CSV_EXPORT_DIALOG_OPENED = "SET_CSV_EXPORT_DIALOG_OPENED",
+  SET_CSV_EXPORT_SETTING = "SET_CSV_EXPORT_SETTING",
 
   SET_ADVANCED_SEARCH_STRING = "SET_ADVANCED_SEARCH_STRING",
   SET_ADVANCED_FIRST_VISIBLE_ROW = "SET_ADVANCED_FIRST_VISIBLE_ROW",
@@ -458,11 +460,11 @@ export interface ISetDisplaySelectedQuickPanel {
   },
 }
 
-export interface ISetDisplaySelectedPidProfile extends IDeviceAwareAction {
-  type: ActionType.SET_DISPLAY_SELECTED_PID_PROFILE,
+export interface ISetDisplaySelectedPidSlot extends IDeviceAwareAction {
+  type: ActionType.SET_DISPLAY_SELECTED_PID_SLOT,
   payload: {
     virtualDeviceId: VirtualDeviceId,
-    profile: number;
+    pidSlot: number;
   },
 }
 
@@ -579,6 +581,16 @@ export interface ISetLastRunningDeviceIds extends Action {
   },
 }
 
+export interface ISetCsvExportDialogOpened extends Action {
+  type: ActionType.SET_CSV_EXPORT_DIALOG_OPENED,
+  payload: { isOpened: boolean },
+}
+
+export interface ISetCsvExportSetting extends Action {
+  type: ActionType.SET_CSV_EXPORT_SETTING,
+  payload: { key: keyof IDisplayCsvExportSettings, value: any },
+}
+
 export interface ISetAdvancedSearchString extends IDeviceAwareAction {
   type: ActionType.SET_ADVANCED_SEARCH_STRING,
   payload: {
@@ -606,9 +618,10 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetSelectedTab | IOpenAlert | ICloseAlert | IOpenConfirmation | IAnswerConfirmation
   | ISaveConfirmation | IBurnConfirmation
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
-  | ISetDisplaySelectedPidProfile | ISetDeviceRunningStatus
+  | ISetDisplaySelectedPidSlot | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
   | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetControlRangeValue
   | ISetLastSyncedConsumers | ISetLastRunningDeviceIds
+  | ISetCsvExportDialogOpened | ISetCsvExportSetting
   | ISetAdvancedSearchString
   | IAddLog;

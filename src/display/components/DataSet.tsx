@@ -1,11 +1,11 @@
 import {DataSetId, DataSetOptions} from "../display-interfaces";
 import * as React from "react";
-import {useContext} from "react";
+import {PureComponent, useContext} from "react";
 import {WaveformChartContext, WaveformEngineContext, WithChartId, WithEngine} from "./waveform-engine-context";
 
 type Props = WithEngine<WithChartId<DataSetOptions>>;
 
-class DataSetInContext extends React.Component<Props> {
+class DataSetInContext extends PureComponent<Props> {
   private dataSetId: DataSetId;
 
   constructor(props: Props) {

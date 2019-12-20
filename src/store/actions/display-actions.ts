@@ -1,7 +1,8 @@
 import {
   ConfirmationAnswer,
   createSignalInstance,
-  DisplaySettings, fromDtoDeviceId,
+  DisplaySettings,
+  fromDtoDeviceId,
   getDestinationId,
   ISignalInstanceState,
   SignalId,
@@ -11,14 +12,17 @@ import {
 import {SparkAction} from "./action-types";
 import {forSelectedDevice} from "./action-creators";
 import {
-  queryConnectedDescriptor, queryControlValue,
-  queryControlValueByDeviceId,
+  queryConnectedDescriptor,
+  queryControlValue,
+  queryRunStateByDeviceId,
   queryDestinations,
+  queryDeviceDisplay,
   queryDeviceId,
   queryDisplay,
   queryDisplaySettings,
   queryIsDeviceRunning,
-  queryIsHasConnectedDevice, queryLastRunningDeviceIds,
+  queryIsHasConnectedDevice,
+  queryLastRunningDeviceIds,
   queryLastSyncedConsumers,
   queryRunningVirtualDeviceIds,
   querySelectedDeviceSignal,
@@ -27,13 +31,17 @@ import {
 } from "../selectors";
 import {
   addSignalInstance,
-  removeSignalInstance, setControlRangeValue,
+  removeSignalInstance,
+  setControlRangeValue,
   setControlValue,
   setDeviceRunning,
   setDeviceStopped,
   setDisplay,
   setDisplayQuickParam,
-  setDisplaySetting, setLastRunningDeviceIds, setLastSyncedConsumers,
+  setDisplaySelectedPidSlot,
+  setDisplaySetting,
+  setLastRunningDeviceIds,
+  setLastSyncedConsumers,
   setSelectedSignal,
   setSignalInstanceField
 } from "./atom-actions";
@@ -46,7 +54,7 @@ import {useErrorHandler} from "./error-actions";
 import {createDisplayState, displayToDto, mergeDisplays} from "../display-utils";
 import {
   addDataBuffer,
-  changeDataBuffer,
+  changeDataBuffer, markDataBufferAsIgnoring,
   markDataBufferAsStale,
   removeDataBuffer,
   setDataBufferOptions,
@@ -173,8 +181,25 @@ export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
  */
 export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): SparkAction<void> =>
   (dispatch, getState) => {
-    SparkManager.setSetpoint(toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!), value);
+    const deviceDisplay = queryDeviceDisplay(getState(), virtualDeviceId);
     dispatch(setControlValue(virtualDeviceId, value));
+    SparkManager.setSetpoint(
+      toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!),
+      deviceDisplay.run.pidSlot,
+      value);
+  };
+
+/**
+ * Sets control value
+ */
+export const sendPidSlot = (virtualDeviceId: VirtualDeviceId, pidSlot: number): SparkAction<void> =>
+  (dispatch, getState) => {
+    const deviceDisplay = queryDeviceDisplay(getState(), virtualDeviceId);
+    dispatch(setDisplaySelectedPidSlot(virtualDeviceId, pidSlot));
+    SparkManager.setSetpoint(
+      toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!),
+      pidSlot,
+      deviceDisplay.run.value);
   };
 
 /**
@@ -229,14 +254,14 @@ const syncDataParticipants = (): SparkAction<Promise<void>> =>
  */
 const syncDataConsumers = (): SparkAction<void> =>
   (dispatch, getState) => {
-    const oldDestinations = queryLastSyncedConsumers(getState());
+    const lastDestinations = queryLastSyncedConsumers(getState());
     const displaySettings = queryDisplaySettings(getState());
     setDataBufferOptions({
       timeSpan: displaySettings.timeSpan * 1000,
     });
-    const newDestinations = queryDestinations(getState());
+    const currentDestinations = queryDestinations(getState());
     // Compare list of old/new destinations
-    const result = diffArrays(oldDestinations, newDestinations, getDestinationId);
+    const result = diffArrays(lastDestinations, currentDestinations, getDestinationId);
 
     // Sync destinations
     result.added.forEach(addDataBuffer);
@@ -248,10 +273,13 @@ const syncDataConsumers = (): SparkAction<void> =>
       }
     });
 
-    dispatch(setLastSyncedConsumers(newDestinations));
+    dispatch(setLastSyncedConsumers(currentDestinations));
 
-    newDestinations.forEach((destination) => {
-      if (!queryIsDeviceRunning(getState(), destination.virtualDeviceId)) {
+    currentDestinations.forEach((destination) => {
+      if (queryIsDeviceRunning(getState(), destination.virtualDeviceId)) {
+        markDataBufferAsIgnoring(destination, false);
+      } else {
+        markDataBufferAsIgnoring(destination, true);
         markDataBufferAsStale(destination);
       }
     })
@@ -278,10 +306,13 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       const deviceIdDiff = diffArrays(previousRunningDeviceIds, runningDeviceIds);
 
       deviceIdDiff.added.forEach((deviceId) => {
-        SparkManager.enableHeartbeat(deviceId, queryControlValueByDeviceId(
+        const run = queryRunStateByDeviceId(
           getState(),
           connectedDescriptor!,
-          fromDtoDeviceId(deviceId)), 40);
+          fromDtoDeviceId(deviceId));
+        if (run) {
+          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.value, 100);
+        }
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
 
@@ -289,9 +320,6 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
 
       if (previousRunningDeviceIds.length === 0 && runningDeviceIds.length > 0) {
         SparkManager.telemetryStart();
-      } else if (previousRunningDeviceIds.length > 0 && runningDeviceIds.length === 0) {
-        SparkManager.telemetryStop();
-        return;
       }
 
       const destinationDiff = diffArrays(
@@ -305,6 +333,10 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
       destinationDiff.removed.forEach((destination) => {
         SparkManager.telemetryRemoveSignal(destination.deviceId, destination.signalId);
       });
+
+      if (previousRunningDeviceIds.length > 0 && runningDeviceIds.length === 0) {
+        SparkManager.telemetryStop();
+      }
     });
   };
 
@@ -332,6 +364,7 @@ export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
 export const setSelectedDeviceSignalField = forSelectedDevice(setSignalField);
 export const setAndPersistSelectedDeviceDisplayQuickParam = forSelectedDevice(setAndPersistDisplayQuickParam);
 export const sendSelectedDeviceControlValue = forSelectedDevice(sendControlValue);
+export const sendSelectedDevicePidSlot = forSelectedDevice(sendPidSlot);
 export const sendSelectedDeviceControlRangeValue = forSelectedDevice(sendControlRangeValue);
 export const startSelectedDevice = forSelectedDevice(startDevice);
 export const stopSelectedDevice = forSelectedDevice(stopDevice);

@@ -1,11 +1,11 @@
 import {ScaleId, WaveformScaleOptions} from "../display-interfaces";
 import * as React from "react";
-import {useContext} from "react";
+import {PureComponent, useContext} from "react";
 import {WaveformChartContext, WaveformEngineContext, WithChartId, WithEngine} from "./waveform-engine-context";
 
 type Props = WithEngine<WithChartId<WaveformScaleOptions>>;
 
-class WaveformScaleInContext extends React.Component<Props> {
+class WaveformScaleInContext extends PureComponent<Props> {
   private scaleId: ScaleId;
 
   constructor(props: Props) {

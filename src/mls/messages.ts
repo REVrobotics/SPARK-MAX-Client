@@ -71,6 +71,8 @@ const messages = {
   "msg_group_has_error": "Some parameter in this group has an error",
   "msg_update_burn": "Some devices have not burned changes. Do you want to burn them before update process is started?",
   "msg_update_burn_not_possible": "Some devices cannot be burned, because they have configuration issues: $deviceIds.",
+  "msg_rasterize_error": "Chart cannot be rasterized",
+  "msg_no_data_to_export": "No data to export",
 };
 
 export default messages;
