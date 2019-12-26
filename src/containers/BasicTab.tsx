@@ -11,6 +11,7 @@ import {
   SparkDispatch
 } from "../store/actions";
 import {
+  queryIsRampRateEnabledDirty,
   queryIsSelectedDeviceBlocked,
   queryIsSelectedDeviceEnabled,
   querySelectedDeviceProcessType,
@@ -112,6 +113,7 @@ interface IProps {
   blocked: boolean;
   processType?: ProcessType;
   transient: IDeviceTransientState;
+  rampRateEnabledDirty: boolean;
 
   onBurn(): void;
 
@@ -128,7 +130,7 @@ class BasicTab extends React.Component<IProps> {
   };
 
   public render() {
-    const {enabled, blocked, processType, transient: {rampRateEnabled}} = this.props;
+    const {enabled, blocked, processType, rampRateEnabledDirty, transient: {rampRateEnabled}} = this.props;
 
     const canEditCanId = enabled;
     const canEditOtherFields = enabled && !blocked;
@@ -212,10 +214,12 @@ class BasicTab extends React.Component<IProps> {
           </div>
           <div className="form-column form-column-third">
             <h4 className="form-title">{tt("lbl_ramp_rate")}</h4>
-            <FormGroup className="form-group-fit" labelFor="rampRateEnabled">
+            <FormGroup className={"form-group-fit"}
+                       labelFor="rampRateEnabled">
               <Switch id="rampRateEnabled"
                       checked={rampRateEnabled}
                       disabled={!canEditOtherFields}
+                      className={classNames({modified: rampRateEnabledDirty})}
                       label={rampRateEnabled ? tt("lbl_enabled") : tt("lbl_disabled")}
                       onChange={this.onChangeRampRateEnabled}/>
             </FormGroup>
@@ -256,6 +260,7 @@ export function mapStateToProps(state: IApplicationState) {
     blocked: queryIsSelectedDeviceBlocked(state),
     processType: querySelectedDeviceProcessType(state),
     transient: querySelectedDeviceTransientParameters(state),
+    rampRateEnabledDirty: queryIsRampRateEnabledDirty(state),
   };
 }
 
