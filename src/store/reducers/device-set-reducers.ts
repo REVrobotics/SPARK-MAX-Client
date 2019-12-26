@@ -101,6 +101,10 @@ const deviceReducer: Reducer<IDeviceState> = (state: IDeviceState, action: Appli
     case ActionType.SET_DEVICE_PARAMETER:
       return {
         ...state,
+        // Enable ramp rate if value != 0
+        transientParameters: action.payload.parameter === ConfigParam.kRampRate && !state.transientParameters.rampRateEnabled ?
+          setField(state.transientParameters, "rampRateEnabled", action.payload.value !== 0)
+          : state.transientParameters,
         currentParameters: setArrayElement(
           state.currentParameters,
           action.payload.parameter,

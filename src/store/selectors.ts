@@ -10,7 +10,9 @@ import {
   DeviceId,
   FirmwareTag,
   getDeviceBlockedReason,
+  getDeviceBurnedParameters,
   getDeviceCommittedCanId,
+  getDeviceCurrentParameters,
   getDeviceId,
   getDeviceParam,
   getDeviceParamValue,
@@ -42,7 +44,11 @@ import {maybeMap} from "../utils/object-utils";
 import {ConfigParam, getConfigParamsInGroup} from "../models/ConfigParam";
 import {colors, colorToIndex} from "./colors";
 import {ConfigParamGroupName, DFU_DEVICE_ALL, ISignalDestinationDto} from "../models/dto";
-import {getDeviceParamOrDefault, getDeviceParamValueOrDefault} from "./param-rules/config-param-helpers";
+import {
+  getDeviceBurnedParamOrDefault,
+  getDeviceParamOrDefault,
+  getDeviceParamValueOrDefault
+} from "./param-rules/config-param-helpers";
 import {compareVersions} from "../utils/string-utils";
 
 export const querySelectedTabId = (state: IApplicationState) => state.ui.selectedTabId;
@@ -313,6 +319,33 @@ export const queryIsSelectedDeviceBlocked = (state: IApplicationState) => {
 export const querySelectedDeviceBlockedReason = (state: IApplicationState) => {
   const selectedDevice = querySelectedDevice(state);
   return selectedDevice == null ? false : getDeviceBlockedReason(selectedDevice);
+};
+
+/**
+ * Returns true if enabled state of Ramp Rate field was changed, otherwise false.
+ *
+ * Look at the following table to understand how this functions works:
+ *
+ * | Enabled State (is dirty)    | Burned Value = 0 | Burned Value != 0 |
+ * | --------------------------- | ---------------- | ----------------- |
+ * | Current Value = 0, Enabled  |        Yes       |        Yes        |
+ * | Current Value = 0, Disabled |        No        |        Yes        |
+ * | Current Value != 0, Enabled |        Yes       |        No         |
+ *
+ */
+export const queryIsRampRateEnabledDirty = (state: IApplicationState) => {
+  const selectedDevice = querySelectedDevice(state);
+  if (selectedDevice == null || !selectedDevice.isLoaded) {
+    return false;
+  }
+  const currentValue = getDeviceParam(getDeviceCurrentParameters(selectedDevice), ConfigParam.kRampRate).value;
+  const burnedValue = getDeviceBurnedParamOrDefault(getDeviceBurnedParameters(selectedDevice), ConfigParam.kRampRate);
+  if (currentValue && burnedValue) {
+    return false;
+  } else if (currentValue === 0 && burnedValue === 0 && !selectedDevice.transientParameters.rampRateEnabled) {
+    return false;
+  }
+  return true;
 };
 
 /**
