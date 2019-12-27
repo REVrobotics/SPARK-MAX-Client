@@ -2,14 +2,15 @@
  * Facade for sparkmax-server communications
  */
 
-import {ChildProcess, execFile} from "child_process";
+import {ChildProcess, spawn} from "child_process";
 import {BrowserWindow, dialog, DownloadItem, ipcMain} from "electron";
+import {once} from "lodash";
 import * as fs from "fs";
 import * as path from "path";
 import * as util from "util";
 
 import SparkServer from "../server/sparkmax-server";
-import {HOST, PORT} from "../../program-args";
+import {HOST, LOG, PORT, VERBOSITY} from "../../program-args";
 import {ListRequestDto} from "../../proto-gen";
 import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall, onTwoWayCallPromise} from "./ipc-main-calls";
 import {SparkmaxContext} from "../server/SparkmaxContext";
@@ -18,6 +19,7 @@ import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
 import {getAppDataPath} from "../config";
 import {logger} from "../loggers";
 import {TelemetryResource, telemetryResourceFactory} from "../server/TelemetryResource";
+import {createWriteStream} from "fs";
 
 // Only temporary, hopefully... this is because electron-dl has no type definition file.
 const {download} = require('electron-dl');
@@ -91,7 +93,7 @@ const heartbeatProcessor = (_: string, attributes: { [name: string]: any }) =>
 const context = new SparkmaxContext([pingResourceFactory]);
 
 // all URLs should be relative ./build directory
-const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/";
+const dllFolder = process.env.NODE_ENV === "production" ? "../../../" : "../bin/x64/";
 
 /**
  * Return unique name of heartbeat resource for each device
@@ -120,17 +122,22 @@ onTwoWayCall("start-server", (cb, port: any) => {
   }
   const relPath = dllFolder + "sparkmax" + (isWin ? ".exe" : "");
   const exePath = path.join(__dirname, relPath);
+  const args = ["-r", "-p", port, "--verbosity", VERBOSITY, "--log", LOG];
+  const cmd = `${exePath} ${args.join(" ")}`;
+  const onError = once((e) => {
+    console.log(`There was an error starting the SPARK server: ${cmd}` + e);
+    cb(e);
+  });
   if (fs.existsSync(exePath)) {
     try {
-      usbProc = execFile(exePath, ["-r", "-p", port], (error: any, stdout: any) => {
-        console.log("Successfully started the SPARK server. PID is " + (usbProc as ChildProcess).pid);
-        cb(error);
-      });
-      console.log("Successfully started the SPARK server.");
+      console.log(`Run SPARK server executable: ${cmd}`);
+      usbProc = spawn(exePath, args);
+      usbProc.stdout.pipe(createWriteStream("server-out.log"));
+      usbProc.stderr.pipe(createWriteStream("server-err.log"));
+      console.log("Successfully started the SPARK server. PID is " + usbProc.pid);
       cb();
     } catch (e) {
-      console.log("There was an error starting the SPARK server. " + e);
-      cb(e);
+      onError(e);
     }
   } else {
     console.log("The SPARK server executable was not found for your operating system. (" + exePath + ")");
