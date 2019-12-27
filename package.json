@@ -1,7 +1,7 @@
 {
   "name": "spark-max-client",
   "productName": "REV SPARK MAX Client",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "author": "REV Robotics LLC",
   "description": "REV SPARK MAX Motor Controller Client",
@@ -54,7 +54,7 @@
     "build": "react-scripts-ts build",
     "build-desktop": "webpack --config scripts/webpack.main.js",
     "predist": "cross-env NODE_ENV=production npm run build && cross-env NODE_ENV=production npm run build-desktop",
-    "dist": "electron-builder",
+    "dist": "cross-env NODE_ENV=production CSC_LINK=\"keys/REVCodeSign.pfx\" CSC_KEY_PASSWORD=[password-here] electron-builder",
     "prerelease-win": "cross-env NODE_ENV=production npm run build && cross-env NODE_ENV=production npm run build-desktop",
     "release-win": "cross-env NODE_ENV=production electron-builder --win -p always",
     "postinstall": "electron-builder install-app-deps",
