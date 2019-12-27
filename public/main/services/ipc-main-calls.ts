@@ -2,8 +2,7 @@
  * This file supports separation of calls (look in ipc-renderer-calls.ts) in the main process.
  */
 
-import {ipcMain} from "electron";
-import WebContents = Electron.WebContents;
+import {BrowserWindow, ipcMain, WebContents} from "electron";
 import {logger} from "../loggers";
 
 // Converts error into serializable form
@@ -48,6 +47,10 @@ export function onOneWayCall(name: string, cb: (...args: any[]) => void): void {
 export function onTwoWayCall(name: string, handler: (cb: (err?: any, response?: any) => void, ...args: any[]) => void): void {
   ipcMain.on(`two-way:${name}`, (event: any, reqId: string, ...args: any[]) => {
     const handleResult = (err?: any, response?: any) => {
+      if (isDestroyed(event.sender)) {
+        return;
+      }
+
       if (err) {
         logger.error(`Error during two-way call: ${name}(${args.join(", ")}) `, err);
         event.sender.send(`two-way:response`, reqId, serializeSystemError(err));
@@ -75,7 +78,9 @@ export function onTwoWayCallPromise(name: string, handler: (...args: any[]) => P
 }
 
 export function notifyCallback(sendTo: WebContents, name: string, ...args: any[]): void {
-  sendTo.send(`callback:${name}`, ...args);
+  if (!isDestroyed(sendTo)) {
+    sendTo.send(`callback:${name}`, ...args);
+  }
 }
 
 let targetWindow: WebContents;
@@ -86,4 +91,9 @@ export function setTargetWindow(webContents: WebContents): void {
 
 export function getTargetWindow(): WebContents {
   return targetWindow;
+}
+
+function isDestroyed(contents: WebContents): boolean {
+  const window = BrowserWindow.fromWebContents(contents);
+  return window == null || window.isDestroyed();
 }
