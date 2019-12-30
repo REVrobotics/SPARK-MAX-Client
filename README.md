@@ -42,6 +42,8 @@ this one takes the most time to complete (approx. 5 minutes). It should also be 
 
 **Note:** In order to package SPARK MAX server with the client application, put all binaries along with `spakrmax.exe` into the `bin/` directory.
 
+**Note**. Look at [Code Signing](#code-signing) section for details on how to setup signing process
+
 ### `npm install`
 This is the typical, default installation command that the node package manager has. The SPARK MAX Client has a `npm run postinstall` script that is automatically
 run after `npm install` is finished, which builds the proper binaries for the electron environment. This provides native access to operating system calls such as
@@ -61,6 +63,17 @@ This script downloads file from GitHub repository and generates gRPC client usin
     ```
     npm run gen:proto
     ```
+
+## Code Signing
+
+To setup code signing you have to set some environment variables. They can be configured in the `.env` file found in the root project directory.
+If you want to avoid committing passwords/secrets, you can put all sensitive data into `.env.local`/`.env.production.local` file.
+
+Environment files are searched in the following order:
+* `.env`
+* `.env.local`
+* `.env.production`
+* `.env.production.local` (the highest priority)
 
 ## Application Arguments
 
