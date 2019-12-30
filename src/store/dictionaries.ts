@@ -2,6 +2,7 @@ import {isString, keyBy} from "lodash";
 import {ControlType, IdleMode, MotorType, SensorType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
 import {DictionaryName, translateWord} from "../mls/dictionaries";
 import {LegendPosition} from "../display/display-interfaces";
+import {enumValues} from "../models/dto-utils";
 
 export interface IDictionaryWord {
   id: any;
@@ -66,7 +67,7 @@ export const LEGEND_POSITIONS = Dictionary.from(
 
 export const CONTROL_MODES = Dictionary.from(
   DictionaryName.ControlModes,
-  [ControlType.DutyCycle, ControlType.Velocity, ControlType.Position],
+  enumValues(ControlType),
 );
 
 export const PID_PROFILES = Dictionary.from(

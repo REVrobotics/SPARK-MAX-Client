@@ -31,7 +31,7 @@ import {
 } from "../selectors";
 import {
   addSignalInstance,
-  removeSignalInstance,
+  removeSignalInstance, setControlMode,
   setControlRangeValue,
   setControlValue,
   setDeviceRunning,
@@ -177,6 +177,19 @@ export const setAndPersistDisplayQuickParam = (virtualDeviceId: VirtualDeviceId,
   };
 
 /**
+ * Sets control mode
+ */
+export const sendControlMode = (virtualDeviceId: VirtualDeviceId, mode: ControlType): SparkAction<void> =>
+  (dispatch, getState) => {
+    const deviceDisplay = queryDeviceDisplay(getState(), virtualDeviceId);
+    dispatch(setControlMode(virtualDeviceId, mode));
+    SparkManager.setSetpoint(
+      toDtoDeviceId(queryDeviceId(getState(), virtualDeviceId)!),
+      deviceDisplay.run.pidSlot,
+      deviceDisplay.run.value);
+  };
+
+/**
  * Sets control value
  */
 export const sendControlValue = (virtualDeviceId: VirtualDeviceId, value: any): SparkAction<void> =>
@@ -311,7 +324,7 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
           connectedDescriptor!,
           fromDtoDeviceId(deviceId));
         if (run) {
-          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.value, 100);
+          SparkManager.enableHeartbeat(deviceId, run.pidSlot, run.mode, run.value, 100);
         }
       });
       deviceIdDiff.removed.forEach((deviceId) => SparkManager.disableHeartbeat(deviceId));
@@ -364,6 +377,7 @@ export const removeSelectedDeviceSignal = forSelectedDevice(removeSignal);
 export const setSelectedDeviceSignalField = forSelectedDevice(setSignalField);
 export const setAndPersistSelectedDeviceDisplayQuickParam = forSelectedDevice(setAndPersistDisplayQuickParam);
 export const sendSelectedDeviceControlValue = forSelectedDevice(sendControlValue);
+export const sendSelectedDeviceControlMode = forSelectedDevice(sendControlMode);
 export const sendSelectedDevicePidSlot = forSelectedDevice(sendPidSlot);
 export const sendSelectedDeviceControlRangeValue = forSelectedDevice(sendControlRangeValue);
 export const startSelectedDevice = forSelectedDevice(startDevice);

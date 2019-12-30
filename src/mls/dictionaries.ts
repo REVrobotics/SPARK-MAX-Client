@@ -53,7 +53,11 @@ const dictionarySet = {
   [DictionaryName.ControlModes]: {
     [ControlType.DutyCycle]: "Percent",
     [ControlType.Velocity]: "Velocity",
+    [ControlType.Voltage]: "Voltage",
     [ControlType.Position]: "Position",
+    [ControlType.SmartMotion]: "Smart Motion",
+    [ControlType.Current]: "Current",
+    [ControlType.SmartVelocity]: "Smart Velocity",
   },
   [DictionaryName.PidProfiles]: {
     0: "0",

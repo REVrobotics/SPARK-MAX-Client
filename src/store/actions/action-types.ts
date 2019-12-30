@@ -95,6 +95,7 @@ export enum ActionType {
   SET_DISPLAY_QUICK_PARAM = "SET_DISPLAY_QUICK_PARAM",
   SET_DISPLAY = "SET_DISPLAY",
   SET_CONTROL_VALUE = "SET_CONTROL_VALUE",
+  SET_CONTROL_MODE = "SET_CONTROL_MODE",
   SET_CONTROL_RANGE_VALUE = "SET_CONTROL_RANGE_VALUE",
   SET_RUNNING_STATUS = "SET_RUNNING_STATUS",
   SET_LAST_SYNCED_CONSUMERS = "SET_LAST_SYNCED_CONSUMERS",
@@ -541,6 +542,14 @@ export interface ISetDisplay {
   },
 }
 
+export interface ISetControlMode extends IDeviceAwareAction {
+  type: ActionType.SET_CONTROL_MODE,
+  payload: {
+    virtualDeviceId: VirtualDeviceId,
+    mode: ControlType,
+  },
+}
+
 export interface ISetControlValue extends IDeviceAwareAction {
   type: ActionType.SET_CONTROL_VALUE,
   payload: {
@@ -620,7 +629,8 @@ export type ApplicationActions = IUpdateDeviceProcessStatus | ISetDeviceProcessi
   | ISetDisplaySelectedPanel | ISetDisplaySetting | ISetSelectedSignal | ISetDisplaySelectedQuickPanel
   | ISetDisplaySelectedPidSlot | ISetDeviceRunningStatus
   | IAddSignalInstance | IRemoveSignalInstance | ISetSignalInstanceField
-  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay | ISetControlValue | ISetControlRangeValue
+  | ISetDisplaySelectedParamGroup | ISetDisplayQuickParam | ISetDisplay
+  | ISetControlMode| ISetControlValue | ISetControlRangeValue
   | ISetLastSyncedConsumers | ISetLastRunningDeviceIds
   | ISetCsvExportDialogOpened | ISetCsvExportSetting
   | ISetAdvancedSearchString

@@ -23,7 +23,7 @@ import {
   ISetAdvancedSearchString,
   ISetConfigurations,
   ISetConnectedDescriptor,
-  ISetConsoleOutput,
+  ISetConsoleOutput, ISetControlMode,
   ISetControlRangeValue,
   ISetControlValue,
   ISetCsvExportDialogOpened, ISetCsvExportSetting,
@@ -445,6 +445,11 @@ export const setDisplay = (display: IDisplayState): ISetDisplay => ({
 export const setControlValue = (virtualDeviceId: VirtualDeviceId, value: any): ISetControlValue => ({
   type: ActionType.SET_CONTROL_VALUE,
   payload: {virtualDeviceId, value},
+});
+
+export const setControlMode = (virtualDeviceId: VirtualDeviceId, mode: ControlType): ISetControlMode => ({
+  type: ActionType.SET_CONTROL_MODE,
+  payload: {virtualDeviceId, mode},
 });
 
 export const setControlRangeValue = (virtualDeviceId: VirtualDeviceId,

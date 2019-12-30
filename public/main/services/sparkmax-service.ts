@@ -72,13 +72,19 @@ const pingResourceFactory = timerResourceFactory((device) =>
  */
 const heartbeatProcessor = (_: string, attributes: { [name: string]: any }) =>
   new Promise<void>((resolve, reject) => {
-    console.log(`[TELEMETRY] PID_SLOT = ${attributes.pidSlot}, SP = ${attributes.setpoint}`);
+    console.log(`[TELEMETRY] PID_SLOT = ${attributes.pidSlot}, MODE=${attributes.mode}, SP = ${attributes.setpoint}`);
     const telemetryResource = tryTelemetryResource();
     if (telemetryResource) {
       telemetryResource.emitData(attributes.device);
     }
     server.setpoint(
-      {root: {device: attributes.device}, enable: true, setpoint: attributes.setpoint, pidSlot: attributes.pidSlot},
+      {
+        root: {device: attributes.device},
+        enable: true,
+        setpoint: attributes.setpoint,
+        control: attributes.mode,
+        pidSlot: attributes.pidSlot,
+      },
       (err: any, response: any) => {
         if (err) {
           reject(err);
@@ -287,13 +293,13 @@ onTwoWayCall("restore-defaults", (cb, device: string, fullWipe: boolean) => {
   });
 });
 
-onOneWayCall("enable-heartbeat", (device, pidSlot, setpoint, interval) => {
+onOneWayCall("enable-heartbeat", (device, pidSlot, mode, setpoint, interval) => {
   if (!context.isResourceExist(getHeartbeatResourceName(device))) {
     console.log(`Enabling heartbeat for '${device}' for every ${interval} ms`);
     // Create and start heartbeat resource
     context.newDeviceResource(
       getHeartbeatResourceName(device),
-      timerResourceFactory(heartbeatProcessor, interval, {device, pidSlot, setpoint}));
+      timerResourceFactory(heartbeatProcessor, interval, {device, pidSlot, mode, setpoint}));
   }
 });
 
