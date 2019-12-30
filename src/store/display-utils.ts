@@ -15,15 +15,19 @@ import {
 import {
   createSignalInstance,
   DEFAULT_DEVICE_RUN,
-  DEFAULT_DISPLAY_SETTINGS, getDeviceId, getSignalId,
+  DEFAULT_DISPLAY_SETTINGS,
+  getDeviceId,
+  getSignalId,
   getVirtualDeviceId,
   IApplicationState,
   IDisplayState,
   ISignalState,
   PanelName,
-  QuickPanelName, toDtoDeviceId,
+  QuickPanelName,
+  toDtoDeviceId,
 } from "./state";
 import {
+  ConfigParam,
   ConfigParamGroupName,
   ControlType,
   DisplayConfigDto,
@@ -31,7 +35,14 @@ import {
   DisplayDeviceSignalDto
 } from "../models/dto";
 import {maybeMap, removeFields, setField, setFields} from "../utils/object-utils";
-import {queryConnectedDevices, queryDeviceId, queryDevicesByDeviceId, querySignalStylePalette} from "./selectors";
+import {
+  queryConnectedDevices,
+  queryDevice,
+  queryDeviceId,
+  queryDevicesByDeviceId,
+  querySignalStylePalette
+} from "./selectors";
+import {getDeviceParamOrDefault} from "./param-rules/config-param-helpers";
 
 const CONTROL_MODE_CONSTRAINTS = [
   {mode: ControlType.DutyCycle, min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
@@ -173,13 +184,15 @@ export const createDisplayState = (state: IApplicationState,
         quickBar: configDevice.quickBar,
         run: {
           ...DEFAULT_DEVICE_RUN,
+          mode: getDeviceParamOrDefault(
+            queryDevice(state, virtualDeviceId).currentParameters,
+            ConfigParam.kCtrlType).value,
           ranges: fromPairs(CONTROL_MODE_CONSTRAINTS.map((constraint) => [
             constraint.mode,
             // Use saved or default one configuration
             {...omit(constraint, "mode"), ...(configDevice.ranges ? configDevice.ranges[constraint.mode] : {})},
           ])),
         },
-        pidSlot: 0,
       }];
     })),
     lastSyncedConsumers: [],

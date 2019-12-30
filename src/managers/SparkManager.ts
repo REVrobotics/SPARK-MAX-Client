@@ -1,6 +1,7 @@
 import {isString} from "lodash";
 import {ConfigParam} from "../models/ConfigParam";
 import {
+  ControlType,
   FirmwareResponseDto,
   getErrorText,
   hasError,
@@ -212,8 +213,8 @@ class SparkManager {
     return sendOneWay("set-setpoint", device, pidSlot, setpoint);
   }
 
-  public enableHeartbeat(device: string, pidSlot: number, controlValue: number, interval: number) {
-    sendOneWay("enable-heartbeat", device, pidSlot, controlValue, interval);
+  public enableHeartbeat(device: string, pidSlot: number, mode: ControlType, controlValue: number, interval: number) {
+    sendOneWay("enable-heartbeat", device, pidSlot, mode, controlValue, interval);
   }
 
   public disableHeartbeat(device: string) {

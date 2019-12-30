@@ -8,6 +8,7 @@ import {find, keyBy, padStart, partition, sortBy, uniqueId} from "lodash";
 import {ConfigParam, ConfigParamGroupId, configParamNames, getConfigParamName} from "../models/ConfigParam";
 import {
   ConfigParamGroupName,
+  ControlType,
   DisplayConfigDto,
   DisplaySettingsDto,
   ExtendedDfuResponseDto,
@@ -283,6 +284,7 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
 export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
   value: 0,
   pidSlot: 0,
+  mode: ControlType.DutyCycle,
   running: false,
   ranges: {},
 };
@@ -329,6 +331,7 @@ export type IDeviceValueRange = IDisplayDeviceValueRangeDto & { stepSize: number
 export interface IDeviceRunState {
   value: number;
   pidSlot: number;
+  mode: ControlType;
   running: boolean;
   ranges: { [type: number]: IDeviceValueRange };
 }

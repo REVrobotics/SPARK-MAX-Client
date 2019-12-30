@@ -63,6 +63,7 @@ const displayReducer = (state: IDisplayState = displayInitialState, action: Appl
     case ActionType.ADD_SIGNAL_INSTANCE:
     case ActionType.REMOVE_SIGNAL_INSTANCE:
     case ActionType.SET_SIGNAL_INSTANCE_FIELD:
+    case ActionType.SET_CONTROL_MODE:
     case ActionType.SET_CONTROL_VALUE:
     case ActionType.SET_CONTROL_RANGE_VALUE:
     case ActionType.SET_RUNNING_STATUS:
@@ -96,12 +97,16 @@ const deviceDisplayReducer = (state: IDeviceDisplayState, action: ApplicationAct
       return setField(state, "run", setField(state.run, "pidSlot", action.payload.pidSlot));
     case ActionType.SET_RUNNING_STATUS:
       return setField(state, "run", setField(state.run, "running", action.payload.running));
-    case ActionType.SET_CONTROL_VALUE: {
+    case ActionType.SET_CONTROL_MODE:
+      return setField(
+        state,
+        "run",
+        setField(state.run, "mode", action.payload.mode));
+    case ActionType.SET_CONTROL_VALUE:
       return setField(
         state,
         "run",
         setField(state.run, "value", roundDecimal(action.payload.value || 0, 2)));
-    }
     case ActionType.SET_CONTROL_RANGE_VALUE: {
       const rangeValue = roundDecimal(action.payload.value || 0, 2);
       const currentRange = state.run.ranges[action.payload.mode];

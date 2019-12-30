@@ -1,15 +1,17 @@
 import classNames from "classnames";
 import {DEFAULT_DEVICE_RUN, IApplicationState, IDeviceRunState} from "../store/state";
 import {connect} from "react-redux";
-import {burnSelectedDeviceConfiguration, setSelectedDeviceParameterValue, SparkDispatch} from "../store/actions";
+import {burnSelectedDeviceConfiguration, SparkDispatch} from "../store/actions";
 import * as React from "react";
+import {useCallback} from "react";
 import {Button, FormGroup, Intent, Slider} from "@blueprintjs/core";
 import DictionarySelect from "../components/DictionarySelect";
 import SafeNumericInput, {SafeNumericBehavior} from "../components/SafeNumericInput";
 import {CONTROL_MODES} from "../store/dictionaries";
-import {ConfigParam, ControlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
-import {queryHasRunningDevices, querySelectedDeviceCurrentConfig, querySelectedDeviceRun} from "../store/selectors";
+import {ControlType} from "../models/proto-gen/SPARK-MAX-Types_dto_pb";
+import {queryHasRunningDevices, querySelectedDeviceRun} from "../store/selectors";
 import {
+  sendSelectedDeviceControlMode,
   sendSelectedDeviceControlRangeValue,
   sendSelectedDeviceControlValue,
   startSelectedDevice,
@@ -17,12 +19,9 @@ import {
   stopSelectedDevice
 } from "../store/actions/display-actions";
 import {PlayCircleOutlineIcon, StopCircleRegularIcon, StopIcon} from "../icons";
-import {getDeviceParamValueOrDefault} from "../store/param-rules/config-param-helpers";
-import {useCallback} from "react";
 
 interface IProps {
   className?: string;
-  mode: ControlType;
   run: IDeviceRunState;
   hasRunningDevices: boolean;
   start(): void;
@@ -42,13 +41,14 @@ interface IProps {
  */
 const RunControlArea = (props: IProps) => {
   const {
-    mode, hasRunningDevices,
+    hasRunningDevices,
     start, stop, stopAll, run, burnConfiguration,
     onControlModeChange, onControlValueChange,
     onControlRangeValueChange,
   } = props;
 
   const canStopDevices = hasRunningDevices;
+  const {mode} = run;
   const currentRange = run.ranges[mode];
 
   const controlRangeMinChange = useCallback((value) => onControlRangeValueChange(mode, "min", value), [mode]);
@@ -131,7 +131,6 @@ const RunControlArea = (props: IProps) => {
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
-    mode: getDeviceParamValueOrDefault(querySelectedDeviceCurrentConfig(state), ConfigParam.kCtrlType),
     run: querySelectedDeviceRun(state) || DEFAULT_DEVICE_RUN,
     hasRunningDevices: queryHasRunningDevices(state),
   };
@@ -142,7 +141,7 @@ const mapDispatchToProps = (dispatch: SparkDispatch) => {
     start: () => dispatch(startSelectedDevice()),
     stop: () => dispatch(stopSelectedDevice()),
     stopAll: () => dispatch(stopAllDevices()),
-    onControlModeChange: (mode: ControlType) => dispatch(setSelectedDeviceParameterValue(ConfigParam.kCtrlType, mode)),
+    onControlModeChange: (mode: ControlType) => dispatch(sendSelectedDeviceControlMode(mode)),
     onControlValueChange: (value: number) => dispatch(sendSelectedDeviceControlValue(value)),
     onControlRangeValueChange: (mode: ControlType, field: "min" | "max", value: number) =>
       dispatch(sendSelectedDeviceControlRangeValue(mode, field, value)),

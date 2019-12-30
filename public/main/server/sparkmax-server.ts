@@ -24,7 +24,7 @@ import {
   pingRequestFromDto,
   pingResponseToDto,
   rootResponseToDto,
-  setParameterRequestFromDto,
+  setParameterRequestFromDto, SetpointRequestDto,
   setpointRequestFromDto,
   setpointResponseToDto,
   sparkMaxServerClient, telemetryListRequestFromDto, telemetryListResponseToDto
@@ -100,7 +100,7 @@ class SparkServer {
     return this.grpcClient.iDAssignment(idAssignmentRequestFromDto(request), wrapIntoGrpcCallback(cb, rootResponseToDto));
   }
 
-  public setpoint(setpointCommand: any, cb?: Function) {
+  public setpoint(setpointCommand: SetpointRequestDto, cb?: Function) {
     this.grpcClient.setpoint(setpointRequestFromDto(setpointCommand), wrapIntoGrpcCallback(cb, setpointResponseToDto));
   }
 
