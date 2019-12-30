@@ -112,7 +112,6 @@ const SignalAssignedPane = (props: SignalPaneProps) => {
               <SafeNumericInput id="limit"
                                 disabled={instance.autoScaled}
                                 safeBehavior={SafeNumericBehavior.ClampAndNoNan}
-                                min={0}
                                 value={instance.min}
                                 safeInvalidValue={instance.min}
                                 onValueChange={minChange}/>
