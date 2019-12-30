@@ -16,7 +16,7 @@ import {getTargetWindow, notifyCallback, onOneWayCall, onTwoWayCall, onTwoWayCal
 import {SparkmaxContext} from "../server/SparkmaxContext";
 import {timerResourceFactory} from "../server/TimerResource";
 import {ConfigParam} from "../../proto-gen/SPARK-MAX-Types_dto_pb";
-import {getAppDataPath} from "../config";
+import {getAppDataPath, getLogPath} from "../config";
 import {logger} from "../loggers";
 import {TelemetryResource, telemetryResourceFactory} from "../server/TelemetryResource";
 import {createWriteStream} from "fs";
@@ -122,7 +122,10 @@ onTwoWayCall("start-server", (cb, port: any) => {
   }
   const relPath = dllFolder + "sparkmax" + (isWin ? ".exe" : "");
   const exePath = path.join(__dirname, relPath);
-  const args = ["-r", "-p", port, "--verbosity", VERBOSITY, "--log", LOG];
+  const args = ["-r", "-p", port];
+  if (VERBOSITY >= 0) {
+    args.push("--verbosity", VERBOSITY, "--log", LOG);
+  }
   const cmd = `${exePath} ${args.join(" ")}`;
   const onError = once((e) => {
     console.log(`There was an error starting the SPARK server: ${cmd}` + e);
@@ -132,8 +135,8 @@ onTwoWayCall("start-server", (cb, port: any) => {
     try {
       console.log(`Run SPARK server executable: ${cmd}`);
       usbProc = spawn(exePath, args);
-      usbProc.stdout.pipe(createWriteStream("server-out.log"));
-      usbProc.stderr.pipe(createWriteStream("server-err.log"));
+      usbProc.stdout.pipe(createWriteStream(getLogPath("server-out.log")));
+      usbProc.stderr.pipe(createWriteStream(getLogPath("server-err.log")));
       console.log("Successfully started the SPARK server. PID is " + usbProc.pid);
       cb();
     } catch (e) {

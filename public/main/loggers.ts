@@ -4,9 +4,7 @@
 
 import * as winston from "winston";
 import { format } from "winston";
-import {getAppDataPath} from "./config";
-
-const logPath = getAppDataPath("logs");
+import {logPath} from "./config";
 
 const customFormat = format.combine(
   format.timestamp({
