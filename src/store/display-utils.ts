@@ -47,7 +47,11 @@ import {getDeviceParamOrDefault} from "./param-rules/config-param-helpers";
 const CONTROL_MODE_CONSTRAINTS = [
   {mode: ControlType.DutyCycle, min: -1, max: 1, stepSize: 0.01, minorStepSize: 0.01},
   {mode: ControlType.Velocity, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.Voltage, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
   {mode: ControlType.Position, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.SmartMotion, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.Current, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
+  {mode: ControlType.SmartVelocity, min: -1000, max: 1000, stepSize: 0.1, minorStepSize: 0.1},
 ];
 
 /**

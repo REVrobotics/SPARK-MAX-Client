@@ -21,7 +21,7 @@ class PopoverHelp extends React.Component<IProps> {
 
     return (
       <div className="popover-container">
-        {title ? <span className="popover-title">{title}</span> : null}
+        {title ? <span className="popover-title" title={title}>{title}</span> : null}
         {
           !disabled &&
           <Popover

@@ -151,7 +151,7 @@ const labels = {
   "lbl_device_blocked_description": "Selected device has a configuration issue. Fix it to continue working with the device. Look for details under \"i\" icon on the top of the window",
   "lbl_quick_bar": "Quick Bar",
   "lbl_pidf": "PIDF",
-  "lbl_control_mode": "Control Mode",
+  "lbl_control_mode": "Mode",
   "lbl_set_point": "Setpoint",
   "lbl_start_device": "Run",
   "lbl_stop_device": "Stop",
