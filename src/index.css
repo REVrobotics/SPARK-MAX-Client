@@ -313,6 +313,14 @@ input:checked ~ .bp3-control-indicator {
     justify-content: space-between;
 }
 
+.select--full-width .bp3-popover-target {
+    width: 100%;
+}
+
+.select--full-width .bp3-button-text {
+    width: 100%;
+}
+
 h4.form-title {
     margin: 10px 0 15px;
     width: 100%;
@@ -899,6 +907,15 @@ button.link {
     width: 60px;
 }
 
+.display-param__field--select .bp3-button {
+    max-width: 120px;
+}
+
+.display-param__field--select .bp3-button-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .display-param__field--boolean.bp3-switch {
     margin-bottom: 0;
 }
@@ -941,7 +958,11 @@ button.link {
 }
 
 .control-area__field-group .bp3-label {
-    min-width: 100px;
+    min-width: 65px;
+}
+
+.control-area__field-group .bp3-form-content {
+    width: 100%;
 }
 
 .control-area__field-group .bp3-numeric-input .bp3-input-group {

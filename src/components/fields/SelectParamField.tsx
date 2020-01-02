@@ -36,6 +36,7 @@ const SelectParamField = ({
   const onChange = useCallback((item) => onValueChange(parameter, item.id), [parameter]);
 
   const selectedOption = find(options, {id: value});
+  const selectedText = value != null ? maybeMap(selectedOption, getWordText) : placeholder;
 
   return (
     <DictionarySelect className={className}
@@ -49,7 +50,8 @@ const SelectParamField = ({
       <Button {...buttonProps}
               fill={true}
               disabled={disabled}
-              text={value != null ? maybeMap(selectedOption, getWordText) : placeholder}
+              title={selectedText}
+              text={selectedText}
               rightIcon="double-caret-vertical"/>
     </DictionarySelect>
   )

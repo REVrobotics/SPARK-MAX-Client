@@ -99,6 +99,7 @@ const RunControlArea = (props: IProps) => {
         <div className="flex-column">
           <FormGroup className="control-area__field-group" inline={true} label={tt("lbl_control_mode")}>
             <DictionarySelect value={mode}
+                              className="select--full-width"
                               disabled={run.running}
                               dictionary={CONTROL_MODES}
                               onValueChange={onControlModeChange}/>
