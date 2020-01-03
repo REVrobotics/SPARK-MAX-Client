@@ -26,6 +26,8 @@ import {subtractSeconds} from "../utils/date-utils";
 Chart.defaults.global.legend!.onClick = noop;
 
 const N_TICKS = 6;
+// Debounce time for flush call (in ms)
+const FLUSH_DEBOUNCE_TIME = 1000 / 10;
 
 export interface DataStreamSettings {
   startTime: Date;
@@ -35,6 +37,13 @@ export interface DataStreamSettings {
 const createEmptyConfiguration = ({toTimeLabel}: { toTimeLabel(n: number): string }): ChartConfiguration => ({
   type: "line",
   options: {
+    animation: {
+      duration: 0,
+    },
+    hover: {
+      animationDuration: 0,
+    },
+    responsiveAnimationDuration: 0,
     // responsive: true,
     maintainAspectRatio: false,
     // Styles of displayed primitives
@@ -84,6 +93,8 @@ const createEmptyConfiguration = ({toTimeLabel}: { toTimeLabel(n: number): strin
         },
         ticks: {
           source: "labels",
+          minRotation: 0,
+          maxRotation: 0,
           callback: (_, index, values) => toTimeLabel(values[index].value),
         },
       }],
@@ -199,6 +210,8 @@ class ChartjsEngineChart implements WaveformEngineChart {
   private initialized = false;
   private timeSpan: number = 30;
   private ticks = N_TICKS;
+  private flushFrame: number = 0;
+  private lastFlushTime: Date = new Date();
 
   constructor() {
     this.onMouseEnter = this.onMouseEnter.bind(this);
@@ -249,13 +262,27 @@ class ChartjsEngineChart implements WaveformEngineChart {
   }
 
   public flush(): void {
+    this.chart.update();
+  }
+
+  public scheduleFlush(): void {
     if (this.initialized) {
-      this.chart.update();
+      cancelAnimationFrame(this.flushFrame);
+      this.flushFrame = requestAnimationFrame(() => {
+        const currentDate = new Date();
+        if ((currentDate.getTime() - this.lastFlushTime.getTime()) < FLUSH_DEBOUNCE_TIME) {
+          this.scheduleFlush();
+        } else {
+          this.lastFlushTime = currentDate;
+          this.chart.update();
+        }
+      });
     }
   }
 
   public destroy(): void {
     if (this.initialized) {
+      cancelAnimationFrame(this.flushFrame);
       this.chart.canvas!.removeEventListener("mouseenter", this.onMouseEnter);
       this.chart.canvas!.removeEventListener("mouseleave", this.onMouseLeave);
     }
@@ -375,7 +402,7 @@ class ChartjsEngineChart implements WaveformEngineChart {
         default:
           break;
       }
-      this.flush();
+      this.scheduleFlush();
     });
   }
 
@@ -463,18 +490,17 @@ class ChartjsWaveformEngine extends AbstractWaveformEngine {
   public createDataSource(dataStream: DataStream): DataSource<DataPoint> {
     return ({timeSpan}: { timeSpan: number }) => {
       return (cb: (event: DataStreamEvent) => void) => {
-        const data: DataPoint[] = [];
+        let data: DataPoint[] = [];
 
         return dataStream((event) => {
           switch (event.type) {
             case DataStreamEventType.Append:
-              data.push(...event.data);
+              data = data.concat(event.data);
               truncateByTime(data, timeSpan, (point) => point.x.getTime());
               cb({type: DataStreamEventType.Fill, data});
               break;
             case DataStreamEventType.Fill:
-              data.length = 0;
-              data.push(...event.data);
+              data = event.data;
               truncateByTime(data, timeSpan, (point) => point.x.getTime());
               cb({type: DataStreamEventType.Fill, data});
               break;
