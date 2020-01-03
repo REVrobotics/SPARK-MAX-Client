@@ -355,7 +355,6 @@ const syncDataProducers = (): SparkAction<Promise<void>> =>
 
 export const telemetryEvent = (event: TelemetryEvent): SparkAction<void> =>
   (dispatch, getState) => {
-    console.log("telemetry event", event);
     switch(event.type) {
       case TelemetryEventType.Start:
         break;

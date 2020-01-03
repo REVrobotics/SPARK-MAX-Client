@@ -29,7 +29,7 @@ interface IBuffer {
 }
 
 const bufferOptions: IBufferOptions = {
-  timeSpan: 30000,
+  timeSpan: 5 * 60 * 1000,
 };
 
 const buffers: IBufferRegistry = {};
@@ -139,7 +139,7 @@ const writeDataChunkByDestination = (deviceId: DeviceId, signalId: SignalId, ite
     }));
   }
   buffer.data.push(...points);
-  truncateByTime(buffer.data, bufferOptions.timeSpan * 10, (point) => point.x.getTime());
+  truncateByTime(buffer.data, bufferOptions.timeSpan, (point) => point.x.getTime());
   buffer.nextCallbacks.forEach((cb) => cb({type: DataStreamEventType.Append, data: points}));
 };
 
