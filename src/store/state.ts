@@ -857,7 +857,8 @@ export const isNetworkDeviceUpdateable = (device: INetworkDevice) => device.upda
 /**
  * Returns whether given device need firmware version to be loaded.
  */
-export const isNetworkDeviceNeedFirmwareVersion = (device: INetworkDevice) => device.updateable && device.uniqueId === 0;
+export const isNetworkDeviceNeedFirmwareVersion = (device: INetworkDevice) =>
+  (device.updateable || device.listable) && device.uniqueId === 0;
 /**
  * Returns whether firmware version is being loaded for the given device
  */
