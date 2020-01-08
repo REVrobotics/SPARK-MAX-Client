@@ -10,6 +10,7 @@ export interface DisplaySettingsDto {
   singleChart: boolean;
   showLegend: boolean;
   legendPosition: LegendPosition;
+  incrementPidOn: number;
 }
 
 export interface DisplayConfigDto {

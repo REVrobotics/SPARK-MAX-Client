@@ -1,4 +1,5 @@
 import {
+  defaults,
   flatMap,
   fromPairs,
   groupBy,
@@ -161,7 +162,10 @@ export const createDisplayState = (state: IApplicationState,
     selectedPanel: PanelName.Run,
     selectedQuickPanel: QuickPanelName.PIDF,
     raw,
-    settings: config ? config.settings : DEFAULT_DISPLAY_SETTINGS,
+    settings: defaults(
+      {},
+      config && config.settings ? config.settings : DEFAULT_DISPLAY_SETTINGS,
+      DEFAULT_DISPLAY_SETTINGS),
     devices: fromPairs(connectedDeviceVirtualIds.map((virtualDeviceId) => {
       const configDevice: DisplayDeviceDto = configDevicesByVirtualId[virtualDeviceId] || {quickBar: [], signals: []};
 

@@ -278,7 +278,8 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showLegend: true,
   legendPosition: LegendPosition.Top,
   singleChart: true,
-  timeSpan: 30
+  timeSpan: 30,
+  incrementPidOn: 0.0001,
 };
 
 export const DEFAULT_DEVICE_RUN: IDeviceRunState = {
