@@ -907,6 +907,10 @@ button.link {
     width: 60px;
 }
 
+.display-param-group--minimal .bp3-input {
+    padding: 0 5px !important;
+}
+
 .display-param__field--select .bp3-button {
     max-width: 120px;
 }
@@ -1159,4 +1163,8 @@ button.link {
     width: 20px;
     height: 3px;
     margin-right: 5px;
+}
+
+.bp3-form-group.quick-head-group .bp3-numeric-input .bp3-input-group {
+    width: 75px;
 }

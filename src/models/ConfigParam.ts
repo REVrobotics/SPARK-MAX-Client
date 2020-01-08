@@ -93,3 +93,34 @@ const configParamInGroups = groupBy(
  * Returns parameters that belongs to specific group
  */
 export const getConfigParamsInGroup = (groupId: ConfigParamGroupId) => configParamInGroups[groupId];
+
+/**
+ * Returns true if given parameter is one of P, I, D, F, or iZone, otherwise false
+ */
+export const isMainPidParameter = (parameter: ConfigParam) => {
+  switch (parameter) {
+    case ConfigParam.kP_0:
+    case ConfigParam.kP_1:
+    case ConfigParam.kP_2:
+    case ConfigParam.kP_3:
+    case ConfigParam.kI_0:
+    case ConfigParam.kI_1:
+    case ConfigParam.kI_2:
+    case ConfigParam.kI_3:
+    case ConfigParam.kD_0:
+    case ConfigParam.kD_1:
+    case ConfigParam.kD_2:
+    case ConfigParam.kD_3:
+    case ConfigParam.kF_0:
+    case ConfigParam.kF_1:
+    case ConfigParam.kF_2:
+    case ConfigParam.kF_3:
+    case ConfigParam.kIZone_0:
+    case ConfigParam.kIZone_1:
+    case ConfigParam.kIZone_2:
+    case ConfigParam.kIZone_3:
+      return true;
+    default:
+      return false;
+  }
+};

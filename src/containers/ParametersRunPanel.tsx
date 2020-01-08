@@ -1,19 +1,19 @@
 import {keyBy, memoize} from "lodash";
 import * as React from "react";
-import {ChangeEvent, useCallback} from "react";
+import {ChangeEvent, useCallback, useMemo} from "react";
 import List from "../components/List";
 import ListItem from "../components/ListItem";
 import {
   ConfigParam,
   ConfigParamGroupId, configParamVisibleGroups,
   getConfigParamGroupReadableName,
-  getConfigParamsInGroup
+  getConfigParamsInGroup, isMainPidParameter
 } from "../models/ConfigParam";
 import {Checkbox, Icon, Tooltip} from "@blueprintjs/core";
 import {IApplicationState} from "../store/state";
 import {connect} from "react-redux";
 import {setSelectedDeviceDisplayParamGroup, SparkDispatch} from "../store/actions";
-import {querySelectedDeviceDisplay} from "../store/selectors";
+import {queryDisplay, querySelectedDeviceDisplay} from "../store/selectors";
 import {EMPTY_ARRAY} from "../utils/object-utils";
 import DisplayConfigParamFieldGroup from "./DisplayConfigParamFieldGroup";
 import {setAndPersistSelectedDeviceDisplayQuickParam} from "../store/actions/display-actions";
@@ -21,6 +21,7 @@ import {setAndPersistSelectedDeviceDisplayQuickParam} from "../store/actions/dis
 interface Props {
   selectedParamGroupId: ConfigParamGroupId;
   quickBar: ConfigParam[];
+  pidIncrement: number;
   onQuickChange(parameter: ConfigParam, quick: boolean): void;
   onSelectParamGroup(paramGroupId: ConfigParamGroupId): void;
 }
@@ -33,15 +34,18 @@ const getDisplayConfigParamsInGroup = memoize((group) => getConfigParamsInGroup(
 interface GroupParameterProps {
   parameter: ConfigParam;
   quick: boolean;
+  pidIncrement: number;
   onQuickChange(parameter: ConfigParam, quick: boolean): void;
 }
 
 const GroupParameter = (props: GroupParameterProps) => {
-  const {quick, parameter, onQuickChange} = props;
+  const {quick, pidIncrement, parameter, onQuickChange} = props;
 
   const quickChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => onQuickChange(parameter, event.target.checked),
     [parameter]);
+
+  const pidConstraints = useMemo(() => ({minorStepSize: pidIncrement, stepSize: pidIncrement}), [pidIncrement]);
 
   return (
     <div className="display-param">
@@ -50,7 +54,9 @@ const GroupParameter = (props: GroupParameterProps) => {
                   checked={quick}
                   onChange={quickChange}/>
       </Tooltip>
-      <DisplayConfigParamFieldGroup parameter={parameter} inline={true}/>
+      <DisplayConfigParamFieldGroup parameter={parameter}
+                                    constraints={isMainPidParameter(parameter) ? pidConstraints : undefined}
+                                    inline={true}/>
     </div>
   );
 };
@@ -59,7 +65,7 @@ const GroupParameter = (props: GroupParameterProps) => {
  * Component for "Parameters" panel of "Run Tab"
  */
 const ParametersRunPanel = (props: Props) => {
-  const {quickBar, selectedParamGroupId, onSelectParamGroup, onQuickChange} = props;
+  const {quickBar, selectedParamGroupId, pidIncrement, onSelectParamGroup, onQuickChange} = props;
 
   const quickIndex = keyBy(quickBar);
 
@@ -81,20 +87,23 @@ const ParametersRunPanel = (props: Props) => {
       <div className="flex-1 flex-column display-param-list">
         {getDisplayConfigParamsInGroup(selectedParamGroupId).map((param) =>
           <GroupParameter key={param}
-                              parameter={param}
-                              quick={quickIndex[param] != null}
-                              onQuickChange={onQuickChange}/>)}
+                          parameter={param}
+                          quick={quickIndex[param] != null}
+                          pidIncrement={pidIncrement}
+                          onQuickChange={onQuickChange}/>)}
       </div>
     </div>
   );
 };
 
 const mapStateToProps = (state: IApplicationState) => {
-  const display = querySelectedDeviceDisplay(state);
+  const display = queryDisplay(state);
+  const deviceDisplay = querySelectedDeviceDisplay(state);
 
   return {
-    selectedParamGroupId: display ? display.selectedParamGroupId : undefined,
-    quickBar: display && display.quickBar ? display.quickBar : EMPTY_ARRAY,
+    selectedParamGroupId: deviceDisplay ? deviceDisplay.selectedParamGroupId : undefined,
+    pidIncrement: display.settings.incrementPidOn,
+    quickBar: deviceDisplay && deviceDisplay.quickBar ? deviceDisplay.quickBar : EMPTY_ARRAY,
   };
 };
 
