@@ -395,7 +395,7 @@ onTwoWayCallPromise("load-firmware", (recover: boolean, filename: string, device
         firmwareID = global.setTimeout(askForProgress, 500);
       };
 
-      return context.pause()
+      return (recover ? context.pause(): context.disconnectDevice())
         .then(() => new Promise((resolve, reject) => {
             onResolve = resolve;
             onReject = reject;
@@ -411,7 +411,9 @@ onTwoWayCallPromise("load-firmware", (recover: boolean, filename: string, device
           })
         )
         .finally(() => {
-          context.resume();
+          if (recover) {
+            context.resume();
+          }
           firmwareID = null;
         });
     } else {
