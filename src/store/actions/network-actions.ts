@@ -13,6 +13,7 @@ import {
   isDeviceBlocked,
   isNetworkDeviceNeedFirmwareVersion,
   isNetworkDeviceSelected,
+  isNetworkDeviceUpdateable,
   NetworkDeviceStatus,
   toDtoDeviceId
 } from "../state";
@@ -352,7 +353,12 @@ export const scanCanBus = (dto: ListResponseDto): SparkAction<Promise<any>> => {
           .then((response) => {
             const firmwareVersion = response.version!.substring(1);
 
-            if (recoveryVersion && compareVersions(firmwareVersion, recoveryVersion.version) < 0) {
+            if (!isNetworkDeviceUpdateable(device)) {
+              dispatch(updateNetworkDevice(virtualDeviceId, {
+                loading: false,
+                firmwareVersion,
+              }));
+            } else if (recoveryVersion && compareVersions(firmwareVersion, recoveryVersion.version) < 0) {
               dispatch(updateNetworkDevice(virtualDeviceId, {
                 loading: false,
                 firmwareVersion,
