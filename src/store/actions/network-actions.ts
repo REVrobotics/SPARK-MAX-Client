@@ -22,7 +22,6 @@ import SparkManager from "../../managers/SparkManager";
 import {
   consoleOutput,
   setConsoleOutput,
-  setDeviceLoaded,
   setFirmwareLoading,
   setLastFirmwareLoadingMessage,
   setNetworkDevices,
@@ -35,7 +34,6 @@ import {
 import {concatMapPromises} from "../../utils/promise-utils";
 import {
   queryConnectedDescriptor,
-  queryConnectedDevices,
   queryConsoleOutput,
   queryDfuDeviceCount,
   queryDfuDevicesToUpdate,
@@ -54,7 +52,7 @@ import {Intent} from "@blueprintjs/core";
 import {renderNetworkDeviceHelpText} from "./actions-rendered-content";
 import {onError, useErrorHandler} from "./error-actions";
 import {ApplicationError} from "../../models/errors";
-import {connectDevice, SYNC_BUS, SYNC_CONNECTABLE, syncDevices} from "./connection-actions";
+import {connectDevice, markAsDisconnected, SYNC_BUS, SYNC_CONNECTABLE, syncDevices} from "./connection-actions";
 import {networkLoadError, networkLoadSuccess, networkLoadWarning} from "../../mls/content";
 import {burnConfiguration} from "./parameter-actions";
 
@@ -154,9 +152,11 @@ const loadFirmware = (path: string, deviceIds: DeviceId[], dfuDeviceIds: string[
         .then((recovered) => ({updated, recovered})))
       // After update it is better to reload all devices again
       .then((response) => {
-        queryConnectedDevices(getState())
-          .forEach((device) => dispatch(setDeviceLoaded(getVirtualDeviceId(device), false)));
-        return response;
+        if (deviceIds.length > 0) {
+          return dispatch(markAsDisconnected()).then(() => response);
+        } else {
+          return response;
+        }
       })
       // Synchronize list of devices:
       // - some of them may be not visible (due to error)

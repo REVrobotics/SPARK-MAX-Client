@@ -60,7 +60,8 @@ export function initApplication(): SparkAction<void> {
       });
 
     SparkManager.onDisconnect(() => {
-      dispatch(markAsDisconnected());
+      dispatch(markAsDisconnected())
+        .then(() => dispatch(syncDevices(SYNC_ALL)));
     });
 
     SparkManager.onResync(() => {
