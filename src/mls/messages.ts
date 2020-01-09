@@ -32,7 +32,7 @@ const messages = {
   "msg_no_device_selected": "No devices selected",
   "msg_firmware_cannot_be_updated": "Firmware could not be updated. Look at console log for details",
   "msg_firmware_cannot_be_recovered": "Firmware could not be recovered. Look at console log for details",
-  "msg_device_must_be_connected": "Device must be connected",
+  "msg_device_must_be_connected": "Press Connect to interact",
   "msg_update_configuration": "Are you sure you want to update the configuration of your SPARK controller to a $motorType motor?",
   "msg_factory_reset_configuration": "WARNING: You are about to restore the connected SPARK MAX controller to its factory default settings. Make sure to properly configure the controller before attempting to operate. Are you sure you want to proceed?",
   "msg_config_field_required": "Configuration missing required field '${params.missingProperty}'",
