@@ -1034,7 +1034,9 @@ export const createLoadReport = (options: ILoadReportOptions): ILoadReport => {
 
       // If we have a single controller and its firmware version is prior to 1.5.0,
       // We cannot check if load was successful
-      if (afterDevices.length === 1 && compareVersions(afterDevices[0].firmwareVersion, "1.5.0") < 0) {
+      if (afterDevices.length === 1
+        && afterDevices[0].firmwareVersion
+        && compareVersions(afterDevices[0].firmwareVersion, "1.5.0") < 0) {
         updateReport.success = beforeCount;
         updateReport.warning = true;
       } else {
