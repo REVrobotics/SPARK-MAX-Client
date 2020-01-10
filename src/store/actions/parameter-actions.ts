@@ -60,6 +60,14 @@ const scheduleSetParameterValue = (virtualDeviceId: VirtualDeviceId,
             return Promise.resolve<number>(mainValue);
           }
         });
+    } else if (param === ConfigParam.kCanID) {
+      dispatch(updateDeviceProcessStatus(virtualDeviceId, tt("lbl_status_updating_can_id")));
+      return mainParameter
+        .then((response) => {
+          return delayPromise(3000)
+            .then(() => dispatch(updateDeviceProcessStatus(virtualDeviceId, "")))
+            .then(() => response);
+        });
     }
     return mainParameter;
   });

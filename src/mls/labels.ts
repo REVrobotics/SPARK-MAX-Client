@@ -109,6 +109,7 @@ const labels = {
   "lbl_status_resetting": "RESETTING...",
   "lbl_status_syncing": "SYNCING...",
   "lbl_status_failed_to_sync": "FAILED TO SYNC...",
+  "lbl_status_updating_can_id": "UPDATING CAN ID...",
   "lbl_yes": "Yes",
   "lbl_no": "No",
   "lbl_problems_during_startup": "Problems During Startup",
