@@ -63,10 +63,20 @@ export function initApplication(): SparkAction<void> {
       dispatch(markAsDisconnected());
     });
 
+    // Track sync process: if sync is currently in process, do not start another sync
+    let syncing = false;
     SparkManager.onResync(() => {
+      if (syncing) {
+        return;
+      }
+
       const descriptor = queryConnectedDescriptor(getState());
       if (descriptor) {
-        dispatch(syncDevices(SYNC_ALL_AND_SHOW_NOTIFICATIONS));
+        syncing = true;
+        dispatch(syncDevices(SYNC_ALL_AND_SHOW_NOTIFICATIONS))
+          .finally(() => {
+            syncing = false;
+          });
       }
     });
 
