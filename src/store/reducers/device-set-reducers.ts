@@ -1,4 +1,4 @@
-import {filter, fromPairs, keyBy, sortBy, values} from "lodash";
+import {filter, fromPairs, keyBy, mapValues, pickBy, sortBy, values} from "lodash";
 import {Reducer} from "redux";
 import {
   DeviceId,
@@ -73,6 +73,17 @@ const deviceSetReducer: Reducer<IDeviceSetState> = (state: IDeviceSetState = ini
         setField(state.devices,
           action.payload.virtualDeviceId,
           deviceReducer(state.devices[action.payload.virtualDeviceId], action)));
+    case ActionType.SET_CONNECTED_DESCRIPTOR:
+      if (action.payload.descriptor) {
+        return setField(
+          state,
+          "devices",
+          mapValues(
+            pickBy(state.devices, (device) => device.isLoaded),
+            (device) => setField(device, "isLoaded", false)));
+      } else {
+        return state;
+      }
     default:
       return state;
   }

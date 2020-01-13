@@ -615,16 +615,6 @@ export const createDeviceState = (extended: ExtendedListResponseDto): IDeviceSta
   },
 });
 
-/**
- * Resets device state to describe not loaded and not connected device
- */
-export const resetDeviceState = (state: IDeviceState) => ({
-  ...state,
-  uniqueId: 0,
-  isLoaded: false,
-  firmwareVersion: undefined,
-});
-
 export const createDeviceDisplayState = (): IDeviceDisplayState => ({
   signals: [],
   assignedSignals: {},
@@ -793,7 +783,7 @@ export const diffDevices = (previous: IDeviceState[], next: IDeviceState[]): IDe
     added: diffNon0.added.concat(diff0.added),
     merged: diffNon0.unmodified
       .concat(diff0.unmodified)
-      .concat(diffNon0.modified.map(({previous: p}) => p))
+      .concat(diffNon0.modified.map(({previous: p, next: n}) => setField(p, "uniqueId", n.uniqueId)))
       .concat(diff0.modified.map(({previous: p}) => p)),
     removed: diffNon0.removed.concat(diff0.removed),
   };

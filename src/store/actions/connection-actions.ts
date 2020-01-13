@@ -102,6 +102,7 @@ export function disconnectCurrentDevice(): SparkAction<Promise<any>> {
     dispatch(updateIsProcessingByDescriptor(descriptor, true));
     return SparkManager.disconnect()
       .then(() => dispatch(markAsDisconnected()))
+      .then(() => dispatch(syncDevices(SYNC_ALL)))
       .catch(useErrorHandler(dispatch))
       .finally(() => {
         dispatch(updateGlobalProcessStatus(""));
@@ -117,9 +118,7 @@ export function markAsDisconnected(): SparkAction<Promise<void>> {
     dispatch(setNetworkDevices([], []));
 
     // When there is no connected device, syncSignals just cleans display and removes all destinations
-    return dispatch(syncSignals())
-      .then(() => dispatch(syncDevices(SYNC_ALL)))
-      .catch(useErrorHandler(dispatch));
+    return dispatch(syncSignals());
   };
 }
 

@@ -60,7 +60,8 @@ export function initApplication(): SparkAction<void> {
       });
 
     SparkManager.onDisconnect(() => {
-      dispatch(markAsDisconnected());
+      dispatch(markAsDisconnected())
+        .then(() => dispatch(syncDevices(SYNC_ALL)));
     });
 
     // Track sync process: if sync is currently in process, do not start another sync
