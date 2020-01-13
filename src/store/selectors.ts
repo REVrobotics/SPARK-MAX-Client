@@ -338,7 +338,7 @@ export const queryIsRampRateEnabledDirty = (state: IApplicationState) => {
   if (selectedDevice == null || !selectedDevice.isLoaded) {
     return false;
   }
-  const currentValue = getDeviceParam(getDeviceCurrentParameters(selectedDevice), ConfigParam.kRampRate).value;
+  const currentValue = getDeviceParamOrDefault(getDeviceCurrentParameters(selectedDevice), ConfigParam.kRampRate).value;
   const burnedValue = getDeviceBurnedParamOrDefault(getDeviceBurnedParameters(selectedDevice), ConfigParam.kRampRate);
   if (currentValue && burnedValue) {
     return false;
