@@ -1,3 +1,6 @@
+# The SPARK MAX Client is now deprecated
+It will be receiving no further updates or support. Use the [REV Hardware Client](https://docs.revrobotics.com/rev-hardware-client/) instead, which has all of the functionality of the SPARK MAX client, supports other REV hardware, and has many other improvements.
+
 # SPARK MAX Client
 ## Overview
 This repository is for the front-end client application of the SPARK MAX Motor Controller. Any IDE/IDEA that supports [Node.js](https://www.nodejs.org) development is recommend.
